@@ -1,3 +1,11 @@
+Minireel frontend application.
+--------------------------------------
+Gitbash - 
+mongod to begin mongodb client
+nodemon from minireel-express folder
+npm start from minireel-react folder to begin.
+
+--------------------------------------
 This project was bootstrapped with [Create React App](https://github.com/facebookincubator/create-react-app).
 
 Below you will find some information on how to perform common tasks.<br>
