@@ -1,8 +1,8 @@
 Minireel frontend application.
 --------------------------------------
 Gitbash - 
-mongod to begin mongodb client.
-nodemon from minireel-express folder.
+mongod to begin mongodb client. 
+nodemon from minireel-express folder.   
 npm start from minireel-react folder to begin.
 
 --------------------------------------
