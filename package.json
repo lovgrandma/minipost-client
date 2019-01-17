@@ -1,0 +1,34 @@
+{
+  "name": "minireel",
+  "version": "0.1.0",
+  "private": true,
+  "author": "COWBOY SYSTEMS©",
+  "license": "MIT",
+  "dependencies": {
+    "awesome-debounce-promise": "^1.0.0",
+    "bootstrap": "^4.1.3",
+    "jquery": "^3.3.1",
+    "morgan": "^1.9.1",
+    "react": "^16.4.2",
+    "react-bootstrap": "^0.32.3",
+    "react-cookie": "^3.0.4",
+    "react-dom": "^16.4.2",
+    "react-router-dom": "^4.3.1",
+    "react-scripts": "1.1.5",
+    "redux": "^4.0.1",
+    "universal-cookie": "^3.0.4",
+    "video-react": "^0.13.0",
+    "video.js": "^7.2.3"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test --env=jsdom",
+    "eject": "react-scripts eject"
+  },
+  "proxy": "http://localhost:5000",
+  "devDependencies": {
+    "node-sass": "^4.9.3",
+    "sass-loader": "^7.1.0"
+  }
+}
