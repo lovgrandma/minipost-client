@@ -320,7 +320,7 @@ function Request(props) {
         <div className='user-request-container'>
             <div className='user-request-div'>{props.userrequest}</div>
             <div className='user-request-actions'>
-                <div className='user-request-befriend'>Befriend<img className="searched-user-icon" src={whiteheart} alt="friend request"></img></div>
+                <div className='user-request-befriend' onClick={props.acceptfriendrequest}>Befriend<img className="searched-user-icon" src={whiteheart} alt="friend request"></img></div>
                 <div className='user-request-profile'>profile<img className="searched-user-icon" src={profile} alt="chat"></img></div>
                 <div className='user-request-message'>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                 <div className='user-request-block'>block <img className="searched-user-icon-block" src={close} alt="chat"></img></div>
@@ -398,12 +398,12 @@ function Friends(props) {
                 <div className='search-user-dropdown'>
                         <img className="circle-menu-icon" src={circlemenu} alt="circlemenu"></img>
                         <div className="dropdown-content">
-                            <div className='dropdown-content-option'>share profile</div>
-                            <div className='dropdown-content-option'>watch</div>
+                            <button className='dropdown-content-option'>share profile</button>
+                            <button className='dropdown-content-option'>watch</button>
                             <div className='dropdown-content-divider'>&nbsp;</div>
-                            <div className='dropdown-content-option'>unfriend</div>
-                            <div className='dropdown-content-option block-option-dropdown'>block</div>
-                            <div className='dropdown-content-option report-option-dropdown'>report</div>
+                            <button type="button" className='dropdown-content-option' onClick={props.revokefriendrequest}>unfriend</button>
+                            <button className='dropdown-content-option block-option-dropdown'>block</button>
+                            <button className='dropdown-content-option report-option-dropdown'>report</button>
                         </div>
                     </div>
             </div>
@@ -470,6 +470,7 @@ function Social(props) {
                         return (
                             <Request
                             userrequest={request.username}
+                            acceptfriendrequest={props.acceptfriendrequest}
                             key={index}
                             index={index}
                             />
@@ -570,6 +571,7 @@ function Social(props) {
                         togglechat={props.togglechat}
                         conversations={props.conversations}
                         beginchat={props.beginchat}
+                        revokefriendrequest={props.revokefriendrequest}
                         />
                     )
                 })}
@@ -886,7 +888,8 @@ class Socialbar extends Component {
     }
 
     sendfriendrequest = (e) => {
-        let thetitleofsomeonewewanttobecloseto = e.target.parentElement.parentElement.parentElement.getElementsByClassName('searched-user-username')[0].innerHTML;
+        console.log("You want to be friends with: " + e.target.parentElement.parentElement.parentElement.parentElement.getElementsByClassName('searched-user-username')[0].innerHTML);
+        let thetitleofsomeonewewanttobecloseto = e.target.parentElement.parentElement.parentElement.parentElement.getElementsByClassName('searched-user-username')[0].innerHTML;
         let username = this.state.username;
         fetch(currentrooturl + 'users/requestfriendship', {
                 method: "POST",
@@ -905,7 +908,7 @@ class Socialbar extends Component {
             })
             .then(function(data) {
                 // `data` is the parsed version of the JSON returned from the above endpoint.
-                console.log(data);  // { "userId": 1, "id": 1, "title": "...", "body": "..." }
+                // console.log("data: " + data);  // { "userId": 1, "id": 1, "title": "...", "body": "..." }
                 return data;
             })
             .catch(error => { console.log(error);
@@ -918,7 +921,8 @@ class Socialbar extends Component {
     }
     
     revokefriendrequest = (e) => {
-        let thetitleofsomeoneiusedtowanttobecloseto = e.target.parentElement.parentElement.parentElement.getElementsByClassName('searched-user-username')[0].innerHTML;
+        console.log(e.target.parentElement.parentElement.parentElement.getElementsByClassName('friendname')[0].innerHTML);
+        let thetitleofsomeoneiusedtowanttobecloseto = e.target.parentElement.parentElement.parentElement.getElementsByClassName('friendname')[0].innerHTML;
         let username = this.state.username;
         fetch(currentrooturl + 'users/revokefriendship', {
             method: "POST",
@@ -934,47 +938,19 @@ class Socialbar extends Component {
         .then(function(response) {
             return response.json();
         })
-        .then(function(data) {
-            console.log(data);
-            return data;
-        })
-        .catch(error => { console.log(error);
-        })
-        
-        e.preventDefault(console.log('revoke friendship route'));
-        this.debouncefetchusers();
-    }
-    
-    acceptfriendrequest = (e) => {
-        console.log('accept friend request');
-        let username = this.state.username;
-        let newfriend = e.target.parentElement.parentElement.parentElement.getElementsByClassName('searched-user-username')[0].innerHTML;
-        
-        fetch(currentrooturl + 'users/acceptfriendrequest', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                newfriend, username
-            })
-        })
-        .then(function(response) {
-            return response.json();
-        })
         .then((data) => {
+            console.log(data);
             this.setState({ friends: data });
             return data;
         })
         .catch(error => { console.log(error);
         })
         
-        e.preventDefault(console.log('accept friend request finished'));
+        e.preventDefault(console.log('revoke friendship route'));
+        // setTimeout(this.debouncefetchusers(), 1500);
         this.debouncefetchusers();
     }
-    
+        
     getpendingrequests = (e) => {
         let username = this.state.username;
         
@@ -1001,7 +977,40 @@ class Socialbar extends Component {
         .catch(error => { console.log(error);
         })
         
-        e.preventDefault(console.log('get pending requests'));  
+        if (e) {
+            e.preventDefault(console.log('get pending requests'));  
+        }
+    }
+    
+    acceptfriendrequest = (e) => {
+        console.log("You are going become friends with" + e.target.parentElement.parentElement.getElementsByClassName('user-request-div')[0].innerHTML);
+        let username = this.state.username;
+        let newfriend = e.target.parentElement.parentElement.getElementsByClassName('user-request-div')[0].innerHTML;
+        
+        fetch(currentrooturl + 'users/acceptfriendrequest', {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                newfriend, username
+            })
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then((data) => {
+            this.setState({ friends: data });
+            return data;
+        })
+        .catch(error => { console.log(error);
+        })
+        
+        e.preventDefault(console.log('accept friend request finished'));
+        setTimeout(this.getpendingrequests, 1500); // Reset user search. ALERT Turn this into debounce later
+        this.debouncefetchusers();
     }
     
     getfriends = () => {
@@ -1089,7 +1098,7 @@ class Socialbar extends Component {
         if (!isLoggedIn) {
             sidebar = <Login />
         } else {
-            sidebar = <Social username={this.state.username} friends={this.state.friends} fetchlogout={this.fetchlogout} togglechat={this.togglechat} conversations={this.state.conversations} fetchusers={this.debouncefetchusers} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} />
+            sidebar = <Social username={this.state.username} friends={this.state.friends} fetchlogout={this.fetchlogout} togglechat={this.togglechat} conversations={this.state.conversations} fetchusers={this.debouncefetchusers} debouncefetchpendingrequests={this.debouncependingrequests}fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} />
         }
             
         return (
@@ -1109,6 +1118,22 @@ class Socialbar extends Component {
 
 // test debounce function 
 function debounce(a,b,c){var d,e;return function(){function h(){d=null,c||(e=a.apply(f,g))}var f=this,g=arguments;return clearTimeout(d),d=setTimeout(h,b),c&&!d&&(e=a.apply(f,g)),e}}
+
+// debounce v2
+//function debounce(func, wait, immediate) {
+//	var timeout;
+//	return function() {
+//		var context = this, args = arguments;
+//		var later = function() {
+//			timeout = null;
+//			if (!immediate) func.apply(context, args);
+//		};
+//		var callNow = immediate && !timeout;
+//		clearTimeout(timeout);
+//		timeout = setTimeout(later, wait);
+//		if (callNow) func.apply(context, args);
+//	};
+//};
 
 // Watching video/Chat PAGE
 // Video playing from server.
