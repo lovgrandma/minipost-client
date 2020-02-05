@@ -1,5 +1,5 @@
 1. Unfriend functionality
-
+2. Add queue to backend requests using Kue and redis
 
 RECENTLY FIXED
 - Friends list updates after removing friend
