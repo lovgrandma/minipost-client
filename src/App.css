@@ -42,6 +42,15 @@ body {
     line-height: 1.2;
 }
 
+button {
+    border-radius: 2px;
+    border-width: 2px;
+}
+
+.button-yes,
+.button-no {
+    min-width: 50%;
+}
 /* transitions */
 
 .hidden {
@@ -59,6 +68,7 @@ body {
     z-index: 10;
     width: 100%;
     background-color: white;
+    padding: 0.4rem 1rem 0.5rem 1rem;
 }
 
 .border-navigation {
@@ -68,6 +78,7 @@ body {
 .minireel-nav {
     display: block;
     height:16px; width:97px; margin-right: 15px; margin-left: 10px;
+    margin-top: 3px;
 }
 
 @media (max-width: 617px) {
@@ -126,6 +137,7 @@ input[type="search"] {
     margin: 0 auto;
     overflow: hidden;
 }
+
 .flex-grow1 {
     flex-grow: 1;
 }
@@ -148,7 +160,6 @@ input[type="search"] {
 
 .nowrapbuttons {
     flex-wrap: nowrap;
-    padding-top: 3px;
 }
 
 ul li {
@@ -241,7 +252,7 @@ ul li {
     z-index: 5;
     top: 0;
     left: 0;
-    background-color: #f6f6f6;
+    background-color: #f8f8f8;
     overflow-x: hidden;
     transition: 200ms;
     padding-top: 0px;
@@ -311,11 +322,50 @@ ul li {
     width: 0px;
 }
 
+
 .user-search {
     width: 100%;
     border-radius: 7px;
     margin-left: 7px;
     font-size: 14.5px;
+}
+
+.clear {
+    position: absolute;
+}
+
+.searchusers-text-input {
+    font-size: 14px;
+}
+
+/* for X clear func on search input */
+.text-input-wrapper {
+    border:1px #959595 solid;
+    border-radius: 10px;
+    padding:1px 2px 1px 1px;
+    display:inline-block;
+    width: 100%;
+    border-radius: 7px;
+    margin-left: 7px;
+    background: white;
+}
+.text-input-wrapper input {
+    border:none;
+    background:none;
+    outline:none;
+    margin:0 0;
+    font:inherit;
+}
+.text-input-wrapper span {
+    cursor:pointer;
+    font-weight:bold;
+    visibility:hidden;
+    transition: 200ms;
+    right:12px;
+}
+
+.clear-visible {
+    visibility:visible !important;
 }
 
 .sidebarcontainer {
@@ -327,10 +377,12 @@ ul li {
     direction: rtl;
 }
 
+
+.nonfriendchatcontainer,
 .friendchatcontainer,
 .user-search {
     direction: ltr;
-    margin-left: 6px;
+    margin-left: 3px;
 }
 
 .sidebar::-webkit-scrollbar {
@@ -356,23 +408,55 @@ ul li {
 
 /* friend chat container */
 
-.friend {
-    margin: 8px 0;
-    padding-bottom: 6px;
-    border-bottom: 1px solid #e6e6e6;
+.friend,
+.otheruser,
+.friend-single {
+    margin: 2px 0px;
+    padding: 2px 4px 4px 4px;
+    border-radius: 10px;
+    transition:100ms;
+    border: 3px solid #fcfcfc;
+    background-color: #fcfcfc;
 }
 
-.friendavatar {
+.nofriends {
+    margin: 2px 0px;
+    padding: 2px 4px 4px 4px;
+    border-radius: 10px;
+    transition:100ms;
+    border: 3px solid #fcfcfc;
+    background-color: #fcfcfc;
+    text-align: center;
+    font-size: 12px;
+    color: #848484;
+}
+
+.friend:hover,
+.otheruser:hover,
+.friend-single:hover {
+    border: 3px solid white;
+    background-color: white;
+}
+
+.friendavatar,
+.otheruseravatar {
     width: 25px;
     height: 25px;
     border-radius: 7px;
     margin-right: 10px;
 }
-.friendname {
+
+.friendname,
+.otherusername {
     display: inline;
+    font-weight: 500;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 14px;
+}
+
+.friendname-small,
+.otherusername-small {
     font-weight: 700;
-    font-family: 'Lora', serif;
-    font-size: 15px;
 }
 
 .iswatching {
@@ -383,8 +467,9 @@ ul li {
     font-size: 13px;
 }
 
-.friendchat {
-    font-size: 12.5px;
+.friendchat,
+.otheruserchat {
+    font-size: 12px;
 }
 
 /* Register form */
@@ -396,16 +481,39 @@ ul li {
     margin-bottom: 20px;
 }
 
+.minireel-register-logo-notext {
+    width: 86px;
+    height: 86px;
+    margin-top: 40px;
+    margin-bottom: 16px;
+    justify-self: center;
+    width:100%;
+    display: block;
+}
+
+.minireel-dot-com-login {
+    width: 140px;
+}
+
 .minireel-logo-center {
     text-align: center;
+    margin-bottom: 20%;
 }
+
+.register-year {
+    font-size: 46px;
+    font-weight: 400;
+    margin-top: 0px;
+    padding-top: 0px;
+}
+
 .registerform,
 .loginform {
     font-family: 'Open Sans', sans-serif;
     text-align: center;
     font-size:14px;
     padding: 0;
-    margin: 30px 20px;
+    margin: 20px 15px;
 }
 
 .form-control {
@@ -414,8 +522,9 @@ ul li {
     border-radius: 7px;
 }
 
-.registerform input {
-    text-align: center;
+.registerform input,
+.loginform input {
+    padding-left: 8px;
 }
 
 label {
@@ -423,8 +532,15 @@ label {
 }
 
 .register-text {
-    font-size: 14px;
+    width: 90%;
+    text-align: center;
+    display: block;
+    justify-self: center;
+    margin: 0 auto;
+    font-size: 12px;
+    margin-top: 20px;
     margin-bottom: 7px;
+    font-weight: 500;
 }
 
 .userquickdash {
@@ -434,9 +550,9 @@ label {
     align-items: center;
     justify-content: space-between;
     margin-bottom: 5px;
-    font-family: 'Lora', serif;
-    font-weight: 700;
-    font-size: 15px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 500;
+    font-size: 14px;
 }
 
 .logout a {
@@ -463,20 +579,46 @@ label {
     background: linear-gradient(to right, rgb(255, 174, 168) 0%, rgb(255, 137, 127) 100%);
 }
 
+.loginbtn,
+.registerbtn {
+    margin-bottom: 10px;
+}
+
 .form-error {
     font-size: 12px;
-    color: red;
+    font-weight: 500;
+    color: #f84242;
+}
+
+/* server errors */
+
+.loginerror {
+    margin: 0 auto;
+    width: 80%;
+    text-align: center;
+    font-size: 12px;
+    color: #ff1e1e;
+    font-weight: 500;
+    background: #ffd2d2;
+    padding: 2px;
+    border-radius: 10px;
+    border: 1px solid #ffc7c7;
+    transition: 200ms;
+}
+
+.loginerror:hover {
+    background: #ffc0c0;
 }
 
 /* Video Dash */
 
 .maindashcontainer {
     margin: 0px auto;
-    max-width: 1980px;
+    max-width: 2280px;
 }
 
 .videodash {
-    max-width: 1980px; 
+    max-width: 2280px;
 }
 
 .maindash {
@@ -486,15 +628,15 @@ label {
 }
 
 .maindashwide {
-    padding-left: 300px;
+    padding-left: 360px;
 }
 
 .videothumb {
     margin-bottom: 5px;
-    max-width: 220px;
+    max-width: 302px;
     min-width: 190px;
     width: auto;
-    height: 124px;
+    height: 170px;
     object-fit: cover;
 }
 
@@ -507,7 +649,7 @@ label {
     font-weight: bold;
     height: 28px;
     margin-bottom: 4px;
-    padding: 0 4px;
+    padding: 0 2px;
     overflow: hidden;
 }
 
@@ -515,12 +657,12 @@ label {
     display: flex;
     flex-wrap: wrap;
     justify-content: flex-start;
-    margin: 0 80px;
+    margin:auto;
 }
 
 .col {
     flex: 1;
-    max-width: 220px;
+    max-width: 302px;
     padding: 0;
     margin: 0 1.5px;
     flex-shrink: 2;
@@ -678,41 +820,182 @@ label {
     font-family: 'Lato', sans-serif;
 }
 
-.friendchat-container {
+/* social */
+
+#socialContainer {
+    transition: 200ms;
+}
+
+.friendchatcontainer,
+.nonfriendchatcontainer {
+    transition: 200ms;
+    height:inherit;
+    overflow-y: hidden;
+}
+
+.friendchatcontainer-closed,
+.nonfriendchatcontainer-closed {
+    height: 0px;
+}
+
+.friendchat-container,
+.otheruserchat-container {
     margin: 2px 0 auto;
     border-radius: 5px;
     overflow: hidden;
 }
 
-.friendchat-chat-container {
+.friendchat-chat-container,
+.otheruserchat-chat-container {
     overflow: auto;
-    transform: rotate(180deg);
-    direction: rtl;
+    direction: ltr;
     transition: 350ms;
     background-color: white;
 }
 
-.friendchat-chat-container-closed {
-    height: 15px;
+.friendchat-chat-container-closed,
+.otheruserchat-chat-container-closed {
+    height: auto;
     overflow: hidden;
 }
 
-.friendchat-chat-container-open {
+.friendchat-chat-container-open,
+.otheruserchat-chat-container-open {
     height: 340px;
-    overflow-y: scroll;
+    overflow-y:auto;
 }
 
-.friendchat-chat-container-empty {
+.friendchat-chat-container-empty,
+.otheruserchat-chat-container-empty {
     height: 0px;
 }
 
-.chat-log {
-    padding: 0 5px;
-    transform: rotate(180deg);
+.chat-log,
+.chat-log-other {
     direction: ltr;
+    transition: 1000ms;
 }
 
-.friendchat-chat-container-closed .author-of-chat {
+.chat-log-closed {
+    height: 0;
+    overflow-y: hidden;
+}
+
+
+.author-of-chat-user,
+.author-of-chat-other {
+    font-size: 0.70em;
+    margin-right: 5px;
+    display:none;
+}
+
+.chat-log .content-of-chat div {
+    width: fit-content;
+    border-radius: 7px;
+}
+
+.chat-log .content-of-chat-long div {
+    width: initial;
+    overflow-wrap: break-word;
+}
+
+.friendchat-chat-container-closed .chat-log-user .content-of-chat-long div
+.otheruserchat-chat-container-closed .chat-log-user .content-of-chat-long div {
+    background-color: #eaeaea;
+}
+
+.friendchat-chat-container .chat-log-user .content-of-chat,
+.friendchat-chat-container .chat-log-other .content-of-chat,
+.otheruserchat-chat-container . chat-log-user . content-of-chat,
+.otheruserchat-chat-container . chat-log-other . content-of-chat {
+    transition: 200ms;
+    background-color: transparent;
+}
+
+.friendchat-chat-container-closed .chat-log-user .content-of-chat,
+.otheruserchat-chat-container-closed .chat-log-user .content-of-chat {
+    transition: 400ms;
+    background-color: #e3e3e3;
+}
+
+.friendchat-chat-container-closed .chat-log .content-of-chat-long,
+.otheruserchat-chat-container-closed .chat-log .content-of-chat-long {
+    height: 15px;
+    overflow-y: hidden;
+}
+
+.friendchat-chat-container-closed .chat-log-user .content-of-chat:hover,
+.otheruserchat-chat-container-closed .chat-log-user .content-of-chat:hover {
+    background-color: #efefef;
+    cursor:pointer;
+}
+
+.friendchat-chat-container-closed .chat-log-other .content-of-chat,
+.otheruserchat-chat-container-closed .chat-log-other .content-of-chat {
+    transition: 400ms;
+    background-color: #75b6e6;
+}
+
+.friendchat-chat-container-closed .chat-log-other .content-of-chat:hover,
+.otheruserchat-chat-container-closed .chat-log-other .content-of-chat:hover {
+    background-color: #61ade5;
+    cursor:pointer;
+}
+
+
+.friendchat-chat-container-closed .chat-log-user .content-of-chat div,
+.friendchat-chat-container-closed .chat-log-other .content-of-chat div,
+.otheruserchat-chat-container-closed .chat-log-user .content-of-chat div,
+.otheruserchat-chat-container-closed .chat-log-other .content-of-chat div {
+    padding: 0px 8px;
+}
+
+.friendchat-chat-container-open, .otheruserchat-chat-container-open {
+    padding-right: 5px;
+    visibility: visible;
+}
+
+.friendchat-chat-container-open .chat-log-user .content-of-chat div,
+.otheruserchat-chat-container-open .chat-log-user .content-of-chat div {
+    background-color: #e3e3e3;
+}
+
+.friendchat-chat-container-open .chat-log-user .content-of-chat div:hover,
+.otheruserchat-chat-container-open .chat-log-user .content-of-chat div:hover {
+    background-color: #eaeaea;
+}
+
+.friendchat-chat-container-open .chat-log-other .content-of-chat div,
+.otheruserchat-chat-container-open .chat-log-other .content-of-chat div {
+    background-color: #61ade5;
+}
+
+.friendchat-chat-container-open .chat-log-other .content-of-chat div:hover,
+.otheruserchat-chat-container-open .chat-log-other .content-of-chat div:hover {
+    background-color: #75b6e6;
+}
+
+.content-of-chat {
+    border-radius: 5px;
+}
+.content-of-chat div {
+    background-color: transparent;
+    padding: 3px 8px;
+    margin-bottom: 2.5px;
+    transition: 200ms;
+    font-weight: 400;
+}
+
+.chat-log-user .content-of-chat div {
+    margin-left:auto;
+    color: black;
+}
+
+.chat-log-other .content-of-chat div {
+    color: aliceblue;
+}
+
+.author-of-chat-user {
     display: none;
 }
 
@@ -720,51 +1003,101 @@ label {
     font-style: italic;
 }
 
-.friend-chat-form {
+.friend-chat-form,
+.search-chat-form {
     margin-top: 0px;
 }
 
-.friend-chat-form-closed {
+.friend-chat-form-closed,
+.search-chat-form-closed {
     height: 0px;
+    transition: 200ms;
 }
 
-.friend-chat-form-open {
-    height: 30px;
+/* Fixes highlighting issue for users, chat message space overlaps without */
+.friend-chat-form span,
+.search-chat-form span {
+    visibility: hidden;
 }
 
-.friend-chat-input {
-    height: 0px;
-    border-radius:10px;
-    transition: 300ms;
-    border: 0px solid #c1c1c1;
-    padding: 0px;
-    font-size: 0.92em;
-    width: 81.5%;
+.friend-chat-form-open span,
+.search-chat-form-open span {
+    visibility: visible;
+
+}
+/* Fix end */
+
+.friend-chat-form-open,
+.search-chat-form-open {
+    margin-top: 3px;
+    height: auto;
 }
 
-.friend-chat-input-open {
-    height: 28px;
-    padding: 0px 0px 2px 5px;
-    border: 1px solid #c1c1c1;
+.search-textarea-chat-autosize::placeholder {
+    font-style: italic;
 }
 
-.friend-chat-submit {
+.textarea-chat-autosize,
+.search-textarea-chat-autosize {
+    transition: 200ms;
     overflow: hidden;
-    transition: 300ms;
+    border-radius: 10px;
+    padding: 0 5px;
+    font-size: 0.84em;
+    font-family: 'Open Sans', sans-serif;
+    width: 88.8%;
+    resize: none;
+    max-height: 200px;
+}
+
+.search-textarea-chat-autosize {
+    width: 87%;
+}
+
+.textarea-chat-autosize-closed,
+.search-textarea-chat-autosize-closed {
+    height:0 !important;
+    visibility: hidden;
+}
+
+.friend-chat-submit,
+.search-chat-submit {
+    overflow: hidden;
+    position:absolute;
+    visibility: none;
+    transition: 50ms;
     border: 0px solid black;
     height: 0px;
     padding: 0px;
     border-radius:10px;
-    font-size: 0.90em;
-    background-color: #fdd5c7;
-    width: 18.5%;
+    font-size: 0.84em;
+    background-color: #8fc0e3;
+    width: auto;
 }
 
-.friend-chat-submit-open {
-    height: 28px;
-    padding: 0.5px 7px 2px 5px;
-    border: 0.5px solid #f2b8a3;
-    font-style: italic;
+.search-chat-submit {
+    position: inherit;
+}
+
+.search-chat-submit img {
+    display: block;
+}
+
+.friend-chat-submit:hover,
+.search-chat-submit:hover {
+    background-color: #a7d2f0;
+    cursor:pointer;
+}
+
+.friend-chat-submit-open,
+.search-chat-submit-open {
+    display: inline;
+    visibility: visible;
+    height: 20px;
+    margin-left: 3px;
+    padding: 0px 5px 0px 5px;
+    color: white;
+    font-weight: 500;
 }
 
 .friend-requests-view {
@@ -773,38 +1106,45 @@ label {
     margin-bottom: 4px;
 }
 
-.friends-view,
+.friend-requests-list-hidden {
+    display: none;
+    visibility: hidden;
+}
+
+.following-view,
 .requests-view {
     width: 47%;
     border-radius: 10px;
     margin-bottom: 4px;
-    font-size: 0.9em;
+    font-size: 0.8em;
     transition: 200ms;
     font-family: 'Open Sans', sans-serif;
 }
 
-.friends-view {
+.following-view {
     margin: 0px 2% 0px 0px;
-    background-color: #f7796f;
+    background-color: rgb(221, 152, 187);
     border-width: 0;
     color: white;
     font-weight: 500;
 }
 
-.friends-view:hover {
-    background-color: #ffaba5;
+.following-view:hover {
+    background-color: rgb(224, 126, 176);
+    cursor: pointer;
 }
 
 .requests-view {
     margin: 0px 2%;
-    background-color: #97d1db;
+    background-color: #77b6e5;
     border-width: 0;
     color: white;
     font-weight: 500;
 }
 
 .requests-view:hover {
-    background-color: #b5e2ea;
+    background-color: #a1cdef;
+    cursor:pointer;
 }
 
 .search-users-results-container {
@@ -828,6 +1168,7 @@ label {
 
 .search-users-results-container-opened {
     height: 300px;
+    margin-bottom: 4.5px;
 }
 
 .search-users-results-container::-webkit-scrollbar {
@@ -872,11 +1213,11 @@ label {
 }
 
 .searched-user-username-container {
-    margin: 0.12em 0 0.22em 0;
+    margin: 0.22em 0 0.22em 0;
 }
 
 .user-request-container {
-    background-color: #fcfcfc;
+    background-color: #ebebeb;
     border-radius: 10px;
     padding: 2px 5px;
     font-weight: 500;
@@ -885,14 +1226,15 @@ label {
 }
 
 .user-request-actions {
+    font-size: 15px;
     display: flex;
     justify-content: space-between;
     margin: 2px 0;
 }
 
 .user-request-befriend {
-    color: white;
-    background-color: rgb(106, 159, 211);
+    color: black;
+    background-color: rgb(148, 217, 169);
     border-radius: 7px;
     padding: 2px 4px;
     margin-top: 0.25em;
@@ -903,11 +1245,8 @@ label {
     margin-right: 3px;
 }
 
-.user-request-befriend img {
-    fill: white;
-}
 .user-request-befriend:hover {
-    background-color: rgb(142, 178, 216);
+    background-color: rgb(95, 203, 127);
     cursor: pointer;
 }
 
@@ -937,7 +1276,7 @@ label {
 }
 
 .user-request-message {
-    background-color: rgb(151, 219, 201, 0.5);
+    background-color: #8fc0e3;
     border-radius: 7px;
     padding: 2px 4px;
     margin-top: 0.25em;
@@ -949,7 +1288,7 @@ label {
 }
 
 .user-request-message:hover {
-    background-color: rgb(151, 219, 201, 1);
+    background-color: #a7d2f0;
     cursor: pointer;
 }
 
@@ -970,7 +1309,7 @@ label {
 }
 
 .user-request-block:hover {
-    background-color: rgb(255, 66, 41, 1);
+    background-color: rgb(255, 66, 41, 0.7);
     cursor: pointer;
 }
 
@@ -997,6 +1336,19 @@ label {
     flex-wrap: nowrap;
     font-weight: 700;
     margin: 0.12em 0;
+    margin-bottom: 5px;
+}
+
+.request-and-block-nonfriend {
+    justify-content: flex-start;
+}
+
+.request-and-block-nonfriend div {
+    margin-right: 5px;
+}
+
+.request-and-block-nonfriend div:last-child {
+    margin-right: 0;
 }
 
 .searched-user-send-friend-request {
@@ -1018,8 +1370,8 @@ label {
 }
 
 .search-user-accept-friend-request {
-    color: white;
-    background-color: rgb(106, 159, 211);
+    color: black;
+    background-color: rgb(148, 217, 169);
     border-radius: 7px;
     padding: 2px 4px;
     margin-top: 0.25em;
@@ -1029,7 +1381,7 @@ label {
 }
 
 .search-user-accept-friend-request:hover {
-    background-color: rgb(142, 178, 216);
+    background-color: rgb(95, 203, 127);
     cursor: pointer;
 }
 
@@ -1038,7 +1390,7 @@ label {
 }
 
 .searched-user-follow-request {
-    background-color: rgb(230, 171, 201);
+    background-color: rgb(221, 152, 187);
     border-radius: 7px;
     padding: 2px 4px;
     font-size: 0.72em;
@@ -1047,7 +1399,7 @@ label {
 }
 
 .searched-user-follow-request:hover {
-    background-color: rgb(217, 114, 166);
+    background-color: rgb(224, 126, 176);
     cursor: pointer;
 }
 
@@ -1057,7 +1409,7 @@ label {
 
 .search-user-pending-friend-request {
     color: white;
-    background-color: rgb(94, 157, 167);
+    background-color: rgb(108, 164, 173);
     border-radius: 7px;
     padding: 2px 4px;
     margin-top: 0.25em;
@@ -1112,30 +1464,24 @@ label {
     background-color: white;
 }
 
-.search-user-watch {
-    color: black;
-    background-color: rgb(168, 190, 232);
-    border-radius: 7px;
-    padding: 2px 4px;
-    font-size: 0.72em;
-    transition: 200ms;
-    user-select: none;
-    margin: 0 3px;
-}
-
+.search-user-watch,
 .search-user-watch-friend {
     color: black;
-    background-color: rgb(168, 190, 232);
+    background-color: #96a9e5;
     border-radius: 7px;
     padding: 2px 4px;
     font-size: 0.72em;
     transition: 200ms;
     user-select: none;
+}
+
+.search-user-watch {
+    margin: 0 3px;
 }
 
 .search-user-watch:hover,
 .search-user-watch-friend:hover {
-    background-color: rgb(98, 140, 221);
+    background-color: #b1c0f0;
     cursor: pointer;
 }
 
@@ -1164,7 +1510,7 @@ label {
 }
 
 .searched-user-message {
-    background-color: rgb(151, 219, 201, 0.5);
+    background-color: #8fc0e3;
     border-radius: 7px;
     padding: 2px 4px;
     font-size: 0.72em;
@@ -1173,7 +1519,7 @@ label {
 }
 
 .searched-user-message:hover {
-    background-color: rgb(151, 219, 201, 1);
+    background-color: #a7d2f0;
     cursor: pointer;
 }
 
@@ -1200,10 +1546,50 @@ label {
 }
 
 .searched-user-icon {
-    margin-left: 3px;
+    margin-left: 2px;
     padding-bottom: 2px;
     width: 9.5px;
     height: 9.5px;
+}
+
+.general-icon {
+    margin: 0 4px;
+    padding-bottom: 2px;
+    width: 11.5px;
+    height: 11.5px;
+}
+
+.searched-user-befriend {
+    color: black;
+    background-color: rgb(148, 217, 169);
+    border-radius: 7px;
+    padding: 2px 4px;
+    font-size: 0.72em;
+    transition: 200ms;
+    user-select: none;
+    font-weight: 700;
+    margin-right: 3px;
+}
+
+.searched-user-befriend:hover {
+    background-color: rgb(95, 203, 127);
+    cursor: pointer;
+}
+
+.searched-user-unfriend {
+    color: black;
+    background-color: rgb(255, 66, 41, 0.5);
+    border-radius: 7px;
+    padding: 2px 4px;
+    font-size: 0.72em;
+    transition: 200ms;
+    user-select: none;
+    font-weight: 700;
+}
+
+.searched-user-unfriend:hover {
+    background-color: rgb(255, 66, 41, 0.7);
+    cursor: pointer;
 }
 
 .circle-menu-icon {
@@ -1217,32 +1603,161 @@ label {
     cursor:pointer;
 }
 
+.sendarrow-icon {
+    margin: 1px;
+    padding-bottom: 2px;
+    width: auto;
+    height:17px;
+}
+
 .searched-user-icon-block {
+    margin-left: 2px;
     padding-bottom: 2px;
     width: 8.5px;
     height: 8.5px;
 }
 
+/* Dont worry, this is the only float in the css. It floats the dropdown menu to the right. Change if causes issue.
+Other solutions would cause dropdown to show when component was hidden or not show actual dropdown if overflow was covered */
 .search-user-dropdown {
     position: relative;
     display: inline-block;
+    float: right;
+}
+
+.search-user-dropdown-search {
+    position: relative;
+}
+
+.load-more-users-wrapper {
+    display: flex;
+    justify-content: center;
+    align-content: center;
+    margin-bottom: 80px;
+}
+.load-more-users {
+    margin:auto 0px;
+    background-color: #d4d4d4;
+    border: 30px;
+    border-radius: 7px;
+    padding: 2px 35px;
+    font-size: 0.72em;
+    transition: 200ms;
+    user-select: none;
+}
+
+.prompt-spacing {
+    padding: 2px 2px;
+}
+.prompt-background {
+    background-color: white;
+    border-radius: 5px;
+}
+.prompt-yesno-spacing {
+    margin-top: 3px;
+}
+.opensans-thin {
+    font-weight: 400;
 }
 
 .dropdown-content {
     display: none;
     position:fixed;
     background-color: #f0f0f0;
-    width: 90px;
+    top: 2px;
+    right: 5px;
+    width: 120px;
     box-shadow: 2px 8px 16px 0px rgba(0,0,0,0.2);
-    padding: 4px 4px;
+    padding: 6px 6px;
     z-index: 20;
     font-size: 0.76em;
     font-weight: 700;
     border-radius: 5px;
 }
 
+.searchdropdownfix {
+    position:absolute;
+    z-index: 30;
+}
+
+.search-friend-border,
+.search-nonfriend-border {
+    color: white;
+    height: 14px;
+    font-size: 12px;
+    color: white;
+    background-color: #d4d4d4;
+    border-radius: 10px;
+    padding: 0 2px;
+    margin: 0 auto;
+    margin-bottom: 3px;
+    width:60%;
+    transition: 200ms;
+}
+
+.search-friend-border:hover,
+.search-nonfriend-border:hover {
+    background-color: #c7c7c7;
+    cursor:pointer;
+}
+
+.search-friend-border
+.friends-header,
+.search-nonfriend-border
+.nonfriends-header {
+    display: inline;
+    transition: 200ms;
+    color: transparent;
+    width: 100%;
+    font-weight: 500;
+}
+
+.search-friend-border:hover
+.friends-header,
+.search-nonfriend-border:hover
+.nonfriends-header {
+    color: white;
+}
+
 .search-user-dropdown:hover .dropdown-content {
     display: block;
+}
+
+/* Fix last dropdown menu, cuts off due to overflow-y: hidden value on friends component
+Cannot change position value of component as minimize functionality wont work
+If user only has one friend, styling wont apply */
+.friendchatcontainer div:last-child .friend .search-user-dropdown:hover:last-child .dropdown-content {
+    top: -48px;
+}
+
+.friend-single .search-user-dropdown:hover .dropdown-content {
+    margin-bottom: 30px;
+    min-width: 240px;
+    height: 48px;
+    display: flex;
+    overflow: visible;
+}
+
+.friend-single .search-user-dropdown:hover .prompt-spacing {
+    display:inline-flex;
+}
+
+.friend-single .search-user-dropdown:hover .button-no,
+.friend-single .search-user-dropdown:hover .button-yes {
+    display: block;
+    width: 30px;
+    font-size: 10px;
+    margin-top:0;
+    height: 15px;
+    clear: both;
+}
+
+.friend-single .search-user-dropdown:hover .opensans-thin {
+    max-width:90px;
+}
+
+.friend-single:hover .dropdown-content-option {
+    width: 60px;
 }
 
 .dropdown-content-option {
@@ -1263,6 +1778,13 @@ label {
     margin: 6px 0;
 }
 
+.content-divider-thin {
+    height: 1px;
+    border-radius:10px;
+    padding: 0 3px;
+    margin: 2px 0;
+}
+
 .block-option-dropdown {
     color: #e25151;
 }
@@ -1274,4 +1796,64 @@ label {
 
 .dropdown-content-option:active {
     color: white;
+}
+
+.noselect {
+  -webkit-touch-callout: none; /* iOS Safari */
+    -webkit-user-select: none; /* Safari */
+     -khtml-user-select: none; /* Konqueror HTML */
+       -moz-user-select: none; /* Old versions of Firefox */
+        -ms-user-select: none; /* Internet Explorer/Edge */
+            user-select: none; /* Non-prefixed version, currently
+                                  supported by Chrome, Opera and Firefox */
+}
+
+/* Sidebar Footer   */
+
+.sidebarfooter-loggedin {
+    overflow-y: hidden;
+}
+
+.sidebarfooter-loggedin a {
+    color: #acacac !important;
+}
+.sidebarfooter-loggedin:hover a {
+    color: #5f5f5f !important;
+}
+
+.sidebarfooter, sidebarfooter-loggedin {
+    transition: 200ms;
+    padding: 0;
+}
+
+.sidebarfooter-list {
+    text-align: center;
+    margin-top: 30px;
+    margin-bottom: 40px;
+}
+
+.footeritem {
+    display: inline-block;
+    margin: 0 6px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.footeritem a {
+    transition: 200ms;
+    color: #5f5f5f;
+}
+
+.footeritem a:hover {
+    text-decoration: none;
+    color: #f39e97;
+}
+
+.copyright-minireel {
+    font-size: 12px;
+    text-align: center;
+    width: 100%;
+    font-weight: 500;
+    color: #9a9a9a;
+    margin-bottom: 60px;
 }
