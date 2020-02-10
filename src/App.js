@@ -462,7 +462,7 @@ class NonFriendConversation extends Component {
                                         <div className='search-user-profile prevent-open-toggle'>profile<img className="searched-user-icon prevent-open-toggle" src={profile} alt="profile"></img></div>
                                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e, otheruser)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                                     </div>
-                                : <div class="request-and-block-container request-and-block-nonfriend">
+                                : <div className="request-and-block-container request-and-block-nonfriend">
                                     <div className='search-user-profile'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></div>
                                     <div className='searched-user-message' onClick={(e) => {this.openchatinput(e, otheruser)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                                 </div> : <div></div>
@@ -961,66 +961,68 @@ function Social(props) {
             <div className='search-users-results-container'>
                 <div> 
                     {
-                    props.searchusers[0] ?                         
-                        props.searchusers[0].map(function(searcheduser, index) {
-                            
-                            let alreadypending = function() {  // Determine if the user is on searched users pending list. Waiting for accept.
-                                for (var i = 0; i < searcheduser.friends[1].pending.length; i++) {
-                                    if (searcheduser.friends[1].pending[i]) {
-                                        if (searcheduser.friends[1].pending[i].username === props.username) {
-                                            // console.log('Searchuser func: ' + props.username + ' on ' + searcheduser.username + ' pending list!');
-                                            return true;
-                                        }
-                                    }
-                                }
-                            }
+                    props.searchusers ?
+                        props.searchusers[0] ?
+                            props.searchusers[0].map(function(searcheduser, index) {
 
-                            let requestwaiting = function() { // Determine if searched user is waiting for user to accept friend request
-                                for (var i = 0; i < props.searchusers[0].length; i++) { // Iterate through the searched users
-                                    if (props.searchusers[0] && props.pendingfriendrequests) {
-                                        for (let j = 0; j < props.pendingfriendrequests.length; j++) {
-                                            if (props.pendingfriendrequests[j].username === searcheduser.username) { // if the searched user is listed in pending requests, then a request from this user is waiting from you
-                                                // console.log(props.pendingfriendrequests[j].username);
+                                let alreadypending = function() {  // Determine if the user is on searched users pending list. Waiting for accept.
+                                    for (var i = 0; i < searcheduser.friends[1].pending.length; i++) {
+                                        if (searcheduser.friends[1].pending[i]) {
+                                            if (searcheduser.friends[1].pending[i].username === props.username) {
+                                                // console.log('Searchuser func: ' + props.username + ' on ' + searcheduser.username + ' pending list!');
                                                 return true;
                                             }
                                         }
                                     }
                                 }
-                            }
-                            
-                            let alreadyfriends = function() { // function to determine if already friends with this searched user
-                                for (var i = 0; i < props.friends.length; i++) {
-                                    if (props.friends[0]) {
-                                        if(props.friends[i].username === searcheduser.username) {
-                                            return true;
-                                        }       
+
+                                let requestwaiting = function() { // Determine if searched user is waiting for user to accept friend request
+                                    for (var i = 0; i < props.searchusers[0].length; i++) { // Iterate through the searched users
+                                        if (props.searchusers[0] && props.pendingfriendrequests) {
+                                            for (let j = 0; j < props.pendingfriendrequests.length; j++) {
+                                                if (props.pendingfriendrequests[j].username === searcheduser.username) { // if the searched user is listed in pending requests, then a request from this user is waiting from you
+                                                    // console.log(props.pendingfriendrequests[j].username);
+                                                    return true;
+                                                }
+                                            }
+                                        }
                                     }
                                 }
-                            }
 
-                            let yourself = function() { // function to determine if searched user is self
-                                if(props.username === searcheduser.username) {
-                                    return true;
+                                let alreadyfriends = function() { // function to determine if already friends with this searched user
+                                    for (var i = 0; i < props.friends.length; i++) {
+                                        if (props.friends[0]) {
+                                            if(props.friends[i].username === searcheduser.username) {
+                                                return true;
+                                            }
+                                        }
+                                    }
                                 }
-                            }
-                            
-                            return ( 
-                                <SearchedUserResults searcheduser={searcheduser.username}
-                                searchtotal={props.searchusers[0].length}
-                                key={childCounter}
-                                index={childCounter++}
-                                sendfriendrequest={props.sendfriendrequest}
-                                acceptfriendrequest={props.acceptfriendrequest}
-                                revokefriendrequest={props.revokefriendrequest}
-                                alreadypending={alreadypending}
-                                requestwaiting={requestwaiting}
-                                alreadyfriends={alreadyfriends}
-                                yourself={yourself}
-                                beginchat={props.beginchat}
-                                />
-                            )
 
-                        })
+                                let yourself = function() { // function to determine if searched user is self
+                                    if(props.username === searcheduser.username) {
+                                        return true;
+                                    }
+                                }
+
+                                return (
+                                    <SearchedUserResults searcheduser={searcheduser.username}
+                                    searchtotal={props.searchusers[0].length}
+                                    key={childCounter}
+                                    index={childCounter++}
+                                    sendfriendrequest={props.sendfriendrequest}
+                                    acceptfriendrequest={props.acceptfriendrequest}
+                                    revokefriendrequest={props.revokefriendrequest}
+                                    alreadypending={alreadypending}
+                                    requestwaiting={requestwaiting}
+                                    alreadyfriends={alreadyfriends}
+                                    yourself={yourself}
+                                    beginchat={props.beginchat}
+                                    />
+                                )
+
+                            })
+                        : <div></div>
                     : <div></div>
                     } 
                 <div className="load-more-users-wrapper"><button className="load-more-users" onClick={setlimit}>load more users</button></div>
@@ -1034,64 +1036,69 @@ function Social(props) {
 
                 {/* Append friends from social bar state (props.friends). For each friend return appropriate object info to build Friends div using Friends(props) function above. */}
                 {
-                    props.friends.length == 0 ? <div className="nofriends">Right now you have no friends :( , but you can add one :) . Use the search bar above to send friend requests or ask friends to add you</div>
-                    :
-                    props.friends.map(function(friend, index) {
-                        return (
-                            <Friend username={props.username}
-                            friend={friend.username}
-                            friendstotal={props.friends.length}
-                            key={childCounter}
-                            index={childCounter++}
-                            conversations={props.conversations}
-                            beginchat={props.beginchat}
-                            revokefriendrequest={props.revokefriendrequest}
-                            friendchatopen={props.friendchatopen}
-                            updatefriendchatopen={props.updatefriendchatopen}
-                            />
-                        )
-                })}
+                    props.friends ?
+                        props.friends.length === 0 ? <div className="nofriends">Right now you have no friends :( , but you can add one :) . Use the search bar above to send friend requests or ask friends to add you</div>
+                        :
+                        props.friends.map(function(friend, index) {
+                            return (
+                                <Friend username={props.username}
+                                friend={friend.username}
+                                friendstotal={props.friends.length}
+                                key={childCounter}
+                                index={childCounter++}
+                                conversations={props.conversations}
+                                beginchat={props.beginchat}
+                                revokefriendrequest={props.revokefriendrequest}
+                                friendchatopen={props.friendchatopen}
+                                updatefriendchatopen={props.updatefriendchatopen}
+                                />
+                            )
+                        })
+                    : <div></div>
+                }
 
             </div>
             <div className="search-nonfriend-border noselect" onClick={e => props.friendsSocialToggle("nonFriend")}><img className="general-icon" src={nonFriendsWhite} alt="friends"></img><div className="nonfriends-header">other conversations</div></div>
             <div className={props.nonfriendsopen ? "nonfriendchatcontainer nonfriendchatcontainer-open" : "nonfriendchatcontainer nonfriendchatcontainer-closed"} refs='nonfriendchatcontainer'>
-                {props.conversations.map(function(conversation, index) {
-                    let person = "";
-                    let conversationOfFriends = function() { // determine if a conversation between friends
-                        for (let i = 0; i < props.friends.length; i++) { // iterate thr each friend
-                            // console.log(conversation.users.length);
-                            if (conversation.users.length == 2) { // valid 2 user chat
-                                for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
-                                    if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
-                                        // console.log(props.friends[i].username, conversation.users[k]);
-                                        return true; // Then this is a friend chat, return true to not show in extra chats
+                {props.conversations ?
+                    props.conversations.map(function(conversation, index) {
+                        let person = "";
+                        let conversationOfFriends = function() { // determine if a conversation between friends
+                            for (let i = 0; i < props.friends.length; i++) { // iterate thr each friend
+                                // console.log(conversation.users.length);
+                                if (conversation.users.length == 2) { // valid 2 user chat
+                                    for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
+                                        if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
+                                            // console.log(props.friends[i].username, conversation.users[k]);
+                                            return true; // Then this is a friend chat, return true to not show in extra chats
+                                        }
                                     }
+                                } else {
+                                    return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
                                 }
-                            } else {
-                                return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
                             }
+                            return false;
                         }
-                        return false;
-                    }
 
-                    if (!conversationOfFriends()) { // if this conversation has a user that is not listed in friends list
-                         return (
-                            <NonFriendConversation username={props.username}
-                             otheruserchatopen={props.otheruserchatopen}
-                             key={childCounter}
-                             index={childCounter++}
-                             conversation={conversation}
-                             updateotheruserchatopen={props.updateotheruserchatopen}
-                             beginchat={props.beginchat}
-                             pendingfriendrequests={props.pendingfriendrequests}
-                             acceptfriendrequest={props.acceptfriendrequest}
-                             revokefriendrequest={props.revokefriendrequest}
-                             fetchusers={props.fetchusers}
-                             searchforminput={props.searchforminput}
-                             />
-                         )
-                    }
-                })}
+                        if (!conversationOfFriends()) { // if this conversation has a user that is not listed in friends list
+                             return (
+                                <NonFriendConversation username={props.username}
+                                 otheruserchatopen={props.otheruserchatopen}
+                                 key={childCounter}
+                                 index={childCounter++}
+                                 conversation={conversation}
+                                 updateotheruserchatopen={props.updateotheruserchatopen}
+                                 beginchat={props.beginchat}
+                                 pendingfriendrequests={props.pendingfriendrequests}
+                                 acceptfriendrequest={props.acceptfriendrequest}
+                                 revokefriendrequest={props.revokefriendrequest}
+                                 fetchusers={props.fetchusers}
+                                 searchforminput={props.searchforminput}
+                                 />
+                             )
+                        }
+                    }) : <div></div>
+                }
             </div>
             <Sidebarfooter username={props.username} />
         </div>
