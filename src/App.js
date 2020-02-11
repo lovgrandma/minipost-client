@@ -457,7 +457,7 @@ class NonFriendConversation extends Component {
                         </div>
                             {
                                 this.props.pendingfriendrequests ? pending() ?
-                                    <div class="request-and-block-container">
+                                    <div className="request-and-block-container">
                                         <div className='searched-user-befriend prevent-open-toggle' onClick={(e) => {this.props.acceptfriendrequest(e, otheruser, true)}}>befriend<img className="searched-user-icon prevent-open-toggle" src={heart} alt="chat"></img></div><div className='searched-user-unfriend prevent-open-toggle' onClick={(e) => {this.props.revokefriendrequest(e, otheruser, false, "nonfriendslist")}}>ignore<img className="searched-user-icon-block prevent-open-toggle" src={close} alt="chat"></img></div>
                                         <div className='search-user-profile prevent-open-toggle'>profile<img className="searched-user-icon prevent-open-toggle" src={profile} alt="profile"></img></div>
                                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e, otheruser)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
@@ -578,7 +578,7 @@ class Friend extends Component {
             this.inputRef = React.createRef();
             this.scrollRef = React.createRef();
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: null }
+                chatlength: 0 }
         }
 
     componentDidMount() {
@@ -587,14 +587,14 @@ class Friend extends Component {
             if (this.props.conversations[i].users.length == 2) {
                 for (let j = 0; j < this.props.conversations[i].users.length; j++) {
                     if (this.props.conversations[i].users[j] === this.props.friend) {
-                        currentchatlength = this.props.conversations[i].log.length;
-                        // console.log(this.props.conversations[i].log.length + this.props.friend);
+                        // currentchatlength = this.props.conversations[i].log.length;
+                        console.log(this.props.conversations[i].log.length, this.props.friend);
                     }
                 }
             }
         }
         
-        if (this.state.chatlength == null) {
+        if (this.state.chatlength < currentchatlength) {
             this.setState({ chatlength: currentchatlength }); // Sets length of chat when it is equal to null at componentDidMount
         }
     }
@@ -606,10 +606,8 @@ class Friend extends Component {
     componentDidUpdate(prevProps, prevState) {
         // On update, scroll chat down to most recent chat if user is not actively scrolling through
         // Will require jquery probably
-
-        let currentchatlength;
-        let cachedchatinput;
         if (prevProps) {
+            let currentchatlength;
             if (prevState.chatinput == false) { // If chat was just closed, scroll chat down now that it is open. Does not fire when chat is already open
                 if (this.state.chatinput == true ) {
                     let getHeight = function() {
@@ -656,6 +654,7 @@ class Friend extends Component {
                 if (this.props.conversations[i].users.length == 2) {
                     for (let j = 0; j < this.props.conversations[i].users.length; j++) {
                         if (this.props.conversations[i].users[j] === this.props.friend) {
+                            console.log(this.props.conversations[i], this.props.friend);
                             currentchatlength = this.props.conversations[i].log.length;
                         }
                     }
@@ -663,10 +662,10 @@ class Friend extends Component {
             }
 
             if (currentchatlength) {
-                if (this.state.chatlength == null) { // Chat length was null, set new
+                if (this.state.chatlength < currentchatlength) { // NEW CHAT, Chat length has been updated. Run scroll anim
+                    // this is not appending the right value to this users chatlength when 0
                     this.setState({ chatlength: currentchatlength });
-                } else if (this.state.chatlength < currentchatlength) { // NEW CHAT, Chat length has been updated. Run scroll anim
-                    this.setState({ chatlength: currentchatlength });
+                    console.log(currentchatlength);
 
                     // This determines if scroll position is near bottom of chat. If scrollheight - scrolltop position - newlog height is less than ... then scroll to bottom for new chat. Value scrollheight - scrolltop usually gets is 362.
                     // This occurs so that when user is near bottom of chat they do not have to scroll down to see new chat. It will automatically update, but if user is NOT near bottom, do not interrupt their reading of previous chat logs by scrolling.
@@ -793,7 +792,7 @@ class Friend extends Component {
                     </div>
                     <div className="friendchat friendchat-container">
                         <div ref={this.scrollRef} id={this.props.friendchatopen === this.props.friend ? 'openfriendchat' : 'closedfriendchat'} className={
-                            !this.state.chatlength ? "friendchat-chat-container friendchat-chat-container-empty" // If length of chat is null
+                            this.state.chatlength == 0 ? "friendchat-chat-container friendchat-chat-container-empty" // If length of chat is 0
                             : !this.props.friend ? "friendchat-chat-container friendchat-chat-container-closed" // If this is not the friend of this loaded component
                             : this.props.friendchatopen == this.props.friend ? "friendchat-chat-container friendchat-chat-container-open"  // If friendchatopen == this current friend
                             : "friendchat-chat-container friendchat-chat-container-closed"
@@ -1061,43 +1060,45 @@ function Social(props) {
             <div className="search-nonfriend-border noselect" onClick={e => props.friendsSocialToggle("nonFriend")}><img className="general-icon" src={nonFriendsWhite} alt="friends"></img><div className="nonfriends-header">other conversations</div></div>
             <div className={props.nonfriendsopen ? "nonfriendchatcontainer nonfriendchatcontainer-open" : "nonfriendchatcontainer nonfriendchatcontainer-closed"} refs='nonfriendchatcontainer'>
                 {props.conversations ?
-                    props.conversations.map(function(conversation, index) {
-                        let person = "";
-                        let conversationOfFriends = function() { // determine if a conversation between friends
-                            for (let i = 0; i < props.friends.length; i++) { // iterate thr each friend
-                                // console.log(conversation.users.length);
-                                if (conversation.users.length == 2) { // valid 2 user chat
-                                    for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
-                                        if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
-                                            // console.log(props.friends[i].username, conversation.users[k]);
-                                            return true; // Then this is a friend chat, return true to not show in extra chats
+                    props.conversations.length > 0 ?
+                        props.conversations.map(function(conversation, index) {
+                            let person = "";
+                            let conversationOfFriends = function() { // determine if a conversation between friends
+                                for (let i = 0; i < props.friends.length; i++) { // iterate thr each friend
+                                    // console.log(conversation.users.length);
+                                    if (conversation.users.length == 2) { // valid 2 user chat
+                                        for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
+                                            if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
+                                                // console.log(props.friends[i].username, conversation.users[k]);
+                                                return true; // Then this is a friend chat, return true to not show in extra chats
+                                            }
                                         }
+                                    } else {
+                                        return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
                                     }
-                                } else {
-                                    return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
                                 }
+                                return false;
                             }
-                            return false;
-                        }
 
-                        if (!conversationOfFriends()) { // if this conversation has a user that is not listed in friends list
-                             return (
-                                <NonFriendConversation username={props.username}
-                                 otheruserchatopen={props.otheruserchatopen}
-                                 key={childCounter}
-                                 index={childCounter++}
-                                 conversation={conversation}
-                                 updateotheruserchatopen={props.updateotheruserchatopen}
-                                 beginchat={props.beginchat}
-                                 pendingfriendrequests={props.pendingfriendrequests}
-                                 acceptfriendrequest={props.acceptfriendrequest}
-                                 revokefriendrequest={props.revokefriendrequest}
-                                 fetchusers={props.fetchusers}
-                                 searchforminput={props.searchforminput}
-                                 />
-                             )
-                        }
-                    }) : <div></div>
+                            if (!conversationOfFriends()) { // if this conversation has a user that is not listed in friends list
+                                 return (
+                                    <NonFriendConversation username={props.username}
+                                     otheruserchatopen={props.otheruserchatopen}
+                                     key={childCounter}
+                                     index={childCounter++}
+                                     conversation={conversation}
+                                     updateotheruserchatopen={props.updateotheruserchatopen}
+                                     beginchat={props.beginchat}
+                                     pendingfriendrequests={props.pendingfriendrequests}
+                                     acceptfriendrequest={props.acceptfriendrequest}
+                                     revokefriendrequest={props.revokefriendrequest}
+                                     fetchusers={props.fetchusers}
+                                     searchforminput={props.searchforminput}
+                                     />
+                                 )
+                            }
+                        }) : <div></div>
+                    :<div></div>
                 }
             </div>
             <Sidebarfooter username={props.username} />
