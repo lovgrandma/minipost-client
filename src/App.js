@@ -116,13 +116,14 @@ function Request(props) {
     )
 }
 
-class SearchedUserResults extends Component {
+class SearchedUserResults extends Component { // Individual searched user
     constructor(props) {
-            super(props);
-            this.state = { removeprompt: false,
-                blockprompt: false,
-                reportprompt: false }
-        }
+        super(props);
+        this.state = { removeprompt: false,
+            blockprompt: false,
+            reportprompt: false,
+            waitingfetch: false }
+    }
 
     promptremovefriend = (e) => {
         this.setState({ removeprompt: true });
@@ -182,71 +183,79 @@ class SearchedUserResults extends Component {
                 </div>
             </div>
             :
-            <div className='searched-user-div'>
-                <div className='searched-user-username-container'>
-                    <img className="searched-user-avatar" src={require("./static/bobby.jpg")}></img>
-                    <div className='searched-user-username'>{this.props.searcheduser}</div>
-                    <div className='search-user-dropdown search-user-dropdown-search'>
-                        <img className="circle-menu-icon" src={circlemenulight} alt="circlemenu"></img>
-                        <div className="dropdown-content dropdown-content-search searchdropdownfix">
-                            <button className='dropdown-content-option'>share profile</button>
-                            <button className='dropdown-content-option'>watch</button>
-                            <div className='dropdown-content-divider'>&nbsp;</div>
-                            {
-                                this.props.alreadyfriends() ? // Redundant unfriend option, also shows in friends component.
-                                        this.state.removeprompt == false ? // Prompt functionality to ask to unfriend
-                                            <button type="button" className='dropdown-content-option' onClick={this.promptremovefriend}>unfriend</button>
-                                            :
-                                            <div className='prompt-spacing prompt-background'>
-                                                <span className='opensans-thin'>Sure you want to unfriend <span className="friendname-small">{this.props.searcheduser}</span>?</span>
-                                                <div className='prompt-yesno-spacing'><span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitremovefriend()}}>Yes</button></span><span><button className ="button-no" type="button" onClick={this.promptexitremovefriend}>No</button></span></div>
-                                            </div>
-                                    :
-                                    <div></div>
-                            }
-                            {
-                                this.state.blockprompt == false ? // Prompt functionality to block
-                                    <button className='dropdown-content-option block-option-dropdown' onClick={this.promptblockuser}>block</button>
-                                    :
-                                    <div className='prompt-spacing prompt-background'>
-                                        <span className='opensans-thin'>Sure you want to block <span className="friendname-small">{this.props.searcheduser}</span>?</span>
-                                        <span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitblockuser()}}>Yes</button></span><span><button className ="button-no" type="button" onClick={this.promptexitblockuser}>No</button></span>
-                                    </div>
-                            }
-                            <button className='dropdown-content-option report-option-dropdown'>report</button>
+            <div class="search-users-relative-div">
+                <div class="spinner-search-holder spinner-search-holder-visible">
+                    <div class="loadingio-spinner-dual-ball loadingio-spinner-dual-ball-m6fvn6j93c"><div class="ldio-oo3b7d4nmnr">
+                    <div></div><div></div><div></div>
+                    </div></div>
+                    <div class="cover-search"></div>
+                </div>
+                <div className='searched-user-div'>
+                    <div className='searched-user-username-container'>
+                        <img className="searched-user-avatar" src={require("./static/bobby.jpg")}></img>
+                        <div className='searched-user-username'>{this.props.searcheduser}</div>
+                        <div className='search-user-dropdown search-user-dropdown-search'>
+                            <img className="circle-menu-icon" src={circlemenulight} alt="circlemenu"></img>
+                            <div className="dropdown-content dropdown-content-search searchdropdownfix">
+                                <button className='dropdown-content-option'>share profile</button>
+                                <button className='dropdown-content-option'>watch</button>
+                                <div className='dropdown-content-divider'>&nbsp;</div>
+                                {
+                                    this.props.alreadyfriends() ? // Redundant unfriend option, default location is in friends component. Shows in both
+                                            this.state.removeprompt == false ? // Prompt functionality to ask to unfriend
+                                                <button type="button" className='dropdown-content-option' onClick={this.promptremovefriend}>unfriend</button>
+                                                :
+                                                <div className='prompt-spacing prompt-background'>
+                                                    <span className='opensans-thin'>Sure you want to unfriend <span className="friendname-small">{this.props.searcheduser}</span>?</span>
+                                                    <div className='prompt-yesno-spacing'><span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitremovefriend()}}>Yes</button></span><span><button className ="button-no" type="button" onClick={this.promptexitremovefriend}>No</button></span></div>
+                                                </div>
+                                        :
+                                        <div></div>
+                                }
+                                {
+                                    this.state.blockprompt == false ? // Prompt functionality to block
+                                        <button className='dropdown-content-option block-option-dropdown' onClick={this.promptblockuser}>block</button>
+                                        :
+                                        <div className='prompt-spacing prompt-background'>
+                                            <span className='opensans-thin'>Sure you want to block <span className="friendname-small">{this.props.searcheduser}</span>?</span>
+                                            <span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitblockuser()}}>Yes</button></span><span><button className ="button-no" type="button" onClick={this.promptexitblockuser}>No</button></span>
+                                        </div>
+                                }
+                                <button className='dropdown-content-option report-option-dropdown'>report</button>
+                            </div>
                         </div>
-                    </div>
 
-                </div>
-                <div className='request-and-block-container'>
-                    <span className='search-user-profile'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
-                    {
-                        this.props.alreadyfriends() ?
-                            <span className='search-profile-bump-container'><span className='search-user-watch'>watch<img className="searched-user-icon" src={play} alt="play"></img></span><span className='search-user-bump'>bump<img className="searched-user-icon" src={pointingfinger} alt="pointingfinger"></img></span></span>
-                            : this.props.requestwaiting() ?
-                                <span className='search-profile-bump-container'>
-                                    <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                    <div className='search-user-accept-friend-request' onClick={(e) => {this.props.acceptfriendrequest(e, this.props.searcheduser, true)}}>accept<img className="searched-user-icon" src={heart} alt="heart"></img></div>
-                                </span>
-                                : this.props.alreadypending() ?
+                    </div>
+                    <div className='request-and-block-container'>
+                        <span className='search-user-profile'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
+                        {
+                            this.props.alreadyfriends() ?
+                                <span className='search-profile-bump-container'><span className='search-user-watch'>watch<img className="searched-user-icon" src={play} alt="play"></img></span><span className='search-user-bump'>bump<img className="searched-user-icon" src={pointingfinger} alt="pointingfinger"></img></span></span>
+                                : this.props.requestwaiting() ?
                                     <span className='search-profile-bump-container'>
                                         <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                        <div className='search-user-pending-friend-request' onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser, true)}}>pending</div>
+                                        <div className='search-user-accept-friend-request' onClick={(e) => {this.props.acceptfriendrequest(e, this.props.searcheduser, true)}}>accept<img className="searched-user-icon" src={heart} alt="heart"></img></div>
                                     </span>
-                                    :
-                                    <span className='search-profile-bump-container'>
-                                        <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                        <div className='searched-user-send-friend-request' onClick={(e) => {this.props.sendfriendrequest(e, this.props.searcheduser)}}>invite<img className="searched-user-icon" src={heart} alt="friend request"></img></div>
-                                    </span>
-                    }
-                    <div className='searched-user-message' onClick={this.openchatinput}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
+                                    : this.props.alreadypending() ?
+                                        <span className='search-profile-bump-container'>
+                                            <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
+                                            <div className='search-user-pending-friend-request' onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser, true)}}>pending</div>
+                                        </span>
+                                        :
+                                        <span className='search-profile-bump-container'>
+                                            <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
+                                            <div className='searched-user-send-friend-request' onClick={(e) => {this.props.sendfriendrequest(e, this.props.searcheduser)}}>invite<img className="searched-user-icon" src={heart} alt="friend request"></img></div>
+                                        </span>
+                        }
+                        <div className='searched-user-message' onClick={this.openchatinput}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
+                    </div>
+                    <form className='search-chat-form search-chat-form-closed' method="PUT" action="/chat" ref={tag => (this.searchChatFormRef = tag)}>
+                        <span>
+                        <TextareaAutosize className='search-textarea-chat-autosize search-textarea-chat-autosize-closed' ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, this.props.searcheduser)}} />
+                        <button className='search-chat-submit' onClick={(e) => {this.props.beginchat(e, this.props.searcheduser, this.inputRef._ref.value), this.resetchat(e)}} type='submit' value='submit' ref={tag => (this.searchChatSubmitRef = tag)}><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                        </span>
+                    </form>
                 </div>
-                <form className='search-chat-form search-chat-form-closed' method="PUT" action="/chat" ref={tag => (this.searchChatFormRef = tag)}>
-                    <span>
-                    <TextareaAutosize className='search-textarea-chat-autosize search-textarea-chat-autosize-closed' ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, this.props.searcheduser)}} />
-                    <button className='search-chat-submit' onClick={(e) => {this.props.beginchat(e, this.props.searcheduser, this.inputRef._ref.value), this.resetchat(e)}} type='submit' value='submit' ref={tag => (this.searchChatSubmitRef = tag)}><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
-                    </span>
-                </form>
             </div>
         )
     }
@@ -671,7 +680,7 @@ class Friend extends Component {
             }
 
             let setStateScrollChat = () => {
-                console.log(this.props.friend, currentchatlength);
+                // console.log(this.props.friend, currentchatlength);
                 if (currentchatlength) {
                     if (this.state.chatlength < currentchatlength) { // NEW CHAT, Chat length has been updated. Run scroll anim
                         // This will only fire when there is a valid current chat length and its value is greater than the recorded state chat length.
@@ -990,7 +999,7 @@ function Social(props) {
                 </form>
             </div>
             <div className='search-users-results-container'>
-                <div> 
+                <div>
                     {
                     props.searchusers ?
                         props.searchusers[0] ?
@@ -1249,7 +1258,6 @@ function Dash(props) {
 class Socialbar extends Component {
     constructor(props) {
         super(props);
-        
         this.state = { isLoggedIn: (cookies.get('loggedIn')), username: cookies.get('loggedIn'),
                       sidebarximgSrc: sidebarcloseimg, sidebarStatus: 'open',
                       friends: [{}], users: {}, conversations: [],
@@ -1578,14 +1586,11 @@ class Socialbar extends Component {
                 })
             })
             .then(function(response) {
-                // You parse the data into a useable format using `.json()`
-                return response.json();
+                return response.json(); // You parse the data into a useable format using `.json()`
             })
             .then(function(data) {
-                // `data` is the parsed version of the JSON returned from the above endpoint.
-                // console.log("data: " + data);  // { "userId": 1, "id": 1, "title": "...", "body": "..." }
-            console.log(data);
-                return data;
+                console.log(data);
+                return data; // `data` is the parsed version of the JSON returned from the above endpoint.
             })
             .catch(error => { console.log(error);
             })
@@ -1601,7 +1606,7 @@ class Socialbar extends Component {
         let thetitleofsomeoneiusedtowanttobecloseto = friend;
         let username = this.state.isLoggedIn;
         let self = this;
-        console.log(pending, refuse);
+        console.log("revokefriendrequest arguments; pending: " + pending + " refuse: " + refuse);
         fetch(currentrooturl + 'users/revokefriendship', {
             method: "POST",
             headers: {
@@ -1634,9 +1639,7 @@ class Socialbar extends Component {
                 self.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
             self = null;
-        })
-        
-        console.log('revoke friendship route');
+        });
     }
         
     getpendingrequests = (show, search, username) => {
@@ -1801,7 +1804,7 @@ class Socialbar extends Component {
         document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
     }
 
-    friendsSocialToggle = (friend) => {
+    friendsSocialToggle = (friend) => { // Minimizes and maximizes components visually
         let query;
         let friendsopen;
         let nonfriendsopen;
@@ -1813,7 +1816,6 @@ class Socialbar extends Component {
             this.state.nonfriendsopen == false ? nonfriendsopen = false : nonfriendsopen = true;
         }
 
-        // Minimizes and maximizes components using javascript
         if (document.getElementsByClassName(query + "chatcontainer")[0]) {
             // Assign element and its height variables.
             let element = document.getElementsByClassName(query + "chatcontainer")[0];
