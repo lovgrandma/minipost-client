@@ -205,12 +205,12 @@ class SearchedUserResults extends Component { // search user component sup1
                 </div>
             </div>
             :
-            <div class="search-users-relative-div">
-                <div ref={this.spinnerRef} class="spinner-search-holder">
-                    <div class="loadingio-spinner-dual-ball loadingio-spinner-dual-ball-m6fvn6j93c"><div class="ldio-oo3b7d4nmnr">
+            <div className="search-users-relative-div">
+                <div ref={this.spinnerRef} className="spinner-search-holder">
+                    <div className="loadingio-spinner-dual-ball loadingio-spinner-dual-ball-m6fvn6j93c"><div className="ldio-oo3b7d4nmnr">
                     <div></div><div></div><div></div>
                     </div></div>
-                    <div class="cover-search"></div>
+                    <div className="cover-search"></div>
                 </div>
                 <div className='searched-user-div'>
                     <div className='searched-user-username-container'>
@@ -240,7 +240,7 @@ class SearchedUserResults extends Component { // search user component sup1
                                         :
                                         <div className='prompt-spacing prompt-background'>
                                             <span className='opensans-thin'>Sure you want to block <span className="friendname-small">{this.props.searcheduser}</span>?</span>
-                                            <span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitblockuser()}}>Yes</button></span><span><button className ="button-no" type="button" onClick={this.promptexitblockuser}>No</button></span>
+                                            <span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitblockuser()}}>Yes</button></span><span><button className="button-no" type="button" onClick={this.promptexitblockuser}>No</button></span>
                                         </div>
                                 }
                                 <button className='dropdown-content-option report-option-dropdown'>report</button>
@@ -414,31 +414,56 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
     searchandbefriend = (e, otheruser) => { // Queries for user and automatically sends invite for friendship.
         document.getElementsByClassName("user-search")[0].value = otheruser; // Set otheruser value to search
         this.props.searchforminput(); // Run searchform css styling functions.
-        let fetchusers = new Promise((resolve, reject) => { // Promise to fetch new users
-            resolve(this.props.fetchusers());
-            document.getElementsByClassName("user-search")[0].scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"});
-        });
-        fetchusers.then((e) => {
-            setTimeout((e) => {
-                if (document.getElementsByClassName("searched-user-div")[0]) {
-                    for (let i = 0; i < document.getElementsByClassName("search-users-results-container")[0].firstElementChild.childElementCount; i++) {
-                        if (document.getElementsByClassName("searched-user-div")[i]) { // if iterated child search user div exists
-                            let element = document.getElementsByClassName("searched-user-div")[i]; // Assign current div to element variable
-                            if (element.getElementsByClassName("searched-user-send-friend-request")[0]) { // If valid DOM elements for invite request
-                                if (element.getElementsByClassName("searched-user-username")[0].innerHTML == otheruser) { // if this user == otheruser
-                                    element.getElementsByClassName("searched-user-send-friend-request")[0]
-                                        .click(); // Make invite request
-                                }
-                            }
+        let userelement;
+        let getuserelement = () => {
+            // Check to ensure that the searched username only matches the name of non friend to invite to be friends
+            if (document.getElementsByClassName("searched-user-div")[0]) {
+                for (let i = 0; i < document.getElementsByClassName("search-users-results-container")[0].firstElementChild.childElementCount; i++) { // For each user in search view
+                    if (document.getElementsByClassName("searched-user-div")[i]) { // if iterated child search user div exists
+                        let userelement = document.getElementsByClassName("searched-user-div")[i]; // Assign current div to element variable
+                        if (userelement.getElementsByClassName("searched-user-username")[0].innerHTML == otheruser) { // if innerhtml of this elements username element == otheruser
+                            return userelement; // confirm appropriate element
+                        } else {
+                            return false;
                         }
                     }
                 }
-            }, 750);
+            }
+        }
+        let fetchusers = new Promise((resolve, reject) => { // Promise to fetch new users
+            resolve(this.props.fetchusers());
+            document.getElementsByClassName("user-search")[0].scrollIntoView({behavior: "smooth", block: "end", inline: "nearest"}); // Scroll up search into view
+        });
+        fetchusers.then((e) => {
+            // Actual functionality to click and invite user to be friends
+            let invReq = function() {
+                let element = getuserelement();
+                if (element) {
+                    if (element.getElementsByClassName("searched-user-send-friend-request")[0]) {
+                        element.getElementsByClassName("searched-user-send-friend-request")[0].click();
+                        //console.log("click!");
+                        return true;
+                    }
+                }
+                return false;
+            }
+
+            let k = 0;
+            let interval = setInterval(function() { // Run send invite method every x seconds until method has ran successfully and sent invite
+                let invDone = invReq();
+                // console.log("interval ran: invite nonfriendcomponent", k += 1);
+                let element = getuserelement();
+                // If invite done or element invite to be friend option doesnt exist or if search user results container is not open
+                if (invDone || (element && !element.getElementsByClassName("search-user-send-friend-request")[0]) || !document.getElementsByClassName("search-users-results-container-opened")[0]) {
+                    clearInterval(interval);
+                    console.log("interval clear: invite nonfriendcomponent");
+                }
+            }, 100);
         })
     }
 
-    // basic functionality, if pending add option to add friend, show if pending, block option, send messages, chat.
     render() {
+        // basic functionality, if pending add option to add friend, show if pending, block option, send messages, chat.
         let otheruser = "";
         for (const [index, user] of this.props.conversation.users.entries()) { // Iterate between users to find out which one is not you, this is the user that is not your friend that this chat belongs to.
             if (user != this.props.username) { otheruser = user; }
@@ -602,7 +627,7 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
 }
 
 // Individual friend
-class Friend extends Component {
+class Friend extends Component { // friend component fc1
     constructor(props) {
             super(props);
             this.inputRef = React.createRef();
@@ -966,7 +991,7 @@ function Social(props) { // social prop sp1
             console.log(props.searchusers[0].length);
             console.log(props.searchusers);
             limit = Math.ceil(props.searchusers[0].length / 10) * 10;
-            props.limitedsearch(props.username, limit+10);
+            props.limitedsearch(props.username, limit+10); // Does limited search for more users in search bar
         }
     }
 
@@ -1509,9 +1534,9 @@ class Socialbar extends Component {
         }
     }
     
-    limitedsearch(username, limit) {
+    limitedsearch(username, limit, requery) { // limit is limited amount of users to return, requery is for if no more users but needs to requery to update state of searched users
         let searchusers = document.getElementById('usersearch').value;
-        if (this.state.searchusers[1].moreusers) {
+        if (this.state.searchusers[1].moreusers || requery) { // if moreusers state is true or requery necessary to update state
             console.log("limitedsearch");
             fetch(currentrooturl + 'users/searchusers', {
                 method: "POST",
@@ -1525,7 +1550,7 @@ class Socialbar extends Component {
                 })
             })
             .then(function(response) {
-                return response.json(); // You parse the data into a useable format using `.json()`
+                return response.json(); // parse the data into a useable format using `.json()`
             })
             .then((data) => {
                 console.log(data);
@@ -1557,8 +1582,7 @@ class Socialbar extends Component {
                     })
                 })
                 .then(function(response) {
-                    // You parse the data into a useable format using `.json()`
-                    return response.json();
+                    return response.json(); // parse the data into a useable format using `.json()`
                 })
                 .then((data) => {
                     console.log(data);
@@ -1616,11 +1640,11 @@ class Socialbar extends Component {
             .catch(error => { console.log(error);
             })
             .then(function(data) {
-                self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length); // re update list
+                self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length, true); // re update list
                 self = null;
             })
 
-        e.preventDefault(console.log(thetitleofsomeonewewanttobecloseto));
+        e.preventDefault();
     }
     
     revokefriendrequest = (e, friend, pending, refuse, block, search) => { // Pending if you're waiting for user to accept. Refuse true if user is refusing request
@@ -1655,7 +1679,7 @@ class Socialbar extends Component {
         })
         .then(function(data) {
             if (pending) {
-                self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length);
+                self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length, true);
             } else if (refuse == "requestslist" || refuse == "nonfriendslist") {
                 self.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
@@ -1800,6 +1824,7 @@ class Socialbar extends Component {
     toggleSideBar = () => {
         if (this.refs.sidebar.classList.contains('sidebar-open')) {
             this.closeSideBar();
+            this.searchformclear();
             if (this.friends) {
                 console.log(this.friends);
             }
