@@ -450,11 +450,11 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
 
             let k = 0;
             let interval = setInterval(function() { // Run send invite method every x seconds until method has ran successfully and sent invite
-                let invDone = invReq();
-                // console.log("interval ran: invite nonfriendcomponent", k += 1);
+                console.log(k+=1);
+                let invDone = invReq(); // Check if invite ran successfully.
                 let element = getuserelement();
                 // If invite done or element invite to be friend option doesnt exist or if search user results container is not open
-                if (invDone || (element && !element.getElementsByClassName("search-user-send-friend-request")[0]) || !document.getElementsByClassName("search-users-results-container-opened")[0]) {
+                if (invDone || (element && (!element.getElementsByClassName("search-user-send-friend-request")[0] || element.getElementsByClassName("spinner-search-holder-visible"))) || !document.getElementsByClassName("search-users-results-container-opened")[0]) {
                     clearInterval(interval);
                     console.log("interval clear: invite nonfriendcomponent");
                 }
