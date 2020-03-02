@@ -116,13 +116,23 @@ function Request(props) {
     )
 }
 
-class SearchedUserResults extends Component { // Individual searched user
+class SearchedUserResults extends Component { // search user component sup1
     constructor(props) {
         super(props);
+        this.searchChatFormRef = React.createRef();
+        this.searchChatSubmitRef = React.createRef();
+        this.inputRef = React.createRef();
+        this.spinnerRef = React.createRef();
         this.state = { removeprompt: false,
             blockprompt: false,
             reportprompt: false,
             waitingfetch: false }
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps != this.props) {
+            this.unsetSpinner();
+        }
     }
 
     promptremovefriend = (e) => {
@@ -165,6 +175,18 @@ class SearchedUserResults extends Component { // Individual searched user
         }
     }
 
+    setSpinner = (e) => {
+        this.spinnerRef.current.classList.add("spinner-search-holder-visible");
+        this.setState({ waitingfetch: true });
+    }
+
+    unsetSpinner = (e) => {
+        if (this.state.waitingfetch == true) {
+            this.setState({ waitingfetch: false });
+            this.spinnerRef.current.classList.remove("spinner-search-holder-visible");
+        }
+    }
+
     resetchat = (e) => {
         this.inputRef._ref.value = ""; // Clear chat message
     }
@@ -184,7 +206,7 @@ class SearchedUserResults extends Component { // Individual searched user
             </div>
             :
             <div class="search-users-relative-div">
-                <div class="spinner-search-holder spinner-search-holder-visible">
+                <div ref={this.spinnerRef} class="spinner-search-holder">
                     <div class="loadingio-spinner-dual-ball loadingio-spinner-dual-ball-m6fvn6j93c"><div class="ldio-oo3b7d4nmnr">
                     <div></div><div></div><div></div>
                     </div></div>
@@ -234,17 +256,17 @@ class SearchedUserResults extends Component { // Individual searched user
                                 : this.props.requestwaiting() ?
                                     <span className='search-profile-bump-container'>
                                         <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                        <div className='search-user-accept-friend-request' onClick={(e) => {this.props.acceptfriendrequest(e, this.props.searcheduser, true)}}>accept<img className="searched-user-icon" src={heart} alt="heart"></img></div>
+                                        <div className='search-user-accept-friend-request' onClick={(e) => {this.props.acceptfriendrequest(e, this.props.searcheduser, true); this.setSpinner();}}>accept<img className="searched-user-icon" src={heart} alt="heart"></img></div>
                                     </span>
                                     : this.props.alreadypending() ?
                                         <span className='search-profile-bump-container'>
                                             <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                            <div className='search-user-pending-friend-request' onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser, true)}}>pending</div>
+                                            <div className='search-user-pending-friend-request' onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser, true); this.setSpinner();}}>pending</div>
                                         </span>
                                         :
                                         <span className='search-profile-bump-container'>
                                             <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                            <div className='searched-user-send-friend-request' onClick={(e) => {this.props.sendfriendrequest(e, this.props.searcheduser)}}>invite<img className="searched-user-icon" src={heart} alt="friend request"></img></div>
+                                            <div className='searched-user-send-friend-request' onClick={(e) => {this.props.sendfriendrequest(e, this.props.searcheduser); this.setSpinner();}}>invite<img className="searched-user-icon" src={heart} alt="friend request"></img></div>
                                         </span>
                         }
                         <div className='searched-user-message' onClick={this.openchatinput}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
@@ -261,8 +283,7 @@ class SearchedUserResults extends Component { // Individual searched user
     }
 }
 
-// Conversation
-class NonFriendConversation extends Component {
+class NonFriendConversation extends Component { // non friend conversation nfc1
     constructor(props) {
         super(props);
         this.inputRef = React.createRef();
@@ -938,10 +959,10 @@ class Friend extends Component {
     }
 }
 
-function Social(props) {
+function Social(props) { // social prop sp1
     let limit;
     let setlimit = (e) => {
-        if (props.searchusers[0]) {
+        if (props.searchusers[0] && props.searchusers[1].moreusers) {
             console.log(props.searchusers[0].length);
             console.log(props.searchusers);
             limit = Math.ceil(props.searchusers[0].length / 10) * 10;
@@ -1065,7 +1086,7 @@ function Social(props) {
                         : <div></div>
                     : <div></div>
                     } 
-                <div className="load-more-users-wrapper"><button className="load-more-users" onClick={setlimit}>load more users</button></div>
+                <div className="load-more-users-wrapper"><button className="load-more-users" onClick={setlimit}>{ props.searchusers ? props.searchusers[1] ? props.searchusers[1].moreusers ? "load more users" : "no more users" : "load more users" : "load more users"}</button></div> {/* Loads more users if more users present */}
                 </div>
             </div>
             <div className="search-friend-border noselect" onClick={e => props.friendsSocialToggle("friend")}><img className="general-icon" src={friendswhite} alt="friends"></img><div className="friends-header">friends</div></div>
@@ -1150,7 +1171,6 @@ function Social(props) {
 // Map conversations with people who are not friends.
 // Map through all conversations. If conversation does not contain a friend then map it to closeable messages area.
 // These chats will have sockets as well but will be hidden and user will not open socket until they open this message area.
-
 
 // Video Dash PAGE
 // Request to Api algorithm to append relevant videos. 
@@ -1490,9 +1510,10 @@ class Socialbar extends Component {
     }
     
     limitedsearch(username, limit) {
-        console.log("limitedsearch");
         let searchusers = document.getElementById('usersearch').value;
-        fetch(currentrooturl + 'users/searchusers', {
+        if (this.state.searchusers[1].moreusers) {
+            console.log("limitedsearch");
+            fetch(currentrooturl + 'users/searchusers', {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
@@ -1504,16 +1525,16 @@ class Socialbar extends Component {
                 })
             })
             .then(function(response) {
-                // You parse the data into a useable format using `.json()`
-                // console.log(JSON.parse(response));
-                return response.json();
+                return response.json(); // You parse the data into a useable format using `.json()`
             })
             .then((data) => {
                 console.log(data);
                 this.setState({ searchusers: data }); // set user data to
             })
-            .catch(error => { console.log(error);
+            .catch(error => {
+                console.log(error);
             })
+        }
     }
 
     searchusers() {
