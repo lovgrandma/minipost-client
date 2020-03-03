@@ -1343,7 +1343,7 @@ class Socialbar extends Component { // Main social entry point sb1
            setInterval(function() {
                // console.log("socket connected? " + socket.connected);
                socket.emit("emit", "emitted something"); // send every x seconds
-           }, 5000);
+           }, 10000);
         });
 
        if (this.state.sidebarStatus === 'open') {
