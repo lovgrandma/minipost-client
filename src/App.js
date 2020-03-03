@@ -1335,12 +1335,14 @@ class Socialbar extends Component { // Main social entry point sb1
         let socket;
         let opensocket = new Promise((resolve, reject) => { // Promise to fetch new users
             socket = socketClient(this.state.endpoint);
+            socket.on("chat", data => console.log(data));
             resolve(socket.on("FromAPI", data => this.setState({ response: data})));
         });
 
        opensocket.then(() => {
            setTimeout(function() {
                console.log("socket connected? " + socket.connected);
+               socket.emit("emitted something");
            }, 1000);
         });
 

@@ -99,13 +99,17 @@ button {
 }
 
 .search-field {
-    padding-left: 10px;
-    width: 470px;
+    padding-left: 6px;
+    width: 480px;
     overflow: hidden;
     margin-left:10px;
     border-radius: 7px 0 0 7px;
     font-size: 15.5px;
     line-height: 1.5;
+}
+
+.search-field:focus {
+    outline: none;
 }
 
 input[type="search"] {
@@ -198,7 +202,7 @@ ul li {
 }
 
 .search {
-    height: 15px; width: 15px;
+    height: 15px; width: 20px;
     color: white;
     margin: 0 10px;
     transition: 200ms;
@@ -211,6 +215,7 @@ ul li {
 }
 
 .searchbox {
+    padding-bottom: 5px;
     margin-right: 10px;
     background-color: #a8a8a8;
     border-style: solid;
@@ -220,6 +225,7 @@ ul li {
 }
 
 .searchbox:hover {
+    cursor: pointer;
     background-color: #797979;
 }
 
@@ -342,7 +348,7 @@ ul li {
 .text-input-wrapper {
     border:1px #959595 solid;
     border-radius: 10px;
-    padding:1px 2px 1px 1px;
+    padding:1px 7px 1px 4px;
     display:inline-block;
     width: 100%;
     border-radius: 7px;
