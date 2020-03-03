@@ -24,10 +24,10 @@ import './videoplayer.css';
 import $ from 'jquery';
 import TextareaAutosize from 'react-textarea-autosize';
 
-
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
-
 import videofeedvar from './videofeedplaceholder';
+
+import socketClient from "socket.io-client";
 
 const cookies = new Cookies();
 
@@ -36,7 +36,6 @@ let productionurl = 'https://www.minireel.org/';
 let currentrooturl =  devurl;
 
 // How a full friend array of objects might look. Array will come from json request from mongodb.
-// Could add 'RecentMSG to show.
 
 //let friends = [
 //    {
@@ -1300,7 +1299,7 @@ function Dash(props) {
 
 // Side Social Bar
 
-class Socialbar extends Component {
+class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {
         super(props);
         this.state = { isLoggedIn: (cookies.get('loggedIn')), username: cookies.get('loggedIn'),
@@ -1310,7 +1309,8 @@ class Socialbar extends Component {
                       showingpendingrequests: "hidden", pendingfriendrequests: null,
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
-                      friendsopen: true, nonfriendsopen: true
+                      friendsopen: true, nonfriendsopen: true,
+                      response: false, endpoint: "http://127.0.0.1:5000"
                      }
         
        // this.getpendingrequests = this.getpendingrequests.bind(this);
@@ -1331,6 +1331,19 @@ class Socialbar extends Component {
     }
     
     componentDidMount(e) {
+        // Socket entry point. Use uuids for rooms, set namespaces for chat general functionality
+        let socket;
+        let opensocket = new Promise((resolve, reject) => { // Promise to fetch new users
+            socket = socketClient(this.state.endpoint);
+            resolve(socket.on("FromAPI", data => this.setState({ response: data})));
+        });
+
+       opensocket.then(() => {
+           setTimeout(function() {
+               console.log("socket connected? " + socket.connected);
+           }, 1000);
+        });
+
        if (this.state.sidebarStatus === 'open') {
            document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
            this.openSideBar();
@@ -1351,16 +1364,6 @@ class Socialbar extends Component {
     
     getFriendConversations() {
         // This will retrieve all chats within "chats" in the user document.
-        // The serverside function will:
-        // 1. Make a query to mongo for the user object.
-        // 2. Loop through each chat in confirmed for the length of confirmed array, make query for each chat under "chats" database
-        // 3. Loop through each chat in pending, push into same conversations object of arrays.
-        // 4. return all conversations in an object of arrays
-
-        // 1. On the client side, for each friend, if chat users is 2 users long & contains a friends name, map each log in conversation into friend message log
-        // 2. If statement, if log author is user then set class to "user-chat-log" else set to "friend-chat-log"
-
-        // 3. All convos that do not have a listed friend in them will be rendered beneath friends group as "other chats"
         let username = this.state.isLoggedIn;
 
         fetch(currentrooturl + 'users/getconversationlogs', {
@@ -1562,7 +1565,7 @@ class Socialbar extends Component {
         }
     }
 
-    searchusers() {
+    searchusers() { // Search method that uses value in user search bar to return 10 searched users
         // debounced fetch users event
         console.log ('searching users');
         if (this.state && this.state.isLoggedIn) {
@@ -1679,7 +1682,11 @@ class Socialbar extends Component {
         })
         .then(function(data) {
             if (pending) {
-                self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length, true);
+                if (self.state.searchusers[0]) {
+                    self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length, true);
+                } else {
+                    self.searchusers();
+                }
             } else if (refuse == "requestslist" || refuse == "nonfriendslist") {
                 self.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
