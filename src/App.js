@@ -28,6 +28,7 @@ import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import videofeedvar from './videofeedplaceholder';
 
 import socketClient from "socket.io-client";
+let socket; // Expose socket to entire application once it is created
 
 const cookies = new Cookies();
 
@@ -638,17 +639,8 @@ class Friend extends Component { // friend component fc1
     componentDidMount() {
         let currentchatlength = 0;
         //console.log(this.props.friend);
-        if (this.props.friend) {
-            for (let i = 0; i < this.props.conversations.length; i++) { // Determines the length of this friend chat and returns chat length
-                if (this.props.conversations[i].users.length == 2) {
-                    for (let j = 0; j < this.props.conversations[i].users.length; j++) {
-                        if (this.props.conversations[i].users[j] === this.props.friend) {
-                            currentchatlength = this.props.conversations[i].log.length;
-                            //console.log(this.props.conversations[i].log.length, this.props.friend);
-                        }
-                    }
-                }
-            }
+        if (this.props.conversation) {
+            currentchatlength = this.props.conversation.log.length;
         }
         
         if (currentchatlength) {
@@ -707,20 +699,8 @@ class Friend extends Component { // friend component fc1
             }
 
             let getChatLength = () => {
-                //console.log(this.props.friend, this.scrollRef.current.hasChildNodes());
-                for (let i = 0; i < this.props.conversations.length; i++) { // Determines the length of this friend chat and returns chat length
-                    if (this.props.conversations[i].users.length == 2) {
-                        for (let j = 0; j < this.props.conversations[i].users.length; j++) {
-                            if (this.props.conversations[i].users[j] === this.props.friend) {
-                                if (this.props.conversations[i].log.length == this.scrollRef.current.childElementCount) {
-                                    currentchatlength = this.props.conversations[i].log.length;
-                                }
-                                //console.log(this.scrollRef.current, this.props.friend);
-                                //console.log(this.props.conversations[i].users[j], this.props.friend, currentchatlength);
-                                return currentchatlength;
-                            }
-                        }
-                    }
+                if (this.props.conversation) {
+                    currentchatlength = this.props.conversation.log.length;
                 }
             }
 
@@ -756,8 +736,7 @@ class Friend extends Component { // friend component fc1
                         }
                     }
                 } else if (!currentchatlength && this.state.chatlength != 0 ) {
-                    // If any chat is accidentally given a chatlength value from another chat, this will return it to 0 if there is an undefined chatlength.
-                    // This will only run once if chatlength is undefined and is not already equal to 0.
+                    // If data curruption or chat wrongly assigned chatlength, this will return it to 0 if there is an undefined chatlength.
                     // This will be useful when a chat conversation is cleared or deleted some how
                     this.setState({ chatlength: 0 });
                 }
@@ -806,9 +785,12 @@ class Friend extends Component { // friend component fc1
     }
 
     openchatinput = (e) => {
-        // console.log(e.target.classList);
-        // If user clicks on bump or profile, do not open chat submit
-        this.props.updatefriendchatopen(e, this.props.friend);
+        // Runs method in social component. If user clicks on bump or profile, do not open chat submit
+        let room;
+        if (this.props.conversation) {
+            room = this.props.conversation._id;
+        }
+        this.props.updatefriendchatopen(e, this.props.friend, room );
         if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
             this.scrollRef.current.scrollBy({
                 top: this.scrollRef.current.scrollHeight,
@@ -884,79 +866,67 @@ class Friend extends Component { // friend component fc1
                             : "friendchat-chat-container friendchat-chat-container-closed"
                         }>
                         {
-                            this.props.conversations[0] ? // Is conversations length greater than 0?
-                                this.props.conversations.map((conv, index) => {
-                                    if (conv.users.length == 2) { // If total users in chat is 2
-                                        for (let j = 0; j < conv.users.length; j++) { // Loop through conversations
-                                            if (conv.users[j] == this.props.friend) { // If username of friend is located in chat users list then return true.
-                                                // console.log(conv);
+                            this.props.conversation ?
+                                this.props.conversation.log.map((log, index) => {
+                                    // console.log(log.author, log.content);
+                                    if (this.props.friendchatopen === this.props.friend) { // if the open chat is this friend, set open classes
+                                        if (log.author == this.props.username) { // if the author is the user logged in
+                                            return (
+                                                <div className='chat-log chat-log-user chat-log-open'>
+                                                    <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                    <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                        <div>{log.content}</div></div>
+                                                </div>
+                                            )
+                                        } else {
+                                            return (
+                                                <div className='chat-log chat-log-other chat-log-open'>
+                                                    <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                    <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                </div>
 
+                                            )
+                                        }
+                                    } else { // if open chat != this friend, set closed classes
+                                        if (log.author == this.props.username) {
+                                            if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    conv.log.map((log, index) => {
-                                                        // console.log(log.author, log.content);
-                                                        if (this.props.friendchatopen === this.props.friend) { // if the open chat is this friend, set open classes
-                                                            if (log.author == this.props.username) { // if the author is the user logged in
-                                                                return (
-                                                                    <div className='chat-log chat-log-user chat-log-open'>
-                                                                        <div className='author-of-chat author-of-chat-user'>{log.author}</div>
-                                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
-                                                                            <div>{log.content}</div></div>
-                                                                    </div>
-                                                                )
-                                                            } else {
-                                                                return (
-                                                                    <div className='chat-log chat-log-other chat-log-open'>
-                                                                        <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                                    </div>
-
-                                                                )
-                                                            }
-                                                        } else { // if open chat != this friend, set closed classes
-                                                            if (log.author == this.props.username) {
-                                                                if (index == conv.log.length-1) {
-                                                                    return (
-                                                                        <div className='chat-log chat-log-user'>
-                                                                            <div className='author-of-chat author-of-chat-user'>{log.author}</div>
-                                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
-                                                                                <div>{log.content}</div></div>
-                                                                        </div>
-                                                                    )
-                                                                } else {
-                                                                    return (
-                                                                        <div className='chat-log chat-log-user chat-log-closed'>
-                                                                            <div className='author-of-chat author-of-chat-user'>{log.author}</div>
-                                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
-                                                                                <div>{log.content}</div></div>
-                                                                        </div>
-                                                                    )
-                                                                }
-                                                            } else {
-                                                                if (index == conv.log.length-1) {
-                                                                    return (
-                                                                        <div className='chat-log chat-log-other'>
-                                                                            <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                                        </div>
-                                                                    )
-                                                                } else {
-                                                                    return (
-                                                                        <div className='chat-log chat-log-other chat-log-closed'>
-                                                                            <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                                        </div>
-                                                                    )
-                                                                }
-                                                            }
-                                                        }
-                                                    })
+                                                    <div className='chat-log chat-log-user'>
+                                                        <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                            <div>{log.content}</div></div>
+                                                    </div>
+                                                )
+                                            } else {
+                                                return (
+                                                    <div className='chat-log chat-log-user chat-log-closed'>
+                                                        <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                            <div>{log.content}</div></div>
+                                                    </div>
+                                                )
+                                            }
+                                        } else {
+                                            if (index == this.props.conversation.log.length-1) {
+                                                return (
+                                                    <div className='chat-log chat-log-other'>
+                                                        <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                    </div>
+                                                )
+                                            } else {
+                                                return (
+                                                    <div className='chat-log chat-log-other chat-log-closed'>
+                                                        <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                    </div>
                                                 )
                                             }
                                         }
                                     }
                                 })
-                                :<div></div>
-                            }
+                               :<div></div>
+                        }
                         </div>
                     </div>
                     <form className={ !this.props.friend ? "friend-chat-form friend-chat-form-closed" // if not friend
@@ -1125,13 +1095,24 @@ function Social(props) { // social prop sp1
                         props.friends.length === 0 ? <div className="nofriends">Right now you have no friends :( , but you can add one :) . Use the search bar above to send friend requests or ask friends to add you</div>
                         :
                         props.friends.map(function(friend, index) {
+                            let convo;
+                            for (let i = 0; i < props.conversations.length; i++) {
+                                if (props.conversations[i].users.length == 2) {
+                                    for (let j = 0; j < props.conversations[i].users.length; j++) {
+                                        if (props.conversations[i].users[j] === friend.username) {
+                                            convo = props.conversations[i];
+                                        }
+                                    }
+                                }
+                            }
+
                             return (
                                 <Friend username={props.username}
                                 friend={friend.username}
                                 friendstotal={props.friends.length}
                                 key={childCounter}
                                 index={childCounter++}
-                                conversations={props.conversations}
+                                conversation = {convo}
                                 beginchat={props.beginchat}
                                 revokefriendrequest={props.revokefriendrequest}
                                 friendchatopen={props.friendchatopen}
@@ -1298,13 +1279,14 @@ function Dash(props) {
 // user.url
 
 // Side Social Bar
+// Socket for chat functionality. Will create method for creating sockets for each friend and appending to array
 
 class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {
         super(props);
         this.state = { isLoggedIn: (cookies.get('loggedIn')), username: cookies.get('loggedIn'),
                       sidebarximgSrc: sidebarcloseimg, sidebarStatus: 'open',
-                      friends: [{}], users: {}, conversations: [],
+                      friends: [{}], users: {}, conversations: [], convoIds: [],
                       searchuserinput: '', searchusers: [],
                       showingpendingrequests: "hidden", pendingfriendrequests: null,
                       friendchatopen: null, otheruserchatopen: null,
@@ -1318,7 +1300,6 @@ class Socialbar extends Component { // Main social entry point sb1
         this.debouncefetchusers = this.debouncefetchusers.bind(this);
         this.limitedsearch = this.limitedsearch.bind(this);
     }
-    
     // function to run when mongodb gets information that state has changed.
     // test if the current state is equal to new object array.
     // then do something.
@@ -1331,20 +1312,6 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     componentDidMount(e) {
-        // Socket entry point. Use uuids for rooms, set namespaces for chat general functionality
-        let socket;
-        let opensocket = new Promise((resolve, reject) => { // Promise to fetch new users
-            socket = socketClient(this.state.endpoint);
-            socket.on("chat", data => console.log(data)); // receive data from socket
-            resolve(socket.on("FromAPI", data => this.setState({ response: data})));
-        });
-
-       opensocket.then(function() {
-           setInterval(function() {
-               // console.log("socket connected? " + socket.connected);
-               socket.emit("emit", "emitted something"); // send every x seconds
-           }, 10000);
-        });
 
        if (this.state.sidebarStatus === 'open') {
            document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
@@ -1357,13 +1324,52 @@ class Socialbar extends Component { // Main social entry point sb1
         if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
             this.getfriends();
             this.getFriendConversations();
+            this.openSocket();
         }
+
+        // Event listeners
+        socket.on("chat", data => console.log(data));
     };
         
     componentDidUpdate(e, prevState, prevProps) {
 
     }
     
+    openSocket() {
+        // Socket entry point. Creates connection with server in order to respond to connections.
+        if (this.state.isLoggedIn && !socket) { // If logged in and socket null
+            let opensocket = new Promise((resolve, reject) => {
+                socket = socketClient(this.state.endpoint);
+                socket.on('connect', () => {
+                    console.log("Socket connected");
+                });
+                resolve(socket.on("FromAPI", data => this.setState({ response: data})));
+            });
+
+            opensocket.then(function() {
+                setInterval(function() {
+                    // console.log("socket connected? " + socket.connected);
+                    socket.emit("emit", "emitted something"); // send every x seconds
+                }, 8000);
+            });
+        }
+    }
+
+    initializeLiveChat() { // Sends request to server to join user to room
+        if (this.state.conversations) {
+            let convos = []; // push all conversation ids to be used as room ids for socket
+            for (let i = 0; i < this.state.conversations.length ; i++) {
+                convos.push(this.state.conversations[i]._id)
+            }
+            socket.emit('joinConvos', convos); // Joins user into convo rooms
+            socket.emit('fetchConvos'); // fetches convo room data from redis
+        }
+    }
+
+    focusLiveChat(room) { // for increased functionality when user has clicked on a chat
+
+    }
+
     getFriendConversations() {
         // This will retrieve all chats within "chats" in the user document.
         let username = this.state.isLoggedIn;
@@ -1388,11 +1394,17 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations
             }
             this.setState({ conversations: data }); // set state for conversations
+            let convoIds = [];
+            for (let i = 0; i < data.length; i++) {
+                convoIds += data[i]._id;
+            }
+            this.setState({ convoIds: convoIds });
             return data;
         })
 
     }
 
+    // Entry point method after login
     fetchlogin = (e) => {
         e.preventDefault();
         let email = document.getElementById('email').value;
@@ -1427,6 +1439,9 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.setState({ loginerror: {error: data.error, type: data.type }});
             }
             return data;
+        })
+        .then((data) => {
+            this.openSocket();
         })
         .catch(error => { console.log(error);
         })
@@ -1468,6 +1483,9 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.setState({ registererror: {error: data.error, type: data.type }});
             }
             return data;
+        })
+        .then((data) => {
+            this.openSocket();
         })
         .catch(error => { console.log(error);
         })
@@ -1526,9 +1544,10 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
     
-    updatefriendchatopen = (e, friend) => {
+    updatefriendchatopen = (e, friend, socketRoom ) => {
+        this.initializeLiveChat();
+        this.focusLiveChat(socketRoom);
         if (!(e.target.classList.contains("prevent-open-toggle")) && !(e.target.parentElement.classList.contains("prevent-open-toggle")) ) {
-            console.log("Open chat");
             this.setState({ friendchatopen: friend });
         }
     }
