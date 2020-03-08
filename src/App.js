@@ -1324,45 +1324,62 @@ class Socialbar extends Component { // Main social entry point sb1
         if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
             this.getfriends();
             this.getFriendConversations();
-            this.openSocket();
         }
-
-        // Event listeners
-        socket.on("chat", data => console.log(data));
     };
         
     componentDidUpdate(e, prevState, prevProps) {
 
     }
     
-    openSocket() {
+    openSocket = async () => {
         // Socket entry point. Creates connection with server in order to respond to connections.
         if (this.state.isLoggedIn && !socket) { // If logged in and socket null
             let opensocket = new Promise((resolve, reject) => {
                 socket = socketClient(this.state.endpoint);
+
+                // Event listeners
                 socket.on('connect', () => {
-                    console.log("Socket connected");
+                    console.log("Connected to socket");
                 });
-                resolve(socket.on("FromAPI", data => this.setState({ response: data})));
+                socket.on("disconnect", () => {
+                    console.log("Disconnected from socket");
+                });
+                socket.on("returnConvos", data => { // Gets conversations from either redis or mongo
+                    console.log("Socket conversations: vvv");
+                    console.log(data);
+                    this.setState({ conversations : data });
+                    if (data.length != this.state.convoIds.length) { // re-initialize chat until length of chat is the same
+                        if (this.state.conversations.length > 0 && data.length == 0) {
+                            setTimeout(() => {
+                                this.initializeLiveChat();
+                            }, 300);
+                        }
+                    }
+                });
+                socket.on("chat", data => console.log(data));
+                resolve();
             });
 
-            opensocket.then(function() {
-                setInterval(function() {
-                    // console.log("socket connected? " + socket.connected);
-                    socket.emit("emit", "emitted something"); // send every x seconds
-                }, 8000);
+            opensocket.then(() => {
+                setTimeout(() => {
+                    this.initializeLiveChat();
+                }, 300);
             });
         }
     }
 
-    initializeLiveChat() { // Sends request to server to join user to room
-        if (this.state.conversations) {
+    initializeLiveChat = () => { // Sends request to server to join user to room
+        if (this.state.conversations && this.state.isLoggedIn) {
             let convos = []; // push all conversation ids to be used as room ids for socket
-            for (let i = 0; i < this.state.conversations.length ; i++) {
-                convos.push(this.state.conversations[i]._id)
+            for (let i = 0; i < this.state.convoIds.length ; i++) {
+                convos.push(this.state.convoIds[i]);
             }
             socket.emit('joinConvos', convos); // Joins user into convo rooms
-            socket.emit('fetchConvos'); // fetches convo room data from redis
+            socket.emit('fetchConvos', this.state.isLoggedIn); // fetches convo room data from redis
+        } else {
+            setTimeout(() => {
+                this.initializeLiveChat();
+            }, 1500);
         }
     }
 
@@ -1395,11 +1412,14 @@ class Socialbar extends Component { // Main social entry point sb1
             }
             this.setState({ conversations: data }); // set state for conversations
             let convoIds = [];
-            for (let i = 0; i < data.length; i++) {
-                convoIds += data[i]._id;
+            for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
+                convoIds.push(data[i]._id);
             }
             this.setState({ convoIds: convoIds });
             return data;
+        })
+        .then(() => {
+            this.openSocket(); // open socket after friend conversations ran
         })
 
     }
@@ -1545,7 +1565,6 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     updatefriendchatopen = (e, friend, socketRoom ) => {
-        this.initializeLiveChat();
         this.focusLiveChat(socketRoom);
         if (!(e.target.classList.contains("prevent-open-toggle")) && !(e.target.parentElement.classList.contains("prevent-open-toggle")) ) {
             this.setState({ friendchatopen: friend });
@@ -1695,6 +1714,7 @@ class Socialbar extends Component { // Main social entry point sb1
             if (data.querystatus) {
                 console.log('bad query');
             } else {
+                // will have to add conversation state update when adding remove conversation functionality
                 this.setState({ friends: data });
             }
             return data;
