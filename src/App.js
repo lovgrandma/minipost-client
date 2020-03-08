@@ -1333,13 +1333,17 @@ class Socialbar extends Component { // Main social entry point sb1
     
     openSocket = async () => {
         // Socket entry point. Creates connection with server in order to respond to connections.
+        // Creates event listeners and updates to initial current data
         if (this.state.isLoggedIn && !socket) { // If logged in and socket null
             let opensocket = new Promise((resolve, reject) => {
                 socket = socketClient(this.state.endpoint);
 
                 // Event listeners
                 socket.on('connect', () => {
-                    console.log("Connected to socket");
+                    console.log("Connected to socket ∞¦∞");
+                    setTimeout(() => {
+                        this.initializeLiveChat();
+                    }, 300);
                 });
                 socket.on("disconnect", () => {
                     console.log("Disconnected from socket");
@@ -1361,21 +1365,15 @@ class Socialbar extends Component { // Main social entry point sb1
             });
 
             opensocket.then(() => {
-                setTimeout(() => {
-                    this.initializeLiveChat();
-                }, 300);
+
             });
         }
     }
 
     initializeLiveChat = () => { // Sends request to server to join user to room
         if (this.state.conversations && this.state.isLoggedIn) {
-            let convos = []; // push all conversation ids to be used as room ids for socket
-            for (let i = 0; i < this.state.convoIds.length ; i++) {
-                convos.push(this.state.convoIds[i]);
-            }
-            socket.emit('joinConvos', convos); // Joins user into convo rooms
-            socket.emit('fetchConvos', this.state.isLoggedIn); // fetches convo room data from redis
+            socket.emit('joinConvos', this.state.convoIds); // Joins user into convo rooms
+            socket.emit('fetchConvos', this.state.isLoggedIn); // fetches convo room data from redis, -> will returnConvos
         } else {
             setTimeout(() => {
                 this.initializeLiveChat();
