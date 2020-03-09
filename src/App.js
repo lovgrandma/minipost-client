@@ -168,7 +168,7 @@ class SearchedUserResults extends Component { // search user component sup1
         if(e.key === 'Enter'){
             e.preventDefault();
             let sendchat = (e) => {
-                this.props.beginchat(e, otheruser, this.inputRef._ref.value), this.resetchat(e);
+                this.props.beginchat(e, otheruser, this.inputRef._ref.value, null, true), this.resetchat(e);
                 this.inputRef._ref.placeholder = "message was sent";
             }
             sendchat(e);
@@ -274,7 +274,7 @@ class SearchedUserResults extends Component { // search user component sup1
                     <form className='search-chat-form search-chat-form-closed' method="PUT" action="/chat" ref={tag => (this.searchChatFormRef = tag)}>
                         <span>
                         <TextareaAutosize className='search-textarea-chat-autosize search-textarea-chat-autosize-closed' ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, this.props.searcheduser)}} />
-                        <button className='search-chat-submit' onClick={(e) => {this.props.beginchat(e, this.props.searcheduser, this.inputRef._ref.value), this.resetchat(e)}} type='submit' value='submit' ref={tag => (this.searchChatSubmitRef = tag)}><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                        <button className='search-chat-submit' onClick={(e) => {this.props.beginchat(e, this.props.searcheduser, this.inputRef._ref.value, null, true), this.resetchat(e)}} type='submit' value='submit' ref={tag => (this.searchChatSubmitRef = tag)}><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
                         </span>
                     </form>
                 </div>
@@ -401,7 +401,7 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
         if(e.key === 'Enter'){
             e.preventDefault();
             let sendchat = (e) => {
-                this.props.beginchat(e, otheruser, this.inputRef._ref.value), this.resetchat(e);
+                this.props.beginchat(e, otheruser, this.inputRef._ref.value, this.props.conversation._id), this.resetchat(e);
             }
             sendchat(e);
         }
@@ -610,7 +610,7 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
                         ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, otheruser)}} />
                         <button className={this.props.otheruserchatopen == otheruser ? "friend-chat-submit friend-chat-submit-open"
                                           : "friend-chat-submit"}
-                        onClick={(e) => {this.props.beginchat(e, otheruser, this.inputRef._ref.value), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                        onClick={(e) => {this.props.beginchat(e, otheruser, this.inputRef._ref.value, this.props.conversation.id), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
                         </span>
                     </form>
                 </div>
@@ -803,7 +803,7 @@ class Friend extends Component { // friend component fc1
         if(e.key === 'Enter'){
             e.preventDefault();
             let sendchat = (e) => {
-                this.props.beginchat(e, this.props.friend, this.inputRef._ref.value), this.resetchat(e);
+                this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation._id), this.resetchat(e);
             }
             sendchat(e);
         }
@@ -941,7 +941,7 @@ class Friend extends Component { // friend component fc1
                         <button className={!this.props.friend ? "friend-chat-submit prevent-open-toggle" // if not friend
                             : this.props.friendchatopen == this.props.friend ? "friend-chat-submit friend-chat-submit-open prevent-open-toggle" // if open chat == friend
                             : "friend-chat-submit prevent-open-toggle"}
-                        onClick={(e) => {this.props.beginchat(e, this.props.friend, this.inputRef._ref.value), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                        onClick={(e) => {this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation._id), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
                         </span>
                     </form>
                 </div>
@@ -1097,10 +1097,12 @@ function Social(props) { // social prop sp1
                         props.friends.map(function(friend, index) {
                             let convo;
                             for (let i = 0; i < props.conversations.length; i++) {
-                                if (props.conversations[i].users.length == 2) {
-                                    for (let j = 0; j < props.conversations[i].users.length; j++) {
-                                        if (props.conversations[i].users[j] === friend.username) {
-                                            convo = props.conversations[i];
+                                if (props.conversations[i].users) {
+                                    if (props.conversations[i].users.length == 2) {
+                                        for (let j = 0; j < props.conversations[i].users.length; j++) {
+                                            if (props.conversations[i].users[j] === friend.username) {
+                                                convo = props.conversations[i];
+                                            }
                                         }
                                     }
                                 }
@@ -1360,7 +1362,11 @@ class Socialbar extends Component { // Main social entry point sb1
                         }
                     }
                 });
-                socket.on("chat", data => console.log(data));
+
+                socket.on("chat", data => {  // on new chat, match id and append
+                    console.log(data);
+                    this.appendChat(data);
+                });
                 resolve();
             });
 
@@ -1370,10 +1376,29 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    appendChat = (data) => {
+        if (this.state.conversations) {
+            for (let i = 0; i < this.state.conversations.length; i++) {
+                if (data.id == this.state.conversations[i]._id) {
+                    delete data.id;
+                    console.log(data.id);
+                    let temp = this.state.conversations;
+                    temp[i].log.push(data);
+                    console.log(temp);
+                    this.setState({ conversations: temp });
+                }
+            }
+        }
+    }
+
     initializeLiveChat = () => { // Sends request to server to join user to room
         if (this.state.conversations && this.state.isLoggedIn) {
-            socket.emit('joinConvos', this.state.convoIds); // Joins user into convo rooms
-            socket.emit('fetchConvos', this.state.isLoggedIn); // fetches convo room data from redis, -> will returnConvos
+            let obj = {
+                "ids": this.state.convoIds,
+                "user": this.state.isLoggedIn
+            }
+            socket.emit('joinConvos', obj); // Joins user into convo rooms
+            // socket.emit('fetchConvos', this.state.isLoggedIn); // fetches convo room data from redis, -> will returnConvos
         } else {
             setTimeout(() => {
                 this.initializeLiveChat();
@@ -1835,33 +1860,43 @@ class Socialbar extends Component { // Main social entry point sb1
         
     }
 
-    beginchat = (e, chatwith, message) => {
+    beginchat = (e, chatwith, message, convoId, fromSearch ) => {
         let username = this.state.isLoggedIn;
-        // if target is undefined, avoid crash.
-        console.log(username, chatwith, message);
-
-        if (message.length > 0) {
-            fetch(currentrooturl + 'users/beginchat', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    username, chatwith, message
+        // All beginchat methods ran from searchbar will run as a fetch request.
+        // Others will update via socket
+        if (socket && !fromSearch) { // If socket is online, use socket to redis first functionality
+            let chatObj = {
+                "user": username,
+                "id": convoId,
+                "message": message,
+                "chatwith": chatwith
+            }
+            console.log(chatObj);
+            socket.emit('sendChat', chatObj);
+        } else { // If socket untrue or fromSearch true, defaults to fetch request
+            if (message.length > 0) {
+                fetch(currentrooturl + 'users/beginchat', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        username, chatwith, message
+                    })
                 })
-            })
-            .then(function(response) {
-                return response.json();
-            })
-            .then((data) => {
-                console.log(data);
-                this.getFriendConversations();
-                return data;
-            })
-            .catch(error => { console.log(error);
-            })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log(data);
+                    this.getFriendConversations();
+                    return data;
+                })
+                .catch(error => { console.log(error);
+                });
+            }
         }
         
         e.preventDefault(console.log('begin new chat'));  
