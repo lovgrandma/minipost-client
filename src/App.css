@@ -930,6 +930,21 @@ label {
     overflow-y: hidden;
 }
 
+.friendchat-chat-container-closed .chat-log .typing-content-of-chat-long {
+    overflow-y: hidden;
+    overflow-x: hidden;
+}
+
+.typing-cell-visible .typing-content-of-chat-long {
+    height: auto !important;
+    width: initial !important;
+    overflow-wrap: break-word !important;
+}
+
+.typing-cell-visible .typing-content-of-chat-long div {
+    width: auto;
+}
+
 .friendchat-chat-container-closed .chat-log-user .content-of-chat:hover,
 .otheruserchat-chat-container-closed .chat-log-user .content-of-chat:hover {
     background-color: #efefef;
@@ -1955,4 +1970,16 @@ If user only has one friend, styling wont apply */
     width: 100%;
     opacity: 0.25;
     z-index: 35;
+}
+
+
+/* typing cell */
+.typing-cell {
+    display: none;
+    opacity: 0;
+}
+
+.typing-cell-visible {
+    display: block;
+    opacity: 1;
 }

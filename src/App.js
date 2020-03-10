@@ -27,7 +27,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import videofeedvar from './videofeedplaceholder';
 
-import socketClient from "socket.io-client";
+import io from "socket.io-client";
 let socket; // Expose socket to entire application once it is created
 
 const cookies = new Cookies();
@@ -633,7 +633,8 @@ class Friend extends Component { // friend component fc1
             this.inputRef = React.createRef();
             this.scrollRef = React.createRef();
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: 0 }
+                chatlength: 0, typing: null, typingother: null }
+            this.handleChange = this.handleChange.bind(this);
         }
 
     componentDidMount() {
@@ -710,9 +711,7 @@ class Friend extends Component { // friend component fc1
                     if (this.state.chatlength < currentchatlength) { // NEW CHAT, Chat length has been updated. Run scroll anim
                         // This will only fire when there is a valid current chat length and its value is greater than the recorded state chat length.
                         if (this.scrollRef.current.hasChildNodes()) { // A check to ensure that this scroll ref has chats belonging to it in the DOM.
-                            if (this.scrollRef.current.childElementCount == currentchatlength) { // Check to ensure childelement count equals currentchatlength value.
-                                this.setState({ chatlength: currentchatlength });
-                            }
+                            this.setState({ chatlength: currentchatlength });
                         }
 
                         // This determines if scroll position is near bottom of chat. If scrollheight - scrolltop position - newlog height is less than ... then scroll to bottom for new chat. Value scrollheight - scrolltop usually gets is 362.
@@ -721,7 +720,9 @@ class Friend extends Component { // friend component fc1
                         // console.log(this.scrollRef.current.scrollHeight, this.scrollRef.current.scrollTop);
                         let newlogheight = 0;
                         if (this.scrollRef) {
-                            newlogheight += this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1].getBoundingClientRect().height;
+                            if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
+                                newlogheight += this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1].getBoundingClientRect().height;
+                            }
                             if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 480) {
                                 if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
                                     if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight) {
@@ -806,6 +807,26 @@ class Friend extends Component { // friend component fc1
                 this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation ? this.props.conversation._id : null); this.resetchat(e);
             }
             sendchat(e);
+            let obj = {
+                "user": this.props.username,
+                "typing": "",
+                "room": this.props.conversation._id
+            }
+            setTimeout(() => {
+                socket.emit('typing', obj);
+            }, 30);
+
+        }
+    }
+
+    handleChange = (e) => {
+        if (this.props.conversation) {
+            let obj = {
+                "user": this.props.username,
+                "typing": this.inputRef._ref.value,
+                "room": this.props.conversation._id
+            }
+            socket.emit('typing', obj);
         }
     }
     
@@ -891,7 +912,7 @@ class Friend extends Component { // friend component fc1
                                         if (log.author == this.props.username) {
                                             if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    <div className='chat-log chat-log-user'>
+                                                    <div className={this.props.typing ? this.props.typing.typing.length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"}>
                                                         <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div></div>
@@ -909,7 +930,7 @@ class Friend extends Component { // friend component fc1
                                         } else {
                                             if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    <div className='chat-log chat-log-other'>
+                                                    <div className={this.props.typing ? this.props.typing.typing.length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"}>
                                                         <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
                                                     </div>
@@ -927,6 +948,10 @@ class Friend extends Component { // friend component fc1
                                 })
                                :<div></div>
                         }
+                        <div className={this.props.typing ? this.props.typing.typing.length > 0 ? "chat-log chat-log-other typing-cell typing-cell-visible" : "chat-log chat-log-other typing-cell typing-cell" : "chat-log chat-log-other typing-cell"}>
+                            <div className='author-of-chat author-of-chat-other'>{ this.props.typing ? this.props.typing.user : null }</div>
+                            <div className={ this.props.typing ? this.props.typing.typing.length < 35 ? 'content-of-chat' : 'content-of-chat typing-content-of-chat-long' : 'content-of-chat' }><div>{this.props.typing ? this.props.typing.typing : null}</div></div>
+                        </div>
                         </div>
                     </div>
                     <form className={ !this.props.friend ? "friend-chat-form friend-chat-form-closed" // if not friend
@@ -937,7 +962,7 @@ class Friend extends Component { // friend component fc1
                         <TextareaAutosize className ={!this.props.friend ? "textarea-chat-autosize textarea-chat-autosize-closed" // if not friend
                             : this.props.friendchatopen == this.props.friend ? "textarea-chat-autosize" // if open chat == this friend
                             : "textarea-chat-autosize textarea-chat-autosize-closed"}
-                        ref={tag => (this.inputRef = tag)} onKeyPress={this.handleKeyPress} />
+                        ref={tag => (this.inputRef = tag)} onKeyPress={this.handleKeyPress} onChange={this.handleChange} />
                         <button className={!this.props.friend ? "friend-chat-submit prevent-open-toggle" // if not friend
                             : this.props.friendchatopen == this.props.friend ? "friend-chat-submit friend-chat-submit-open prevent-open-toggle" // if open chat == friend
                             : "friend-chat-submit prevent-open-toggle"}
@@ -1107,6 +1132,14 @@ function Social(props) { // social prop sp1
                                     }
                                 }
                             }
+                            let typing;
+                            if (convo) {
+                                for (let i = 0; i < props.typing.length; i++) {
+                                    if (props.typing[i].room == convo._id) {
+                                        typing = props.typing[i];
+                                    }
+                                }
+                            }
 
                             return (
                                 <Friend username={props.username}
@@ -1119,6 +1152,7 @@ function Social(props) { // social prop sp1
                                 revokefriendrequest={props.revokefriendrequest}
                                 friendchatopen={props.friendchatopen}
                                 updatefriendchatopen={props.updatefriendchatopen}
+                                typing={typing}
                                 />
                             )
                         })
@@ -1294,7 +1328,8 @@ class Socialbar extends Component { // Main social entry point sb1
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
                       friendsopen: true, nonfriendsopen: true,
-                      response: false, endpoint: "http://127.0.0.1:5000"
+                      response: false, endpoint: "http://127.0.0.1:5000",
+                      typing: []
                      }
         
        // this.getpendingrequests = this.getpendingrequests.bind(this);
@@ -1338,7 +1373,7 @@ class Socialbar extends Component { // Main social entry point sb1
         // Creates event listeners and updates to initial current data
         if (this.state.isLoggedIn && !socket) { // If logged in and socket null
             let opensocket = new Promise((resolve, reject) => {
-                socket = socketClient(this.state.endpoint);
+                socket = io(this.state.endpoint);
 
                 // Event listeners
                 socket.on('connect', () => {
@@ -1363,6 +1398,36 @@ class Socialbar extends Component { // Main social entry point sb1
                     }
                 });
 
+                socket.on("typing", data => {
+                    if (this.state.typing.length > 0) {
+                        //let temp = this.state.typing;
+                        //temp[i].log.push(data);
+                        if (data.user != this.state.isLoggedIn) {
+                            let temp = this.state.typing;
+                            let inArr = false;
+                            for (let i = 0; i < this.state.typing.length; i++) {
+                                if (data.room == this.state.typing[i].room) {
+                                    inArr = true;
+                                    if (this.state.typing[i].typing != data.typing) {
+                                        console.log("point", i);
+                                        temp.splice(i, 1, data);
+                                        this.setState({ typing: temp });
+                                    }
+                                }
+                            }
+                            if (!inArr) {
+                                temp.push(data);
+                                this.setState({ typing: temp });
+                            }
+                        }
+                    } else {
+                        if (data.user != this.state.isLoggedIn) {
+                            let temp = this.state.typing
+                            temp.push(data);
+                            this.setState({ typing: temp });
+                        }
+                    }
+                })
                 socket.on("chat", data => {  // on new chat, match id and append
                     console.log(data);
                     this.appendChat(data);
@@ -1381,7 +1446,6 @@ class Socialbar extends Component { // Main social entry point sb1
             for (let i = 0; i < this.state.conversations.length; i++) {
                 if (data.id == this.state.conversations[i]._id) {
                     delete data.id;
-                    console.log(data.id);
                     let temp = this.state.conversations;
                     temp[i].log.push(data);
                     console.log(temp);
@@ -1874,14 +1938,16 @@ class Socialbar extends Component { // Main social entry point sb1
         // Others will update via socket
         console.log("Socket" + socket, "from search " + fromSearch, "ConvoId " + convoId);
         if (socket && !fromSearch && convoId) { // If socket is online, use socket to redis first functionality
-            let chatObj = {
-                "user": username,
-                "id": convoId,
-                "message": message,
-                "chatwith": chatwith
+            if (message.length > 0) {
+                let chatObj = {
+                    "user": username,
+                    "id": convoId,
+                    "message": message,
+                    "chatwith": chatwith
+                }
+                console.log(chatObj);
+                socket.emit('sendChat', chatObj);
             }
-            console.log(chatObj);
-            socket.emit('sendChat', chatObj);
         } else { // If socket untrue or fromSearch true, defaults to fetch request
             if (message.length > 0) {
                 fetch(currentrooturl + 'users/beginchat', {
@@ -1964,7 +2030,7 @@ class Socialbar extends Component { // Main social entry point sb1
             let element = document.getElementsByClassName(query + "chatcontainer")[0];
             let sectionHeight = element.scrollHeight;
             element.style.transition = "200ms";
-            element.style.height = sectionHeight + "px"; // Set to section height by default
+            element.style.height = sectionHeight-15 + "px"; // Set to section height by default
             // If component is already open, sets to real current height as opposed to 'auto' to animate the transition to 0.
             // Component must default back to auto on open as the component height may change due to children.
 
@@ -2019,7 +2085,8 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!isLoggedIn) {
             sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} registererror={this.state.registererror} />
         } else {
-            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests}fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} />
+            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests}fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen}
+            typing = {this.state.typing} />
         }
             
         return (
