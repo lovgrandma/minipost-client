@@ -1424,7 +1424,6 @@ class Socialbar extends Component { // Main social entry point sb1
                     if (data.room == this.state.typing[i].room) {
                         inArr = true;
                         if (this.state.typing[i].typing != data.typing) {
-                            console.log("point", i);
                             temp.splice(i, 1, data);
                             this.setState({ typing: temp });
                         }
