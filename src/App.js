@@ -1701,6 +1701,10 @@ class Socialbar extends Component { // Main social entry point sb1
             })
             .then(function(data) {
                 console.log(data);
+                if (data == { querystatus: 'already friends' }) {
+                    this.getfriends();
+                    this.getFriendConversations();
+                }
                 return data; // `data` is the parsed version of the JSON returned from the above endpoint.
             })
             .catch(error => { console.log(error);
@@ -1736,6 +1740,10 @@ class Socialbar extends Component { // Main social entry point sb1
             console.log(data);
             if (data.querystatus) {
                 console.log('bad query');
+                if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
+                    this.getfriends();
+                    this.getFriendConversations();
+                }
             } else {
                 // will have to add conversation state update when adding remove conversation functionality
                 this.setState({ friends: data });
