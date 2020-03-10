@@ -1,13 +1,15 @@
-Minireel frontend application.
+Minireel frontend application
 --------------------------------------
-Gitbash - 
-<<<<<<< HEAD
-mongod to begin mongodb client. 
-nodemon from minireel-express folder.   
+Watch film with friends
 =======
-mongod to begin mongodb client.
+1. Run mongod in bash
+2. Run mongo in bash
+3. Run nodemon in express folder bash
+4. Run npm start in react folder bash
+5. Start redis-server in linux
+6. Install and run redisInsight (Helpful as client GUI)
 
-nodemon from minireel-express folder.
+websocket proxies sometimes dont work on firefox
 
 >>>>>>> origin/master
 npm start from minireel-react folder to begin.

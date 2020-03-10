@@ -610,7 +610,7 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
                         ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, otheruser)}} />
                         <button className={this.props.otheruserchatopen == otheruser ? "friend-chat-submit friend-chat-submit-open"
                                           : "friend-chat-submit"}
-                        onClick={(e) => {this.props.beginchat(e, otheruser, this.inputRef._ref.value, this.props.conversation.id), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                        onClick={(e) => {this.props.beginchat(e, otheruser, this.inputRef._ref.value, this.props.conversation._id), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
                         </span>
                     </form>
                 </div>
@@ -803,7 +803,7 @@ class Friend extends Component { // friend component fc1
         if(e.key === 'Enter'){
             e.preventDefault();
             let sendchat = (e) => {
-                this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation._id), this.resetchat(e);
+                this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation ? this.props.conversation._id : null); this.resetchat(e);
             }
             sendchat(e);
         }
@@ -941,7 +941,7 @@ class Friend extends Component { // friend component fc1
                         <button className={!this.props.friend ? "friend-chat-submit prevent-open-toggle" // if not friend
                             : this.props.friendchatopen == this.props.friend ? "friend-chat-submit friend-chat-submit-open prevent-open-toggle" // if open chat == friend
                             : "friend-chat-submit prevent-open-toggle"}
-                        onClick={(e) => {this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation._id), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                        onClick={(e) => {this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation ? this.props.conversation._id : null), this.resetchat(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
                         </span>
                     </form>
                 </div>
@@ -1864,7 +1864,8 @@ class Socialbar extends Component { // Main social entry point sb1
         let username = this.state.isLoggedIn;
         // All beginchat methods ran from searchbar will run as a fetch request.
         // Others will update via socket
-        if (socket && !fromSearch) { // If socket is online, use socket to redis first functionality
+        console.log("Socket" + socket, "from search " + fromSearch, "ConvoId " + convoId);
+        if (socket && !fromSearch && convoId) { // If socket is online, use socket to redis first functionality
             let chatObj = {
                 "user": username,
                 "id": convoId,
@@ -1894,8 +1895,15 @@ class Socialbar extends Component { // Main social entry point sb1
                     this.getFriendConversations();
                     return data;
                 })
+                .then((data) => {
+                    let obj = {
+                        "ids": this.state.convoIds,
+                        "user": this.state.isLoggedIn
+                    }
+                    socket.emit('joinConvos', obj);
+                })
                 .catch(error => { console.log(error);
-                });
+                })
             }
         }
         
