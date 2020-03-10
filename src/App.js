@@ -812,9 +812,9 @@ class Friend extends Component { // friend component fc1
                 "typing": "",
                 "room": this.props.conversation._id
             }
-            setTimeout(() => {
-                socket.emit('typing', obj);
-            }, 30);
+//            setTimeout(() => {
+//                socket.emit('typing', obj);
+//            }, 30);
 
         }
     }
@@ -1399,35 +1399,9 @@ class Socialbar extends Component { // Main social entry point sb1
                 });
 
                 socket.on("typing", data => {
-                    if (this.state.typing.length > 0) {
-                        //let temp = this.state.typing;
-                        //temp[i].log.push(data);
-                        if (data.user != this.state.isLoggedIn) {
-                            let temp = this.state.typing;
-                            let inArr = false;
-                            for (let i = 0; i < this.state.typing.length; i++) {
-                                if (data.room == this.state.typing[i].room) {
-                                    inArr = true;
-                                    if (this.state.typing[i].typing != data.typing) {
-                                        console.log("point", i);
-                                        temp.splice(i, 1, data);
-                                        this.setState({ typing: temp });
-                                    }
-                                }
-                            }
-                            if (!inArr) {
-                                temp.push(data);
-                                this.setState({ typing: temp });
-                            }
-                        }
-                    } else {
-                        if (data.user != this.state.isLoggedIn) {
-                            let temp = this.state.typing
-                            temp.push(data);
-                            this.setState({ typing: temp });
-                        }
-                    }
+                    this.setTyping(data);
                 })
+
                 socket.on("chat", data => {  // on new chat, match id and append
                     console.log(data);
                     this.appendChat(data);
@@ -1441,6 +1415,35 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    setTyping = (data) => {
+        if (this.state.typing.length > 0) {
+            if (data.user != this.state.isLoggedIn) {
+                let temp = this.state.typing;
+                let inArr = false;
+                for (let i = 0; i < this.state.typing.length; i++) {
+                    if (data.room == this.state.typing[i].room) {
+                        inArr = true;
+                        if (this.state.typing[i].typing != data.typing) {
+                            console.log("point", i);
+                            temp.splice(i, 1, data);
+                            this.setState({ typing: temp });
+                        }
+                    }
+                }
+                if (!inArr) {
+                    temp.push(data);
+                    this.setState({ typing: temp });
+                }
+            }
+        } else {
+            if (data.user != this.state.isLoggedIn) {
+                let temp = this.state.typing
+                temp.push(data);
+                this.setState({ typing: temp });
+            }
+        }
+    }
+
     appendChat = (data) => {
         if (this.state.conversations) {
             for (let i = 0; i < this.state.conversations.length; i++) {
@@ -1449,6 +1452,14 @@ class Socialbar extends Component { // Main social entry point sb1
                     let temp = this.state.conversations;
                     temp[i].log.push(data);
                     console.log(temp);
+                    if (data.author != this.state.isLoggedIn) {
+                        let typingData = {
+                            "user": data.author,
+                            "typing": "",
+                            "room": this.state.conversations[i]._id
+                        }
+                        this.setTyping(typingData);
+                    }
                     this.setState({ conversations: temp });
                 }
             }
