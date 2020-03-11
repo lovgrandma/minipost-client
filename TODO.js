@@ -51,3 +51,15 @@ componentDidMount() {
             this.setState({ chatlength: currentchatlength }); // Sets length of chat when it is equal to null at componentDidMount
         }
     }
+
+
+// Was used for a scrolling function on early component load
+// if (this.scrollRef.current.scrollHeight <= 30) { // Fixes chat that doesnt scroll down on new "typing" new load
+//                        console.log("window just loaded early scroll");
+//                        if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
+//                            document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
+//                                top: 1000000000,
+//                                behavior: "smooth"
+//                            });
+//                        }
+//                    }

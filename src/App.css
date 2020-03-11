@@ -1979,6 +1979,10 @@ If user only has one friend, styling wont apply */
     opacity: 0;
 }
 
+.typing-cell .content-of-chat div {
+    background-color: rgba(97, 183, 229, 0.84) !important;
+}
+
 .typing-cell-visible {
     display: block;
     opacity: 1;
