@@ -893,12 +893,14 @@ class Friend extends Component { // friend component fc1
 
     handleChange = (e) => {
         if (this.props.conversation) {
-            let obj = {
-                "user": this.props.username,
-                "typing": this.inputRef._ref.value,
-                "room": this.props.conversation._id
+            if ((this.inputRef._ref.value.length)%10 == 0 || this.inputRef._ref.value.length == 0 || this.inputRef._ref.value.length == 1) { // Run emit typing method every 10th interval, at 0 and 1. Saves server cost. Run typed.js to simulate typing inbetween
+                let obj = {
+                    "user": this.props.username,
+                    "typing": this.inputRef._ref.value,
+                    "room": this.props.conversation._id
+                }
+                socket.emit('typing', obj);
             }
-            socket.emit('typing', obj);
         }
     }
     
