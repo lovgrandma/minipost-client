@@ -1569,14 +1569,13 @@ label {
 
 .searched-user-icon {
     margin-left: 2px;
-    padding-bottom: 2px;
     width: 9.5px;
     height: 9.5px;
 }
 
 .general-icon {
     margin: 0 4px;
-    padding-bottom: 2px;
+    padding-bottom: 1px;
     width: 11.5px;
     height: 11.5px;
 }
@@ -1980,7 +1979,7 @@ If user only has one friend, styling wont apply */
 }
 
 .typing-cell .content-of-chat div {
-    background-color: rgba(97, 183, 229, 0.84) !important;
+    background-color: #85c0eb !important;
 }
 
 .typing-cell-visible {
@@ -1988,8 +1987,20 @@ If user only has one friend, styling wont apply */
     opacity: 1;
 }
 
-.friendchat-chat-container-closed .typing-cell {
+.friendchat-chat-container-closed .typing-cell,
+.friendchat-chat-container-closed .typing-cell .content-of-chat {
     height: 14px !important;
-    margin-bottom: 2.5px;
     overflow-y: hidden;
+    background-color: #85c0eb !important;
+}
+
+.typing-cell-visible {
+    border-radius: 5px;
+}
+.friendchat-chat-container-closed .typing-cell {
+    margin-bottom: 2.8px !important;
+}
+
+.friendchat-chat-container-closed .typing-cell .content-of-chat div {
+    width: 100% !important;
 }

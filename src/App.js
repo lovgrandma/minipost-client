@@ -637,7 +637,7 @@ class Friend extends Component { // friend component fc1
             this.scrollRef = React.createRef();
             this.typingRef = React.createRef();
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: 0, typingOld: null, typingAnim: null }
+                chatlength: 0, typingOld: null }
             this.handleChange = this.handleChange.bind(this);
         }
 
@@ -824,34 +824,6 @@ class Friend extends Component { // friend component fc1
                 changeChatLengthState.then((e) => {
                     setStateScrollChat();
                 })
-            }
-
-            // Method for running animation of adding and deleting characters in strings
-            // Must use this as an alternative to sending characters every single change as that uses up too much data
-            if (this.props.typing != prevProps.typing) {
-                this.setState({ typingOld: prevProps.typing });
-                let oldTyping;
-                let newTyping;
-                this.setState({ typingAnim: this.props.typing });
-                let typingAnimation = () => {
-                    if (this.state.typingOld) {
-                        oldTyping = this.state.typingOld.match(typingRegex)[2];
-                    }
-                    newTyping = this.props.typing.match(typingRegex)[2];
-                    if (oldTyping) {
-                        if (newTyping.length > oldTyping.length) {
-                            // append ltr and replace ltr
-                            // check each for match, if bad match remove?
-                        } else if (newTyping.length < oldTyping.length) {
-                            // delete rtl and replace rtl
-                        } else if (newTyping.length == oldTyping.length) {
-
-                        }
-                    }
-                    console.log(oldTyping);
-                    console.log(newTyping);
-                }
-                typingAnimation();
             }
         }
         
