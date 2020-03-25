@@ -22,6 +22,7 @@ import {
 } from 'react-bootstrap';
 import './videoplayer.css';
 import $ from 'jquery';
+import lzw from './compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
 
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
@@ -35,6 +36,8 @@ const cookies = new Cookies();
 let devurl = 'http://localhost:3000/';
 let productionurl = 'https://www.minireel.org/';
 let currentrooturl =  devurl;
+
+const typingRegex = /([a-z0-9.]*);(.*);(.*)/; // regular expression for reading 'typing' emits
 
 // How a full friend array of objects might look. Array will come from json request from mongodb.
 
@@ -634,7 +637,7 @@ class Friend extends Component { // friend component fc1
             this.scrollRef = React.createRef();
             this.typingRef = React.createRef();
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: 0, typing: null, typingother: null }
+                chatlength: 0, typingOld: null, typingAnim: null }
             this.handleChange = this.handleChange.bind(this);
         }
 
@@ -719,15 +722,15 @@ class Friend extends Component { // friend component fc1
                         }
 
                         let scrollHeight = this.scrollRef.current.scrollHeight;
-                        console.log("current scroll top: " + this.scrollRef.current.scrollTop);
+                        // console.log("current scroll top: " + this.scrollRef.current.scrollTop);
                         if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                            console.log("current scroll height: " + document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight);
+                            // console.log("current scroll height: " + document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight);
                         }
                         if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.20 ||
                             (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 362) {
-                            console.log("Scroll height: " + scrollHeight);
-                            console.log("new log height: " + newlogheight);
-                            console.log((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) + " less than? " + scrollHeight*0.07 + " or 362");
+                            // console.log("Scroll height: " + scrollHeight);
+                            // console.log("new log height: " + newlogheight);
+                            // console.log((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) + " less than? " + scrollHeight*0.07 + " or 362");
                             if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
                                 if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight) {
                                     console.log("detectNearBottom() method running");
@@ -741,7 +744,7 @@ class Friend extends Component { // friend component fc1
                         }
                         if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
                             if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight <= 1500) {
-                                console.log("If height less than 1500 scroll" + document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight);
+                                // console.log("If height less than 1500 scroll" + document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight);
                                 this.scrollRef.current.scrollBy({
                                     top: 1000,
                                     behavior: "smooth"
@@ -765,14 +768,14 @@ class Friend extends Component { // friend component fc1
                                 }
                             }
                         }
-                        console.log("Scroll height: " + this.scrollRef.current.scrollHeight);
-                        console.log("Scroll top: " + this.scrollRef.current.scrollTop);
-                        console.log(this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight + " less than? vv");
-                        console.log(scrollHeight*0.05 + " or 363");
+                        // console.log("Scroll height: " + this.scrollRef.current.scrollHeight);
+                        // console.log("Scroll top: " + this.scrollRef.current.scrollTop);
+                        // console.log(this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight + " less than? vv");
+                        // console.log(scrollHeight*0.05 + " or 363");
                         if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.05 ||
                             (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 363) {
                             if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                                console.log("detectVeryCloseBottom() method running");
+                                // console.log("detectVeryCloseBottom() method running");
                                 document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
                                     top: 10000000000,
                                     behavior: "smooth"
@@ -786,12 +789,12 @@ class Friend extends Component { // friend component fc1
 
             let setStateScrollChat = () => {
                 if (this.props.typing) {
-                    if (!prevProps.typing && this.props.typing.typing.length > 0) {
+                    if (!prevProps.typing && this.props.typing.match(typingRegex)[2].length > 0) {
                         detectNearBottom();
                     }
                 }
                 if (prevProps.typing && this.props.typing) {
-                    if(prevProps.typing.typing.length == 0 && this.props.typing.typing.length > 0) {
+                    if(prevProps.typing.match(typingRegex)[2].length == 0 && this.props.typing.match(typingRegex)[2].length > 0) {
                         detectNearBottom();
                     }
                 }
@@ -821,6 +824,34 @@ class Friend extends Component { // friend component fc1
                 changeChatLengthState.then((e) => {
                     setStateScrollChat();
                 })
+            }
+
+            // Method for running animation of adding and deleting characters in strings
+            // Must use this as an alternative to sending characters every single change as that uses up too much data
+            if (this.props.typing != prevProps.typing) {
+                this.setState({ typingOld: prevProps.typing });
+                let oldTyping;
+                let newTyping;
+                this.setState({ typingAnim: this.props.typing });
+                let typingAnimation = () => {
+                    if (this.state.typingOld) {
+                        oldTyping = this.state.typingOld.match(typingRegex)[2];
+                    }
+                    newTyping = this.props.typing.match(typingRegex)[2];
+                    if (oldTyping) {
+                        if (newTyping.length > oldTyping.length) {
+                            // append ltr and replace ltr
+                            // check each for match, if bad match remove?
+                        } else if (newTyping.length < oldTyping.length) {
+                            // delete rtl and replace rtl
+                        } else if (newTyping.length == oldTyping.length) {
+
+                        }
+                    }
+                    console.log(oldTyping);
+                    console.log(newTyping);
+                }
+                typingAnimation();
             }
         }
         
@@ -879,13 +910,10 @@ class Friend extends Component { // friend component fc1
             sendchat(e);
 
             let roomId = this.props.conversation ? this.props.conversation._id : null;
-            let obj = {
-                "user": this.props.username,
-                "typing": "",
-                "room": roomId
-            }
+            let leanString = this.props.username + ";" + "" + ";" + roomId;
+            let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
             setTimeout(() => {
-                socket.emit('typing', obj);
+                socket.emit('typing', ba);
             }, 30);
 
         }
@@ -893,14 +921,13 @@ class Friend extends Component { // friend component fc1
 
     handleChange = (e) => {
         if (this.props.conversation) {
-            if ((this.inputRef._ref.value.length)%10 == 0 || this.inputRef._ref.value.length == 0 || this.inputRef._ref.value.length == 1) { // Run emit typing method every 10th interval, at 0 and 1. Saves server cost. Run typed.js to simulate typing inbetween
-                let obj = {
-                    "user": this.props.username,
-                    "typing": this.inputRef._ref.value,
-                    "room": this.props.conversation._id
-                }
-                socket.emit('typing', obj);
-            }
+            // if ((this.inputRef._ref.value.length)%3 == 0 || this.inputRef._ref.value.length == 0 || this.inputRef._ref.value.length == 1) { // Run emit typing method every 10th interval, at 0 and 1. Saves server cost. Run typed.js to simulate typing inbetween
+                // Emits that the user is typing and sends event to socket
+                // String goes user;typing;roomuuid
+                let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
+                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                socket.emit('typing', ba);
+            // }
         }
     }
     
@@ -986,7 +1013,7 @@ class Friend extends Component { // friend component fc1
                                         if (log.author == this.props.username) {
                                             if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    <div className={this.props.typing ? this.props.typing.typing.length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"}>
+                                                    <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"}>
                                                         <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div></div>
@@ -1004,7 +1031,7 @@ class Friend extends Component { // friend component fc1
                                         } else {
                                             if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    <div className={this.props.typing ? this.props.typing.typing.length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"}>
+                                                    <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"}>
                                                         <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
                                                     </div>
@@ -1022,10 +1049,10 @@ class Friend extends Component { // friend component fc1
                                 })
                                :<div></div>
                         }
-                        <div className={this.props.typing ? this.props.typing.typing.length > 0 ? "chat-log chat-log-other typing-cell typing-cell-visible" : "chat-log chat-log-other typing-cell typing-cell" : "chat-log chat-log-other typing-cell"}
+                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-other typing-cell typing-cell-visible" : "chat-log chat-log-other typing-cell typing-cell" : "chat-log chat-log-other typing-cell"}
                         ref={tag => (this.typingRef = tag)}>
-                            <div className='author-of-chat author-of-chat-other'>{ this.props.typing ? this.props.typing.user : null }</div>
-                            <div className={ this.props.typing ? this.props.typing.typing.length < 35 ? 'content-of-chat' : 'content-of-chat typing-content-of-chat-long' : 'content-of-chat' }><div>{this.props.typing ? this.props.typing.typing : null}</div></div>
+                            <div className='author-of-chat author-of-chat-other'>{ this.props.typing ? this.props.typing.match(typingRegex)[1] : null }</div>
+                            <div className={ this.props.typing ? this.props.typing.match(typingRegex)[2].length < 35 ? 'content-of-chat' : 'content-of-chat typing-content-of-chat-long' : 'content-of-chat' }><div>{this.props.typing ? this.props.typing.match(typingRegex)[2] : null}</div></div>
                         </div>
                         </div>
                     </div>
@@ -1210,7 +1237,7 @@ function Social(props) { // social prop sp1
                             let typing;
                             if (convo) {
                                 for (let i = 0; i < props.typing.length; i++) {
-                                    if (props.typing[i].room == convo._id) {
+                                    if (props.typing[i].match(typingRegex)[3] == convo._id) {
                                         typing = props.typing[i];
                                     }
                                 }
@@ -1473,12 +1500,15 @@ class Socialbar extends Component { // Main social entry point sb1
                     }
                 });
 
-                socket.on("typing", data => {
+                socket.on('typing', data => {
+                    console.log("compressed byte size: " + data.length);
+                    data = lzw.decompress(data); // decompress data before processing
+                    console.log("decompressed byte size: " + data.length);
                     this.setTyping(data);
                 })
 
-                socket.on("chat", data => {  // on new chat, match id and append
-                    console.log(data);
+                socket.on('chat', data => {  // on new chat, match id and append
+                    // console.log(data); // log new chat data
                     this.appendChat(data);
                 });
                 resolve();
@@ -1491,27 +1521,33 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     setTyping = (data) => {
-        if (this.state.typing.length > 0) {
-            if (data.user != this.state.isLoggedIn) {
+        // let typeData = data.match(typingRegex);
+        console.log(data);
+        let user = data.match(typingRegex)[1]; // user
+        let content = data.match(typingRegex)[2]; // content
+        // console.log(data.match(typingRegex));
+        let room = data.match(typingRegex)[3]; // room
+        if (this.state.typing.length > 0) { // if typing state array has more than 1 room in it
+            if (user != this.state.isLoggedIn) {
                 let temp = this.state.typing;
                 let inArr = false;
-                for (let i = 0; i < this.state.typing.length; i++) {
-                    if (data.room == this.state.typing[i].room) {
+                for (let i = 0; i < this.state.typing.length; i++) { // iterate through typing state array. Includes typing data of all conversations
+                    if (room == this.state.typing[i].match(typingRegex)[3]) {
                         inArr = true;
-                        if (this.state.typing[i].typing != data.typing) {
-                            temp.splice(i, 1, data);
+                        if (this.state.typing[i].match(typingRegex)[2] != content) {
+                            temp.splice(i, 1, data); // replace typing data with new one
                             this.setState({ typing: temp });
                         }
                     }
                 }
-                if (!inArr) {
+                if (!inArr) { // if this chat is not present in typing state array, simply just add it.
                     temp.push(data);
                     this.setState({ typing: temp });
                 }
             }
         } else {
-            if (data.user != this.state.isLoggedIn) {
-                let temp = this.state.typing
+            if (user != this.state.isLoggedIn) { // if the typing data being added != user signed in, it is from someone else. Show the user what they are typing
+                let temp = this.state.typing;
                 temp.push(data);
                 this.setState({ typing: temp });
             }
@@ -1525,14 +1561,10 @@ class Socialbar extends Component { // Main social entry point sb1
                     delete data.id;
                     let temp = this.state.conversations;
                     temp[i].log.push(data);
-                    console.log(temp);
+                    // console.log(temp); // logs all current conversations
                     if (data.author != this.state.isLoggedIn) {
-                        let typingData = {
-                            "user": data.author,
-                            "typing": "",
-                            "room": this.state.conversations[i]._id
-                        }
-                        this.setTyping(typingData);
+                        let leanString = data.author + ";" + "" + ";" + this.state.conversations[i]._id; // reset typing data
+                        this.setTyping(leanString);
                     }
                     this.setState({ conversations: temp });
                 }

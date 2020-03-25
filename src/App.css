@@ -1987,3 +1987,9 @@ If user only has one friend, styling wont apply */
     display: block;
     opacity: 1;
 }
+
+.friendchat-chat-container-closed .typing-cell {
+    height: 14px !important;
+    margin-bottom: 2.5px;
+    overflow-y: hidden;
+}
