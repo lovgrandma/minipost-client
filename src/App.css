@@ -926,7 +926,7 @@ label {
 
 .friendchat-chat-container-closed .chat-log .content-of-chat-long,
 .otheruserchat-chat-container-closed .chat-log .content-of-chat-long {
-    height: 15px;
+    height: 14px;
     overflow-y: hidden;
 }
 
@@ -1973,6 +1973,8 @@ If user only has one friend, styling wont apply */
 
 
 /* typing cell */
+/* Very specific changes made to ensure elements dont jitter around when typing cell is updated */
+
 .typing-cell {
     display: none;
     opacity: 0;
@@ -1994,11 +1996,17 @@ If user only has one friend, styling wont apply */
     background-color: #85c0eb !important;
 }
 
+.friendchat-chat-container-closed .typing-cell {
+    margin-bottom: 2.5px;
+}
+
+.friendchat-chat-container-closed .chat-log-other:nth-last-child(2) .content-of-chat-long,
+.friendchat-chat-container-closed .chat-log-user:nth-last-child(2) .content-of-chat-long {
+    margin-bottom: 2.5px !important;
+}
+
 .typing-cell-visible {
     border-radius: 5px;
-}
-.friendchat-chat-container-closed .typing-cell {
-    margin-bottom: 2.8px !important;
 }
 
 .friendchat-chat-container-closed .typing-cell .content-of-chat div {

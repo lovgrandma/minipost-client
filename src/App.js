@@ -37,7 +37,7 @@ let devurl = 'http://localhost:3000/';
 let productionurl = 'https://www.minireel.org/';
 let currentrooturl =  devurl;
 
-const typingRegex = /([a-z0-9.]*);(.*);(.*)/; // regular expression for reading 'typing' emits
+const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 
 // How a full friend array of objects might look. Array will come from json request from mongodb.
 
@@ -893,13 +893,9 @@ class Friend extends Component { // friend component fc1
 
     handleChange = (e) => {
         if (this.props.conversation) {
-            // if ((this.inputRef._ref.value.length)%3 == 0 || this.inputRef._ref.value.length == 0 || this.inputRef._ref.value.length == 1) { // Run emit typing method every 10th interval, at 0 and 1. Saves server cost. Run typed.js to simulate typing inbetween
-                // Emits that the user is typing and sends event to socket
-                // String goes user;typing;roomuuid
-                let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
-                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
-                socket.emit('typing', ba);
-            // }
+            let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
+            let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+            socket.emit('typing', ba);
         }
     }
     
