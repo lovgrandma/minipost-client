@@ -1639,6 +1639,7 @@ class Socialbar extends Component { // Main social entry point sb1
     // for increased functionality when user has clicked on a chat
     // If other user has started chat already but doesnt show, this will update and connect user to the chat
     focusLiveChat(room) {
+        console.log("focus live chat " + room);
         if (!room) {
             let obj = {
                 "ids": this.state.convoIds,
@@ -1956,7 +1957,6 @@ class Socialbar extends Component { // Main social entry point sb1
     revokefriendrequest = (e, friend, pending, refuse, block, search) => { // Pending if you're waiting for user to accept. Refuse true if user is refusing request
         let thetitleofsomeoneiusedtowanttobecloseto = friend;
         let username = this.state.isLoggedIn;
-        let self = this;
         console.log("revokefriendrequest arguments; pending: " + pending + " refuse: " + refuse);
         fetch(currentrooturl + 'users/revokefriendship', {
             method: "POST",
@@ -1969,7 +1969,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 thetitleofsomeoneiusedtowanttobecloseto, username, pending, refuse, block
             })
         })
-        .then(function(response) {
+        .then((response) => {
             return response.json();
         })
         .then((data) => {
@@ -1979,6 +1979,11 @@ class Socialbar extends Component { // Main social entry point sb1
                 if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
                     this.getfriends();
                     this.getFriendConversations();
+                } else if (data.querymsg) {
+                    if (data.querymsg == 'not friends') {
+                        this.getfriends();
+                        this.getFriendConversations();
+                    }
                 }
             } else {
                 // will have to add conversation state update when adding remove conversation functionality
@@ -1988,18 +1993,25 @@ class Socialbar extends Component { // Main social entry point sb1
         })
         .catch(error => { console.log(error);
         })
-        .then(function(data) {
+        .then((data) => {
             if (pending) {
-                if (self.state.searchusers[0]) {
-                    self.limitedsearch(self.state.isLoggedIn, self.state.searchusers[0].length, true);
+                if (this.state.searchusers[0]) {
+                    this.limitedsearch(this.state.isLoggedIn, this.state.searchusers[0].length, true);
                 } else {
-                    self.searchusers();
+                    this.searchusers();
                 }
             } else if (refuse == "requestslist" || refuse == "nonfriendslist") {
-                self.getpendingrequests(null, true, username); // true arguement to search again after qeuery
+                this.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
-            self = null;
-        });
+        }).
+        then((data) => {
+            if (socket) {
+                socket.disconnect();
+            }
+        }).
+        then((data) => {
+            socket.connect();
+        })
     }
         
     getpendingrequests = (show, search, username) => {
@@ -2293,6 +2305,7 @@ class App extends Component {
                      };
     }
     
+
     componentDidMount() {
         if (!cookies.get('Minireel')) {
             cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
