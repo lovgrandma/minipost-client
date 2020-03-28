@@ -87,7 +87,7 @@ button {
     }
 }
 
-@media (max-width: 542px) {
+@media (max-width: 630px) {
     .minireel-nav {
         display: none !important;
         margin-right: 10px;
@@ -170,35 +170,43 @@ ul li {
     margin-right: 7px;
     margin-left: 7px;
 }
+.nav-icon {
+    height: 18px;
+    width: auto;
+}
+
+.nav a {
+    width: auto;
+}
+
+.nav a:hover {
+    cursor:default;
+}
+
+.nav-icon:hover,
+.nav-loggedin-config:hover {
+    cursor: pointer;
+}
 
 .favorites {
-    height: 22px;
-    width: 25px;
     margin-right: 10px;
 }
 
 .history {
-    height: 22px;
-    width: 26px;
     margin: 0 10px;
 }
 
 .notifications {
-    height: 22px;
-    width: 22px;
     margin: 0 10px;
 }
 
 .profile {
-    height: 22px;
-    width: 22px;
     margin: 0 10px;
 }
 
 .upload {
-    height: 22px;
-    width: 33px;
-    margin-left: 10px;
+    margin: 0 10px;
+    margin-bottom: 2px;
 }
 
 .search {
@@ -231,6 +239,29 @@ ul li {
 
 .searchbox:active {
     background-color: #000000;
+}
+
+.nav-loggedin-config {
+    margin-left: 10px;
+}
+
+
+/* nav hover text boxes */
+
+.btn-desc {
+    font-size: 12px;
+    display: none;
+    visibility: hidden;
+    position: fixed;
+    background-color: white;
+    padding: 3px 7px;
+    margin-top: 40px;
+    z-index: 20;
+}
+
+.visible {
+    display:block;
+    visibility: visible;
 }
 
 /* main */
@@ -300,11 +331,11 @@ ul li {
 }
 
 .minimize-dash {
-    width: 40px;
+    width: 40px !important;
     height: 23px;
     background-color: #e6e6e6;
-    margin: 0 0 2px 18px;
-    padding: 6px 0;
+    margin: 0 0 2px 9px;
+    padding: 5.5px 0;
     display: inline-block;
     border-bottom-left-radius: 5px;
 }
@@ -549,6 +580,24 @@ label {
     font-weight: 500;
 }
 
+.register-text-invis {
+    visibility: hidden;
+    opacity: 0;
+}
+
+.register-text-transition {
+    transition: 1000ms !important;
+}
+
+.register-text-stale {
+    transition: 0ms !important;
+}
+
+.text-fadein {
+    visibility: visible;
+    opacity: 1;
+}
+
 .userquickdash {
     margin-left:6px;
     display: flex;
@@ -562,12 +611,13 @@ label {
 }
 
 .logout a {
+    transition: 200ms;
     color: black;
     text-decoration: none;
 }
 
 .logout a:hover {
-    text-decoration: underline;
+    color: #585858;
 }
 
 .btn {
@@ -1060,7 +1110,7 @@ label {
 
 .textarea-chat-autosize,
 .search-textarea-chat-autosize {
-    transition: 200ms;
+    transition: 0ms;
     overflow: hidden;
     border-radius: 10px;
     padding: 0 5px;
@@ -1086,7 +1136,7 @@ label {
     overflow: hidden;
     position:absolute;
     visibility: none;
-    transition: 50ms;
+    transition: 0ms;
     border: 0px solid black;
     height: 0px;
     padding: 0px;
@@ -1125,11 +1175,16 @@ label {
     width: 100%;
     margin-left: 6px;
     margin-bottom: 4px;
+    margin-top: 2px;
 }
 
 .friend-requests-list-hidden {
     display: none;
     visibility: hidden;
+}
+
+.friend-requests-view button {
+    font-size: 12px !important;
 }
 
 .following-view,
@@ -1569,13 +1624,14 @@ label {
 
 .searched-user-icon {
     margin-left: 2px;
+    padding-bottom: 1px;
     width: 9.5px;
     height: 9.5px;
 }
 
 .general-icon {
     margin: 0 4px;
-    padding-bottom: 1px;
+    padding-bottom: 2px;
     width: 11.5px;
     height: 11.5px;
 }
@@ -1614,13 +1670,27 @@ label {
 }
 
 .circle-menu-icon {
-    margin: 0 4px;
+    margin: 0 5px;
     padding-bottom: 2px;
     width: 14px;
     height: 14px;
 }
 
-.circle-menu-icon:hover {
+.minimize-icon {
+    transition: 200ms;
+    margin: 0 5px;
+    padding-bottom: 2px;
+    width: 14px;
+    height: 14px;
+    opacity: 1;
+}
+
+.invisible {
+    opacity: 0;
+}
+
+.circle-menu-icon:hover,
+.minimize-icon:hover {
     cursor:pointer;
 }
 
@@ -1638,12 +1708,15 @@ label {
     height: 8.5px;
 }
 
-/* Dont worry, this is the only float in the css. It floats the dropdown menu to the right. Change if causes issue.
+/* Dont worry, this is the only float in the css file. It floats the dropdown menu to the right. Change if causes issue.
 Other solutions would cause dropdown to show when component was hidden or not show actual dropdown if overflow was covered */
+.min-menu {
+    float: right;
+}
+
 .search-user-dropdown {
     position: relative;
     display: inline-block;
-    float: right;
 }
 
 .search-user-dropdown-search {
@@ -1841,10 +1914,10 @@ If user only has one friend, styling wont apply */
 }
 
 .sidebarfooter-loggedin a {
-    color: #acacac !important;
+    color: #acacac;
 }
 .sidebarfooter-loggedin:hover a {
-    color: #5f5f5f !important;
+    color: #5f5f5f;
 }
 
 .sidebarfooter, sidebarfooter-loggedin {
@@ -1976,6 +2049,7 @@ If user only has one friend, styling wont apply */
 /* Very specific changes made to ensure elements dont jitter around when typing cell is updated */
 
 .typing-cell {
+    transition: 0ms !important;
     display: none;
     opacity: 0;
 }

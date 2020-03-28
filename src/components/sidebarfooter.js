@@ -10,6 +10,12 @@ export default class sidebarfooter extends Component {
     }
 
     render() {
+        let logoutDiv;
+        if (this.props.username) {
+            logoutDiv = <div className="footeritem sidebarfooter"><a href="/" onClick={this.props.logout}>Logout</a></div>
+        } else {
+            logoutDiv = null
+        }
         return (
                 <div className={this.props.username ? "sidebarfooter-loggedin" : "sidebarfooter"}>
                     <div className="sidebarfooter-list">
@@ -20,6 +26,7 @@ export default class sidebarfooter extends Component {
                         <div className="footeritem sidebarfooter"><a href="#">Guidelines</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Feedback</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Survey</a></div>
+                        {logoutDiv}
                     </div>
                     <div className="copyright-minireel">©2020 minireel</div>
                 </div>

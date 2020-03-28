@@ -11,7 +11,7 @@ import {
 } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
-import logo from './static/minireel-dot-com-3.svg'; import mango from './static/minireel-mangologo.svg'; import heart from './static/heart.svg'; import whiteheart from './static/heart-white.svg'; import history from './static/history.svg'; import search from './static/search-white.svg'; import notifications from './static/notifications.svg'; import profile from './static/profile.svg'; import upload from './static/upload.svg'; import thumbsup from './static/thumbsup.svg'; import thumbsdown from './static/thumbsdown.svg'; import share from './static/share.svg'; import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import dummythumbnail from './static/warrenbuffetthumb.jpg'; import chatblack from './static/chat-black.svg'; import close from './static/close.svg'; import hamburger from './static/hamburger.svg'; import pointingfinger from './static/pointingfinger.svg'; import circlemenu from './static/circlemenu.svg'; import newspaperblack from './static/newspaper.svg'; import play from './static/play.svg'; import television from './static/tv.svg'; import sendarrow from './static/sendarrow.svg'; import subscribe from './static/subscribe.svg'; import friendswhite from './static/friendsWhite.svg'; import nonFriendsWhite from './static/nonFriendsWhite.svg'; import circlemenulight from './static/circlemenulight.svg';
+import logo from './static/minireel-dot-com-3.svg'; import mango from './static/minireel-mangologo.svg'; import heart from './static/heart.svg'; import whiteheart from './static/heart-white.svg'; import history from './static/history.svg'; import search from './static/search-white.svg'; import notifications from './static/notifications.svg'; import profile from './static/profile.svg'; import upload from './static/upload.svg'; import thumbsup from './static/thumbsup.svg'; import thumbsdown from './static/thumbsdown.svg'; import share from './static/share.svg'; import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import dummythumbnail from './static/warrenbuffetthumb.jpg'; import chatblack from './static/chat-black.svg'; import close from './static/close.svg'; import hamburger from './static/hamburger.svg'; import pointingfinger from './static/pointingfinger.svg'; import circlemenu from './static/circlemenu.svg'; import newspaperblack from './static/newspaper.svg'; import play from './static/play.svg'; import television from './static/tv.svg'; import sendarrow from './static/sendarrow.svg'; import subscribe from './static/subscribe.svg'; import friendswhite from './static/friendsWhite.svg'; import nonFriendsWhite from './static/nonFriendsWhite.svg'; import circlemenulight from './static/circlemenulight.svg'; import minimize from'./static/minimize.svg'; import maximize from './static/maximize.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg'; import settings from './static/settings.svg';
 import './App.css';
 import {
     Form,
@@ -28,9 +28,13 @@ import TextareaAutosize from 'react-textarea-autosize';
 import AwesomeDebouncePromise from 'awesome-debounce-promise';
 import videofeedvar from './videofeedplaceholder';
 
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { library } from '@fortawesome/fontawesome-svg-core';
+import {  } from '@fortawesome/free-solid-svg-icons';
 import io from "socket.io-client";
 let socket; // Expose socket to entire application once it is created
 
+library.add();
 const cookies = new Cookies();
 
 let devurl = 'http://localhost:3000/';
@@ -64,7 +68,7 @@ let videofeed = videofeedvar;
 // Search bar componenet
 class SearchForm extends Component {
     render() {
-        let getInnerSearchText = 'Search film..';
+        let getInnerSearchText = 'Search..';
         
         return (
         <form className="search-form-flex" method="GET" action="/search">
@@ -79,26 +83,78 @@ class SearchForm extends Component {
 
 // Nav bar with appropriate links to likes, history, minireel home, search film bar, notifications, friends & upload.
 
-function Navbar(props) {
-    return (
-        <nav className="navbar navbar-default border-navigation">
-            <row className="nowrap">
+class Navbar extends Component {
+    constructor(props) {
+        super(props);
+    }
+    hoverShow = (e, name, enterexit) => {
+        if (name == "upload") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-upl").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-upl").classList.remove("visible");
+            }
+        } else if (name == "profile") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-yourpro").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-yourpro").classList.remove("visible");
+            }
+        } else if (name == "notifications") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-notif").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-notif").classList.remove("visible");
+            }
+        } else if (name == "history") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-hist").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-hist").classList.remove("visible");
+            }
+        } else if (name == "saved") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-saved").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-saved").classList.remove("visible");
+            }
+        } else if (name == "config") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-conf").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-conf").classList.remove("visible");
+            }
+        }
+    }
+
+    render() {
+        return (
+            <nav className="navbar navbar-default border-navigation">
+                <row className="nowrap">
                 <ul className="nav flex-grow2 nowrapbuttons">
-                    <a href="favorites"><img className="favorites" src={heart} alt="favorites"></img></a>
-                    <a href='history'><img className="history" src={history} alt="history"></img></a>
+                    <img className="nav-icon favorites" src={heart} onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}} alt="favorites"></img>
+                    <div className="btn-desc btn-desc-saved">view videos you've saved</div>
+                    <img className="nav-icon history" src={history} onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}} alt="history"></img>
+                    <div className="btn-desc btn-desc-hist">view your video history</div>
                 </ul>
                 <div className="brand flex-grow1">
                     <NavLink exact to="/"><img className="minireel-nav d-inline" src={logo} alt="minireel"></img></NavLink>
                     <SearchForm />
                 </div>
                 <ul className="nav flex-grow2 flex-end nowrapbuttons">
-                    <a href="/notifications"><img className="notifications" src={notifications} alt="notifications"></img></a>
-                    <a href="/profile"><img className="profile" src={profile} alt="profile"></img></a>
-                    <a href="/upload"><img className="upload" src={upload} alt="upload"></img></a>
+                    <img className="nav-icon notifications" src={notifications} onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}} alt="notifications"></img>
+                    <div className="btn-desc btn-desc-notif">notifications</div>
+                    <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
+                    <div className="btn-desc btn-desc-yourpro">your profile</div>
+                    <NavLink to='/upload/'><img className="nav-icon upload" src={upload} onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}} alt="upload"/></NavLink>
+                    <div className="btn-desc btn-desc-upl">upload videos or make a thread</div>
+                    {this.props.username ? <div className="nav-loggedin-config" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div> : <div></div>}
+                    <div className="btn-desc btn-desc-conf">change various user settings and preferences</div>
                 </ul>
-            </row>
-        </nav>
-    )
+                </row>
+            </nav>
+        )
+    }
 }
 
 // output friend
@@ -390,8 +446,16 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
 
     openchatinput = (e, otheruser) => {
         // console.log(e.target.classList);
+        let room;
+        if (this.props.conversation) {
+            room = this.props.conversation._id;
+        }
         // If user clicks on profile, do not open chat submit
-        this.props.updateotheruserchatopen(e, otheruser);
+        if (e.target.classList.contains("minimize-icon")) {
+            this.props.updateotheruserchatopen(e, null);
+        } else {
+            this.props.updateotheruserchatopen(e, otheruser, room);
+        }
         if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
             this.scrollRef.current.scrollBy({
                 top: this.scrollRef.current.scrollHeight,
@@ -486,30 +550,33 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
             <div>
             {
                 this.props.conversation ?
-                    <div className="otheruser" onClick={(e) => {this.openchatinput(e, otheruser)}}>
+                    <div className="otheruser" onClick={!this.state.chatinput ? (e) => {this.openchatinput(e, otheruser)} : null }>
                         <div className='searched-user-username-container'>
                             <img className="otheruseravatar" src={require("./static/bobby.jpg")}></img>
                             <div ref={tag => (this.userRef = tag)} className="otherusername">{otheruser}</div>
-                            <div className="search-user-dropdown">
-                                <img className="circle-menu-icon" src={circlemenulight} alt="circlemenu"></img>
-                                <div className="dropdown-content searchdropdownfix prevent-open-toggle">
-                                    <button className='dropdown-content-option prevent-open-toggle'>share profile</button>
-                                    {
-                                        this.props.pendingfriendrequests ? !pending() ?
-                                                <button className='dropdown-content-option prevent-open-toggle' onClick={e => {this.searchandbefriend(e, otheruser)}}>invite</button>
+                            <div className="min-menu">
+                                <img className={this.state.chatinput ? "minimize-icon" : "minimize-icon invisible"} src={minimize} onClick={(e) => {this.openchatinput(e)}} alt="circlemenu"></img>
+                                <div className="search-user-dropdown">
+                                    <img className="circle-menu-icon" src={circlemenulight} alt="circlemenu"></img>
+                                    <div className="dropdown-content searchdropdownfix prevent-open-toggle">
+                                        <button className='dropdown-content-option prevent-open-toggle'>share profile</button>
+                                        {
+                                            this.props.pendingfriendrequests ? !pending() ?
+                                                    <button className='dropdown-content-option prevent-open-toggle' onClick={e => {this.searchandbefriend(e, otheruser)}}>invite</button>
+                                                    :
+                                                    <div></div>
+                                                : <div></div>
+                                        }
+                                        {
+                                            this.state.blockprompt == false ? // Prompt functionality to block
+                                                <button className='dropdown-content-option block-option-dropdown prevent-open-toggle' onClick={this.promptblockuser}>block</button>
                                                 :
-                                                <div></div>
-                                            : <div></div>
-                                    }
-                                    {
-                                        this.state.blockprompt == false ? // Prompt functionality to block
-                                            <button className='dropdown-content-option block-option-dropdown prevent-open-toggle' onClick={this.promptblockuser}>block</button>
-                                            :
-                                            <div className='prompt-spacing prompt-background prevent-open-toggle'>
-                                                <span className='opensans-thin prevent-open-toggle'>Sure you want to block <span className="otherusername-small prevent-open-toggle">{otheruser}</span>?</span>
-                                                <span className="prevent-open-toggle"><button className ="button-yes prevent-open-toggle" onClick={(e) => {this.props.revokefriendrequest(e, otheruser, false, "nonfriendslist")}}>Yes</button></span><span className="prevent-open-toggle"><button className ="button-no prevent-open-toggle" type="button" onClick={this.promptexitblockuser}>No</button></span>
-                                            </div>
-                                    }
+                                                <div className='prompt-spacing prompt-background prevent-open-toggle'>
+                                                    <span className='opensans-thin prevent-open-toggle'>Sure you want to block <span className="otherusername-small prevent-open-toggle">{otheruser}</span>?</span>
+                                                    <span className="prevent-open-toggle"><button className ="button-yes prevent-open-toggle" onClick={(e) => {this.props.revokefriendrequest(e, otheruser, false, "nonfriendslist")}}>Yes</button></span><span className="prevent-open-toggle"><button className ="button-no prevent-open-toggle" type="button" onClick={this.promptexitblockuser}>No</button></span>
+                                                </div>
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -661,16 +728,15 @@ class Friend extends Component { // friend component fc1
         // On update, scroll chat down to most recent chat if user is not actively scrolling through
         if (prevProps) { // if previous props
             let currentchatlength;
-            if (prevState.chatinput == false) { // If chat was just closed, scroll chat down now that it is open. Does not fire when chat is already open
+            if (prevState.chatinput == false) { // If chat was closed in previous state, scroll chat down now that it is open. Does not fire when chat is already open
                 if (this.state.chatinput == true ) {
-                    let getHeight = function() {
+                    let getHeight = function() { // get height of chat
                         if (document.getElementById('openfriendchat')) {
                             let height = document.getElementById('openfriendchat').scrollHeight;
                             return height;
                         }
                     }
 
-                    // console.log(getHeight());
                     if (getHeight() > 4000) {
                         this.scrollRef.current.scrollBy({
                             top: getHeight()-3000,
@@ -690,13 +756,11 @@ class Friend extends Component { // friend component fc1
                                     });
                                     i++; // If scroll ran, increment once
                                 }
-                                // console.log(getHeight(),i);
                                 if (i>0) { i--; }
                                 scrollChat(i, speed += 20); // Increase timeout time to ensure scroll
                             }, speed);
                         }
                     }
-                    // console.log(getHeight());
                     if (this.scrollRef.current) { // Prevents crash when no friends
                         scrollChat(4, 10);
                     }
@@ -858,13 +922,17 @@ class Friend extends Component { // friend component fc1
         this.setState({ blockprompt: false });
     }
 
-    openchatinput = (e) => {
+    openchatinput = (e, minimize) => {
         // Runs method in social component. If user clicks on bump or profile, do not open chat submit
         let room;
         if (this.props.conversation) {
             room = this.props.conversation._id;
         }
-        this.props.updatefriendchatopen(e, this.props.friend, room );
+        if (e.target.classList.contains("minimize-icon")) {
+            this.props.updatefriendchatopen(e, null);
+        } else {
+            this.props.updatefriendchatopen(e, this.props.friend, room );
+        }
         if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
             this.scrollRef.current.scrollBy({
                 top: this.scrollRef.current.scrollHeight,
@@ -873,7 +941,7 @@ class Friend extends Component { // friend component fc1
         }
     }
 
-    handleKeyPress = (e) => {
+    handleKeyPress = (e) => { // Emit cleared message when message is sent
         if(e.key === 'Enter'){
             e.preventDefault();
             let sendchat = (e) => {
@@ -891,7 +959,7 @@ class Friend extends Component { // friend component fc1
         }
     }
 
-    handleChange = (e) => {
+    handleChange = (e) => { // Emit typing to users in chat via socket
         if (this.props.conversation) {
             let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
             let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
@@ -906,33 +974,36 @@ class Friend extends Component { // friend component fc1
     render() {
         return (
             <div>
-                <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={(e) => {this.openchatinput(e)}}>
+                <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={!this.state.chatinput ? (e) => {this.openchatinput(e)} : null }>
                     <div className='searched-user-username-container'>
                         <img className="friendavatar" src={require("./static/bobby.jpg")}></img>
                         <div className="friendname">{this.props.friend}</div>
-                        <div className='search-user-dropdown prevent-open-toggle'>
-                            <img className="circle-menu-icon prevent-open-toggle" src={circlemenulight} alt="circlemenu"></img>
-                            <div className="dropdown-content searchdropdownfix prevent-open-toggle">
-                                <button className='dropdown-content-option prevent-open-toggle'>share profile</button>
+                        <div className="min-menu">
+                            <img className={this.state.chatinput ? "minimize-icon" : "minimize-icon invisible"} src={minimize} onClick={(e) => {this.openchatinput(e, true)}} alt="circlemenu"></img>
+                            <div className='search-user-dropdown'>
+                                <img className="circle-menu-icon prevent-open-toggle" src={circlemenulight} alt="circlemenu"></img>
+                                <div className="dropdown-content searchdropdownfix prevent-open-toggle">
+                                    <button className='dropdown-content-option prevent-open-toggle'>share profile</button>
 
-                                {
-                                    this.state.removeprompt == false ? // Prompt functionality to ask to unfriend
-                                        <button type="button" className='dropdown-content-option prevent-open-toggle' onClick={this.promptremovefriend}>unfriend</button>
-                                        :
-                                        <div className='prompt-spacing prompt-background prevent-open-toggle'>
-                                            <span className='opensans-thin prevent-open-toggle'>unfriend <span className="friendname-small prevent-open-toggle">{this.props.friend}</span>?</span>
-                                            <div className='prompt-yesno-spacing prevent-open-toggle'><span className="prevent-open-toggle"><button className="button-yes prevent-open-toggle" type="button" onClick={(e) => {this.props.revokefriendrequest(e, this.props.friend); this.promptexitremovefriend()}}>Yes</button></span><span className="prevent-open-toggle"><button className ="button-no prevent-open-toggle" type="button" onClick={this.promptexitremovefriend}>No</button></span></div>
-                                        </div>
-                                }
-                                {
-                                    this.state.blockprompt == false ? // Prompt functionality to block
-                                        <button className='dropdown-content-option block-option-dropdown prevent-open-toggle' onClick={this.promptblockuser}>block</button>
-                                        :
-                                        <div className='prompt-spacing prompt-background prevent-open-toggle'>
-                                            <span className='opensans-thin prevent-open-toggle'>block <span className="friendname-small prevent-open-toggle">{this.props.friend}</span>?</span>
-                                            <div className="prompt-yesno-spacing prevent-open-toggle"><span className="prevent-open-toggle"><button className ="button-yes prevent-open-toggle" type="button" onClick={(e) => {this.props.revokefriendrequest(e, this.props.friend); this.promptexitblockuser()}}>Yes</button></span><span className="prevent-open-toggle"><button className ="button-no prevent-open-toggle" type="button" onClick={this.promptexitblockuser}>No</button></span></div>
-                                        </div>
-                                }
+                                    {
+                                        this.state.removeprompt == false ? // Prompt functionality to ask to unfriend
+                                            <button type="button" className='dropdown-content-option prevent-open-toggle' onClick={this.promptremovefriend}>unfriend</button>
+                                            :
+                                            <div className='prompt-spacing prompt-background prevent-open-toggle'>
+                                                <span className='opensans-thin prevent-open-toggle'>unfriend <span className="friendname-small prevent-open-toggle">{this.props.friend}</span>?</span>
+                                                <div className='prompt-yesno-spacing prevent-open-toggle'><span className="prevent-open-toggle"><button className="button-yes prevent-open-toggle" type="button" onClick={(e) => {this.props.revokefriendrequest(e, this.props.friend); this.promptexitremovefriend()}}>Yes</button></span><span className="prevent-open-toggle"><button className ="button-no prevent-open-toggle" type="button" onClick={this.promptexitremovefriend}>No</button></span></div>
+                                            </div>
+                                    }
+                                    {
+                                        this.state.blockprompt == false ? // Prompt functionality to block
+                                            <button className='dropdown-content-option block-option-dropdown prevent-open-toggle' onClick={this.promptblockuser}>block</button>
+                                            :
+                                            <div className='prompt-spacing prompt-background prevent-open-toggle'>
+                                                <span className='opensans-thin prevent-open-toggle'>block <span className="friendname-small prevent-open-toggle">{this.props.friend}</span>?</span>
+                                                <div className="prompt-yesno-spacing prevent-open-toggle"><span className="prevent-open-toggle"><button className ="button-yes prevent-open-toggle" type="button" onClick={(e) => {this.props.revokefriendrequest(e, this.props.friend); this.promptexitblockuser()}}>Yes</button></span><span className="prevent-open-toggle"><button className ="button-no prevent-open-toggle" type="button" onClick={this.promptexitblockuser}>No</button></span></div>
+                                            </div>
+                                    }
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1070,16 +1141,13 @@ function Social(props) { // social prop sp1
     return (
         <div id="socialContainer">
             <div className="userquickdash row">
-                <div className="usernamedash">{props.username}</div>
-                <div>
-                    <div className="logout"><a href="/" onClick={props.fetchlogout}>logout</a>
-                        <img className="minimize-dash" src={hamburger} alt="hamburger" onClick={props.toggleSideBar}></img>
-                    </div>
+                <div className="friend-requests-view">
+                    <button className="following-view">following</button>
+                    <button className="requests-view" onClick={(e) => {props.getpendingrequests(pendingsetvalue, true, props.username)}}>requests</button>
                 </div>
-            </div>
-            <div className="friend-requests-view">
-                <button className="following-view">following</button>
-                <button className="requests-view" onClick={(e) => {props.getpendingrequests(pendingsetvalue, true, props.username)}}>requests</button>
+                <div>
+                    <img className="minimize-dash" src={angleDoubleLeft} alt="hamburger" onClick={props.toggleSideBar}></img>
+                </div>
             </div>
             <div className={props.pendinghidden == "hidden" ? 'friend-requests-list-hidden' : 'friend-requests-list'}>
                 <div>
@@ -1103,7 +1171,7 @@ function Social(props) { // social prop sp1
             <div>
                 <form className="search-form-flex" onInput={props.debouncefetchusers} onChange={props.searchforminput} onSubmit={props.fetchuserpreventsubmit} noValidate='noValidate' autoComplete='off'>
                     <span className="text-input-wrapper searchusers-text-input">
-                        <input className="user-search" id="usersearch" type="search" placeholder="Search users..." name="usersearch"></input>
+                        <input className="user-search" id="usersearch" type="search" placeholder="Search users.." name="usersearch"></input>
                         <span className="clear" onClick={props.searchformclear} title="Clear">&times;</span>
                     </span>
                 </form>
@@ -1274,7 +1342,9 @@ function Social(props) { // social prop sp1
                     :<div></div>
                 }
             </div>
-            <Sidebarfooter username={props.username} />
+            <Sidebarfooter username={props.username}
+            logout={props.fetchlogout}
+            />
         </div>
     )
 }
@@ -1350,12 +1420,22 @@ function Video(props) {
     )
 }
 
+class Upload extends Component {
+    constructor(props) {
+        super(props)
+    }
+
+    render() {
+        return (
+            <div>Upload video</div>
+        )
+    }
+}
 // Appends videos to dash
 // TODO 
 // Description shortener function
 // publisher
 // publish date.
-// begin backend mongodb API and HDFS FS.
 
 function Dash(props) {  
         
@@ -1399,13 +1479,15 @@ class Socialbar extends Component { // Main social entry point sb1
                       loginerror: null, registererror: null,
                       friendsopen: true, nonfriendsopen: true,
                       response: false, endpoint: "http://127.0.0.1:5000",
-                      typing: []
+                      typing: [], darkmode: false
                      }
         
        // this.getpendingrequests = this.getpendingrequests.bind(this);
         this.fetchusers = this.fetchusers.bind(this);
         this.debouncefetchusers = this.debouncefetchusers.bind(this);
         this.limitedsearch = this.limitedsearch.bind(this);
+        this.sidebar = React.createRef();
+        this.sidebarx = React.createRef();
     }
     // function to run when mongodb gets information that state has changed.
     // test if the current state is equal to new object array.
@@ -1547,7 +1629,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 "user": this.state.isLoggedIn
             }
             socket.emit('joinConvos', obj); // Joins user into convo rooms
-            // socket.emit('fetchConvos', this.state.isLoggedIn); // fetches convo room data from redis, -> will returnConvos
         } else {
             setTimeout(() => {
                 this.initializeLiveChat();
@@ -1601,9 +1682,10 @@ class Socialbar extends Component { // Main social entry point sb1
             return data;
         })
         .then(() => {
-            this.openSocket(); // open socket after friend conversations ran
-        })
-
+            setTimeout(() => {
+                this.openSocket(); // open socket after friend conversations ran
+            }, 200);
+        });
     }
 
     // Entry point method after login
@@ -1641,9 +1723,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.setState({ loginerror: {error: data.error, type: data.type }});
             }
             return data;
-        })
-        .then((data) => {
-            this.openSocket();
         })
         .catch(error => { console.log(error);
         })
@@ -1686,9 +1765,6 @@ class Socialbar extends Component { // Main social entry point sb1
             }
             return data;
         })
-        .then((data) => {
-            this.openSocket();
-        })
         .catch(error => { console.log(error);
         })
     }
@@ -1721,16 +1797,16 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     closeSideBar() {
-        this.refs.sidebar.classList.remove('sidebar-open');
-        this.refs.sidebarx.classList.remove('sidebarxopen');
+        this.sidebar.current.classList.remove('sidebar-open');
+        this.sidebarx.current.classList.remove('sidebarxopen');
         document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
         document.getElementsByClassName('sidebarimg')[0].classList.remove('sidebarimg-open');
         this.setState({ sidebarStatus: 'closed', sidebarximgSrc: sidebaropenimg });
     }
     
     openSideBar() {
-        this.refs.sidebar.classList.add('sidebar-open');
-        this.refs.sidebarx.classList.add('sidebarxopen');
+        this.sidebar.current.classList.add('sidebar-open');
+        this.sidebarx.current.classList.add('sidebarxopen');
         document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
         document.getElementsByClassName('sidebarimg')[0].classList.add('sidebarimg-open');
         this.setState({sidebarStatus: 'open', sidebarximgSrc: sidebarcloseimg });
@@ -1753,7 +1829,8 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
-    updateotheruserchatopen = (e, otheruser) => {
+    updateotheruserchatopen = (e, otheruser, socketRoom ) => {
+        this.focusLiveChat(socketRoom);
         if (!(e.target.classList.contains("prevent-open-toggle")) && !(e.target.parentElement.classList.contains("prevent-open-toggle"))) { // Open chat of clicked user if not clicking buttons profile, unfriend or befriend
             this.setState({ otheruserchatopen: otheruser });
         }
@@ -2080,12 +2157,9 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     toggleSideBar = () => {
-        if (this.refs.sidebar.classList.contains('sidebar-open')) {
+        if (this.sidebar.current.classList.contains('sidebar-open')) {
             this.closeSideBar();
             this.searchformclear();
-            if (this.friends) {
-                console.log(this.friends);
-            }
         } else {
             this.openSideBar();
         }
@@ -2186,12 +2260,13 @@ class Socialbar extends Component { // Main social entry point sb1
             
         return (
             <div>
-                <div className="sidebar sidebar-open" ref="sidebar">
+                <Navbar username={this.state.isLoggedIn} />
+                <div className="sidebar sidebar-open" ref={this.sidebar}>
                     <div className="sidebarcontainer">
                         {sidebar}
                     </div>
                 </div>
-                <div className="sidebarx sidebarxopen" ref="sidebarx" onClick={this.toggleSideBar}>
+                <div className="sidebarx sidebarxopen" ref={this.sidebarx} onClick={this.toggleSideBar}>
                     <img className="sidebarimg" src={this.state.sidebarximgSrc} ref='sidebarximg'></img>
                 </div>
             </div>
@@ -2220,7 +2295,7 @@ class App extends Component {
     
     componentDidMount() {
         if (!cookies.get('Minireel')) {
-            cookies.set('Minireel', 'minireel_sessionthistab', { path: '/', sameSite: true, signed: true }); 
+            cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
         }
     }
         
@@ -2232,7 +2307,6 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Navbar />
                     <Socialbar />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
@@ -2241,6 +2315,9 @@ class App extends Component {
                             )}/>
                             <Route path='/watch' render={(props) => (
                                 <Video {...props} />
+                            )}/>
+                            <Route path='/upload' render={(props) => (
+                                <Upload {...props} />
                             )}/>
                         </div>
                     </div>
