@@ -38,7 +38,7 @@ html {
 
 body {
     font-family: 'Open Sans', sans-serif;
-    
+
     line-height: 1.2;
 }
 
@@ -59,7 +59,7 @@ button {
   transition: visibility 0s 500ms, opacity 500ms linear;
 }
 
-/* Top Navigation Bar */ 
+/* Top Navigation Bar */
 
 .navbar {
     height: 40px;
@@ -116,7 +116,7 @@ input[type="search"] {
     border-style: solid;
     border-width: 1px;
     border-color: darkgrey;
-    
+
 }
 
 .flex-end {
@@ -238,7 +238,7 @@ ul li {
 }
 
 .searchbox:active {
-    background-color: #000000;
+    background-color: #e3e3e3;
 }
 
 .nav-loggedin-config {
@@ -414,6 +414,10 @@ ul li {
     direction: rtl;
 }
 
+.nonfriendchatcontainer,
+.friendchatcontainer {
+    overflow: hidden;
+}
 
 .nonfriendchatcontainer,
 .friendchatcontainer,
@@ -793,7 +797,7 @@ label {
     min-width: 195px;
 }
 .publisher-userandjoindate {
-    
+
 }
 
 .publisher-video-interact {
@@ -838,7 +842,7 @@ label {
     padding: 0px 8px;
     border: solid #f9958d 2px;
     border-radius: 7px;
-    
+
 }
 
 .video-interact-border {
@@ -866,7 +870,7 @@ label {
     margin-bottom: 0.7em;
     font-size: 12px;
     text-align: right;
-    
+
 }
 
 .video-description-info {
@@ -1233,10 +1237,10 @@ label {
 
 .clearfix:before,
 .clearfix:after {
-    content: ".";    
-    display: block;    
-    height: 0;    
-    overflow: hidden; 
+    content: ".";
+    display: block;
+    height: 0;
+    overflow: hidden;
 }
 .clearfix:after { clear: both; }
 .clearfix { zoom: 1; }
@@ -1328,7 +1332,7 @@ label {
 }
 
 .user-request-befriend:active {
-    background-color: white;
+    background-color: rgba(95, 203, 127, 0.6);
 }
 
 .user-request-profile {
@@ -1349,7 +1353,7 @@ label {
 }
 
 .user-request-profile:active {
-    background-color: white;
+    background-color: rgba(227, 213, 127, 0.6);
 }
 
 .user-request-message {
@@ -1370,7 +1374,7 @@ label {
 }
 
 .user-request-message:active {
-    background-color: white;
+    background-color: rgba(167, 210, 240, 0.6);
 }
 
 .user-request-block {
@@ -1391,7 +1395,7 @@ label {
 }
 
 .user-request-block:active {
-    background-color: white;
+    background-color: rgba(255, 66, 41, 0.6);
 }
 
 .searched-user-avatar {
@@ -1438,12 +1442,12 @@ label {
 }
 
 .searched-user-send-friend-request:hover {
-    background-color: rgb(151, 209, 219, 1);
+    background-color: rgba(151, 209, 219, 1);
     cursor: pointer;
 }
 
 .searched-user-send-friend-request:active {
-    background-color: white;
+    background-color: rgba(151, 209, 219, 0.6);
 }
 
 .search-user-accept-friend-request {
@@ -1463,7 +1467,7 @@ label {
 }
 
 .search-user-accept-friend-request:active {
-    background-color: white;
+    background-color: rgba(95, 203, 127, 0.6);
 }
 
 .searched-user-follow-request {
@@ -1481,7 +1485,7 @@ label {
 }
 
 .searched-user-follow-request:active {
-    background-color: white;
+    background-color: rgba(224, 126, 176, 0.6);
 }
 
 .search-user-pending-friend-request {
@@ -1526,7 +1530,7 @@ label {
     border-radius: 7px;
     padding: 2px 4px;
     font-size: 0.72em;
-    transition: 200ms;
+    transition: 100ms;
     user-select: none;
 }
 
@@ -1538,7 +1542,7 @@ label {
 
 .search-user-bump:active,
 .search-user-bump-friend:active {
-    background-color: white;
+    background-color: rgba(95, 203, 127, 0.6);
 }
 
 .search-user-watch,
@@ -1564,7 +1568,7 @@ label {
 
 .search-user-watch:active,
 .search-user-watch-friend:active {
-    background-color: white;
+    background-color: rgba(177, 192, 240, 0.6);
 }
 
 .search-user-profile {
@@ -1583,7 +1587,7 @@ label {
 }
 
 .search-user-profile:active {
-    background-color: white;
+    background-color: rgb(237, 219, 107, 0.6);
 }
 
 .searched-user-message {
@@ -1601,7 +1605,7 @@ label {
 }
 
 .searched-user-message:active {
-    background-color: white;
+    background-color: rgba(167, 210, 240, 0.6);
 }
 
 .searched-user-block {
@@ -1634,6 +1638,10 @@ label {
     padding-bottom: 2px;
     width: 11.5px;
     height: 11.5px;
+}
+
+.bump-icon {
+    height: auto;
 }
 
 .searched-user-befriend {
@@ -1761,7 +1769,7 @@ Other solutions would cause dropdown to show when component was hidden or not sh
     background-color: #f0f0f0;
     top: 2px;
     right: 5px;
-    width: 120px;
+    min-width: 100px;
     box-shadow: 2px 8px 16px 0px rgba(0,0,0,0.2);
     padding: 6px 6px;
     z-index: 20;
@@ -2085,4 +2093,8 @@ If user only has one friend, styling wont apply */
 
 .friendchat-chat-container-closed .typing-cell .content-of-chat div {
     width: 100% !important;
+}
+
+.shake-constant {
+    animation-duration: 1500ms !important;
 }

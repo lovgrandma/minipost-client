@@ -2,7 +2,8 @@
 
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js';
+import csshake from 'csshake';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -12,7 +13,7 @@ import {
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
 import logo from './static/minireel-dot-com-3.svg'; import mango from './static/minireel-mangologo.svg'; import heart from './static/heart.svg'; import whiteheart from './static/heart-white.svg'; import history from './static/history.svg'; import search from './static/search-white.svg'; import notifications from './static/notifications.svg'; import profile from './static/profile.svg'; import upload from './static/upload.svg'; import thumbsup from './static/thumbsup.svg'; import thumbsdown from './static/thumbsdown.svg'; import share from './static/share.svg'; import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import dummythumbnail from './static/warrenbuffetthumb.jpg'; import chatblack from './static/chat-black.svg'; import close from './static/close.svg'; import hamburger from './static/hamburger.svg'; import pointingfinger from './static/pointingfinger.svg'; import circlemenu from './static/circlemenu.svg'; import newspaperblack from './static/newspaper.svg'; import play from './static/play.svg'; import television from './static/tv.svg'; import sendarrow from './static/sendarrow.svg'; import subscribe from './static/subscribe.svg'; import friendswhite from './static/friendsWhite.svg'; import nonFriendsWhite from './static/nonFriendsWhite.svg'; import circlemenulight from './static/circlemenulight.svg'; import minimize from'./static/minimize.svg'; import maximize from './static/maximize.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg'; import settings from './static/settings.svg';
-import './App.css';
+import './style/app.css';
 import {
     Form,
     FormGroup,
@@ -32,130 +33,22 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {  } from '@fortawesome/free-solid-svg-icons';
 import io from "socket.io-client";
+const EventEmitter = require('events');
+const bumpEvent = new EventEmitter();
 let socket; // Expose socket to entire application once it is created
 
 library.add();
 const cookies = new Cookies();
 
 let devurl = 'http://localhost:3000/';
-let productionurl = 'https://www.minireel.org/';
+let productionurl = 'https://www.minireel.net/';
 let currentrooturl =  devurl;
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
+const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
-// How a full friend array of objects might look. Array will come from json request from mongodb.
-
-//let friends = [
-//    {
-//        username: 'ricardo.benson',
-//        status: 'online',
-//        emitting: true,
-//        watching: 'Space X Falcon 9 launches TESS & Falcon 9 first stage landing',
-//        watchingurl: 'www.yahoo.ca',
-//    },
-//    {
-//        username: 'carla.tisci',
-//        status: 'offline',
-//        emitting: true,
-//        watching: 'Charlie Rose interviews David Foster Wallace, clip 2/4 series',
-//        watchingurl: 'www.yahoo.ca',
-//    },
-//];
-    
 // placeholder import video info
 let videofeed = videofeedvar;
-
-// Search bar componenet
-class SearchForm extends Component {
-    render() {
-        let getInnerSearchText = 'Search..';
-        
-        return (
-        <form className="search-form-flex" method="GET" action="/search">
-                            <input className="search-field" id="search" type="search" placeholder={getInnerSearchText} name="search"></input>
-                            <button className="searchbox" type="submit" value="submit">
-                                <img className="search" src={search} alt="search"></img>
-                            </button>
-                        </form>
-        );
-    }
-};
-
-// Nav bar with appropriate links to likes, history, minireel home, search film bar, notifications, friends & upload.
-
-class Navbar extends Component {
-    constructor(props) {
-        super(props);
-    }
-    hoverShow = (e, name, enterexit) => {
-        if (name == "upload") {
-            if (enterexit == "enter") {
-                document.querySelector(".btn-desc-upl").classList.add("visible");
-            } else if (enterexit == "exit") {
-                document.querySelector(".btn-desc-upl").classList.remove("visible");
-            }
-        } else if (name == "profile") {
-            if (enterexit == "enter") {
-                document.querySelector(".btn-desc-yourpro").classList.add("visible");
-            } else if (enterexit == "exit") {
-                document.querySelector(".btn-desc-yourpro").classList.remove("visible");
-            }
-        } else if (name == "notifications") {
-            if (enterexit == "enter") {
-                document.querySelector(".btn-desc-notif").classList.add("visible");
-            } else if (enterexit == "exit") {
-                document.querySelector(".btn-desc-notif").classList.remove("visible");
-            }
-        } else if (name == "history") {
-            if (enterexit == "enter") {
-                document.querySelector(".btn-desc-hist").classList.add("visible");
-            } else if (enterexit == "exit") {
-                document.querySelector(".btn-desc-hist").classList.remove("visible");
-            }
-        } else if (name == "saved") {
-            if (enterexit == "enter") {
-                document.querySelector(".btn-desc-saved").classList.add("visible");
-            } else if (enterexit == "exit") {
-                document.querySelector(".btn-desc-saved").classList.remove("visible");
-            }
-        } else if (name == "config") {
-            if (enterexit == "enter") {
-                document.querySelector(".btn-desc-conf").classList.add("visible");
-            } else if (enterexit == "exit") {
-                document.querySelector(".btn-desc-conf").classList.remove("visible");
-            }
-        }
-    }
-
-    render() {
-        return (
-            <nav className="navbar navbar-default border-navigation">
-                <row className="nowrap">
-                <ul className="nav flex-grow2 nowrapbuttons">
-                    <img className="nav-icon favorites" src={heart} onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}} alt="favorites"></img>
-                    <div className="btn-desc btn-desc-saved">view videos you've saved</div>
-                    <img className="nav-icon history" src={history} onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}} alt="history"></img>
-                    <div className="btn-desc btn-desc-hist">view your video history</div>
-                </ul>
-                <div className="brand flex-grow1">
-                    <NavLink exact to="/"><img className="minireel-nav d-inline" src={logo} alt="minireel"></img></NavLink>
-                    <SearchForm />
-                </div>
-                <ul className="nav flex-grow2 flex-end nowrapbuttons">
-                    <img className="nav-icon notifications" src={notifications} onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}} alt="notifications"></img>
-                    <div className="btn-desc btn-desc-notif">notifications</div>
-                    <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
-                    <div className="btn-desc btn-desc-yourpro">your profile</div>
-                    <NavLink to='/upload/'><img className="nav-icon upload" src={upload} onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}} alt="upload"/></NavLink>
-                    <div className="btn-desc btn-desc-upl">upload videos or make a thread</div>
-                    {this.props.username ? <div className="nav-loggedin-config" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div> : <div></div>}
-                    <div className="btn-desc btn-desc-conf">change various user settings and preferences</div>
-                </ul>
-                </row>
-            </nav>
-        )
-    }
-}
 
 // output friend
 // if prop is defined then output quick chats, else do not.
@@ -696,6 +589,8 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
     }
 }
 
+let bumpRunning = 0;
+let shakeRunning = 0;
 // Individual friend
 class Friend extends Component { // friend component fc1
     constructor(props) {
@@ -703,6 +598,8 @@ class Friend extends Component { // friend component fc1
             this.inputRef = React.createRef();
             this.scrollRef = React.createRef();
             this.typingRef = React.createRef();
+            this.shakeRef = React.createRef();
+            this.bumpBtnRef = React.createRef();
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
                 chatlength: 0, typingOld: null }
             this.handleChange = this.handleChange.bind(this);
@@ -718,6 +615,36 @@ class Friend extends Component { // friend component fc1
         if (currentchatlength) {
             this.setState({ chatlength: currentchatlength }); // Sets length of chat when it is equal to null at componentDidMount
         }
+
+        bumpEvent.on('bump', (data) => { // bump functionality. Bumps friend via socket room.
+            let user = data.match(bumpRegex)[2];
+            if (user == this.props.friend) {
+                if (this.shakeRef.current) {
+                    this.shakeRef.current.classList.add("shake", "shake-constant");
+                    shakeRunning +=1;
+                    setTimeout(() => { // turn off rumble after short time
+                        shakeRunning--;
+                        console.log(shakeRunning);
+                        if (shakeRunning == 0) {
+                            this.shakeRef.current.classList.remove("shake", "shake-constant");
+                        }
+                    }, 200);
+                }
+            } else if (user == this.props.username) { // application recieved the bump it sent out and is filtering to provide feedback that it was sent
+                if (data.match(bumpRegex)[3] == this.props.friend) {
+                    if (this.bumpBtnRef.current) {
+                        this.bumpBtnRef.current.classList.add("shake", "shake-constant");
+                        bumpRunning +=1;
+                        setTimeout(() => { // turn off rumble after short time
+                            bumpRunning--;
+                            if (bumpRunning == 0) {
+                                this.bumpBtnRef.current.classList.remove("shake", "shake-constant");
+                            }
+                        }, 200);
+                    }
+                }
+            }
+        })
     }
 
     componentWillUpdate() {
@@ -725,6 +652,14 @@ class Friend extends Component { // friend component fc1
     }
 
     componentDidUpdate(prevProps, prevState) {
+        // reset shake if error and still rumbling
+        if (this.shakeRef.current) {
+            this.shakeRef.current.classList.remove("shake", "shake-constant");
+        }
+
+        if (this.bumpBtnRef.current) {
+            this.bumpBtnRef.current.classList.remove("shake", "shake-constant");
+        }
         // On update, scroll chat down to most recent chat if user is not actively scrolling through
         if (prevProps) { // if previous props
             let currentchatlength;
@@ -972,8 +907,12 @@ class Friend extends Component { // friend component fc1
     }
 
     render() {
+        let conversationid;
+        if (this.props.conversation) {
+            conversationid = this.props.conversation._id;
+        }
         return (
-            <div>
+            <div className="friend-container" ref={this.shakeRef}>
                 <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={!this.state.chatinput ? (e) => {this.openchatinput(e)} : null }>
                     <div className='searched-user-username-container'>
                         <img className="friendavatar" src={require("./static/bobby.jpg")}></img>
@@ -1016,7 +955,7 @@ class Friend extends Component { // friend component fc1
                     <div className='request-and-block-container'>
                         <span className='search-user-profile prevent-open-toggle'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
                         <span className='search-user-watch-friend'>watch<img className="searched-user-icon" src={play} alt="play"></img></span>
-                        <span className='search-user-bump-friend prevent-open-toggle'>bump<img className="searched-user-icon" src={pointingfinger} alt="pointingfinger"></img></span>
+                        <span className='search-user-bump-friend prevent-open-toggle' ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid )}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                     </div>
                     <div className="friendchat friendchat-container">
@@ -1291,6 +1230,7 @@ function Social(props) { // social prop sp1
                                 friendchatopen={props.friendchatopen}
                                 updatefriendchatopen={props.updatefriendchatopen}
                                 typing={typing}
+                                bump={props.bump}
                                 />
                             )
                         })
@@ -1561,6 +1501,10 @@ class Socialbar extends Component { // Main social entry point sb1
                     // console.log(data); // log new chat data
                     this.appendChat(data);
                 });
+
+                socket.on('bump', data => {
+                    bumpEvent.emit('bump', (data));
+                });
                 resolve();
             });
 
@@ -1824,8 +1768,8 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     updatefriendchatopen = (e, friend, socketRoom ) => {
-        this.focusLiveChat(socketRoom);
         if (!(e.target.classList.contains("prevent-open-toggle")) && !(e.target.parentElement.classList.contains("prevent-open-toggle")) ) {
+            this.focusLiveChat(socketRoom);
             this.setState({ friendchatopen: friend });
         }
     }
@@ -2259,6 +2203,14 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    bump = (e, too, room) => {
+        if (this.state.isLoggedIn && socket) {
+            // bump;from;too;room
+            let data = "bump;" + this.state.isLoggedIn + ";" + too + ";" + room;
+            socket.emit('bump', data);
+        }
+    }
+
     render() {
         let sidebar;
         
@@ -2267,7 +2219,7 @@ class Socialbar extends Component { // Main social entry point sb1
             sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} registererror={this.state.registererror} />
         } else {
             sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests}fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen}
-            typing = {this.state.typing} />
+            typing = {this.state.typing} bump = {this.bump} />
         }
             
         return (
@@ -2301,7 +2253,7 @@ class App extends Component {
         super(props); 
 
         this.state = { 
-                        mainfeed: videofeed[0].main,
+                        mainfeed: videofeed[0].main, watching: "",
                      };
     }
     
@@ -2320,7 +2272,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Socialbar />
+                    <Socialbar watching={this.state.watching} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
