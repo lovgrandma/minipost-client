@@ -2,6 +2,7 @@
 
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import axios from 'axios';
 import csshake from 'csshake';
 import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js';
 import { Player } from 'video-react';
@@ -620,25 +621,24 @@ class Friend extends Component { // friend component fc1
             let user = data.match(bumpRegex)[2];
             if (user == this.props.friend) {
                 if (this.shakeRef.current) {
-                    this.shakeRef.current.classList.add("shake", "shake-constant");
+                    this.shakeRef.current.classList.add("shake", "shake-constant", "shake-bump");
                     shakeRunning +=1;
                     setTimeout(() => { // turn off rumble after short time
                         shakeRunning--;
-                        console.log(shakeRunning);
                         if (shakeRunning == 0) {
-                            this.shakeRef.current.classList.remove("shake", "shake-constant");
+                            this.shakeRef.current.classList.remove("shake", "shake-constant", "shake-bump");
                         }
                     }, 200);
                 }
             } else if (user == this.props.username) { // application recieved the bump it sent out and is filtering to provide feedback that it was sent
                 if (data.match(bumpRegex)[3] == this.props.friend) {
                     if (this.bumpBtnRef.current) {
-                        this.bumpBtnRef.current.classList.add("shake", "shake-constant");
+                        this.bumpBtnRef.current.classList.add("shake", "shake-constant", "shake-bump");
                         bumpRunning +=1;
                         setTimeout(() => { // turn off rumble after short time
                             bumpRunning--;
                             if (bumpRunning == 0) {
-                                this.bumpBtnRef.current.classList.remove("shake", "shake-constant");
+                                this.bumpBtnRef.current.classList.remove("shake", "shake-constant", "shake-bump");
                             }
                         }, 200);
                     }
@@ -654,11 +654,11 @@ class Friend extends Component { // friend component fc1
     componentDidUpdate(prevProps, prevState) {
         // reset shake if error and still rumbling
         if (this.shakeRef.current) {
-            this.shakeRef.current.classList.remove("shake", "shake-constant");
+            this.shakeRef.current.classList.remove("shake", "shake-constant", "shake-bump");
         }
 
         if (this.bumpBtnRef.current) {
-            this.bumpBtnRef.current.classList.remove("shake", "shake-constant");
+            this.bumpBtnRef.current.classList.remove("shake", "shake-constant", "shake-bump");
         }
         // On update, scroll chat down to most recent chat if user is not actively scrolling through
         if (prevProps) { // if previous props
@@ -1362,12 +1362,73 @@ function Video(props) {
 
 class Upload extends Component {
     constructor(props) {
-        super(props)
+        super(props);
+        this.state = {
+            progress: 0,
+        }
+        this.upload = React.createRef();
+        this.progressBar = React.createRef();
+        this.progress = new EventEmitter();
+
+    }
+
+    componentDidMount() {
+        this.progress.on('progress', (data) => {
+            this.setState({progress: Math.round(data)});
+            if (this.progressBar.current) {
+                this.progressBar.current.style.width = Math.round(data) + "%";
+            }
+        });
+    }
+
+    uploadFileS3 = async () => {
+        if (this.upload.current.files[0]) {
+            let file = this.upload.current.files[0];
+            let data = new FormData();
+            let loaded;
+            let total;
+            let uploadPercentage;
+            data.append('video', file);
+            console.log(data.getAll('video'));
+            const config = {
+                onUploadProgress: progressEvent => { // upload status logic
+                    // console.log((Math.round((progressEvent.loaded / 1024 /1024)*10)/10) + "mbs uploaded");
+                    // console.log((Math.round((file.size / 1024 /1024)*10)/10) + "mbs file size");
+                    loaded = progressEvent.loaded / 1000000;
+                    total = file.size / 1000000;
+                    uploadPercentage = (loaded/total) * 100;
+                    this.progress.emit('progress', uploadPercentage);
+                },
+                headers: {
+                    'content-type': 'multipart/form-data'
+                }
+            };
+            // Use axios to make post request and update user on gradual progress of upload
+            axios.post(currentrooturl + 'm/testupload', data, config)
+                .then((response) => {
+                    return { response };
+                }).then((response) => {
+                    console.log(response.response.data);
+                })
+                .catch((error) => {
+                    error => console.log(error);
+                });
+        }
     }
 
     render() {
         return (
-            <div>Upload video</div>
+            <div>
+                <div className="upload-video-txt">Upload video</div>
+                <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
+                    <div className="progress-num">{this.state.progress}%</div>
+                    <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
+                </div>
+                <div>
+                    <input className="choose-file" ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
+                    <Button className="upload-button" onClick={this.uploadFileS3}>Upload</Button>
+                </div>
+            </div>
         )
     }
 }
@@ -1411,9 +1472,8 @@ class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {
         super(props);
         this.state = { isLoggedIn: (cookies.get('loggedIn')), username: cookies.get('loggedIn'),
-                      sidebarximgSrc: sidebarcloseimg, sidebarStatus: 'open',
-                      friends: [{}], users: {}, conversations: [], convoIds: [],
-                      searchuserinput: '', searchusers: [],
+                      sidebarximgSrc: sidebarcloseimg, friends: [{}], users: {}, conversations: [],
+                      convoIds: [], searchuserinput: '', searchusers: [],
                       showingpendingrequests: "hidden", pendingfriendrequests: null,
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
@@ -1442,7 +1502,7 @@ class Socialbar extends Component { // Main social entry point sb1
     
     componentDidMount(e) {
 
-       if (this.state.sidebarStatus === 'open') {
+       if (this.props.sidebarStatus === 'open') {
            document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
            this.openSideBar();
        } else {
@@ -1599,7 +1659,7 @@ class Socialbar extends Component { // Main social entry point sb1
         // This will retrieve all chats within "chats" in the user document.
         let username = this.state.isLoggedIn;
 
-        fetch(currentrooturl + 'users/getconversationlogs', {
+        fetch(currentrooturl + 'm/getconversationlogs', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -1640,7 +1700,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let password = document.getElementById("pw").value;
         console.log(email);
         console.log('fetch login func');
-        fetch(currentrooturl + 'users/login', {
+        fetch(currentrooturl + 'm/login', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -1680,7 +1740,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let regpassword = document.getElementById("regpw").value;
         let confirmPassword = document.getElementById("regpw2").value;
         console.log(regemail);
-        fetch(currentrooturl + 'users/register', {
+        fetch(currentrooturl + 'm/register', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -1719,8 +1779,8 @@ class Socialbar extends Component { // Main social entry point sb1
          cookies.remove('loggedIn');
          cookies.remove('user');
         //  puts users taken from server script into state.
-        // fetch('/users/logout');
-        fetch(currentrooturl + 'users/logout', {
+        // fetch('/m/logout');
+        fetch(currentrooturl + 'm/logout', {
                 method: "GET",
                 headers: {
                     'Accept': 'application/json',
@@ -1746,7 +1806,8 @@ class Socialbar extends Component { // Main social entry point sb1
         this.sidebarx.current.classList.remove('sidebarxopen');
         document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
         document.getElementsByClassName('sidebarimg')[0].classList.remove('sidebarimg-open');
-        this.setState({ sidebarStatus: 'closed', sidebarximgSrc: sidebaropenimg });
+        this.setState({sidebarximgSrc: sidebaropenimg });
+        this.props.updateSidebarStatus('closed');
     }
     
     openSideBar() {
@@ -1754,7 +1815,8 @@ class Socialbar extends Component { // Main social entry point sb1
         this.sidebarx.current.classList.add('sidebarxopen');
         document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
         document.getElementsByClassName('sidebarimg')[0].classList.add('sidebarimg-open');
-        this.setState({sidebarStatus: 'open', sidebarximgSrc: sidebarcloseimg });
+        this.setState({sidebarximgSrc: sidebarcloseimg });
+        this.props.updateSidebarStatus('open');
     }
 
     checkemptychat = () => {
@@ -1785,7 +1847,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let searchusers = document.getElementById('usersearch').value;
         if (this.state.searchusers[1].moreusers || requery) { // if moreusers state is true or requery necessary to update state
             console.log("limitedsearch");
-            fetch(currentrooturl + 'users/searchusers', {
+            fetch(currentrooturl + 'm/searchusers', {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
@@ -1817,7 +1879,7 @@ class Socialbar extends Component { // Main social entry point sb1
             let searchusers = document.getElementById('usersearch').value;
             if (searchusers) {
                 console.log("base search");
-                fetch(currentrooturl + 'users/searchusers', {
+                fetch(currentrooturl + 'm/searchusers', {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
@@ -1866,7 +1928,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let thetitleofsomeonewewanttobecloseto = friend;
         let username = this.state.isLoggedIn;
         let self = this;
-        fetch(currentrooturl + 'users/requestfriendship', {
+        fetch(currentrooturl + 'm/requestfriendship', {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
@@ -1902,7 +1964,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let thetitleofsomeoneiusedtowanttobecloseto = friend;
         let username = this.state.isLoggedIn;
         console.log("revokefriendrequest arguments; pending: " + pending + " refuse: " + refuse);
-        fetch(currentrooturl + 'users/revokefriendship', {
+        fetch(currentrooturl + 'm/revokefriendship', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -1967,7 +2029,7 @@ class Socialbar extends Component { // Main social entry point sb1
         
         console.log("Set state for showpendingrequests:", show, ", Search after query?:", search, ", Searching for requests of:", username);
         if (search || !this.state.pendingfriendrequests) { // If searching again or pendingfriendrequests is null
-            fetch(currentrooturl + 'users/pendingrequests', {
+            fetch(currentrooturl + 'm/pendingrequests', {
                 method: "POST",
                 headers: {
                     'Accept': 'application/json',
@@ -2006,7 +2068,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let username = this.state.isLoggedIn;
         let newfriend = friend;
         
-        fetch(currentrooturl + 'users/acceptfriendrequest', {
+        fetch(currentrooturl + 'm/acceptfriendrequest', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -2035,7 +2097,7 @@ class Socialbar extends Component { // Main social entry point sb1
     
     getfriends = () => {
         let username = this.state.isLoggedIn;
-        fetch(currentrooturl + 'users/getfriends', {
+        fetch(currentrooturl + 'm/getfriends', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -2078,7 +2140,7 @@ class Socialbar extends Component { // Main social entry point sb1
             }
         } else { // If socket untrue or fromSearch true, defaults to fetch request
             if (message.length > 0) {
-                fetch(currentrooturl + 'users/beginchat', {
+                fetch(currentrooturl + 'm/beginchat', {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
@@ -2253,7 +2315,7 @@ class App extends Component {
         super(props); 
 
         this.state = { 
-                        mainfeed: videofeed[0].main, watching: "",
+                        mainfeed: videofeed[0].main, watching: "", sidebarStatus: 'open',
                      };
     }
     
@@ -2264,15 +2326,15 @@ class App extends Component {
         }
     }
         
-    fetchData() {
-
+    updateSidebarStatus = (update) => {
+        this.setState({sidebarStatus: update });
     }
     
     render() {                    
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Socialbar watching={this.state.watching} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
@@ -2282,7 +2344,7 @@ class App extends Component {
                                 <Video {...props} />
                             )}/>
                             <Route path='/upload' render={(props) => (
-                                <Upload {...props} />
+                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} />
                             )}/>
                         </div>
                     </div>
