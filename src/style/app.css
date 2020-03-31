@@ -2118,7 +2118,16 @@ If user only has one friend, styling wont apply */
     display: block;
 }
 
+.choose-file {
+    width: 100%;
+}
+
+.progress-num {
+    user-select: none;
+}
+
 .progress-bar {
+    user-select: none;
     width: 0%;
     height: 3px;
     background: linear-gradient(to right, rgba(243,158,151,1) 0%, rgba(252,146,138,1) 100%);

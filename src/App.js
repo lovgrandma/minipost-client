@@ -1374,7 +1374,7 @@ class Upload extends Component {
 
     componentDidMount() {
         this.progress.on('progress', (data) => {
-            this.setState({progress: Math.round(data)});
+            this.setState({progress: data});
             if (this.progressBar.current) {
                 this.progressBar.current.style.width = Math.round(data) + "%";
             }
@@ -1388,8 +1388,11 @@ class Upload extends Component {
             let loaded;
             let total;
             let uploadPercentage;
-            data.append('video', file);
             console.log(data.getAll('video'));
+            let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
+            data.append('extension', extension);
+            data.append('video', file);
+            console.log(data.getAll('extension'));
             const config = {
                 onUploadProgress: progressEvent => { // upload status logic
                     // console.log((Math.round((progressEvent.loaded / 1024 /1024)*10)/10) + "mbs uploaded");
@@ -1404,7 +1407,7 @@ class Upload extends Component {
                 }
             };
             // Use axios to make post request and update user on gradual progress of upload
-            axios.post(currentrooturl + 'm/testupload', data, config)
+            axios.post(currentrooturl + 'm/videoupload', data, config)
                 .then((response) => {
                     return { response };
                 }).then((response) => {
@@ -1421,7 +1424,7 @@ class Upload extends Component {
             <div>
                 <div className="upload-video-txt">Upload video</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
-                    <div className="progress-num">{this.state.progress}%</div>
+                    <div className="progress-num">{this.state.progress == 0 ? "" : Math.round(this.state.progress) + "%"}</div>
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
                 <div>
