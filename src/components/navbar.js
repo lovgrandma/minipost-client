@@ -73,16 +73,22 @@ export default class Navbar extends Component {
                     <SearchForm />
                     <div className="btn-desc btn-desc-home">front page</div>
                 </div>
-                <ul className="nav flex-grow2 flex-end nowrapbuttons">
-                    <img className="nav-icon notifications" src={notifications} onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}} alt="notifications"></img>
-                    <div className="btn-desc btn-desc-notif">notifications</div>
-                    <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
-                    <div className="btn-desc btn-desc-yourpro">your profile</div>
-                    <NavLink to='/upload/'><img className="nav-icon upload" src={upload} onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}} alt="upload"/></NavLink>
-                    <div className="btn-desc btn-desc-upl">upload videos or make a thread</div>
-                    {this.props.username ? <div className="nav-loggedin-config" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div> : <div></div>}
-                    <div className="btn-desc btn-desc-conf">change various user settings and preferences</div>
-                </ul>
+                {this.props.username ?
+                    <ul className="nav flex-grow2 flex-end nowrapbuttons">
+                        <img className="nav-icon notifications" src={notifications} onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}} alt="notifications"></img>
+                        <div className="btn-desc btn-desc-notif">notifications</div>
+                        <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
+                        <div className="btn-desc btn-desc-yourpro">your profile</div>
+                        <NavLink to='/upload/'><img className="nav-icon upload" src={upload} onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}} alt="upload"/></NavLink>
+                        <div className="btn-desc btn-desc-upl">upload videos or make a thread</div>
+                        <div className="nav-loggedin-config" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
+                        <div className="btn-desc btn-desc-conf">change various user settings and preferences</div>
+                    </ul>
+                    :<ul className="nav flex-grow2 flex-end nowrapbuttons offline-nav">
+                        <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
+                        <div className="btn-desc btn-desc-yourpro">learn more about what it's like to be a user on minireel</div>
+                    </ul>
+                }
                 </row>
             </nav>
         )

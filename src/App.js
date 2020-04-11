@@ -1,7 +1,7 @@
 'use strict';
-
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import 'shaka-player/dist/controls.css'
 import axios from 'axios';
 import csshake from 'csshake';
 import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js';
@@ -34,6 +34,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {  } from '@fortawesome/free-solid-svg-icons';
 import io from "socket.io-client";
+const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 const bumpEvent = new EventEmitter();
 let socket; // Expose socket to entire application once it is created
@@ -1360,25 +1361,51 @@ function Video(props) {
     )
 }
 
-class Upload extends Component {
+class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0,
+            progress: 0, videoPreview: "",
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
         this.progress = new EventEmitter();
+        this.videoContainer = new React.createRef();
+        this.videoComponent = new React.createRef();
+        this.onErrorEvent = this.onErrorEvent.bind(this);
+		this.onError = this.onError.bind(this);
+    }
 
+    onErrorEvent(event) {
+        this.onError(event.detail);
+    }
+
+    onError(error) {
+        console.error('Error code', error.code, 'object', error);
     }
 
     componentDidMount() {
-        this.progress.on('progress', (data) => {
-            this.setState({progress: data});
+        this.progress.on('progress', (percent, data) => {
+            console.log(percent);
+            this.setState({progress: percent});
             if (this.progressBar.current) {
-                this.progressBar.current.style.width = Math.round(data) + "%";
+                this.progressBar.current.style.width = Math.round(percent) + "%";
+            }
+            if (this.state.videoPreview != data.name) {
+                this.loadPlayer(data);
             }
         });
+
+        let manifestUri = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
+
+        const video = this.videoComponent.current;
+        const videoContainer = this.videoContainer.current;
+
+        // Initialize player
+        let player = new shaka.PLayer(video);
+
+        //Set up shaka player UI
+        const ui = new
     }
 
     uploadFileS3 = async () => {
@@ -1388,11 +1415,11 @@ class Upload extends Component {
             let loaded;
             let total;
             let uploadPercentage;
-            console.log(data.getAll('video'));
             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
             data.append('extension', extension);
             data.append('video', file);
-            console.log(data.getAll('extension'));
+            // console.log(data.getAll('extension'));
+            // console.log(data.getAll('video'));
             const config = {
                 onUploadProgress: progressEvent => { // upload status logic
                     // console.log((Math.round((progressEvent.loaded / 1024 /1024)*10)/10) + "mbs uploaded");
@@ -1400,7 +1427,7 @@ class Upload extends Component {
                     loaded = progressEvent.loaded / 1000000;
                     total = file.size / 1000000;
                     uploadPercentage = (loaded/total) * 100;
-                    this.progress.emit('progress', uploadPercentage);
+                    this.progress.emit('progress', uploadPercentage, this.upload.current.files[0]);
                 },
                 headers: {
                     'content-type': 'multipart/form-data'
@@ -1419,6 +1446,12 @@ class Upload extends Component {
         }
     }
 
+    loadPlayer = async (data) => {
+        // Set video preview
+        this.setState({ videoPreview: data.name });
+        console.log(data);
+
+    }
     render() {
         return (
             <div>
@@ -1430,6 +1463,13 @@ class Upload extends Component {
                 <div>
                     <input className="choose-file" ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
                     <Button className="upload-button" onClick={this.uploadFileS3}>Upload</Button>
+                </div>
+                <div className="video-container video-preview" ref={this.videoContainer}>
+                    <video
+                        className="shaka-video"
+                        ref={this.videoComponent}
+                        poster="//shaka-player-demo.appspot.com/assets/poster.jpg"
+                    />
                 </div>
             </div>
         )

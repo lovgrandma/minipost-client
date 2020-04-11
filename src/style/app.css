@@ -245,7 +245,9 @@ ul li {
     margin-left: 10px;
 }
 
-
+.btn-desc-yourpro {
+    max-width: 200px;
+}
 /* nav hover text boxes */
 
 .btn-desc {
