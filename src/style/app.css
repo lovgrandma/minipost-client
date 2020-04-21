@@ -2143,3 +2143,8 @@ If user only has one friend, styling wont apply */
 .progress-bar-container-sidebaropen {
     width: calc(90vw - 300px);
 }
+
+
+.video-preview-hidden {
+    visibility: hidden;
+}

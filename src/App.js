@@ -1396,16 +1396,46 @@ class Upload extends Component { // ulc upload component
             }
         });
 
+        // Install polyfills to patch browser incompatibilies
+        shaka.polyfill.installAll();
+
+        // Check browser support
+        if (shaka.Player.isBrowserSupported()) {
+            // Everything looks good!
+            this.initPlayer();
+        } else {
+            // This browser does not have the minimum set of APIs we need.
+            console.error('Browser not supported!');
+        }
+
+    }
+
+    initPlayer() {
         let manifestUri = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
 
         const video = this.videoComponent.current;
         const videoContainer = this.videoContainer.current;
 
         // Initialize player
-        let player = new shaka.PLayer(video);
+        let player = new shaka.Player(video);
+
+        // UI custom json
+        const uiConfig = {};
+        uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
 
         //Set up shaka player UI
-        const ui = new
+        const ui = new shaka.ui.Overlay(player, videoContainer, video);
+
+        ui.configure(uiConfig);
+        ui.getControls();
+
+        // Listen for errors
+        player.addEventListener('error', this.onErrorEvent);
+
+        // Try to load a manifest Asynchronous
+        player.load(manifestUri).then(function() {
+            console.log('video has now been loaded!');
+        }).catch(this.onError);
     }
 
     uploadFileS3 = async () => {
@@ -1418,8 +1448,6 @@ class Upload extends Component { // ulc upload component
             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
             data.append('extension', extension);
             data.append('video', file);
-            // console.log(data.getAll('extension'));
-            // console.log(data.getAll('video'));
             const config = {
                 onUploadProgress: progressEvent => { // upload status logic
                     // console.log((Math.round((progressEvent.loaded / 1024 /1024)*10)/10) + "mbs uploaded");
@@ -1464,7 +1492,7 @@ class Upload extends Component { // ulc upload component
                     <input className="choose-file" ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
                     <Button className="upload-button" onClick={this.uploadFileS3}>Upload</Button>
                 </div>
-                <div className="video-container video-preview" ref={this.videoContainer}>
+                <div className={this.state.progress >= 100 ? "video-container video-preview" : "video-container video-preview video-preview-hidden"} ref={this.videoContainer}>
                     <video
                         className="shaka-video"
                         ref={this.videoComponent}
