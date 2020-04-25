@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import search from '../static/search-white.svg';
+import search from '../static/search.svg';
 
 // Searchform within navbar
 export default class SearchForm extends Component {

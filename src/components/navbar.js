@@ -11,7 +11,26 @@ import logo from '../static/minireel-dot-com-3.svg'; import heart from '../stati
 export default class Navbar extends Component {
     constructor(props) {
         super(props);
+        this.navBtnsLeft = React.createRef();
     }
+
+    ComponentDidMount() {
+        this.checkSidebar();
+    }
+
+    ComponentDidUpdate() {
+        this.checkSidebar();
+    }
+
+    checkSidebar() {
+        if (this.props.sidebarStatus == "open") {
+            this.navBtnsLeft.classList.add("navbtnsleft-opened");
+        }
+        if (this.props.sidebarStatus == "closed") {
+            this.navBtnsLeft.classList.remove("navbtnsleft-opened");
+        }
+    }
+
     hoverShow = (e, name, enterexit) => {
         if (name == "upload") {
             if (enterexit == "enter") {
@@ -62,7 +81,7 @@ export default class Navbar extends Component {
         return (
             <nav className="navbar navbar-default border-navigation">
                 <row className="nowrap">
-                <ul className="nav flex-grow2 nowrapbuttons">
+                <ul className={this.props.sidebarStatus == "open" ? "nav flex-grow2 nowrapbuttons navbtnsleft navbtnsleft-opened" : "nav flex-grow2 nowrapbuttons navbtnsleft"} ref={tag => (this.navBtnsLeft = tag)}>
                     <img className="nav-icon favorites" src={heart} onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}} alt="favorites"></img>
                     <div className="btn-desc btn-desc-saved">view videos you've saved</div>
                     <img className="nav-icon history" src={history} onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}} alt="history"></img>

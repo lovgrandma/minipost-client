@@ -62,17 +62,22 @@ button {
 /* Top Navigation Bar */
 
 .navbar {
+    transition: 200ms;
     height: 40px;
     position: fixed;
     top: 0;
     z-index: 10;
     width: 100%;
-    background-color: white;
+    background-color: transparent;
     padding: 0.4rem 1rem 0.5rem 1rem;
 }
 
-.border-navigation {
-    border-bottom: 1px solid #dadada;
+.navbar:hover {
+    background-color: white;
+}
+
+.search-field {
+    background-color: transparent;
 }
 
 .minireel-nav {
@@ -81,7 +86,40 @@ button {
     margin-top: 3px;
 }
 
+.navbtnsleft {
+    transition: 200ms;
+}
+
+/* Conditional media styles for resolutions */
+@media (min-width: 618px) {
+    .navbtnsleft {
+        margin-left: 10px;
+    }
+
+    .navbtnsleft-opened {
+        margin-left: 300px;
+    }
+}
+
+@media (max-width: 1276px) {
+    .brand > .search-form-flex {
+        max-width: 400px;
+        margin: 0;
+    }
+}
+
 @media (max-width: 617px) {
+    .sidebar, .sidebarx {
+        margin-top: 40px;
+    }
+
+    .sidebarxopen {
+        border-radius: 0 20px 0 0;
+    }
+
+    .sidebarx {
+        border-radius: 0 5px 0 0;
+    }
     .minireel-nav {
         margin-right: 10px;
     }
@@ -103,7 +141,7 @@ button {
     width: 480px;
     overflow: hidden;
     margin-left:10px;
-    border-radius: 7px 0 0 7px;
+    border-radius: 7px;
     font-size: 15.5px;
     line-height: 1.5;
 }
@@ -115,7 +153,7 @@ button {
 input[type="search"] {
     border-style: solid;
     border-width: 1px;
-    border-color: darkgrey;
+    border-color: transparent;
 
 }
 
@@ -225,20 +263,20 @@ ul li {
 .searchbox {
     padding-bottom: 5px;
     margin-right: 10px;
-    background-color: #a8a8a8;
+/*    background-color: #a8a8a8;*/
+    background-color: transparent;
     border-style: solid;
     border: 1px;
     border-radius: 0 7px 7px 0;
     transition: 200ms;
 }
 
-.searchbox:hover {
+.search {
     cursor: pointer;
-    background-color: #797979;
 }
 
 .searchbox:active {
-    background-color: #e3e3e3;
+
 }
 
 .nav-loggedin-config {
@@ -288,14 +326,13 @@ ul li {
     height: 100%;
     width: 0px;
     position: fixed;
-    z-index: 5;
+    z-index: 10;
     top: 0;
     left: 0;
     background-color: #f8f8f8;
     overflow-x: hidden;
     transition: 200ms;
     padding-top: 0px;
-    margin-top: 40px;
     padding-bottom: 40px;
 }
 
@@ -309,12 +346,11 @@ ul li {
     height: 100%;
     width: 15px;
     position: fixed;
-    z-index: 2;
+    z-index: 10;
     top: 0;
     left: 0px;
     background: #e6e6e6; /* Old browsers */
     background: linear-gradient(to top, #d6d6d6 0%,#e6e6e6 100%);
-    margin-top: 40px;
     transition: 200ms;
 }
 
