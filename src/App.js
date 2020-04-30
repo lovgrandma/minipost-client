@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css'
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -34,6 +34,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { library } from '@fortawesome/fontawesome-svg-core';
 import {  } from '@fortawesome/free-solid-svg-icons';
 import io from "socket.io-client";
+import currentrooturl from './url.js';
+
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 const bumpEvent = new EventEmitter();
@@ -41,10 +43,6 @@ let socket; // Expose socket to entire application once it is created
 
 library.add();
 const cookies = new Cookies();
-
-let devurl = 'http://localhost:3000/';
-let productionurl = 'https://www.minireel.net/';
-let currentrooturl =  devurl;
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
@@ -291,7 +289,11 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
                 }
             }
 
-            currentchatlength = this.props.conversation.log.length;
+            if (this.props.conversation) {
+                if (this.props.conversation.log) {
+                    currentchatlength = this.props.conversation.log.length;
+                }
+            }
 
             if (currentchatlength) { // Autoscrolls on new chat
                 if (this.state.chatlength == null) { // Chat length was null, set new
@@ -427,8 +429,10 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
     render() {
         // basic functionality, if pending add option to add friend, show if pending, block option, send messages, chat.
         let otheruser = "";
-        for (const [index, user] of this.props.conversation.users.entries()) { // Iterate between users to find out which one is not you, this is the user that is not your friend that this chat belongs to.
-            if (user != this.props.username) { otheruser = user; }
+        if (this.props.conversation) {
+            for (const [index, user] of this.props.conversation.users.entries()) { // Iterate between users to find out which one is not you, this is the user that is not your friend that this chat belongs to.
+                if (user != this.props.username) { otheruser = user; }
+            }
         }
         
         let pending = (e) => { // Determines if a friend request from this user is waiting
@@ -1200,11 +1204,13 @@ function Social(props) { // social prop sp1
                         props.friends.map(function(friend, index) {
                             let convo;
                             for (let i = 0; i < props.conversations.length; i++) {
-                                if (props.conversations[i].users) {
-                                    if (props.conversations[i].users.length == 2) {
-                                        for (let j = 0; j < props.conversations[i].users.length; j++) {
-                                            if (props.conversations[i].users[j] === friend.username) {
-                                                convo = props.conversations[i];
+                                if (props.conversations[i]) {
+                                    if (props.conversations[i].users) {
+                                        if (props.conversations[i].users.length == 2) {
+                                            for (let j = 0; j < props.conversations[i].users.length; j++) {
+                                                if (props.conversations[i].users[j] === friend.username) {
+                                                    convo = props.conversations[i];
+                                                }
                                             }
                                         }
                                     }
@@ -1247,16 +1253,19 @@ function Social(props) { // social prop sp1
                             let person = "";
                             let conversationOfFriends = function() { // determine if a conversation between friends
                                 for (let i = 0; i < props.friends.length; i++) { // iterate thr each friend
-                                    // console.log(conversation.users.length);
-                                    if (conversation.users.length == 2) { // valid 2 user chat
-                                        for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
-                                            if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
-                                                // console.log(props.friends[i].username, conversation.users[k]);
-                                                return true; // Then this is a friend chat, return true to not show in extra chats
+                                    if (conversation) {
+                                        if (conversation.users.length == 2) { // valid 2 user chat
+                                            for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
+                                                if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
+                                                    // console.log(props.friends[i].username, conversation.users[k]);
+                                                    return true; // Then this is a friend chat, return true to not show in extra chats
+                                                }
                                             }
+                                        } else {
+                                            return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
                                         }
                                     } else {
-                                        return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
+                                        return false;
                                     }
                                 }
                                 return false;
@@ -1361,148 +1370,6 @@ function Video(props) {
     )
 }
 
-class Upload extends Component { // ulc upload component
-    constructor(props) {
-        super(props);
-        this.state = {
-            progress: 0, videoPreview: "",
-        }
-        this.upload = React.createRef();
-        this.progressBar = React.createRef();
-        this.progress = new EventEmitter();
-        this.videoContainer = new React.createRef();
-        this.videoComponent = new React.createRef();
-        this.onErrorEvent = this.onErrorEvent.bind(this);
-		this.onError = this.onError.bind(this);
-    }
-
-    onErrorEvent(event) {
-        this.onError(event.detail);
-    }
-
-    onError(error) {
-        console.error('Error code', error.code, 'object', error);
-    }
-
-    componentDidMount() {
-        this.progress.on('progress', (percent, data) => {
-            console.log(percent);
-            this.setState({progress: percent});
-            if (this.progressBar.current) {
-                this.progressBar.current.style.width = Math.round(percent) + "%";
-            }
-            if (this.state.videoPreview != data.name) {
-                this.loadPlayer(data);
-            }
-        });
-
-        // Install polyfills to patch browser incompatibilies
-        shaka.polyfill.installAll();
-
-        // Check browser support
-        if (shaka.Player.isBrowserSupported()) {
-            // Everything looks good!
-            this.initPlayer();
-        } else {
-            // This browser does not have the minimum set of APIs we need.
-            console.error('Browser not supported!');
-        }
-
-    }
-
-    initPlayer() {
-        let manifestUri = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
-
-        const video = this.videoComponent.current;
-        const videoContainer = this.videoContainer.current;
-
-        // Initialize player
-        let player = new shaka.Player(video);
-
-        // UI custom json
-        const uiConfig = {};
-        uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
-
-        //Set up shaka player UI
-        const ui = new shaka.ui.Overlay(player, videoContainer, video);
-
-        ui.configure(uiConfig);
-        ui.getControls();
-
-        // Listen for errors
-        player.addEventListener('error', this.onErrorEvent);
-
-        // Try to load a manifest Asynchronous
-        player.load(manifestUri).then(function() {
-            console.log('video has now been loaded!');
-        }).catch(this.onError);
-    }
-
-    uploadFileS3 = async () => {
-        if (this.upload.current.files[0]) {
-            let file = this.upload.current.files[0];
-            let data = new FormData();
-            let loaded;
-            let total;
-            let uploadPercentage;
-            let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
-            data.append('extension', extension);
-            data.append('video', file);
-            const options = {
-                onUploadProgress: progressEvent => { // upload status logic
-                    loaded = progressEvent.loaded / 1000000;
-                    total = file.size / 1000000;
-                    uploadPercentage = (loaded/total) * 100;
-                    this.progress.emit('progress', uploadPercentage, this.upload.current.files[0]);
-                },
-                headers: {
-                    'content-type': 'multipart/form-data'
-                },
-                timeout: 1000000
-            };
-            // Use axios to make post request and update user on gradual progress of upload
-            if (this.state.videoPreview == "") {
-                axios.post(currentrooturl + 'm/videoupload', data, options)
-                    .then((response) => {
-                    console.log(response);
-                    return { response };
-                })
-                    .catch((error) => {
-                    error => console.log(error);
-                });
-            }
-        }
-    }
-
-    loadPlayer = async (data) => {
-        // Set video preview
-        this.setState({ videoPreview: data.name });
-        console.log(data);
-
-    }
-    render() {
-        return (
-            <div>
-                <div className="upload-video-txt">Upload video</div>
-                <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
-                    <div className="progress-num">{this.state.progress == 0 ? "" : Math.round(this.state.progress) + "%"}</div>
-                    <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
-                </div>
-                <div>
-                    <input className="choose-file" ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
-                    <Button className="upload-button" onClick={this.uploadFileS3}>Upload</Button>
-                </div>
-                <div className={this.state.progress >= 100 ? "video-container video-preview" : "video-container video-preview video-preview-hidden"} ref={this.videoContainer}>
-                    <video
-                        className="shaka-video"
-                        ref={this.videoComponent}
-                        poster="//shaka-player-demo.appspot.com/assets/poster.jpg"
-                    />
-                </div>
-            </div>
-        )
-    }
-}
 // Appends videos to dash
 // TODO 
 // Description shortener function
@@ -1629,13 +1496,19 @@ class Socialbar extends Component { // Main social entry point sb1
                 })
 
                 socket.on('chat', data => {  // on new chat, match id and append
-                    // console.log(data); // log new chat data
                     this.appendChat(data);
                 });
 
                 socket.on('bump', data => {
                     bumpEvent.emit('bump', (data));
                 });
+
+                socket.on('uploadUpdate', data => {
+                    if (data == "uplcomplete") {
+                        cookies.remove('uplsession'); // Upload complete, delete session cookie
+                    }
+                });
+
                 resolve();
             });
 
@@ -1704,6 +1577,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 "user": this.state.isLoggedIn
             }
             socket.emit('joinConvos', obj); // Joins user into convo rooms
+            this.joinUploadSession(); // Joins upload session if true
         } else {
             setTimeout(() => {
                 this.initializeLiveChat();
@@ -1711,10 +1585,15 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    joinUploadSession = () => {
+        if (cookies.get('uplsession')) {
+            socket.emit('joinUploadSession', cookies.get('uplsession'));
+        }
+    }
+
     // for increased functionality when user has clicked on a chat
     // If other user has started chat already but doesnt show, this will update and connect user to the chat
     focusLiveChat(room) {
-        console.log("focus live chat " + room);
         if (!room) {
             let obj = {
                 "ids": this.state.convoIds,
@@ -2387,6 +2266,7 @@ class App extends Component {
 
         this.state = { 
                         mainfeed: videofeed[0].main, watching: "", sidebarStatus: 'open',
+                        isLoggedIn: (cookies.get('loggedIn'))
                      };
     }
     
@@ -2415,7 +2295,7 @@ class App extends Component {
                                 <Video {...props} />
                             )}/>
                             <Route path='/upload' render={(props) => (
-                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} />
+                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} />
                             )}/>
                         </div>
                     </div>
