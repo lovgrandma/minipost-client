@@ -1448,10 +1448,8 @@ class Upload extends Component { // ulc upload component
             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
             data.append('extension', extension);
             data.append('video', file);
-            const config = {
+            const options = {
                 onUploadProgress: progressEvent => { // upload status logic
-                    // console.log((Math.round((progressEvent.loaded / 1024 /1024)*10)/10) + "mbs uploaded");
-                    // console.log((Math.round((file.size / 1024 /1024)*10)/10) + "mbs file size");
                     loaded = progressEvent.loaded / 1000000;
                     total = file.size / 1000000;
                     uploadPercentage = (loaded/total) * 100;
@@ -1459,18 +1457,20 @@ class Upload extends Component { // ulc upload component
                 },
                 headers: {
                     'content-type': 'multipart/form-data'
-                }
+                },
+                timeout: 1000000
             };
             // Use axios to make post request and update user on gradual progress of upload
-            axios.post(currentrooturl + 'm/videoupload', data, config)
-                .then((response) => {
+            if (this.state.videoPreview == "") {
+                axios.post(currentrooturl + 'm/videoupload', data, options)
+                    .then((response) => {
+                    console.log(response);
                     return { response };
-                }).then((response) => {
-                    console.log(response.response.data);
                 })
-                .catch((error) => {
+                    .catch((error) => {
                     error => console.log(error);
                 });
+            }
         }
     }
 

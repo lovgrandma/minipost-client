@@ -93,11 +93,11 @@ button {
 /* Conditional media styles for resolutions */
 @media (min-width: 618px) {
     .navbtnsleft {
-        margin-left: 10px;
+        margin-left: 15px;
     }
 
     .navbtnsleft-opened {
-        margin-left: 300px;
+        margin-left: 305px;
     }
 }
 
