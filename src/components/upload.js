@@ -40,11 +40,18 @@ export default class Upload extends Component { // ulc upload component
                 e.preventDefault();
                 if (this.tagsInput.current.value.length > 0) {
                     let tempTags = this.state.tags;
-                    tempTags.push(this.tagsInput.current.value);
-                    this.setState({ tags : tempTags });
-                    this.tagsInput.current.value = "";
-                    if (this.tagsInput.current.value == ",") {
+                    if (tempTags.indexOf(this.tagsInput.current.value) < 0) {
+                        tempTags.push(this.tagsInput.current.value);
+                        this.setState({ tags : tempTags });
                         this.tagsInput.current.value = "";
+                        if (this.tagsInput.current.value == ",") {
+                            this.tagsInput.current.value = "";
+                        }
+                    } else {
+                        this.tagsInput.current.value = "";
+                        if (this.tagsInput.current.value == ",") {
+                            this.tagsInput.current.value = "";
+                        }
                     }
                 }
             }
@@ -110,6 +117,14 @@ export default class Upload extends Component { // ulc upload component
                 break;
         }
         return month + " " + (today.getDate()) + ", " + today.getFullYear();
+    }
+
+    getDescPlaceholder() {
+        if (this.state.placeholderDesc.length > 219) {
+            return this.state.placeholderDesc.substring(0, 220) + "...";
+        } else {
+            return this.state.placeholderDesc;
+        }
     }
 
     tagInputFocus(e) {
@@ -252,9 +267,11 @@ export default class Upload extends Component { // ulc upload component
                         <label className={this.state.placeholderTitle == "" ? "upl-vid-title-label" : "upl-vid-title-label upl-vid-title-label-fill"}>{this.state.placeholderTitle == "" ? "title" : this.state.placeholderTitle}</label>
                         <div className={this.state.placeholderTitle != "" || this.state.placeholderDesc != "" ? "video-detail-container" : "video-detail-container video-detail-container-hidden"}>
                             <label className="upl-vid-date-label">{this.getDate()}</label>
+                            <span className="video-separator">|</span>
                             <label className="upl-vid-author-label">{this.props.isLoggedIn ? this.props.isLoggedIn : ""}</label>
                         </div>
-                        <label className="upl-vid-desc-label">{this.state.placeholderDesc == "" ? "" : this.state.placeholderDesc}</label>
+                        <div className="video-detail-separator">&nbsp;</div>
+                        <label className={this.state.placeholderDesc == "" ? "upl-vid-desc-label upl-vid-desc-label-hidden" : "upl-vid-desc-label"}>{this.getDescPlaceholder()}</label>
                         <input type='text' id="upl-vid-title" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video"></input>
                         <textarea type='text' id="upl-vid-desc" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
                         <div class="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
@@ -265,9 +282,8 @@ export default class Upload extends Component { // ulc upload component
                                     )
                                 })
                             }
-                            <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} ></input>
+                            <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} placeholder={this.state.tags.length == 0 ? "tags" : ""}></input>
                         </div>
-
                     </div>
                 </div>
             </div>

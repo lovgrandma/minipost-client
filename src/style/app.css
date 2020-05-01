@@ -2208,10 +2208,14 @@ If user only has one friend, styling wont apply */
 }
 
 #upl-vid-title::placeholder {
-    font-size: 0.8em;
+    font-size: 0.9em;
 }
 
 #upl-vid-desc::placeholder {
+    font-size: 0.9em;
+}
+
+#upl-vid-tags::placeholder {
     font-size: 0.9em;
 }
 
@@ -2229,7 +2233,7 @@ If user only has one friend, styling wont apply */
     display: inline-block;
     border-radius: 15px;
     width: 500px;
-    min-height: 45px;
+    min-height: 30px;
     border-color: grey;
     padding: 1px 2px;
     cursor: text;
@@ -2263,7 +2267,7 @@ If user only has one friend, styling wont apply */
     font-weight: bold;
     display: inline-block;
     transform: scale(1.3);
-    margin: 0.2em 0.5em 0.2em 0.5em;
+    margin: 0.3em 0.5em 0.3em 0.5em;
 }
 
 #upl-vid-tags {
@@ -2289,10 +2293,10 @@ If user only has one friend, styling wont apply */
 
 .upl-vid-title-label {
     padding: 0 10px;
-    margin-top: 20px;
+    margin-top: 15px;
     font-weight: 500;
     font-size: 18px;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
     color: grey;
 }
 
@@ -2301,17 +2305,26 @@ If user only has one friend, styling wont apply */
 }
 
 .upl-vid-date-label {
-    padding: 0 10px;
+    padding: 0 5px 0 10px;
     font-size: 14px;
 }
 
 .upl-vid-desc-label {
     display: block;
     margin-bottom: 15px;
+    margin-top: 5px;
     color: black;
     max-width: 80%;
     font-size: 14px;
     line-height: 1.4;
+    transition: 300ms;
+    opacity: 100;
+    height: auto;
+    word-wrap: break-word;
+}
+
+.upl-vid-desc-label-hidden {
+    opacity: 0;
 }
 
 .video-detail-container {
@@ -2328,4 +2341,17 @@ If user only has one friend, styling wont apply */
 
 .upl-vid-date-label, .upl-vid-author-label {
     margin-bottom: 1px;
+}
+
+.upl-vid-author-label {
+    padding: 0 5px;
+}
+.video-detail-separator {
+    height: 0.5px;
+    background-color: #ebebeb;
+    margin:0 10px;
+}
+
+.video-separator {
+    font-weight: 100;
 }
