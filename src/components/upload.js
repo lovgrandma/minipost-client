@@ -18,15 +18,57 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "",
+            progress: 0, videoPreview: "", tags: []
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
+        this.tagsInput = React.createRef();
         this.progress = new EventEmitter();
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
         this.onErrorEvent = this.onErrorEvent.bind(this);
 		this.onError = this.onError.bind(this);
+        this.onKeyPress = this.onKeyPress.bind(this);
+    }
+
+    onKeyPress(e) {
+        if (this.tagsInput.current == document.activeElement) {
+            if (e.key == "," || e.keyCode == 13) {
+                e.preventDefault();
+                if (this.tagsInput.current.value.length > 0) {
+                    let tempTags = this.state.tags;
+                    tempTags.push(this.tagsInput.current.value);
+                    this.setState({ tags : tempTags });
+                    setTimeout(() => {
+                        this.tagsInput.current.value = "";
+                    }, 1);
+                    if (this.tagsInput.current.value == ",") {
+                        this.tagsInput.current.value = "";
+                    }
+                }
+            }
+        }
+    }
+
+    deleteTag(e) {
+        console.log(e.target.parentNode.textContent);
+        let tempTags = this.state.tags;
+        for (let i = 0; i < tempTags.length; i++) {
+            if (e.target) {
+                if (e.target.parentNode) {
+                    if (e.target.parentNode.textContent) {
+                        if (e.target.parentNode.textContent == tempTags[i]) {
+                            tempTags.splice(i, 1);
+                        }
+                    }
+                }
+            }
+        }
+        this.setState({ tags: tempTags });
+    }
+
+    tagInputFocus(e) {
+        this.tagsInput.current.focus();
     }
 
     onErrorEvent(event) {
@@ -163,7 +205,18 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                     <div className="videoInputData">
                         <input type='text' id="upl-vid-title" name="upl-vid-title" placeholder="title"></input>
-                        <textarea type='text' id="upl-vid-desc" name="upl-vid-desc" placeholder="description"></textarea>
+                        <textarea type='text' id="upl-vid-desc" name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
+                        <div class="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
+                            {
+                                this.state.tags.map((tag, index) => {
+                                    return (
+                                        <span class="tag">{tag}<span class="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
+                                    )
+                                })
+                            }
+                            <textarea type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} ></textarea>
+                        </div>
+
                     </div>
                 </div>
             </div>
