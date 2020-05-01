@@ -18,11 +18,13 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: []
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: ""
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
         this.tagsInput = React.createRef();
+        this.titleIn = React.createRef();
+        this.descIn = React.createRef();
         this.progress = new EventEmitter();
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -31,6 +33,7 @@ export default class Upload extends Component { // ulc upload component
         this.onKeyPress = this.onKeyPress.bind(this);
     }
 
+    /* Parses all key presses for componenet elements */
     onKeyPress(e) {
         if (this.tagsInput.current == document.activeElement) {
             if (e.key == "," || e.keyCode == 13) {
@@ -39,9 +42,7 @@ export default class Upload extends Component { // ulc upload component
                     let tempTags = this.state.tags;
                     tempTags.push(this.tagsInput.current.value);
                     this.setState({ tags : tempTags });
-                    setTimeout(() => {
-                        this.tagsInput.current.value = "";
-                    }, 1);
+                    this.tagsInput.current.value = "";
                     if (this.tagsInput.current.value == ",") {
                         this.tagsInput.current.value = "";
                     }
@@ -50,8 +51,8 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    /* Deletes tag when clicked on */
     deleteTag(e) {
-        console.log(e.target.parentNode.textContent);
         let tempTags = this.state.tags;
         for (let i = 0; i < tempTags.length; i++) {
             if (e.target) {
@@ -65,6 +66,50 @@ export default class Upload extends Component { // ulc upload component
             }
         }
         this.setState({ tags: tempTags });
+    }
+
+    updateTitle(e, element) {
+        if (element == "title") {
+            if (this.titleIn.current) {
+                this.setState({ placeholderTitle: this.titleIn.current.value });
+            }
+        } else if (element == "desc") {
+            if (this.descIn.current) {
+                this.setState({ placeholderDesc: this.descIn.current.value })
+            }
+        }
+    }
+
+    getDate() {
+        let today = new Date();
+        let month = "";
+        switch (today.getMonth()) {
+            case 0: month = "january";
+                break;
+            case 1: month = "february";
+                break;
+            case 2: month = "march";
+                break;
+            case 3: month = "april";
+                break;
+            case 4: month = "may";
+                break;
+            case 5: month = "june";
+                break;
+            case 6: month = "july";
+                break;
+            case 7: month = "august";
+                break;
+            case 8: month = "september";
+                break;
+            case 9: month = "october";
+                break;
+            case 10: month = "november";
+                break;
+            case 0: month = "december";
+                break;
+        }
+        return month + " " + (today.getDate()) + ", " + today.getFullYear();
     }
 
     tagInputFocus(e) {
@@ -203,9 +248,15 @@ export default class Upload extends Component { // ulc upload component
                             poster="//shaka-player-demo.appspot.com/assets/poster.jpg"
                         />
                     </div>
-                    <div className="videoInputData">
-                        <input type='text' id="upl-vid-title" name="upl-vid-title" placeholder="title"></input>
-                        <textarea type='text' id="upl-vid-desc" name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
+                    <div className="video-input-data">
+                        <label className={this.state.placeholderTitle == "" ? "upl-vid-title-label" : "upl-vid-title-label upl-vid-title-label-fill"}>{this.state.placeholderTitle == "" ? "title" : this.state.placeholderTitle}</label>
+                        <div className={this.state.placeholderTitle != "" || this.state.placeholderDesc != "" ? "video-detail-container" : "video-detail-container video-detail-container-hidden"}>
+                            <label className="upl-vid-date-label">{this.getDate()}</label>
+                            <label className="upl-vid-author-label">{this.props.isLoggedIn ? this.props.isLoggedIn : ""}</label>
+                        </div>
+                        <label className="upl-vid-desc-label">{this.state.placeholderDesc == "" ? "" : this.state.placeholderDesc}</label>
+                        <input type='text' id="upl-vid-title" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video"></input>
+                        <textarea type='text' id="upl-vid-desc" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
                         <div class="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
                             {
                                 this.state.tags.map((tag, index) => {
@@ -214,7 +265,7 @@ export default class Upload extends Component { // ulc upload component
                                     )
                                 })
                             }
-                            <textarea type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} ></textarea>
+                            <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} ></input>
                         </div>
 
                     </div>

@@ -2196,18 +2196,27 @@ If user only has one friend, styling wont apply */
 
 #upl-vid-title, #upl-vid-desc {
     display: block;
-    margin: 20px 0;
     border-radius: 20px;
     border: 0.5px solid grey;
-    padding: 5px;
+    padding: 5px 10px;
 }
 
 #upl-vid-title {
     max-width: 500px;
     width: 100%;
+    margin-bottom: 20px;
+}
+
+#upl-vid-title::placeholder {
+    font-size: 0.8em;
+}
+
+#upl-vid-desc::placeholder {
+    font-size: 0.9em;
 }
 
 #upl-vid-desc {
+    margin: 20px 0;
     height: 150px;
     max-width: 650px;
     width: 100%;
@@ -2228,7 +2237,7 @@ If user only has one friend, styling wont apply */
 
 .tags-input-container .tag {
     font-size: 85%;
-    padding: 0.4em 0.5em 0.4em 0.7em;
+    padding: 0.02em 0.5em 0.1em 0.7em;
     margin: 0.2em;
     display: inline-block;
     background-color: #ddd;
@@ -2260,19 +2269,63 @@ If user only has one friend, styling wont apply */
 #upl-vid-tags {
     font-size: 0.9em;
     border: none;
-    padding: 0px 3px 0 3px;
+    padding: 5px 3px 5px 3px;
     margin: 0 5px 0 5px;
-    height: 40px;
-    line-height: 40px;
-    resize: none;
-    overflow-y: hidden;
-    vertical-align: middle;
+    height: 28px;
+    line-height: 0px;
     border-radius: 20px;
     width: 130px;
-    max-width: 200px;
+
 }
 
 #upl-vid-tags:focus {
     outline: none;
 }
 
+.upl-vid-title-label, .upl-vid-desc-label {
+    transition: 300ms;
+    padding: 0 10px;
+}
+
+.upl-vid-title-label {
+    padding: 0 10px;
+    margin-top: 20px;
+    font-weight: 500;
+    font-size: 18px;
+    margin-bottom: 10px;
+    color: grey;
+}
+
+.upl-vid-title-label-fill {
+    color: black;
+}
+
+.upl-vid-date-label {
+    padding: 0 10px;
+    font-size: 14px;
+}
+
+.upl-vid-desc-label {
+    display: block;
+    margin-bottom: 15px;
+    color: black;
+    max-width: 80%;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+.video-detail-container {
+    height: 25px;
+    overflow: hidden;
+    transition: 300ms;
+    opacity: 100;
+}
+
+.video-detail-container-hidden {
+    opacity: 0;
+    height: 0px;
+}
+
+.upl-vid-date-label, .upl-vid-author-label {
+    margin-bottom: 1px;
+}
