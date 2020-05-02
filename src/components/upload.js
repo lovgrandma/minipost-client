@@ -82,7 +82,7 @@ export default class Upload extends Component { // ulc upload component
             }
         } else if (element == "desc") {
             if (this.descIn.current) {
-                this.setState({ placeholderDesc: this.descIn.current.value })
+                this.setState({ placeholderDesc: this.descIn.current.value.replace(/br/g, "\n") })
             }
         }
     }
@@ -120,11 +120,12 @@ export default class Upload extends Component { // ulc upload component
     }
 
     getDescPlaceholder() {
-        if (this.state.placeholderDesc.length > 219) {
-            return this.state.placeholderDesc.substring(0, 220) + "...";
-        } else {
-            return this.state.placeholderDesc;
-        }
+//        if (this.state.placeholderDesc.length > 219) {
+//            return this.state.placeholderDesc.substring(0, 220) + "...";
+//        } else {
+//            return this.state.placeholderDesc;
+//        }
+        return this.state.placeholderDesc;
     }
 
     tagInputFocus(e) {
@@ -272,13 +273,22 @@ export default class Upload extends Component { // ulc upload component
                         </div>
                         <div className="video-detail-separator">&nbsp;</div>
                         <label className={this.state.placeholderDesc == "" ? "upl-vid-desc-label upl-vid-desc-label-hidden" : "upl-vid-desc-label"}>{this.getDescPlaceholder()}</label>
+                        <label className={this.state.tags.length == 0 ? "upl-vid-tags-label upl-vid-tags-label-hidden" : "upl-vid-tags-label"}>{
+                            this.state.tags.map((tag, index) => {
+                                return (
+                                    <span className="tag-label">{tag}</span>
+                                )
+                            })
+                        }
+                        </label>
+                        <div className="video-preview-input-separator">&nbsp;</div>
                         <input type='text' id="upl-vid-title" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video"></input>
                         <textarea type='text' id="upl-vid-desc" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
                         <div class="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
                             {
                                 this.state.tags.map((tag, index) => {
                                     return (
-                                        <span class="tag">{tag}<span class="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
+                                        <span className="tag">{tag}<span className="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
                                     )
                                 })
                             }

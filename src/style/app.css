@@ -2202,8 +2202,8 @@ If user only has one friend, styling wont apply */
 }
 
 #upl-vid-title {
-    max-width: 500px;
-    width: 100%;
+    width: 650px;
+    max-width: 100%;
     margin-bottom: 20px;
 }
 
@@ -2222,8 +2222,8 @@ If user only has one friend, styling wont apply */
 #upl-vid-desc {
     margin: 20px 0;
     height: 150px;
-    max-width: 650px;
-    width: 100%;
+    max-width: 100%;
+    width: 1000px;
     resize: none;
     font-size: 0.9em;
 }
@@ -2311,21 +2311,52 @@ If user only has one friend, styling wont apply */
 
 .upl-vid-desc-label {
     display: block;
-    margin-bottom: 15px;
     margin-top: 5px;
     color: black;
-    max-width: 80%;
+    width: 1000px;
+    max-width: 50%;
     font-size: 14px;
     line-height: 1.4;
     transition: 300ms;
     opacity: 100;
-    height: auto;
     word-wrap: break-word;
+    white-space: pre-line;
 }
 
-.upl-vid-desc-label-hidden {
-    opacity: 0;
+.upl-vid-tags-label {
+    margin-top: 10px;
+    padding: 0 5px 0 10px;
+    font-size: 0.8em;
+    opacity: 100;
+    transition: 300ms;
+    margin-bottom: 10px;
 }
+
+.upl-vid-desc-label-hidden,
+.upl-vid-tags-label-hidden {
+    opacity: 0;
+    margin-bottom: 0;
+    margin-top: 0;
+    overflow: hidden;
+}
+
+.tag-label:first-child {
+    margin: 0 2px 0 0;
+}
+
+.tag-label {
+    cursor: pointer;
+    margin: 0 2px 0 2px;
+    padding: 1px 6px;
+    background-color: #ddd;
+    border-radius: 20px;
+    transition: 300ms;
+}
+
+.tag-label:hover {
+    background-color: #eaeaea;
+}
+
 
 .video-detail-container {
     height: 25px;
@@ -2354,4 +2385,11 @@ If user only has one friend, styling wont apply */
 
 .video-separator {
     font-weight: 100;
+}
+
+.video-preview-input-separator {
+    background-color: #f2f2f2;
+    border-radius: 20px;
+    height: 10px;
+    margin-bottom: 10px;
 }
