@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css'
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -68,172 +68,6 @@ function Request(props) {
     )
 }
 
-class SearchedUserResults extends Component { // search user component sup1
-    constructor(props) {
-        super(props);
-        this.searchChatFormRef = React.createRef();
-        this.searchChatSubmitRef = React.createRef();
-        this.inputRef = React.createRef();
-        this.spinnerRef = React.createRef();
-        this.state = { removeprompt: false,
-            blockprompt: false,
-            reportprompt: false,
-            waitingfetch: false }
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps != this.props) {
-            this.unsetSpinner();
-        }
-    }
-
-    promptremovefriend = (e) => {
-        this.setState({ removeprompt: true });
-        console.log('remove friend prompt');
-    }
-    promptexitremovefriend = (e) => {
-        this.setState({ removeprompt: false });
-    }
-    promptblockuser = (e) => {
-        this.setState({ blockprompt: true });
-    }
-    promptexitblockuser = (e) => {
-        this.setState({ blockprompt: false });
-    }
-    
-    openchatinput = (e) => {
-        // console.log(this.props.index);
-        console.log(this.props.searchtotal);
-        for (let i = 0; i < this.props.searchtotal; i++) { // Check other chatforms and remove
-            if (document.getElementsByClassName('search-chat-form')[i]) {
-                document.getElementsByClassName('search-chat-form')[i].classList.remove('search-chat-form-open');
-                document.getElementsByClassName('search-textarea-chat-autosize')[i].classList.add('search-textarea-chat-autosize-closed');
-                document.getElementsByClassName('search-chat-submit')[i].classList.remove('search-chat-submit-open');
-            }
-        }
-        this.searchChatFormRef.classList.add('search-chat-form-open'); // open chat form
-        this.inputRef._ref.classList.remove('search-textarea-chat-autosize-closed');
-        this.searchChatSubmitRef.classList.add('search-chat-submit-open');
-    }
-
-    handleKeyPress = (e, otheruser) => {
-        if(e.key === 'Enter'){
-            e.preventDefault();
-            let sendchat = (e) => {
-                this.props.beginchat(e, otheruser, this.inputRef._ref.value, null, true), this.resetchat(e);
-                this.inputRef._ref.placeholder = "message was sent";
-            }
-            sendchat(e);
-        }
-    }
-
-    setSpinner = (e) => {
-        this.spinnerRef.current.classList.add("spinner-search-holder-visible");
-        this.setState({ waitingfetch: true });
-    }
-
-    unsetSpinner = (e) => {
-        if (this.state.waitingfetch == true) {
-            this.setState({ waitingfetch: false });
-            this.spinnerRef.current.classList.remove("spinner-search-holder-visible");
-        }
-    }
-
-    resetchat = (e) => {
-        this.inputRef._ref.value = ""; // Clear chat message
-    }
-
-
-    render() {
-        return (
-            this.props.yourself() ?
-            <div className='searched-user-div'>
-                <div className='searched-user-username-container'>
-                    <img className="searched-user-avatar" src={require("./static/bobby.jpg")}></img>
-                    <div className='searched-user-username'>{this.props.searcheduser}</div>
-                    <div className="search-chat-form"></div>
-                    <div className="search-textarea-chat-autosize"></div>
-                    <div className="search-chat-submit"></div>
-                </div>
-            </div>
-            :
-            <div className="search-users-relative-div">
-                <div ref={this.spinnerRef} className="spinner-search-holder">
-                    <div className="loadingio-spinner-dual-ball loadingio-spinner-dual-ball-m6fvn6j93c"><div className="ldio-oo3b7d4nmnr">
-                    <div></div><div></div><div></div>
-                    </div></div>
-                    <div className="cover-search"></div>
-                </div>
-                <div className='searched-user-div'>
-                    <div className='searched-user-username-container'>
-                        <img className="searched-user-avatar" src={require("./static/bobby.jpg")}></img>
-                        <div className='searched-user-username'>{this.props.searcheduser}</div>
-                        <div className='search-user-dropdown search-user-dropdown-search'>
-                            <img className="circle-menu-icon" src={circlemenulight} alt="circlemenu"></img>
-                            <div className="dropdown-content dropdown-content-search searchdropdownfix">
-                                <button className='dropdown-content-option'>share profile</button>
-                                <button className='dropdown-content-option'>watch</button>
-                                <div className='dropdown-content-divider'>&nbsp;</div>
-                                {
-                                    this.props.alreadyfriends() ? // Redundant unfriend option, default location is in friends component. Shows in both
-                                            this.state.removeprompt == false ? // Prompt functionality to ask to unfriend
-                                                <button type="button" className='dropdown-content-option' onClick={this.promptremovefriend}>unfriend</button>
-                                                :
-                                                <div className='prompt-spacing prompt-background'>
-                                                    <span className='opensans-thin'>Sure you want to unfriend <span className="friendname-small">{this.props.searcheduser}</span>?</span>
-                                                    <div className='prompt-yesno-spacing'><span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitremovefriend()}}>Yes</button></span><span><button className ="button-no" type="button" onClick={this.promptexitremovefriend}>No</button></span></div>
-                                                </div>
-                                        :
-                                        <div></div>
-                                }
-                                {
-                                    this.state.blockprompt == false ? // Prompt functionality to block
-                                        <button className='dropdown-content-option block-option-dropdown' onClick={this.promptblockuser}>block</button>
-                                        :
-                                        <div className='prompt-spacing prompt-background'>
-                                            <span className='opensans-thin'>Sure you want to block <span className="friendname-small">{this.props.searcheduser}</span>?</span>
-                                            <span><button className ="button-yes" onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser); this.promptexitblockuser()}}>Yes</button></span><span><button className="button-no" type="button" onClick={this.promptexitblockuser}>No</button></span>
-                                        </div>
-                                }
-                                <button className='dropdown-content-option report-option-dropdown'>report</button>
-                            </div>
-                        </div>
-
-                    </div>
-                    <div className='request-and-block-container'>
-                        <span className='search-user-profile'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
-                        {
-                            this.props.alreadyfriends() ?
-                                <span className='search-profile-bump-container'><span className='search-user-watch'>watch<img className="searched-user-icon" src={play} alt="play"></img></span><span className='search-user-bump'>bump<img className="searched-user-icon" src={pointingfinger} alt="pointingfinger"></img></span></span>
-                                : this.props.requestwaiting() ?
-                                    <span className='search-profile-bump-container'>
-                                        <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                        <div className='search-user-accept-friend-request' onClick={(e) => {this.props.acceptfriendrequest(e, this.props.searcheduser, true); this.setSpinner();}}>accept<img className="searched-user-icon" src={heart} alt="heart"></img></div>
-                                    </span>
-                                    : this.props.alreadypending() ?
-                                        <span className='search-profile-bump-container'>
-                                            <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                            <div className='search-user-pending-friend-request' onClick={(e) => {this.props.revokefriendrequest(e, this.props.searcheduser, true); this.setSpinner();}}>pending</div>
-                                        </span>
-                                        :
-                                        <span className='search-profile-bump-container'>
-                                            <div className='searched-user-follow-request'>follow<img className="searched-user-icon" src={subscribe} alt="subscribe"></img></div>
-                                            <div className='searched-user-send-friend-request' onClick={(e) => {this.props.sendfriendrequest(e, this.props.searcheduser); this.setSpinner();}}>invite<img className="searched-user-icon" src={heart} alt="friend request"></img></div>
-                                        </span>
-                        }
-                        <div className='searched-user-message' onClick={this.openchatinput}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
-                    </div>
-                    <form className='search-chat-form search-chat-form-closed' method="PUT" action="/chat" ref={tag => (this.searchChatFormRef = tag)}>
-                        <span>
-                        <TextareaAutosize className='search-textarea-chat-autosize search-textarea-chat-autosize-closed' ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, this.props.searcheduser)}} />
-                        <button className='search-chat-submit' onClick={(e) => {this.props.beginchat(e, this.props.searcheduser, this.inputRef._ref.value, null, true), this.resetchat(e)}} type='submit' value='submit' ref={tag => (this.searchChatSubmitRef = tag)}><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
-                        </span>
-                    </form>
-                </div>
-            </div>
-        )
-    }
-}
 
 class NonFriendConversation extends Component { // non friend conversation nfc1
     constructor(props) {
@@ -1489,9 +1323,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 });
 
                 socket.on('typing', data => {
-                    console.log("compressed byte size: " + data.length);
                     data = lzw.decompress(data); // decompress data before processing
-                    console.log("decompressed byte size: " + data.length);
                     this.setTyping(data);
                 })
 
@@ -1504,9 +1336,16 @@ class Socialbar extends Component { // Main social entry point sb1
                 });
 
                 socket.on('uploadUpdate', data => {
+                    this.props.updateUploadStatus(data);
                     if (data == "uplcomplete") {
                         cookies.remove('uplsession'); // Upload complete, delete session cookie
                     }
+                });
+
+                socket.on('uploadErr', data => {
+                    console.log(data);
+                    this.props.updateErrStatus(data);
+                    cookies.remove('uplsession'); // Upload complete, delete session cookie
                 });
 
                 resolve();
@@ -1555,16 +1394,18 @@ class Socialbar extends Component { // Main social entry point sb1
     appendChat = (data) => {
         if (this.state.conversations) {
             for (let i = 0; i < this.state.conversations.length; i++) {
-                if (data.id == this.state.conversations[i]._id) {
-                    delete data.id;
-                    let temp = this.state.conversations;
-                    temp[i].log.push(data);
-                    // console.log(temp); // logs all current conversations
-                    if (data.author != this.state.isLoggedIn) {
-                        let leanString = data.author + ";" + "" + ";" + this.state.conversations[i]._id; // reset typing data
-                        this.setTyping(leanString);
+                if (this.state.conversations[i]) {
+                    if (data.id == this.state.conversations[i]._id) {
+                        delete data.id;
+                        let temp = this.state.conversations;
+                        temp[i].log.push(data);
+                        // console.log(temp); // logs all current conversations
+                        if (data.author != this.state.isLoggedIn) {
+                            let leanString = data.author + ";" + "" + ";" + this.state.conversations[i]._id; // reset typing data
+                            this.setTyping(leanString);
+                        }
+                        this.setState({ conversations: temp });
                     }
-                    this.setState({ conversations: temp });
                 }
             }
         }
@@ -1823,12 +1664,10 @@ class Socialbar extends Component { // Main social entry point sb1
 
     searchusers() { // Search method that uses value in user search bar to return 10 searched users
         // debounced fetch users event
-        console.log ('searching users');
         if (this.state && this.state.isLoggedIn) {
             let username = this.state.isLoggedIn;
             let searchusers = document.getElementById('usersearch').value;
             if (searchusers) {
-                console.log("base search");
                 fetch(currentrooturl + 'm/searchusers', {
                     method: "POST",
                     headers: {
@@ -1970,14 +1809,14 @@ class Socialbar extends Component { // Main social entry point sb1
         })
     }
         
+    /* Get pending requests method that often runs in background to populate pending requests data, other methods
+    rely on this data to get important information */
     getpendingrequests = (show, search, username) => {
         // show variable must be null, "hidden" or "show"
         // search must be true to search after query or false to not search (e.g if want to close requests header but do not want to search)
         if (!username) {
             username = this.state.username;
         }
-        
-        console.log("Set state for showpendingrequests:", show, ", Search after query?:", search, ", Searching for requests of:", username);
         if (search || !this.state.pendingfriendrequests) { // If searching again or pendingfriendrequests is null
             fetch(currentrooturl + 'm/pendingrequests', {
                 method: "POST",
@@ -2077,7 +1916,25 @@ class Socialbar extends Component { // Main social entry point sb1
         // All beginchat methods ran from searchbar will run as a fetch request.
         // Others will update via socket
         console.log("Socket" + socket, "from search " + fromSearch, "ConvoId " + convoId);
-        if (socket && !fromSearch && convoId) { // If socket is online, use socket to redis first functionality
+        if (!convoId) { // Determine if chat sent from search exists in current chats
+            if (this.state.conversations) {
+                for (let i = 0; i < this.state.conversations.length; i++) {
+                    if (this.state.conversations[i]) {
+                        if (this.state.conversations[i].users) {
+                            if (this.state.conversations[i].users.length == 2) {
+                                for (let j = 0; j < this.state.conversations[i].users.length; j++) {
+                                    if (this.state.conversations[i].users[j] == chatwith) {
+                                        convoId = this.state.conversations[i]._id;
+                                        break;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        if (socket && convoId) { // If socket is online, use socket to redis first functionality
             if (message.length > 0) {
                 let chatObj = {
                     "user": username,
@@ -2266,7 +2123,7 @@ class App extends Component {
 
         this.state = { 
                         mainfeed: videofeed[0].main, watching: "", sidebarStatus: 'open',
-                        isLoggedIn: (cookies.get('loggedIn'))
+                        isLoggedIn: (cookies.get('loggedIn')), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: ''
                      };
     }
     
@@ -2276,7 +2133,32 @@ class App extends Component {
             cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
         }
     }
-        
+
+    getSocket = async => {
+        return socket;
+    }
+    updateUploadStatus = (update) => {
+        if (update.match(/processing;([a-z0-9].*)/)) { // If update matches background video upload update, change uploading state, else just change upload status
+            this.setState({ uploading: update.match(/processing;([a-z0-9].*)/)[1] });
+        } else {
+            if (update.match(/video ready;([a-z0-9].*)/)) {
+                this.setState({ uploading: null, uploadedMpd: update.match(/video ready;([a-z0-9].*)/)[1] });
+                this.setState({ uploadStatus: "video ready" });
+            } else if (update == "video ready") {
+                this.setState({ uploading: null });
+                this.setState({ uploadStatus: update });
+            } else {
+                this.setState({ uploadStatus: update });
+            }
+            this.setState({ errStatus: '' });
+        }
+    }
+
+    updateErrStatus = (err) => {
+        this.setState({ uploadStatus: '' });
+        this.setState({ errStatus: err });
+    }
+
     updateSidebarStatus = (update) => {
         this.setState({sidebarStatus: update });
     }
@@ -2285,7 +2167,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
@@ -2295,7 +2177,7 @@ class App extends Component {
                                 <Video {...props} />
                             )}/>
                             <Route path='/upload' render={(props) => (
-                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} />
+                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
                             )}/>
                         </div>
                     </div>

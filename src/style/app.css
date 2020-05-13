@@ -59,6 +59,11 @@ button {
   transition: visibility 0s 500ms, opacity 500ms linear;
 }
 
+.flex {
+    display: flex;
+    justify-content: space-between;
+}
+
 /* Top Navigation Bar */
 
 .navbar {
@@ -2143,7 +2148,7 @@ If user only has one friend, styling wont apply */
 
 .upload-video-txt {
     font-size: 20px;
-    margin-bottom: 24px;
+    margin-bottom: 20px;
 }
 
 .choose-file,
@@ -2156,12 +2161,28 @@ If user only has one friend, styling wont apply */
     display: block;
 }
 
+.upload-button-hidden,
+.choose-file-hidden {
+    display: none;
+}
+
 .choose-file {
     width: 100%;
 }
 
-.progress-num {
+.progress-upload-status {
+    font-size: 0.9em;
     user-select: none;
+}
+
+.progress-num {
+    font-size: 0.85em;
+    user-select: none;
+}
+
+.progress-update {
+    margin-bottom: 2px;
+    transition: 200ms;
 }
 
 .progress-bar {

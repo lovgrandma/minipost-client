@@ -9,16 +9,19 @@ import {
     Button,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
+import io from "socket.io-client";
+import {v4 as uuidv4 } from 'uuid';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
+let socket;
 
 export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: ""
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '',
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -120,11 +123,6 @@ export default class Upload extends Component { // ulc upload component
     }
 
     getDescPlaceholder() {
-//        if (this.state.placeholderDesc.length > 219) {
-//            return this.state.placeholderDesc.substring(0, 220) + "...";
-//        } else {
-//            return this.state.placeholderDesc;
-//        }
         return this.state.placeholderDesc;
     }
 
@@ -141,57 +139,139 @@ export default class Upload extends Component { // ulc upload component
     }
 
     componentDidMount() {
+        this.getSocket(0, 150);
+
+        /* Progress event for uploading video */
         this.progress.on('progress', (percent, data) => {
-            console.log(percent);
             this.setState({progress: percent});
             if (this.progressBar.current) {
                 this.progressBar.current.style.width = Math.round(percent) + "%";
             }
-            if (this.state.videoPreview != data.name) {
-                this.loadPlayer(data);
+            if (data) {
+                if (this.state.videoPreview != data.name) {
+                    this.loadPlayer(data);
+                }
             }
         });
 
         // Install polyfills to patch browser incompatibilies
         shaka.polyfill.installAll();
 
+        this.dotsAnim();
+        this.getVideos();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.mpd == "") {
+            if (this.props.mpd.length > 0) {
+                this.initPlayer(this.props.mpd);
+            }
+        }
+    }
+
+    dotsAnim = () => {
+        setInterval(() => {
+            if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
+                if (this.state.dots.length < 2) {
+                    let dots = this.state.dots;
+                    dots += ".";
+                    this.setState({ dots: dots });
+                } else {
+                    this.setState({ dots: "" });
+                }
+            } else {
+                this.setState({ dots: "" });
+            }
+        }, 1000);
+    }
+
+    /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
+    getVideos = () => {
+        let username = this.props.isLoggedIn;
+        fetch(currentrooturl + 'm/getUserVideos', {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: 'same-origin',
+            body: JSON.stringify({
+                username
+            })
+        })
+        .then((response) => {
+            return response.json(); // Parsed data
+        })
+        .then((data) => {
+            console.log(data);
+            if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set to processing if video being processed
+                this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
+                if (this.props.socket) {
+                    this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                } else if (this.state.socket) {
+                    this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                }
+                this.progress.emit('progress', 100);
+            } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set awaitinginfo state for video
+                this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                this.progress.emit('progress', 100);
+                this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+            } else if (data.querystatus.toString() == "no pending videos") {
+                this.props.updateUploadStatus("");
+            }
+            return data;
+        })
+        .catch(error => {
+            console.log(error);
+        })
+    }
+
+    getSocket = (i, interval) => { // Manually returns socket from main component to ensure socket communication during upload
+        setTimeout(() => {
+            console.log(i);
+            i++;
+            if (i < 5 && !this.state.socket) {
+                this.setState({ socket: this.props.getSocket()});
+                this.getSocket(i, interval*1.5);
+            }
+        }, interval);
+    }
+
+    initPlayer(manifest) {
         // Check browser support
         if (shaka.Player.isBrowserSupported()) {
-            // Everything looks good!
-            this.initPlayer();
+            if (!manifest) {
+                manifest = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
+            }
+            let manifestUri = manifest;
+
+            const video = this.videoComponent.current;
+            const videoContainer = this.videoContainer.current;
+
+            // Initialize player
+            let player = new shaka.Player(video);
+
+            // UI custom json
+            const uiConfig = {};
+            uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
+
+            //Set up shaka player UI
+            const ui = new shaka.ui.Overlay(player, videoContainer, video);
+
+            ui.configure(uiConfig);
+            ui.getControls();
+
+            // Listen for errors
+            player.addEventListener('error', this.onErrorEvent);
+
+            // Try to load a manifest Asynchronous
+            player.load(manifestUri).then(function() {
+                console.log('video has now been loaded!');
+            }).catch(this.onError);
         } else {
             // This browser does not have the minimum set of APIs we need.
             console.error('Browser not supported!');
         }
-
-    }
-
-    initPlayer() {
-        let manifestUri = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
-
-        const video = this.videoComponent.current;
-        const videoContainer = this.videoContainer.current;
-
-        // Initialize player
-        let player = new shaka.Player(video);
-
-        // UI custom json
-        const uiConfig = {};
-        uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
-
-        //Set up shaka player UI
-        const ui = new shaka.ui.Overlay(player, videoContainer, video);
-
-        ui.configure(uiConfig);
-        ui.getControls();
-
-        // Listen for errors
-        player.addEventListener('error', this.onErrorEvent);
-
-        // Try to load a manifest Asynchronous
-        player.load(manifestUri).then(function() {
-            console.log('video has now been loaded!');
-        }).catch(this.onError);
     }
 
     uploadFileS3 = async () => {
@@ -205,6 +285,9 @@ export default class Upload extends Component { // ulc upload component
             data.append('extension', extension);
             data.append('video', file);
             data.append('user', this.props.isLoggedIn);
+            if (this.props.socket) {
+                data.append('socket', this.props.socket.id);
+            }
             const options = {
                 onUploadProgress: progressEvent => { // upload status logic
                     loaded = progressEvent.loaded / 1000000;
@@ -217,16 +300,32 @@ export default class Upload extends Component { // ulc upload component
                 },
                 timeout: 1000000
             };
-            // Use axios to make post request and update user on gradual progress of upload
+            // Use axios to make post request and update user on gradual progress of upload. Only upload if videoPreview == null. If videoPreview is true, then there is a video currently being processed
+            // Application only handles a single upload currently
             if (this.state.videoPreview == "") {
+                this.props.updateUploadStatus("uploading video");
                 axios.post(currentrooturl + 'm/videoupload', data, options)
-                .then((response) => {
+                .then(async (response) => {
                     console.log(response);
-                    if (response.data) {
-                        if (response.data.match(/processbegin/)[0]) {
-                            let uplRoom = response.data.match(/;([upla-z0-9].*)/)[1];
+                    let error = await response.data.err;
+                    if (error) {
+                        if (error == "reset") {
+                            this.resetPage();
+                        }
+                    } else if (response.data.querystatus) {
+                        if (response.data.querystatus.match(/processbegin/)[0]) {
+                            let uplRoom = response.data.querystatus.match(/;([upla-z0-9].*)/)[1];
                             cookies.set('uplsession', uplRoom, { path: '/', sameSite: true, signed: true, maxAge: 86400 }); // Max age for video upload session 24 hours.
-                            this.props.socket.emit('joinUploadSession', uplRoom);
+                            if (uplRoom.match(/upl-([a-z0-9].*)/)) {
+                                this.setState({ videoId: uplRoom.match(/upl-([a-z0-9].*)/)[1] });
+                                this.props.updateUploadStatus("processing;" + uplRoom.match(/upl-([a-z0-9].*)/)[1]);
+                            }
+                            this.props.updateUploadStatus("converting video");
+                            if (this.props.socket) {
+                                this.props.socket.emit('joinUploadSession', uplRoom);
+                            } else if (this.state.socket) {
+                                this.state.socket.emit('joinUploadSession', uplRoom);
+                            }
                         }
                     }
                     return { response };
@@ -243,18 +342,28 @@ export default class Upload extends Component { // ulc upload component
         this.setState({ videoPreview: data.name });
         console.log(data);
     }
+
+    resetPage() {
+        this.setState({ progress: 0, videoPreview: "" });
+        if (this.progressBar.current) {
+            this.progressBar.current.style.width = 0 + "%";
+        }
+    }
     // Must add thumbnail option in input section
     render() {
         return (
             <div>
                 <div className="upload-video-txt">Upload video</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
-                    <div className="progress-num">{this.state.progress == 0 ? "" : Math.round(this.state.progress) + "%"}</div>
+                    <div className="flex progress-update">
+                        <div className="progress-upload-status">{this.props.uploadStatus}{this.state.dots}</div>
+                        <div className="progress-num">{this.state.progress == 0 ? "" : Math.round(this.state.progress) + "%"}</div>
+                    </div>
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
                 <div>
-                    <input className="choose-file" ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
-                    <Button className="upload-button" onClick={this.uploadFileS3}>Upload</Button>
+                    <input className={this.state.progress == 0 || this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
+                    <Button className={this.state.progress == 0 || this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={this.uploadFileS3}>Upload</Button>
                 </div>
                 <div className={this.state.progress >= 100 ? "upload-media-container video-preview" : "upload-media-container video-preview video-preview-hidden"}>
                     <div className="video-container video-container-preview" ref={this.videoContainer}>
@@ -284,7 +393,7 @@ export default class Upload extends Component { // ulc upload component
                         <div className="video-preview-input-separator">&nbsp;</div>
                         <input type='text' id="upl-vid-title" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video"></input>
                         <textarea type='text' id="upl-vid-desc" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
-                        <div class="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
+                        <div className="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
                             {
                                 this.state.tags.map((tag, index) => {
                                     return (
