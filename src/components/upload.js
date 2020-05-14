@@ -135,6 +135,7 @@ export default class Upload extends Component { // ulc upload component
     }
 
     onError(error) {
+        console.log(error);
         console.error('Error code', error.code, 'object', error);
     }
 
@@ -218,6 +219,7 @@ export default class Upload extends Component { // ulc upload component
                 this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
             } else if (data.querystatus.toString() == "no pending videos") {
                 this.props.updateUploadStatus("");
+                this.props.updateUploadStatus("remove mpd");
             }
             return data;
         })

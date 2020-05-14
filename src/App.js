@@ -2132,6 +2132,29 @@ class App extends Component {
         if (!cookies.get('Minireel')) {
             cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
         }
+
+        if (this.state.isLoggedIn) {
+            let username = this.state.isLoggedIn;
+            fetch(currentrooturl + 'm/setCloudCookies', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username
+                })
+            })
+                .then(function(response) {
+                return response.json();
+            })
+                .then((data) => {
+                return data;
+            })
+                .catch(error => { console.log(error);
+            })
+        }
     }
 
     getSocket = async => {
@@ -2147,6 +2170,8 @@ class App extends Component {
             } else if (update == "video ready") {
                 this.setState({ uploading: null });
                 this.setState({ uploadStatus: update });
+            } else if (update == "remove mpd") {
+                this.setState({ uploadedMpd: '' });
             } else {
                 this.setState({ uploadStatus: update });
             }
@@ -2167,7 +2192,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (

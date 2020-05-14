@@ -2351,6 +2351,8 @@ If user only has one friend, styling wont apply */
     opacity: 100;
     transition: 300ms;
     margin-bottom: 10px;
+    line-height: 1.9;
+    word-break: break-all;
 }
 
 .upl-vid-desc-label-hidden,
