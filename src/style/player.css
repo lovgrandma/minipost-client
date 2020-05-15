@@ -1,13 +1,16 @@
 /* Shaka player styling */
 
 .shaka-play-button {
+    transition: 200ms;
     width: 10px;
     height: 10px;
     padding: 3%;
+    background-color: rgba(255,255,255, 0.6);
 }
 
 .shaka-play-button:hover {
     cursor: pointer;
+    background-color: rgba(255,255,255, 0.9);
 }
 
 .shaka-video {
@@ -58,4 +61,22 @@
 
 .shaka-range-element {
     cursor: pointer;
+}
+
+.shaka-fullscreen-button, .shaka-overflow-menu-button, .shaka-mute-button, .shaka-small-play-button {
+    color: grey;
+    transition: 200ms;
+}
+
+.shaka-fullscreen-button:hover, .shaka-overflow-menu-button:hover, .shaka-mute-button:hover, .shaka-small-play-button:hover {
+    color: white;
+}
+
+.shaka-volume-bar-container {
+    transition: 200ms;
+    opacity: 0.3;
+}
+
+.shaka-volume-bar-container:hover {
+    opacity: 1;
 }

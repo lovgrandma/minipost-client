@@ -2412,16 +2412,17 @@ If user only has one friend, styling wont apply */
     overflow: hidden;
 }
 
-.tag-label:first-child {
-    margin: 0 2px 0 0;
-}
-
 .tag-label {
     cursor: pointer;
     padding: 2px 6px;
     background-color: #ddd;
     border-radius: 20px;
     transition: 300ms;
+    margin: 0 4px;
+}
+
+.tag-label:first-child {
+    margin: 0 2px 0 0;
 }
 
 .tag-label:hover {
