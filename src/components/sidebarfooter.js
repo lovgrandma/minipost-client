@@ -28,7 +28,7 @@ export default class sidebarfooter extends Component {
                         <div className="footeritem sidebarfooter"><a href="#">Survey</a></div>
                         {logoutDiv}
                     </div>
-                    <div className="copyright-minireel">©2020 minireel</div>
+                    <div className="copyright-minipost">©2020 minipost</div>
                 </div>
         )
     }

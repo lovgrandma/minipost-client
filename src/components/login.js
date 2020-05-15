@@ -163,8 +163,8 @@ export default class Login extends Component {
             <div>
                 <div className="minireel-logo-center">
                     <img className="minireel-register-logo-notext" src={mangonotext} alt="Minireel"></img>
-                    <img className="minireel-dot-com-login" src={logo} alt="Minireel"></img>
-                    <p className="register-text">Sign up and watch film together</p>
+                    <div className="millerbolditalic logo-nav-font-dash">minipost</div>
+                    <p className="register-text">Speak your mind. Watch together</p>
                 </div>
                 <form className="loginform" refs='loginform' onSubmit={this.props.fetchlogin} noValidate="novalidate">
                     <div className="form-group">

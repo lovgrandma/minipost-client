@@ -82,23 +82,23 @@ export default class Navbar extends Component {
             <nav className="navbar navbar-default border-navigation">
                 <row className="nowrap">
                 <ul className={this.props.sidebarStatus == "open" ? "nav flex-grow2 nowrapbuttons navbtnsleft navbtnsleft-opened" : "nav flex-grow2 nowrapbuttons navbtnsleft"} ref={tag => (this.navBtnsLeft = tag)}>
-                    <img className="nav-icon favorites" src={heart} onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}} alt="favorites"></img>
+                    <div className="nav-icon favorites material-icons" onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}}>favorite</div>
                     <div className="btn-desc btn-desc-saved">view videos you've saved</div>
-                    <img className="nav-icon history" src={history} onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}} alt="history"></img>
+                    <div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div>
                     <div className="btn-desc btn-desc-hist">view your video history</div>
                 </ul>
                 <div className="brand flex-grow1">
-                    <NavLink exact to="/" onMouseOver={(e) => {this.hoverShow(e, "home", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "home", "exit")}}><img className="minireel-nav d-inline" src={logo} alt="minireel"></img></NavLink>
+                    <NavLink exact to="/" className="logo-nav-container" onMouseOver={(e) => {this.hoverShow(e, "home", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "home", "exit")}}><div className="minireel-nav d-inline millerbolditalic logo-nav-font difference-text">minipost</div></NavLink>
                     <SearchForm />
                     <div className="btn-desc btn-desc-home">front page</div>
                 </div>
                 {this.props.username ?
-                    <ul className="nav flex-grow2 flex-end nowrapbuttons">
-                        <img className="nav-icon notifications" src={notifications} onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}} alt="notifications"></img>
+                    <ul className="nav flex-grow2 flex-end navbtnsright nowrapbuttons">
+                        <div className="nav-icon notifications material-icons" onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}}>notifications</div>
                         <div className="btn-desc btn-desc-notif">notifications</div>
-                        <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
+                        <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>
                         <div className="btn-desc btn-desc-yourpro">your profile</div>
-                        <NavLink to='/upload/'><img className="nav-icon upload" src={upload} onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}} alt="upload"/></NavLink>
+                        <NavLink to='/upload/'><div className="nav-icon upload material-icons" onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}}>publish</div></NavLink>
                         <div className="btn-desc btn-desc-upl">upload videos or make a thread</div>
                         <div className="nav-loggedin-config" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
                         <div className="btn-desc btn-desc-conf">change various user settings and preferences</div>

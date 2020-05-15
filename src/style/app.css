@@ -1,8 +1,43 @@
-/*
-.App {
-  text-align: center;
+.millerbolditalic {
+    font-family: "Miller Text Bd It";
+    font-display: swap;
+    font-style: italic;
+    font-weight: normal;
 }
-*/
+
+.millerbannerblackitalic {
+    font-family: "Miller Ban Bla It";
+    font-display: swap;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.logo-nav-font {
+    transition: 200ms;
+    color: grey;
+    line-height: 1.5;
+    font-size: 18px;
+    letter-spacing: 0.3px;
+    padding: 0 5px;
+}
+
+.logo-nav-font:hover {
+    color: black;
+}
+
+.logo-nav-font-dash {
+    font-size: 28px;
+    user-select: none;
+}
+
+.logo-nav-container  {
+    text-decoration: none !important;
+}
+
+.logo-nav-container {
+    padding: 0;
+    margin: 0;
+}
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
@@ -68,31 +103,36 @@ button {
 
 .navbar {
     transition: 200ms;
-    height: 40px;
+    height: 10px;
     position: fixed;
     top: 0;
     z-index: 10;
     width: 100%;
     background-color: transparent;
     padding: 0.4rem 1rem 0.5rem 1rem;
+    mix-blend-mode:luminosity;
 }
 
 .navbar:hover {
+    height: 40px;
     background-color: white;
 }
 
 .search-field {
+    font-size: 0.95em;
     background-color: transparent;
 }
 
 .minireel-nav {
     display: block;
-    height:16px; width:78px; margin-right: 15px; margin-left: 10px;
-    margin-top: 3px;
 }
 
 .navbtnsleft {
     transition: 200ms;
+}
+
+.navbtnsleft, .navbtnsright {
+    height: 18px;
 }
 
 /* Conditional media styles for resolutions */
@@ -226,6 +266,10 @@ ul li {
     cursor:default;
 }
 
+.nav-loggedin-config {
+    font-size: 0.9em;
+}
+
 .nav-icon:hover,
 .nav-loggedin-config:hover {
     cursor: pointer;
@@ -235,28 +279,33 @@ ul li {
     margin-right: 10px;
 }
 
-.history {
-    margin: 0 10px;
+.favorites {
+    transition: 200ms;
+    color: grey;
+    line-height: 0.7;
 }
 
-.notifications {
+.notifications, .profile, .upload, .history {
+    transition: 200ms;
+    color: grey;
     margin: 0 10px;
+    line-height: 0.7;
 }
 
-.profile {
-    margin: 0 10px;
-}
-
-.upload {
-    margin: 0 10px;
-    margin-bottom: 2px;
+.notifications:hover, .profile:hover, .upload:hover, .history:hover, .favorites:hover {
+    color: black;
 }
 
 .search {
-    height: 15px; width: 20px;
-    color: white;
-    margin: 0 10px;
+    line-height: 1.2;
+    color: grey;
     transition: 200ms;
+    font-size: 1.2em !important;
+    font-weight: 700;
+}
+
+.search:hover {
+    color: black;
 }
 
 @media (max-width: 733px) {
@@ -266,18 +315,16 @@ ul li {
 }
 
 .searchbox {
-    padding-bottom: 5px;
     margin-right: 10px;
-/*    background-color: #a8a8a8;*/
+    height: 5px;
     background-color: transparent;
-    border-style: solid;
-    border: 1px;
-    border-radius: 0 7px 7px 0;
+    border: none;
     transition: 200ms;
 }
 
 .search {
     cursor: pointer;
+    padding-top: 1px;
 }
 
 .searchbox:active {
@@ -296,14 +343,21 @@ ul li {
 .btn-desc {
     font-size: 12px;
     display: none;
-    visibility: hidden;
+    visibility:hidden;
     position: fixed;
     background-color: white;
     padding: 3px 7px;
-    margin-top: 40px;
+    margin-top: 33px;
     z-index: 20;
 }
 
+.btn-desc-search {
+    margin-top: 10.5px;
+}
+
+.btn-desc-home {
+    margin-top: 38px;
+}
 .visible {
     display:block;
     visibility: visible;
@@ -622,7 +676,7 @@ label {
     justify-self: center;
     margin: 0 auto;
     font-size: 12px;
-    margin-top: 20px;
+    margin-top: 18px;
     margin-bottom: 7px;
     font-weight: 500;
 }
@@ -1999,7 +2053,7 @@ If user only has one friend, styling wont apply */
     color: #f39e97;
 }
 
-.copyright-minireel {
+.copyright-minipost {
     font-size: 12px;
     text-align: center;
     width: 100%;
@@ -2198,7 +2252,7 @@ If user only has one friend, styling wont apply */
 }
 
 .progress-bar-container-sidebaropen {
-    width: calc(90vw - 300px);
+    width: 100%;
 }
 
 
@@ -2208,11 +2262,6 @@ If user only has one friend, styling wont apply */
 
 .video-preview {
     position: relative;
-}
-
-.shaka-video {
-    width: 100%;
-    max-height: 500px;
 }
 
 #upl-vid-title, #upl-vid-desc {
@@ -2369,8 +2418,7 @@ If user only has one friend, styling wont apply */
 
 .tag-label {
     cursor: pointer;
-    margin: 0 2px 0 2px;
-    padding: 1px 6px;
+    padding: 2px 6px;
     background-color: #ddd;
     border-radius: 20px;
     transition: 300ms;

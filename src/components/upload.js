@@ -204,7 +204,6 @@ export default class Upload extends Component { // ulc upload component
             return response.json(); // Parsed data
         })
         .then((data) => {
-            console.log(data);
             if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set to processing if video being processed
                 this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
                 if (this.props.socket) {
@@ -215,11 +214,16 @@ export default class Upload extends Component { // ulc upload component
                 this.progress.emit('progress', 100);
             } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set awaitinginfo state for video
                 this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
+                    this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
+                }
                 this.progress.emit('progress', 100);
                 this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-            } else if (data.querystatus.toString() == "no pending videos") {
-                this.props.updateUploadStatus("");
-                this.props.updateUploadStatus("remove mpd");
+            } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
+                if (this.state.progress == 0) {
+                    this.props.updateUploadStatus("");
+                    this.props.updateUploadStatus("remove mpd");
+                }
             }
             return data;
         })
@@ -342,7 +346,6 @@ export default class Upload extends Component { // ulc upload component
     loadPlayer = async (data) => {
         // Set video preview
         this.setState({ videoPreview: data.name });
-        console.log(data);
     }
 
     resetPage() {
@@ -364,15 +367,15 @@ export default class Upload extends Component { // ulc upload component
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
                 <div>
-                    <input className={this.state.progress == 0 || this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
-                    <Button className={this.state.progress == 0 || this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={this.uploadFileS3}>Upload</Button>
+                    <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
+                    <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={this.uploadFileS3}>Upload</Button>
                 </div>
                 <div className={this.state.progress >= 100 ? "upload-media-container video-preview" : "upload-media-container video-preview video-preview-hidden"}>
                     <div className="video-container video-container-preview" ref={this.videoContainer}>
                         <video
                             className="shaka-video"
                             ref={this.videoComponent}
-                            poster="//shaka-player-demo.appspot.com/assets/poster.jpg"
+                            poster="https://d3oyqm71scx51z.cloudfront.net/minipostbanner.png"
                         />
                     </div>
                     <div className="video-input-data">

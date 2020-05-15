@@ -15,6 +15,7 @@
     "http-proxy-middleware": "^1.0.1",
     "jquery": "^3.3.1",
     "morgan": "^1.9.1",
+    "node-sass": "^4.14.1",
     "react": "^16.4.2",
     "react-bootstrap": "^0.32.3",
     "react-cookie": "^3.0.4",
@@ -43,8 +44,7 @@
   "devDependencies": {
     "ajv": "^6.0.0",
     "enzyme": "^3.11.0",
-    "node-sass": "^4.13.1",
     "popper.js": "^1.16.0",
-    "sass-loader": "^7.1.0"
+    "sass-loader": "^7.3.1"
   }
 }
