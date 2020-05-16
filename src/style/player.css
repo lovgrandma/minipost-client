@@ -23,10 +23,8 @@
 
 /* Spinner */
 
-/* Hide spinner, spinner was spinning for too long when video playback is working */
 .shaka-spinner {
     padding: 3%;
-    display: none;
 }
 
 .material-icons {
@@ -48,6 +46,10 @@
     max-height: 500px;
 }
 
+.shaka-video-container {
+    background-color: black;
+}
+
 .shaka-video-container .shaka-video {
     max-height: none;
 }
@@ -59,7 +61,7 @@
     cursor: pointer;
 }
 
-.shaka-range-element {
+.shaka-range-element, .shaka-back-to-overflow-button, .explicit-resolution, .shaka-enable-abr-button, .shaka-chosen-item {
     cursor: pointer;
 }
 
@@ -79,4 +81,19 @@
 
 .shaka-volume-bar-container:hover {
     opacity: 1;
+}
+
+.shaka-overflow-menu {
+    user-select: none !important;
+    font-size: 0.8em !important;
+}
+
+.shaka-overflow-menu span,
+.shaka-show-controls-on-mouse-over span {
+    font-size: 0.9em !important;
+}
+
+.shaka-skim-container {
+    background: linear-gradient(to top,rgba(0,0,0,1),rgba(0,0,0,0) 80px);
+    transition: opacity cubic-bezier(.4,0,.6,1) .2s;
 }

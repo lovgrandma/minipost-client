@@ -267,7 +267,13 @@ ul li {
 }
 
 .nav-loggedin-config {
+    transition: 200ms;
+    color: grey;
     font-size: 0.9em;
+}
+
+.nav-loggedin-config:hover {
+    color: black;
 }
 
 .nav-icon:hover,
@@ -2464,4 +2470,19 @@ If user only has one friend, styling wont apply */
     border-radius: 20px;
     height: 10px;
     margin-bottom: 10px;
+}
+
+.upload-err-status {
+    margin: 0 auto;
+    width: 80%;
+    max-width: 400px;
+    text-align: center;
+    font-size: 12px;
+    color: #ff1e1e;
+    font-weight: 500;
+    background: #ffd2d2;
+    padding: 2px;
+    border-radius: 10px;
+    border: 1px solid #ffc7c7;
+    transition: 200ms;
 }

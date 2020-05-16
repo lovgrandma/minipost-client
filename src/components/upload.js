@@ -168,6 +168,9 @@ export default class Upload extends Component { // ulc upload component
                 this.initPlayer(this.props.mpd);
             }
         }
+        if (prevProps.errStatus != this.props.errStatus && this.props.errStatus.length > 0) { // Reset page after receiving an error
+            this.resetPage();
+        }
     }
 
     dotsAnim = () => {
@@ -205,6 +208,7 @@ export default class Upload extends Component { // ulc upload component
         })
         .then((data) => {
             if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set to processing if video being processed
+                this.props.updateErrStatus("");
                 this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
                 if (this.props.socket) {
                     this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
@@ -213,6 +217,7 @@ export default class Upload extends Component { // ulc upload component
                 }
                 this.progress.emit('progress', 100);
             } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set awaitinginfo state for video
+                this.props.updateErrStatus("");
                 this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
                 if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
                     this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
@@ -270,10 +275,32 @@ export default class Upload extends Component { // ulc upload component
             // Listen for errors
             player.addEventListener('error', this.onErrorEvent);
 
+            // Ensures buffering spinner is never indefinitely spinning
+            player.addEventListener('buffering', (event) => {
+                setTimeout((event) => {
+                    if (player.isBuffering()) {
+                        if (document.getElementsByClassName("shaka-spinner")[0]) {
+                            document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
+                            setTimeout(() => {
+                                if (!player.isBuffering()) {
+                                    document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                }
+                            }, 10000);
+                        }
+                    } else {
+                        if (document.getElementsByClassName("shaka-spinner")[0]) {
+                            document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                        }
+                    }
+                }, 1000);
+            });
+
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(function() {
                 console.log('video has now been loaded!');
             }).catch(this.onError);
+
+
         } else {
             // This browser does not have the minimum set of APIs we need.
             console.error('Browser not supported!');
@@ -281,6 +308,7 @@ export default class Upload extends Component { // ulc upload component
     }
 
     uploadFileS3 = async () => {
+        this.props.updateErrStatus("");
         if (this.upload.current.files[0]) {
             let file = this.upload.current.files[0];
             let data = new FormData();
@@ -313,9 +341,9 @@ export default class Upload extends Component { // ulc upload component
                 axios.post(currentrooturl + 'm/videoupload', data, options)
                 .then(async (response) => {
                     console.log(response);
-                    let error = await response.data.err;
-                    if (error) {
-                        if (error == "reset") {
+                    if (response.data.err) {
+                        if (response.data.err == "reset") {
+                            this.props.updateErrStatus("Video upload failed");
                             this.resetPage();
                         }
                     } else if (response.data.querystatus) {
@@ -359,6 +387,7 @@ export default class Upload extends Component { // ulc upload component
         return (
             <div>
                 <div className="upload-video-txt">Upload video</div>
+                <div className={this.props.errStatus.length > 0 ? "upload-err-status" : ""}>{this.props.errStatus}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
                     <div className="flex progress-update">
                         <div className="progress-upload-status">{this.props.uploadStatus}{this.state.dots}</div>

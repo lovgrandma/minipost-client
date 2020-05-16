@@ -2183,7 +2183,9 @@ class App extends Component {
     }
 
     updateErrStatus = (err) => {
-        this.setState({ uploadStatus: '' });
+        if (err != '') {
+            this.setState({ uploadStatus: '' });
+        }
         this.setState({ errStatus: err });
     }
 
@@ -2208,7 +2210,7 @@ class App extends Component {
                                 <Video {...props} />
                             )}/>
                             <Route path='/upload' render={(props) => (
-                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
                             )}/>
                         </div>
                     </div>
