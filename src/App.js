@@ -410,8 +410,8 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
                                     : "friend-chat-form friend-chat-form-closed"}
                         >
                         <span>
-                        <TextareaAutosize className ={this.props.otheruserchatopen == otheruser ? "textarea-chat-autosize"
-                                                     : "textarea-chat-autosize textarea-chat-autosize-closed"}
+                        <TextareaAutosize className ={this.props.otheruserchatopen == otheruser ? "textarea-chat-autosize fixfocuscolor"
+                                                     : "textarea-chat-autosize fixfocuscolor textarea-chat-autosize-closed"}
                         ref={tag => (this.inputRef = tag)} onKeyPress={(e) => {this.handleKeyPress(e, otheruser)}} />
                         <button className={this.props.otheruserchatopen == otheruser ? "friend-chat-submit friend-chat-submit-open"
                                           : "friend-chat-submit"}
@@ -880,9 +880,9 @@ class Friend extends Component { // friend component fc1
                              : "friend-chat-form friend-chat-form-closed"}
                         >
                         <span>
-                        <TextareaAutosize className ={!this.props.friend ? "textarea-chat-autosize textarea-chat-autosize-closed" // if not friend
-                            : this.props.friendchatopen == this.props.friend ? "textarea-chat-autosize" // if open chat == this friend
-                            : "textarea-chat-autosize textarea-chat-autosize-closed"}
+                        <TextareaAutosize className ={!this.props.friend ? "textarea-chat-autosize fixfocuscolor textarea-chat-autosize-closed" // if not friend
+                            : this.props.friendchatopen == this.props.friend ? "textarea-chat-autosize fixfocuscolor" // if open chat == this friend
+                            : "textarea-chat-autosize fixfocuscolor textarea-chat-autosize-closed"}
                         ref={tag => (this.inputRef = tag)} onKeyPress={this.handleKeyPress} onChange={this.handleChange} />
                         <button className={!this.props.friend ? "friend-chat-submit prevent-open-toggle" // if not friend
                             : this.props.friendchatopen == this.props.friend ? "friend-chat-submit friend-chat-submit-open prevent-open-toggle" // if open chat == friend

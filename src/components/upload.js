@@ -9,6 +9,11 @@ import {
     Button,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
+import {
+    BrowserRouter,
+    Route,
+    NavLink
+} from 'react-router-dom';
 import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
 
@@ -159,7 +164,7 @@ export default class Upload extends Component { // ulc upload component
         shaka.polyfill.installAll();
 
         this.dotsAnim();
-        this.getVideos();
+        this.getUserVideos();
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -190,7 +195,7 @@ export default class Upload extends Component { // ulc upload component
     }
 
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
-    getVideos = () => {
+    getUserVideos = () => {
         let username = this.props.isLoggedIn;
         fetch(currentrooturl + 'm/getUserVideos', {
             method: "POST",
@@ -229,6 +234,8 @@ export default class Upload extends Component { // ulc upload component
                     this.props.updateUploadStatus("");
                     this.props.updateUploadStatus("remove mpd");
                 }
+            } else if (data.querystatus.toString() == null) {
+                // no video processing found
             }
             return data;
         })
@@ -238,14 +245,19 @@ export default class Upload extends Component { // ulc upload component
     }
 
     getSocket = (i, interval) => { // Manually returns socket from main component to ensure socket communication during upload
-        setTimeout(() => {
-            console.log(i);
-            i++;
-            if (i < 5 && !this.state.socket) {
-                this.setState({ socket: this.props.getSocket()});
-                this.getSocket(i, interval*1.5);
-            }
-        }, interval);
+        return new Promise(resolve => {
+            setTimeout(() => {
+                i++;
+                if (i < 5 && !this.state.socket) {
+                    this.setState({ socket: this.props.getSocket()});
+                    this.getSocket(i, interval*1.5);
+                } else {
+                    if (this.state.socket) {
+                        resolve(this.state.socket);
+                    }
+                }
+            }, interval);
+        });
     }
 
     initPlayer(manifest) {
@@ -308,6 +320,8 @@ export default class Upload extends Component { // ulc upload component
     }
 
     uploadFileS3 = async () => {
+        let userSocket = await this.getSocket(0, 2);
+        console.log(userSocket);
         this.props.updateErrStatus("");
         if (this.upload.current.files[0]) {
             let file = this.upload.current.files[0];
@@ -321,6 +335,10 @@ export default class Upload extends Component { // ulc upload component
             data.append('user', this.props.isLoggedIn);
             if (this.props.socket) {
                 data.append('socket', this.props.socket.id);
+            } else if (this.state.socket) {
+                data.append('socket', this.state.socket.id);
+            } else if (userSocket) {
+                data.append('socket', this.state.socket.id);
             }
             const options = {
                 onUploadProgress: progressEvent => { // upload status logic
@@ -343,7 +361,15 @@ export default class Upload extends Component { // ulc upload component
                     console.log(response);
                     if (response.data.err) {
                         if (response.data.err == "reset") {
-                            this.props.updateErrStatus("Video upload failed");
+                            if (response.data.querystatus) {
+                                if (response.data.querystatus == "Bad resolution") {
+                                    this.props.updateErrStatus("Bad resolution");
+                                } else {
+                                    this.props.updateErrStatus("Video upload failed");
+                                }
+                            } else {
+                                this.props.updateErrStatus("Video upload failed");
+                            }
                             this.resetPage();
                         }
                     } else if (response.data.querystatus) {
@@ -369,6 +395,10 @@ export default class Upload extends Component { // ulc upload component
                 });
             }
         }
+    }
+
+    updateRecord = async () => {
+        console.log("Update record");
     }
 
     loadPlayer = async (data) => {
@@ -425,8 +455,8 @@ export default class Upload extends Component { // ulc upload component
                         }
                         </label>
                         <div className="video-preview-input-separator">&nbsp;</div>
-                        <input type='text' id="upl-vid-title" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video"></input>
-                        <textarea type='text' id="upl-vid-desc" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
+                        <input type='text' id="upl-vid-title" className="fixfocuscolor" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video"></input>
+                        <textarea type='text' id="upl-vid-desc" className="fixfocuscolor" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
                         <div className="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
                             {
                                 this.state.tags.map((tag, index) => {
@@ -437,6 +467,16 @@ export default class Upload extends Component { // ulc upload component
                             }
                             <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} placeholder={this.state.tags.length == 0 ? "tags" : ""}></input>
                         </div>
+                        <h3 className="info-blurb tags-blurb">Tags help us in organizing content on minipost. Enter relevant tags to help users find your content easier</h3>
+                        <form className="nudity-radio">
+                            <h2 className="nudity-question">Is there any nudity in your video?</h2>
+                            <input type="radio" id="nudity-yes" name="nudity" value="yes"/>
+                            <label for="nudity-yes">Yes</label>
+                            <input type="radio" id="nudity-no" name="nudity" value="no"/>
+                            <label for="nudity-no">No</label>
+                            <h3 className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></h3>
+                        </form>
+                        <Button className={this.state.progress >= 100 && this.state.videoId != "" ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>
             </div>

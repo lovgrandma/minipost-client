@@ -12,6 +12,16 @@
     font-weight: normal;
 }
 
+h2 {
+    font-size: 13px;
+    font-weight: 400;
+}
+
+h3 {
+    font-size: 11px;
+    font-weight: 400;
+}
+
 .logo-nav-font {
     transition: 200ms;
     color: grey;
@@ -1238,6 +1248,14 @@ label {
     visibility: hidden;
 }
 
+.fixfocuscolor:focus {
+    outline: 2px solid #4988dd;
+}
+
+*:focus {
+    outline: 2px solid #4988dd;
+}
+
 .friend-chat-submit,
 .search-chat-submit {
     overflow: hidden;
@@ -2206,6 +2224,16 @@ If user only has one friend, styling wont apply */
 
 /* upload page */
 
+.info-blurb {
+    transition: 200ms;
+    color: grey;
+    max-width: 700px;
+}
+
+.info-blurb:hover {
+    color: #4e4e4e;
+}
+
 .upload-video-txt {
     font-size: 20px;
     margin-bottom: 20px;
@@ -2217,12 +2245,17 @@ If user only has one friend, styling wont apply */
     margin-bottom: 6px;
 }
 
+.publish-video {
+    margin-bottom: 20px;
+}
+
 .upload-button {
     display: block;
 }
 
 .upload-button-hidden,
-.choose-file-hidden {
+.choose-file-hidden,
+.publish-video-hidden {
     display: none;
 }
 
@@ -2313,18 +2346,22 @@ If user only has one friend, styling wont apply */
     border-color: grey;
     padding: 1px 2px;
     cursor: text;
+    margin-bottom: 2px;
+}
+
+.tags-blurb {
+    margin-bottom: 20px;
 }
 
 .tags-input-container .tag {
     font-size: 85%;
-    padding: 0.02em 0.5em 0.1em 0.7em;
+    padding: 0.1em 0.5em 0.1em 0.7em;
     margin: 0.2em;
     display: inline-block;
     background-color: #ddd;
     transition: all 0.1s linear;
     border-radius: 20px;
 }
-
 
 .tags-input-container .tag-close {
     margin-left: 3px;
@@ -2467,8 +2504,9 @@ If user only has one friend, styling wont apply */
 
 .video-preview-input-separator {
     background-color: #f2f2f2;
-    border-radius: 20px;
-    height: 10px;
+    border-radius: 30px;
+    height: 5px;
+    margin: 0 2px;
     margin-bottom: 10px;
 }
 
@@ -2485,4 +2523,20 @@ If user only has one friend, styling wont apply */
     border-radius: 10px;
     border: 1px solid #ffc7c7;
     transition: 200ms;
+}
+
+.nudity-radio {
+    margin-bottom: 20px;
+}
+
+.nudity-radio {
+    color: #4e4e4e;
+}
+
+.nudity-question {
+    color: black;
+}
+
+.nudity-radio label {
+    padding: 0 5px;
 }
