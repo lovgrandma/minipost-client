@@ -63,3 +63,30 @@ componentDidMount() {
 //                            });
 //                        }
 //                    }
+
+//                        , async function (err, file) {
+//                            if (!err) {
+//                                console.log('Audio file: ' + file);
+//                                return await {
+//                                    i: i,
+//                                    originalVideo: originalVideo,
+//                                    objUrls: createObj(objUrls.push({
+//                                        "path" : rawPath,
+//                                        "detail" : "aac"
+//                                    })),
+//                                    generatedUuid: generatedUuid,
+//                                    encodeAudio: false,
+//                                    room: room,
+//                                    body: body,
+//                                    socket: socket
+//                                }
+//                                // return convertVideos(i, originalVideo, objUrls, generatedUuid, false, room, body, socket);
+//                            } else {
+                                console.log(err);
+                                deleteVideoArray(objUrls, originalVideo, room, 100000);
+                                if (io) {
+                                    io.to(room).emit('uploadErr', "Something went wrong");
+                                }
+                                return err;
+//                            }
+//                        });

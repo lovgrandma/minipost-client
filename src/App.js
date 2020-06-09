@@ -1339,9 +1339,6 @@ class Socialbar extends Component { // Main social entry point sb1
 
                 socket.on('uploadUpdate', data => {
                     this.props.updateUploadStatus(data);
-                    if (data == "uplcomplete") {
-                        cookies.remove('uplsession'); // Upload complete, delete session cookie
-                    }
                 });
 
                 socket.on('uploadErr', data => {
@@ -2167,9 +2164,11 @@ class App extends Component {
         if (update.match(/processing;([a-z0-9].*)/)) { // If update matches background video upload update, change uploading state, else just change upload status
             this.setState({ uploading: update.match(/processing;([a-z0-9].*)/)[1] });
         } else {
+            console.log(update);
             if (update.match(/video ready;([a-z0-9].*)/)) {
                 this.setState({ uploading: null, uploadedMpd: update.match(/video ready;([a-z0-9].*)/)[1] });
                 this.setState({ uploadStatus: "video ready" });
+                cookies.remove('uplsession'); // Upload complete, delete session cookie
             } else if (update == "video ready") {
                 this.setState({ uploading: null });
                 this.setState({ uploadStatus: update });

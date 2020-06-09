@@ -338,7 +338,7 @@ export default class Upload extends Component { // ulc upload component
             } else if (this.state.socket) {
                 data.append('socket', this.state.socket.id);
             } else if (userSocket) {
-                data.append('socket', this.state.socket.id);
+                data.append('socket', userSocket);
             }
             const options = {
                 onUploadProgress: progressEvent => { // upload status logic
@@ -385,6 +385,8 @@ export default class Upload extends Component { // ulc upload component
                                 this.props.socket.emit('joinUploadSession', uplRoom);
                             } else if (this.state.socket) {
                                 this.state.socket.emit('joinUploadSession', uplRoom);
+                            } else if (userSocket) {
+                                userSocket.emit('joinUploadSession', uplRoom);
                             }
                         }
                     }
