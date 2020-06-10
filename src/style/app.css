@@ -2246,7 +2246,11 @@ If user only has one friend, styling wont apply */
 }
 
 .publish-video {
+    transition: 200ms;
     margin-bottom: 20px;
+    opacity: 100%;
+    height: 27px;
+    visibility: visible;
 }
 
 .upload-button {
@@ -2254,9 +2258,20 @@ If user only has one friend, styling wont apply */
 }
 
 .upload-button-hidden,
-.choose-file-hidden,
-.publish-video-hidden {
+.choose-file-hidden {
     display: none;
+}
+
+.publish-video-hidden {
+    opacity: 0%;
+    height: 0px !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    visibility: hidden;
+}
+
+.publish-video-hidden:hover {
+    cursor: default !important;
 }
 
 .choose-file {

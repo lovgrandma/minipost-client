@@ -26,7 +26,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '',
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -220,6 +220,9 @@ export default class Upload extends Component { // ulc upload component
                 } else if (this.state.socket) {
                     this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
                 }
+                if (this.props.uploadStatus.length < 1) {
+                    this.props.updateUploadStatus("processing video");
+                }
                 this.progress.emit('progress', 100);
             } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set awaitinginfo state for video
                 this.props.updateErrStatus("");
@@ -319,11 +322,11 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    uploadFileS3 = async () => {
+    uploadFileS3 = async (rerun) => {
         let userSocket = await this.getSocket(0, 2);
-        console.log(userSocket);
         this.props.updateErrStatus("");
-        if (this.upload.current.files[0]) {
+        if (this.upload.current.files[0] && this.state.beginUpload == false || this.upload.current.files[0] && rerun) {
+            this.setState({ beginUpload: true });
             let file = this.upload.current.files[0];
             let data = new FormData();
             let loaded;
@@ -357,7 +360,7 @@ export default class Upload extends Component { // ulc upload component
             if (this.state.videoPreview == "") {
                 this.props.updateUploadStatus("uploading video");
                 axios.post(currentrooturl + 'm/videoupload', data, options)
-                .then(async (response) => {
+                    .then(async (response) => {
                     console.log(response);
                     if (response.data.err) {
                         if (response.data.err == "reset") {
@@ -380,7 +383,9 @@ export default class Upload extends Component { // ulc upload component
                                 this.setState({ videoId: uplRoom.match(/upl-([a-z0-9].*)/)[1] });
                                 this.props.updateUploadStatus("processing;" + uplRoom.match(/upl-([a-z0-9].*)/)[1]);
                             }
-                            this.props.updateUploadStatus("converting video");
+                            if (this.props.uploadStatus == "uploading video") {
+                                this.props.updateUploadStatus("waiting in queue");
+                            }
                             if (this.props.socket) {
                                 this.props.socket.emit('joinUploadSession', uplRoom);
                             } else if (this.state.socket) {
@@ -392,15 +397,67 @@ export default class Upload extends Component { // ulc upload component
                     }
                     return { response };
                 })
-                .catch((error) => {
+                    .catch((error) => {
                     error => console.log(error);
                 });
+            }
+        } else {
+            if (!rerun && this.state.beginUpload == false) {
+                setTimeout(() => {
+                    this.uploadFileS3(true);
+                }, 10000);
             }
         }
     }
 
     updateRecord = async () => {
-        console.log("Update record");
+        if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
+            if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
+                this.setState({ publishing: true});
+                const title = this.titleIn.current.value;
+                const user = this.props.isLoggedIn;
+                let desc = "";
+                if (this.descIn.current) {
+                    if (this.descIn.current.value.length > 0) {
+                        desc = this.descIn.current.value;
+                    }
+                }
+                let tags = [];
+                for (let tag of this.state.tags) {
+                    tags.push(tag);
+                }
+                let nudity = null;
+                if (document.getElementById("nudity-no").checked) {
+                    nudity = false;
+                } else if (document.getElementById("nudity-yes").checked) {
+                    nudity = true;
+                }
+                let mpd = "";
+                if (this.props.uploading != null) {
+                    mpd = this.props.uploading;
+                } else if (this.state.videoId.length > 0) {
+                    mpd = this.state.videoId;
+                }
+                fetch(currentrooturl + 'm/publish', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        user, title, desc, tags, nudity, mpd
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((data) => {
+                    this.setState({ publishing: false });
+                    console.log(data);
+                });
+            }
+        }
     }
 
     loadPlayer = async (data) => {
@@ -429,7 +486,7 @@ export default class Upload extends Component { // ulc upload component
                 </div>
                 <div>
                     <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
-                    <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={this.uploadFileS3}>Upload</Button>
+                    <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
                 </div>
                 <div className={this.state.progress >= 100 ? "upload-media-container video-preview" : "upload-media-container video-preview video-preview-hidden"}>
                     <div className="video-container video-container-preview" ref={this.videoContainer}>
@@ -474,11 +531,11 @@ export default class Upload extends Component { // ulc upload component
                             <h2 className="nudity-question">Is there any nudity in your video?</h2>
                             <input type="radio" id="nudity-yes" name="nudity" value="yes"/>
                             <label for="nudity-yes">Yes</label>
-                            <input type="radio" id="nudity-no" name="nudity" value="no"/>
+                            <input type="radio" id="nudity-no" name="nudity" value="no" defaultChecked/>
                             <label for="nudity-no">No</label>
                             <h3 className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></h3>
                         </form>
-                        <Button className={this.state.progress >= 100 && this.state.videoId != "" ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
+                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>
             </div>
