@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
 import Cookies from 'universal-cookie';
 import Sidebarfooter from './sidebarfooter.js';
-import mango from '../static/minireel-mangologo.svg'; import logo from '../static/minireel-dot-com-3.svg'; import mangonotext from '../static/minireel-mangologo-notext.svg'; import logocolor from '../static/minireel-dot-com-3-color.svg';
+import minipostLogo from '../static/minipostLogoText.svg'; import minipostLogoNoText from '../static/minipostLogoNoText.svg';
+import minipostAppLogoNoText from '../static/minipostAppLogo2NoText.svg';
 const reEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const rePass = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,56}$/;
 const reUsername = /^[a-z0-9.]{5,22}$/;
@@ -162,7 +163,7 @@ export default class Login extends Component {
         return (
             <div>
                 <div className="minireel-logo-center">
-                    <img className="minireel-register-logo-notext" src={mangonotext} alt="Minireel"></img>
+                    <img className="minipost-register-logo-notext" src={minipostAppLogoNoText} alt="Minireel" draggable="false"></img>
                     <div className="millerbolditalic logo-nav-font-dash">minipost</div>
                     <p className="register-text">Speak your mind. Watch together</p>
                 </div>

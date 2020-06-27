@@ -1566,8 +1566,8 @@ class Socialbar extends Component { // Main social entry point sb1
 
     fetchlogout(e) {
         console.log('fetchlogout');
-         cookies.remove('loggedIn');
-         cookies.remove('user');
+         cookies.remove('loggedIn', { path: '/' });
+         cookies.remove('user', { path: '/' });
         //  puts users taken from server script into state.
         // fetch('/m/logout');
         fetch(currentrooturl + 'm/logout', {

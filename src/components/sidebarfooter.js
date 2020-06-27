@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import minipostLogoNoText9a9a9a from '../static/minipostLogoNoText9a9a9a.svg';
 
 // Login & register if { user: logged out }
 export default class sidebarfooter extends Component {
@@ -28,7 +29,7 @@ export default class sidebarfooter extends Component {
                         <div className="footeritem sidebarfooter"><a href="#">Survey</a></div>
                         {logoutDiv}
                     </div>
-                    <div className="copyright-minipost">©2020 minipost</div>
+                    <div className="minipost-footer-brand"><div className="copyright-minipost">©2020 minipost</div><img className="minipost-footer-logo" src={minipostLogoNoText9a9a9a} alt="Minireel" draggable="false"></img></div>
                 </div>
         )
     }

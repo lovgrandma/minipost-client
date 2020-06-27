@@ -42,6 +42,10 @@
     padding-bottom: 2%;
 }
 
+.video-container-preview {
+    background-color: black;
+}
+
 .video-container-preview .shaka-video {
     max-height: 500px;
 }

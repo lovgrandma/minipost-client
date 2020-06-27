@@ -628,21 +628,33 @@ ul li {
 
 /* Register form */
 
-.minireel-register-logo {
+.minipost-register-logo {
     width: 80px;
-    height: 88px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-}
-
-.minireel-register-logo-notext {
-    width: 86px;
-    height: 86px;
-    margin-top: 40px;
+    height: 105px;
+    margin-top: 50px;
     margin-bottom: 16px;
     justify-self: center;
     width:100%;
     display: block;
+    user-select: none;
+}
+
+.minipost-register-logo-notext {
+    width: 86px;
+    height: 130px;
+    margin-top: 40px;
+    justify-self: center;
+    width:100%;
+    display: block;
+}
+
+.minipost-footer-brand {
+    text-align: center;
+}
+
+.minipost-footer-logo {
+    height: 30px;
+    width: 30px;
 }
 
 .minireel-dot-com-login {
@@ -2079,11 +2091,9 @@ If user only has one friend, styling wont apply */
 
 .copyright-minipost {
     font-size: 12px;
-    text-align: center;
-    width: 100%;
     font-weight: 500;
     color: #9a9a9a;
-    margin-bottom: 60px;
+    display: block;
 }
 
 /* css anim */

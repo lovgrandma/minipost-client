@@ -16,6 +16,7 @@ import {
 } from 'react-router-dom';
 import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
+import minipostpreviewbanner from '../static/minipostbannerblack.png';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -461,8 +462,7 @@ export default class Upload extends Component { // ulc upload component
     }
 
     loadPlayer = async (data) => {
-        // Set video preview
-        this.setState({ videoPreview: data.name });
+        this.setState({ videoPreview: data.name }); // Set video preview
     }
 
     resetPage() {
@@ -493,7 +493,7 @@ export default class Upload extends Component { // ulc upload component
                         <video
                             className="shaka-video"
                             ref={this.videoComponent}
-                            poster="https://d3oyqm71scx51z.cloudfront.net/minipostbanner.png"
+                            poster={minipostpreviewbanner}
                         />
                     </div>
                     <div className="video-input-data">
