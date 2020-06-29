@@ -817,7 +817,8 @@ label {
 .mainvideotitle {
     font-size: 14px;
     font-weight: 500;
-    height: 32px;
+    height: auto;
+    max-height: 32px;
     margin-bottom: 4px;
     padding: 0 4px;
     overflow: hidden;
