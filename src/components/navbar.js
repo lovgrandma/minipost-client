@@ -104,7 +104,7 @@ export default class Navbar extends Component {
                         <div className="btn-desc btn-desc-conf">change various user settings and preferences</div>
                     </ul>
                     :<ul className="nav flex-grow2 flex-end nowrapbuttons offline-nav">
-                        <img className="nav-icon profile" src={profile} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}} alt="profile"></img>
+                        <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>
                         <div className="btn-desc btn-desc-yourpro">learn more about what it's like to be a user on minireel</div>
                     </ul>
                 }

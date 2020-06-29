@@ -1149,8 +1149,8 @@ function Videos(props) {
     return (
         <div className="col">
             <div className='videocontainer'>
-                <p className='mainvideotitle'>{props.title}</p>
                 <NavLink to='/watch/'><img className='videothumb' src={dummythumbnail}></img></NavLink>
+                <p className='mainvideotitle'>{props.title}</p>
                 <p className='videodesc'>{props.description}</p>
             </div>
         </div>
@@ -1983,7 +1983,7 @@ class Socialbar extends Component { // Main social entry point sb1
     toggleSideBar = () => {
         if (this.sidebar.current.classList.contains('sidebar-open')) {
             this.closeSideBar();
-            this.searchformclear();
+            // this.searchformclear();
         } else {
             this.openSideBar();
         }
@@ -2000,10 +2000,16 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     searchformclear = () => {
-        document.getElementsByClassName("user-search")[0].value = "";
+        if (document.getElementsByClassName("user-search")[0]) {
+            document.getElementsByClassName("user-search")[0].value = "";
+        }
         this.setState({ searchusers: [] });
-        document.getElementsByClassName('search-users-results-container')[0].classList.remove('search-users-results-container-opened');
-        document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
+        if (document.getElementsByClassName('search-users-results-container')[0]) {
+            document.getElementsByClassName('search-users-results-container')[0].classList.remove('search-users-results-container-opened');
+        }
+        if (document.getElementsByClassName('clear')[0]) {
+            document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
+        }
     }
 
     friendsSocialToggle = (friend) => { // Minimizes and maximizes components visually
