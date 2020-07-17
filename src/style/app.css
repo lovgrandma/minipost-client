@@ -533,7 +533,7 @@ ul li {
 }
 
 .sidebar::-webkit-scrollbar {
-    width: 0.6em;
+    width: 0.65em;
 }
 
 .sidebar::-webkit-scrollbar-track {
@@ -541,8 +541,8 @@ ul li {
 }
 
 .sidebar::-webkit-scrollbar-thumb {
-  background-color: #bababa;
-  outline: 1px solid slategrey;
+    background-color: #bababa;
+    outline: 1px solid slategrey;
 }
 
 .siderbar::-webkit-scrollbar-thumb:hover {

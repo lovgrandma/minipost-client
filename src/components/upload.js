@@ -398,7 +398,10 @@ export default class Upload extends Component { // ulc upload component
                     }
                     return { response };
                 })
-                    .catch((error) => {
+                .then((data) => {
+                    console.log(data);
+                })
+                .catch((error) => {
                     error => console.log(error);
                 });
             }

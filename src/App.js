@@ -95,11 +95,17 @@ class NonFriendConversation extends Component { // non friend conversation nfc1
                 setTimeout(() => {
                     if (getHeight() > tempHeight) {
                         tempHeight = getHeight();
-                        this.scrollRef.current.scrollBy({
-                            top: getHeight(),
-                            behavior: "smooth"
-                        });
-                        i++; // If scroll ran, increment once
+                        if (this) {
+                            if (this.scrollRef) {
+                                if (this.scrollRef.current) {
+                                    this.scrollRef.current.scrollBy({
+                                        top: getHeight(),
+                                        behavior: "smooth"
+                                    });
+                                    i++; // If scroll ran, increment once
+                                }
+                            }
+                        }
                     }
                     // console.log(i);
                     if (i>0) { i--; }
@@ -1398,7 +1404,6 @@ class Socialbar extends Component { // Main social entry point sb1
                         delete data.id;
                         let temp = this.state.conversations;
                         temp[i].log.push(data);
-                        // console.log(temp); // logs all current conversations
                         if (data.author != this.state.isLoggedIn) {
                             let leanString = data.author + ";" + "" + ";" + this.state.conversations[i]._id; // reset typing data
                             this.setTyping(leanString);
@@ -1411,17 +1416,19 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     initializeLiveChat = () => { // Sends request to server to join user to room
-        if (this.state.conversations && this.state.isLoggedIn) {
-            let obj = {
-                "ids": this.state.convoIds,
-                "user": this.state.isLoggedIn
+        if (socket) {
+            if (this.state.conversations && this.state.isLoggedIn) {
+                let obj = {
+                    "ids": this.state.convoIds,
+                    "user": this.state.isLoggedIn
+                }
+                socket.emit('joinConvos', obj); // Joins user into convo rooms
+                this.joinUploadSession(); // Joins upload session if true
+            } else {
+                setTimeout(() => {
+                    this.initializeLiveChat();
+                }, 1500);
             }
-            socket.emit('joinConvos', obj); // Joins user into convo rooms
-            this.joinUploadSession(); // Joins upload session if true
-        } else {
-            setTimeout(() => {
-                this.initializeLiveChat();
-            }, 1500);
         }
     }
 
@@ -1464,23 +1471,32 @@ class Socialbar extends Component { // Main social entry point sb1
             return response.json();
         })
         .then((data) => {
-            console.log("Conversations:", data);
-            if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
-                this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations
+            if (!socket) { // Do not run logic for mongo db
+                console.log("Conversations:", data);
+                if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
+                    this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations
+                }
+                this.setState({ conversations: data }); // set state for conversations
+                let convoIds = [];
+                for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
+                    convoIds.push(data[i]._id);
+                }
+                this.setState({ convoIds: convoIds });
             }
-            this.setState({ conversations: data }); // set state for conversations
-            let convoIds = [];
-            for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
-                convoIds.push(data[i]._id);
-            }
-            this.setState({ convoIds: convoIds });
             return data;
         })
         .then(() => {
             setTimeout(() => {
-                this.openSocket(); // open socket after friend conversations ran
+                let delay = 0;
+                if (!socket) {
+                    this.openSocket(); // open socket after friend conversations ran
+                    delay = 500;
+                }
+                setTimeout(() => {
+                    this.initializeLiveChat();
+                }, delay);
             }, 200);
-        });
+        })
     }
 
     // Entry point method after login
@@ -1488,8 +1504,6 @@ class Socialbar extends Component { // Main social entry point sb1
         e.preventDefault();
         let email = document.getElementById('email').value;
         let password = document.getElementById("pw").value;
-        console.log(email);
-        console.log('fetch login func');
         fetch(currentrooturl + 'm/login', {
             method: "POST",
             headers: {
@@ -1816,6 +1830,10 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!username) {
             username = this.state.username;
         }
+        if (!username) {
+            username = cookies.get('loggedIn');
+        }
+
         if (search || !this.state.pendingfriendrequests) { // If searching again or pendingfriendrequests is null
             fetch(currentrooturl + 'm/pendingrequests', {
                 method: "POST",
@@ -1966,11 +1984,9 @@ class Socialbar extends Component { // Main social entry point sb1
                     return data;
                 })
                 .then((data) => {
-                    let obj = {
-                        "ids": this.state.convoIds,
-                        "user": this.state.isLoggedIn
-                    }
-                    socket.emit('joinConvos', obj);
+                    setTimeout(() => {
+                        this.initializeLiveChat();
+                    }, 500);
                 })
                 .catch(error => { console.log(error);
                 })
@@ -2165,6 +2181,7 @@ class App extends Component {
     getSocket = async => {
         return socket;
     }
+
     updateUploadStatus = (update) => {
         if (update.match(/processing;([a-z0-9].*)/)) { // If update matches background video upload update, change uploading state, else just change upload status
             this.setState({ uploading: update.match(/processing;([a-z0-9].*)/)[1] });
