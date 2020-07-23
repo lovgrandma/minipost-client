@@ -922,9 +922,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 // Event listeners
                 socket.on('connect', () => {
                     console.log("Connected to socket ∞¦∞");
-                    setTimeout(() => {
-                        this.initializeLiveChat();
-                    }, 300);
                 });
                 socket.on("disconnect", () => {
                     console.log("Disconnected from socket");
@@ -1027,7 +1024,7 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
-    initializeLiveChat = () => { // Sends request to server to join user to room
+    initializeLiveChat = (delay = 500) => { // Sends request to server to join user to room
         if (socket) {
             if (this.state.conversations && this.state.isLoggedIn) {
                 let obj = {
@@ -1038,8 +1035,8 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.joinUploadSession(); // Joins upload session if true
             } else {
                 setTimeout(() => {
-                    this.initializeLiveChat();
-                }, 1500);
+                    this.initializeLiveChat(delay*3);
+                }, delay);
             }
         }
     }
@@ -1050,7 +1047,7 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
-    // for increased functionality when user has clicked on a chat
+    // for increased live functionality when user has clicked on a chat
     // If other user has started chat already but doesnt show, this will update and connect user to the chat
     focusLiveChat(room) {
         if (!room) {
@@ -1412,12 +1409,12 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
         }).
-        then((data) => {
+        then((data) => { // Reset socket when friends list has changed
             if (socket) {
                 socket.disconnect();
             }
-        }).
-        then((data) => {
+        })
+        .then((data) => {
             socket.connect();
         })
     }
@@ -1694,7 +1691,7 @@ class Socialbar extends Component { // Main social entry point sb1
 
     bump = (e, too, room) => {
         if (this.state.isLoggedIn && socket) {
-            // bump;from;too;room
+            // Format of socket message is: bump;from;too;room
             let data = "bump;" + this.state.isLoggedIn + ";" + too + ";" + room;
             socket.emit('bump', data);
         }
