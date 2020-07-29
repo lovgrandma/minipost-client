@@ -41,6 +41,7 @@ import { debounce }from './methods/util.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 const bumpEvent = new EventEmitter();
+bumpEvent.setMaxListeners(100);
 let socket; // Expose socket to entire application once it is created
 
 library.add();
@@ -63,14 +64,13 @@ class Friend extends Component { // friend component fc1
             this.typingRef = React.createRef();
             this.shakeRef = React.createRef();
             this.bumpBtnRef = React.createRef();
-            this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: 0, typingOld: null }
             this.handleChange = this.handleChange.bind(this);
+            this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
+                chatlength: 0, typingOld: null, morechats: false, chatlimit: 100 }
         }
 
     componentDidMount() {
         let currentchatlength = 0;
-        //console.log(this.props.friend);
         if (this.props.conversation) {
             currentchatlength = this.props.conversation.log.length;
         }
@@ -79,7 +79,8 @@ class Friend extends Component { // friend component fc1
             this.setState({ chatlength: currentchatlength }); // Sets length of chat when it is equal to null at componentDidMount
         }
 
-        bumpEvent.on('bump', (data) => { // bump functionality. Bumps friend via socket room.
+        bumpEvent.on('bump', (data) => { // Bump functionality. Bumps friend via socket room.
+            /* Shake, shakes a friend node to denote you are recieving a bump from that friend */
             let user = data.match(bumpRegex)[2];
             if (user == this.props.friend) {
                 if (this.shakeRef.current) {
@@ -92,7 +93,7 @@ class Friend extends Component { // friend component fc1
                         }
                     }, 200);
                 }
-            } else if (user == this.props.username) { // application recieved the bump it sent out and is filtering to provide feedback that it was sent
+            } else if (user == this.props.username) { // User recieved the bump that was sent out and is filtering through buttons to provide feedback that it was sent (It will rumble the button of the friend that you bumped)
                 if (data.match(bumpRegex)[3] == this.props.friend) {
                     if (this.bumpBtnRef.current) {
                         this.bumpBtnRef.current.classList.add("shake", "shake-constant", "shake-bump");
@@ -109,11 +110,16 @@ class Friend extends Component { // friend component fc1
         })
     }
 
+    componentWillUnmount() {
+
+    }
+
     componentWillUpdate() {
         
     }
 
     componentDidUpdate(prevProps, prevState) {
+
         // reset shake if error and still rumbling
         if (this.shakeRef.current) {
             this.shakeRef.current.classList.remove("shake", "shake-constant", "shake-bump");
@@ -123,34 +129,45 @@ class Friend extends Component { // friend component fc1
             this.bumpBtnRef.current.classList.remove("shake", "shake-constant", "shake-bump");
         }
         // On update, scroll chat down to most recent chat if user is not actively scrolling through
-        if (prevProps) { // if previous props
+        if (prevProps && prevState) { // if previous props
             let currentchatlength;
-            if (prevState.chatinput == false) { // If chat was closed in previous state, scroll chat down now that it is open. Does not fire when chat is already open
-                if (this.state.chatinput == true ) {
-                    let getHeight = function() { // get height of chat
-                        if (document.getElementById('openfriendchat')) {
-                            let height = document.getElementById('openfriendchat').scrollHeight;
-                            return height;
+            if (prevState.chatinput == false && this.state.chatinput == true) { // If chat was closed in previous state, scroll chat down now that it is open. Does not fire when chat is already open
+                let getHeight = function() { // get height of chat
+                    if (document.getElementById('openfriendchat')) {
+                        let height = document.getElementById('openfriendchat').scrollHeight;
+                        return height;
+                    }
+                }
+
+                if (getHeight() > 4000) {
+                    if (this.scrollRef) {
+                        if (this.scrollRef.current) {
+                            if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+                                this.scrollRef.current.scrollBy({
+                                    top: getHeight()-3000,
+                                    behavior: "auto"
+                                });
+                            }
                         }
                     }
-
-                    if (getHeight() > 4000) {
-                        this.scrollRef.current.scrollBy({
-                            top: getHeight()-3000,
-                            behavior: "auto"
-                        });
-                    }
-                    let tempHeight = getHeight();
-                    let scrollChat = (i, speed) => { // Recursive scroll function, runs 3 times to definitively get length of scroll
+                }
+                let tempHeight = getHeight();
+                let scrollChat = (i, speed) => { // Recursive scroll function, runs 3 times to definitively get length of scroll
+                    if (this.scrollRef.current) {
                         if (i != 0) {
                             setTimeout(() => {
                                 if (getHeight() > tempHeight) {
-                                    // console.log(getHeight(), tempHeight);
                                     tempHeight = getHeight();
-                                    this.scrollRef.current.scrollBy({
-                                        top: getHeight()*2,
-                                        behavior: "smooth"
-                                    });
+                                    if (this.scrollRef) {
+                                        if (this.scrollRef.current) {
+                                            if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+                                                this.scrollRef.current.scrollBy({
+                                                    top: getHeight()*2,
+                                                    behavior: "smooth"
+                                                });
+                                            }
+                                        }
+                                    }
                                     i++; // If scroll ran, increment once
                                 }
                                 if (i>0) { i--; }
@@ -158,10 +175,8 @@ class Friend extends Component { // friend component fc1
                             }, speed);
                         }
                     }
-                    if (this.scrollRef.current) { // Prevents crash when no friends
-                        scrollChat(4, 10);
-                    }
                 }
+                scrollChat(4, 10);
             }
 
             let getChatLength = () => {
@@ -170,12 +185,11 @@ class Friend extends Component { // friend component fc1
                 }
             }
 
+            /* This determines if scroll position is near bottom of chat. If scrollheight - scrolltop position - newlog height is less than ... then scroll to bottom for new chat. Value scrollheight - scrolltop usually gets is 362.
+            This occurs so that when user is near bottom of chat they do not have to scroll down to see new chat. It will automatically update, but if user is NOT near bottom, do not interrupt their reading of previous chat logs by scrolling. */
+
             let detectNearBottom = () => {
                 if (this.state.chatinput) {
-                    // This determines if scroll position is near bottom of chat. If scrollheight - scrolltop position - newlog height is less than ... then scroll to bottom for new chat. Value scrollheight - scrolltop usually gets is 362.
-                    // This occurs so that when user is near bottom of chat they do not have to scroll down to see new chat. It will automatically update, but if user is NOT near bottom, do not interrupt their reading of previous chat logs by scrolling.
-
-                    // console.log(this.scrollRef.current.scrollHeight, this.scrollRef.current.scrollTop);
                     let newlogheight = 0;
                     if (this.scrollRef) { // Gets height of new log
                         if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
@@ -183,18 +197,10 @@ class Friend extends Component { // friend component fc1
                         }
 
                         let scrollHeight = this.scrollRef.current.scrollHeight;
-                        // console.log("current scroll top: " + this.scrollRef.current.scrollTop);
-                        if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                            // console.log("current scroll height: " + document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight);
-                        }
                         if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.20 ||
                             (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 362) {
-                            // console.log("Scroll height: " + scrollHeight);
-                            // console.log("new log height: " + newlogheight);
-                            // console.log((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) + " less than? " + scrollHeight*0.07 + " or 362");
                             if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
                                 if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight) {
-                                    console.log("detectNearBottom() method running");
                                     let height = document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight;
                                     document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
                                         top: height,
@@ -205,11 +211,16 @@ class Friend extends Component { // friend component fc1
                         }
                         if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
                             if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight <= 1500) {
-                                // console.log("If height less than 1500 scroll" + document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight);
-                                this.scrollRef.current.scrollBy({
-                                    top: 1000,
-                                    behavior: "smooth"
-                                });
+                                if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+                                    if (this.scrollRef) {
+                                        if (this.scrollRef.current) {
+                                            this.scrollRef.current.scrollBy({
+                                                top: 1000,
+                                                behavior: "smooth"
+                                            });
+                                        }
+                                    }
+                                }
                             }
                         }
                     }
@@ -229,16 +240,11 @@ class Friend extends Component { // friend component fc1
                                 }
                             }
                         }
-                        // console.log("Scroll height: " + this.scrollRef.current.scrollHeight);
-                        // console.log("Scroll top: " + this.scrollRef.current.scrollTop);
-                        // console.log(this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight + " less than? vv");
-                        // console.log(scrollHeight*0.05 + " or 363");
                         if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.05 ||
                             (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 363) {
                             if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                                // console.log("detectVeryCloseBottom() method running");
                                 document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
-                                    top: 10000000000,
+                                    top: this.scrollRef.current.scrollHeight,
                                     behavior: "smooth"
                                 });
                             }
@@ -266,7 +272,6 @@ class Friend extends Component { // friend component fc1
                         if (this.scrollRef.current.hasChildNodes()) { // A check to ensure that this scroll ref has chats belonging to it in the DOM.
                             this.setState({ chatlength: currentchatlength });
                         }
-
                         detectNearBottom();
 
                     }
@@ -302,12 +307,28 @@ class Friend extends Component { // friend component fc1
                     }
                 }
             }
+
+            if (prevState.chatinput && this.state.chatinput == false) {
+                this.setState({ chatlimit: 50 });
+            }
+        }
+    }
+
+    /* Increases the amount of messages to display in specific chat and hides "see previous chats" button if showing max */
+    raiseChatLimit(e) {
+        if (this.props.conversation.log.length <= this.state.chatlimit) {
+            this.setState({ morechats: false });
+        } else {
+            let newLimit = this.state.chatlimit + 100;
+            this.setState({ chatlimit: newLimit });
+            if (this.props.conversation.log.length <= newLimit) {
+                this.setState({ morechats: false });
+            }
         }
     }
 
     promptremovefriend = (e) => {
         this.setState({ removeprompt: true });
-        console.log('remove friend prompt');
     }
     promptexitremovefriend = (e) => {
         this.setState({ removeprompt: false });
@@ -371,7 +392,9 @@ class Friend extends Component { // friend component fc1
     render() {
         let conversationid;
         if (this.props.conversation) {
-            conversationid = this.props.conversation._id;
+            if (this.props.conversation._id) {
+                conversationid = this.props.conversation._id;
+            }
         }
         return (
             <div className="friend-container" ref={this.shakeRef}>
@@ -417,7 +440,7 @@ class Friend extends Component { // friend component fc1
                     <div className='request-and-block-container'>
                         <span className='search-user-profile prevent-open-toggle'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
                         <span className='search-user-watch-friend'>watch<img className="searched-user-icon" src={play} alt="play"></img></span>
-                        <span className='search-user-bump-friend prevent-open-toggle' ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid )}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
+                        <span className={socket ? 'search-user-bump-friend prevent-open-toggle' : 'search-user-bump-friend prevent-open-toggle bump-btn-offline'} ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid )}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                     </div>
                     <div className="friendchat friendchat-container">
@@ -428,32 +451,23 @@ class Friend extends Component { // friend component fc1
                             : "friendchat-chat-container friendchat-chat-container-closed"
                         }>
                         {
+                            this.props.conversation?
+                                this.props.conversation.log.length > this.state.chatlimit && this.state.morechats == false ?
+                                        this.setState({ morechats: true }) : null : null
+                        }
+                        {this.state.chatlength > 0 && this.state.morechats && this.props.friendchatopen == this.props.friend ?
+                            <button class="load-more-chat" onClick={(e) => {this.raiseChatLimit(e)}}>See previous chats</button>
+                            :
+                            <div class="hidden-overflow"></div>
+                        }
+                        {
                             this.props.conversation ?
                                 this.props.conversation.log.map((log, index) => {
-                                    // console.log(log.author, log.content);
-                                    if (this.props.friendchatopen === this.props.friend) { // if the open chat is this friend, set open classes
-                                        if (log.author == this.props.username) { // if the author is the user logged in
-                                            return (
-                                                <div className='chat-log chat-log-user chat-log-open'>
-                                                    <div className='author-of-chat author-of-chat-user'>{log.author}</div>
-                                                    <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
-                                                        <div>{log.content}</div></div>
-                                                </div>
-                                            )
-                                        } else {
-                                            return (
-                                                <div className='chat-log chat-log-other chat-log-open'>
-                                                    <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                    <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                </div>
-
-                                            )
-                                        }
-                                    } else { // if open chat != this friend, set closed classes
-                                        if (log.author == this.props.username) {
-                                            if (index == this.props.conversation.log.length-1) {
+                                    if (index >= this.props.conversation.log.length - this.state.chatlimit) {
+                                        if (this.props.friendchatopen === this.props.friend) { // if the open chat is this friend, set open classes
+                                            if (log.author == this.props.username) { // if the author is the user logged in
                                                 return (
-                                                    <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"}>
+                                                    <div className='chat-log chat-log-user chat-log-open'>
                                                         <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div></div>
@@ -461,28 +475,48 @@ class Friend extends Component { // friend component fc1
                                                 )
                                             } else {
                                                 return (
-                                                    <div className='chat-log chat-log-user chat-log-closed'>
-                                                        <div className='author-of-chat author-of-chat-user'>{log.author}</div>
-                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
-                                                            <div>{log.content}</div></div>
+                                                    <div className='chat-log chat-log-other chat-log-open'>
+                                                        <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
                                                     </div>
+
                                                 )
                                             }
-                                        } else {
-                                            if (index == this.props.conversation.log.length-1) {
-                                                return (
-                                                    <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"}>
-                                                        <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                    </div>
-                                                )
+                                        } else { // if open chat != this friend, set closed classes
+                                            if (log.author == this.props.username) {
+                                                if (index == this.props.conversation.log.length-1) {
+                                                    return (
+                                                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"}>
+                                                            <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                                <div>{log.content}</div></div>
+                                                        </div>
+                                                    )
+                                                } else {
+                                                    return (
+                                                        <div className='chat-log chat-log-user chat-log-closed'>
+                                                            <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                                <div>{log.content}</div></div>
+                                                        </div>
+                                                    )
+                                                }
                                             } else {
-                                                return (
-                                                    <div className='chat-log chat-log-other chat-log-closed'>
-                                                        <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                        <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                    </div>
-                                                )
+                                                if (index == this.props.conversation.log.length-1) {
+                                                    return (
+                                                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"}>
+                                                            <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                        </div>
+                                                    )
+                                                } else {
+                                                    return (
+                                                        <div className='chat-log chat-log-other chat-log-closed'>
+                                                            <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                        </div>
+                                                    )
+                                                }
                                             }
                                         }
                                     }
@@ -524,10 +558,8 @@ function Social(props) { // social prop sp1
     let limit;
     let setlimit = (e) => {
         if (props.searchusers[0] && props.searchusers[1].moreusers) {
-            console.log(props.searchusers[0].length);
-            console.log(props.searchusers);
-            limit = Math.ceil(props.searchusers[0].length / 10) * 10;
-            props.limitedsearch(props.username, limit+10); // Does limited search for more users in search bar
+            /* Runs search query to return current search user length plus 10 more users */
+            props.limitedsearch(props.username, props.searchusers[0].length+10); // Does limited search for more users in search bar
         }
     }
 
@@ -712,7 +744,6 @@ function Social(props) { // social prop sp1
                                         if (conversation.users.length == 2) { // valid 2 user chat
                                             for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
                                                 if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
-                                                    // console.log(props.friends[i].username, conversation.users[k]);
                                                     return true; // Then this is a friend chat, return true to not show in extra chats
                                                 }
                                             }
@@ -922,6 +953,9 @@ class Socialbar extends Component { // Main social entry point sb1
                 // Event listeners
                 socket.on('connect', () => {
                     console.log("Connected to socket ∞¦∞");
+                    setTimeout(() => {
+                        this.initializeLiveChat();
+                    }, 300);
                 });
                 socket.on("disconnect", () => {
                     console.log("Disconnected from socket");
@@ -957,7 +991,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 });
 
                 socket.on('uploadErr', data => {
-                    console.log(data);
+                    console.log("upload err:" + data);
                     this.props.updateErrStatus(data);
                     cookies.remove('uplsession'); // Upload complete, delete session cookie
                 });
@@ -976,7 +1010,6 @@ class Socialbar extends Component { // Main social entry point sb1
         console.log(data);
         let user = data.match(typingRegex)[1]; // user
         let content = data.match(typingRegex)[2]; // content
-        // console.log(data.match(typingRegex));
         let room = data.match(typingRegex)[3]; // room
         if (this.state.typing.length > 0) { // if typing state array has more than 1 room in it
             if (user != this.state.isLoggedIn) {
@@ -1152,7 +1185,6 @@ class Socialbar extends Component { // Main social entry point sb1
         let regemail = document.getElementById("regemail").value;
         let regpassword = document.getElementById("regpw").value;
         let confirmPassword = document.getElementById("regpw2").value;
-        console.log(regemail);
         fetch(currentrooturl + 'm/register', {
             method: "POST",
             headers: {
@@ -1177,8 +1209,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.getFriendConversations();
             }
             if (data.error) {
-                console.log(data.error);
-                console.log(data.type);
                 this.setState({ registererror: {error: data.error, type: data.type }});
             }
             return data;
@@ -1188,7 +1218,6 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     fetchlogout(e) {
-        console.log('fetchlogout');
          cookies.remove('loggedIn', { path: '/' });
          cookies.remove('user', { path: '/' });
         //  puts users taken from server script into state.
@@ -1249,7 +1278,6 @@ class Socialbar extends Component { // Main social entry point sb1
     limitedsearch(username, limit, requery) { // limit is limited amount of users to return, requery is for if no more users but needs to requery to update state of searched users
         let searchusers = document.getElementById('usersearch').value;
         if (this.state.searchusers[1].moreusers || requery) { // if moreusers state is true or requery necessary to update state
-            console.log("limitedsearch");
             fetch(currentrooturl + 'm/searchusers', {
                 method: "POST",
                 headers: {
@@ -1265,7 +1293,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 return response.json(); // parse the data into a useable format using `.json()`
             })
             .then((data) => {
-                console.log(data);
                 this.setState({ searchusers: data }); // set user data to
             })
             .catch(error => {
@@ -1295,7 +1322,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     return response.json(); // parse the data into a useable format using `.json()`
                 })
                 .then((data) => {
-                    console.log(data);
+                    /* Returns array with [0] searched users, [1] moreusers boolean and [2] pending friends */
                     this.setState({ searchusers: data }); // set user data to
                 })
                 .catch(error => { console.log(error);
@@ -1378,7 +1405,6 @@ class Socialbar extends Component { // Main social entry point sb1
             return response.json();
         })
         .then((data) => {
-            console.log(data);
             if (data.querystatus) {
                 console.log('bad query');
                 if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
@@ -1408,14 +1434,9 @@ class Socialbar extends Component { // Main social entry point sb1
             } else if (refuse == "requestslist" || refuse == "nonfriendslist") {
                 this.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
-        }).
-        then((data) => { // Reset socket when friends list has changed
-            if (socket) {
-                socket.disconnect();
-            }
         })
         .then((data) => {
-            socket.connect();
+            this.initializeLiveChat();
         })
     }
         
@@ -1485,7 +1506,6 @@ class Socialbar extends Component { // Main social entry point sb1
             return response.json();
         })
         .then((data) => {
-            console.log(data);
             this.setState({ friends: data });
             setTimeout(this.getpendingrequests(null, requests, username), 1500); // Reset user search after friend accepted.
             return data;
@@ -1555,7 +1575,6 @@ class Socialbar extends Component { // Main social entry point sb1
                     "message": message,
                     "chatwith": chatwith
                 }
-                console.log(chatObj);
                 socket.emit('sendChat', chatObj);
             }
         } else { // If socket untrue or fromSearch true, defaults to fetch request
@@ -1589,7 +1608,7 @@ class Socialbar extends Component { // Main social entry point sb1
             }
         }
         
-        e.preventDefault(console.log('begin new chat'));  
+        e.preventDefault();
     }
     
     toggleSideBar = () => {
@@ -1690,10 +1709,12 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     bump = (e, too, room) => {
-        if (this.state.isLoggedIn && socket) {
-            // Format of socket message is: bump;from;too;room
-            let data = "bump;" + this.state.isLoggedIn + ";" + too + ";" + room;
-            socket.emit('bump', data);
+        if (this.state.isLoggedIn && socket && too && room) {
+            if (too.length > 0 && room.length > 0 ) {
+                /* Format of socket message is: bump;from;too;room */
+                let data = "bump;" + this.state.isLoggedIn + ";" + too + ";" + room;
+                socket.emit('bump', data);
+            }
         }
     }
 

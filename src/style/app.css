@@ -91,10 +91,19 @@ button {
 }
 /* transitions */
 
-.hidden {
+.hidden, .hidden-overflow {
   visibility: hidden;
   opacity: 0;
   transition: visibility 0s 500ms, opacity 500ms linear;
+}
+
+.hidden-overflow {
+    overflow-y: hidden;
+    visibility: hidden;
+    height: 0;
+    line-height: 0;
+    display: block;
+    padding: 0;
 }
 
 .flex {
@@ -119,11 +128,6 @@ button {
 .navbar:hover {
     height: 40px;
     background-color: white;
-}
-
-.search-field {
-    font-size: 0.95em;
-    background-color: transparent;
 }
 
 .minireel-nav {
@@ -185,6 +189,8 @@ button {
 }
 
 .search-field {
+    font-size: 0.95em;
+    background-color: transparent;
     padding-left: 6px;
     width: 480px;
     overflow: hidden;
@@ -192,6 +198,11 @@ button {
     border-radius: 7px;
     font-size: 15.5px;
     line-height: 1.5;
+    transition: 500ms;
+}
+
+.search-field:hover {
+    background-color: rgba(50,50,50, 0.1);
 }
 
 .search-field:focus {
@@ -1664,6 +1675,10 @@ label {
     user-select: none;
 }
 
+.bump-btn-offline {
+    background-color: rgb(175, 175, 175);
+}
+
 .search-user-bump:hover,
 .search-user-bump-friend:hover {
     background-color: rgb(95, 203, 127);
@@ -1727,6 +1742,7 @@ label {
     font-size: 0.72em;
     transition: 200ms;
     user-select: none;
+    height: 18px;
 }
 
 .searched-user-message:hover {
@@ -1877,6 +1893,30 @@ Other solutions would cause dropdown to show when component was hidden or not sh
     font-size: 0.72em;
     transition: 200ms;
     user-select: none;
+}
+
+.load-more-chat {
+    margin:auto 0px;
+    background-color: #d4d4d4;
+    border: 1px;
+    border-radius: 7px;
+    padding: 2px 35px;
+    margin-bottom: 3px;
+    font-size: 0.80em;
+    transition: 200ms;
+    user-select: none;
+    text-align: center;
+    align-self: center;
+    width: 100%;
+}
+
+.load-more-chat:focus {
+    border: none;
+    outline: none;
+}
+
+.load-more-chat:hover {
+    cursor: pointer;
 }
 
 .prompt-spacing {
