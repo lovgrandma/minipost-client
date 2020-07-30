@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -451,14 +451,14 @@ class Friend extends Component { // friend component fc1
                             : "friendchat-chat-container friendchat-chat-container-closed"
                         }>
                         {
-                            this.props.conversation?
+                            this.props.conversation ?
                                 this.props.conversation.log.length > this.state.chatlimit && this.state.morechats == false ?
                                         this.setState({ morechats: true }) : null : null
                         }
                         {this.state.chatlength > 0 && this.state.morechats && this.props.friendchatopen == this.props.friend ?
-                            <button class="load-more-chat" onClick={(e) => {this.raiseChatLimit(e)}}>See previous chats</button>
+                            <button className="load-more-chat" onClick={(e) => {this.raiseChatLimit(e)}}>See previous chats</button>
                             :
-                            <div class="hidden-overflow"></div>
+                            <div className="hidden-overflow"></div>
                         }
                         {
                             this.props.conversation ?
@@ -785,28 +785,6 @@ function Social(props) { // social prop sp1
     )
 }
 
-// Map conversations with people who are not friends.
-// Map through all conversations. If conversation does not contain a friend then map it to closeable messages area.
-// These chats will have sockets as well but will be hidden and user will not open socket until they open this message area.
-
-// Video Dash PAGE
-// Request to Api algorithm to append relevant videos. 
-// For now build map function that appends VIDEO object array with appropriate
-// video.title, video.thumbnail, video.author, video.length, video.url
-
-
-function Videos(props) {
-    return (
-        <div className="col">
-            <div className='videocontainer'>
-                <NavLink to='/watch/'><img className='videothumb' src={dummythumbnail}></img></NavLink>
-                <p className='mainvideotitle'>{props.title}</p>
-                <p className='videodesc'>{props.description}</p>
-            </div>
-        </div>
-    )
-}
-
 function Video(props) {
      // TODO integrate videojs
     return (
@@ -853,31 +831,6 @@ function Video(props) {
             <div className='video-description-upload-date'>uploaded <span className='upload-date-append'>april 23, 2008</span> at <span class='upload-time-append'>3:20pm eastern</span></div>
         </div>
         
-    )
-}
-
-// Appends videos to dash
-// TODO 
-// Description shortener function
-// publisher
-// publish date.
-
-function Dash(props) {
-    return (        
-        <div className='videodash'>
-            <div className='flex-grid videogrid'>
-                {props.mainfeed.map(function(video, index) {
-                    return (
-                        <Videos title={props.mainfeed[index].title}
-                        description={props.mainfeed[index].description}
-                        publisher={props.mainfeed[index].publisher}
-                        publish={props.mainfeed[index].publish}
-                        key={[index]}
-                        />
-                    )
-                })}
-            </div>
-        </div>
     )
 }
 
@@ -1836,10 +1789,10 @@ class App extends Component {
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
-                                <Dash {...props} mainfeed={this.state.mainfeed} />
+                                <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
                             <Route path='/query' render={(props) => (
-                                <Dash {...props} mainfeed={this.state.mainfeed} />
+                                <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
                             <Route path='/watch' render={(props) => (
                                 <Video {...props} />

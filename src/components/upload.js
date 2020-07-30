@@ -442,7 +442,7 @@ export default class Upload extends Component { // ulc upload component
                 } else if (this.state.videoId.length > 0) {
                     mpd = this.state.videoId;
                 }
-                fetch(currentrooturl + 'm/publish', {
+                fetch(currentrooturl + 'm/publishVideo', {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
