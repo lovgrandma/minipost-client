@@ -27,7 +27,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: ""
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -179,8 +179,17 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    componentWillUnmount() {
+        if (this.state) {
+            if (this.state.dotInterval) {
+                // Clear "dots" state updating interval to prevent memory leak
+                clearInterval(this.state.dotInterval);
+            }
+        }
+    };
+
     dotsAnim = () => {
-        setInterval(() => {
+        let intervalId = setInterval(() => {
             if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
                 if (this.state.dots.length < 2) {
                     let dots = this.state.dots;
@@ -193,6 +202,7 @@ export default class Upload extends Component { // ulc upload component
                 this.setState({ dots: "" });
             }
         }, 1000);
+        this.setState({ dotInterval: intervalId });
     }
 
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
