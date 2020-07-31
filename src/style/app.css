@@ -843,10 +843,10 @@ label {
 }
 
 .col {
-    flex: 5;
-    max-width: 358px;
-    min-width: 266px;
-    width: calc(100%/5);
+    flex: 8;
+    max-width: 402px;
+    min-width: 282px;
+    width: calc(100%/7);
     padding: 0;
     margin: 0 1.5px 15px;
     flex-basis: auto;
@@ -858,6 +858,18 @@ label {
     height: auto;
     object-fit: cover;
     z-index: 3;
+}
+
+@media (max-width: 712px) {
+    .col {
+        min-width: 220px;
+    }
+}
+
+@media (max-width: 580px) {
+    .col {
+        min-width: 180px;
+    }
 }
 
 .videodesc {
