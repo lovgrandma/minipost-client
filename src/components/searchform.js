@@ -25,7 +25,7 @@ export default class SearchForm extends Component {
             <form className="search-form-flex" method="GET" action="/query">
                 <input className="search-field" id="search" type="search" ref={this.searchTermRef} placeholder={getInnerSearchText} name="search"></input>
                 <button className="searchbox" type="submit" value="submit" onMouseOver={(e) => {this.hoverShow(e, "search", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "search", "exit")}}>
-                    <i className="material-icons search">search</i>
+                    <i className="material-icons search material-icon-search">search</i>
                     <div className="btn-desc btn-desc-search">search</div>
                 </button>
             </form>

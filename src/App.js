@@ -853,7 +853,7 @@ class Socialbar extends Component { // Main social entry point sb1
                       showingpendingrequests: "hidden", pendingfriendrequests: null,
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
-                      friendsopen: true, nonfriendsopen: true,
+                      friendsopen: true, nonfriendsopen: false,
                       response: false, endpoint: "http://127.0.0.1:5000",
                       typing: [], darkmode: false
                      }
@@ -1685,12 +1685,12 @@ class Socialbar extends Component { // Main social entry point sb1
         return (
             <div>
                 <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} />
-                <div className="sidebar sidebar-open" ref={this.sidebar}>
+                <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
                     <div className="sidebarcontainer">
                         {sidebar}
                     </div>
                 </div>
-                <div className="sidebarx sidebarxopen" ref={this.sidebarx} onClick={this.toggleSideBar}>
+                <div className={this.props.sidebarStatus == 'open' ? "sidebarx sidebarxopen" : "sidebarx"} ref={this.sidebarx} onClick={this.toggleSideBar}>
                     <img className="sidebarimg" src={this.state.sidebarximgSrc} ref='sidebarximg'></img>
                 </div>
             </div>
@@ -1710,8 +1710,8 @@ class App extends Component {
         super(props); 
 
         this.state = { 
-                        mainfeed: videofeed[0].main, watching: "", sidebarStatus: 'open',
-                        isLoggedIn: (cookies.get('loggedIn')), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: ''
+                        mainfeed: videofeed[0].main, watching: "", sidebarStatus: cookies.get('sidebarStatus'),
+                        isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: ''
                      };
     }
     
@@ -1778,6 +1778,7 @@ class App extends Component {
     }
 
     updateSidebarStatus = (update) => {
+        cookies.set('sidebarStatus', update, { path: '/', sameSite: true, signed: true });
         this.setState({sidebarStatus: update });
     }
 
