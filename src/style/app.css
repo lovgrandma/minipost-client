@@ -845,7 +845,7 @@ label {
 .col {
     flex: 8;
     max-width: 402px;
-    min-width: 282px;
+    min-width: 308px;
     width: calc(100%/7);
     padding: 0;
     margin: 0 1.5px 15px;
@@ -860,9 +860,21 @@ label {
     z-index: 3;
 }
 
-@media (max-width: 712px) {
+@media (max-width: 1066px) {
+    .col {
+        min-width: 230px;
+    }
+}
+
+@media (max-width: 980px) {
     .col {
         min-width: 220px;
+    }
+}
+
+@media (max-width: 860px) {
+    .col {
+        min-width: 200px;
     }
 }
 
