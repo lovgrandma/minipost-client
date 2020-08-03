@@ -2,7 +2,8 @@ import React, {Component} from 'react';
 import {
     BrowserRouter,
     Route,
-    NavLink
+    NavLink,
+    Link
 } from 'react-router-dom';
 import dummythumbnail from '../static/warrenbuffetthumb.jpg';
 
@@ -64,16 +65,24 @@ export default class Videos extends Component {
         return (
             <div className="col">
                 <div className='videocontainer'>
-                    <NavLink to={`/watch?v=${this.props.mpd}`}><img className='videothumb' src={dummythumbnail}></img></NavLink>
-                    <div className="dash-video-details-container">
-                        <img className="publisheravatar-dash" src={require("../static/bobby.jpg")}></img>
-                        <div>
-                            <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
-                            <div className="dash-video-details-col">
-                                <span className="dash-video-bar"><p className='video-author'>{this.props.publisher}</p>&nbsp;•&nbsp;<p className='video-views'>{this.props.views} views</p>&nbsp;•&nbsp;<p className="video-article-responses">0 articles</p>&nbsp;•&nbsp;<p className="video-publish-date">{this.convertDate(this.props.published)}</p></span>
+                    <Link to={{
+                        pathname:`/watch?v=${this.props.mpd}`,
+                        props:{
+                            title: `${this.props.title}`,
+                            author: `${this.props.author}`
+                        }
+                    }}>
+                        <img className='videothumb' src={dummythumbnail}></img>
+                        <div className="dash-video-details-container">
+                            <img className="publisheravatar-dash" src={require("../static/bobby.jpg")}></img>
+                            <div>
+                                <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
+                                <div className="dash-video-details-col">
+                                    <span className="dash-video-bar"><p className='video-author'>{this.props.author}</p>&nbsp;•&nbsp;<p className='video-views'>{this.props.views} views</p>&nbsp;•&nbsp;<p className="video-article-responses">0 articles</p>&nbsp;•&nbsp;<p className="video-publish-date">{this.convertDate(this.props.published)}</p></span>
+                                </div>
                             </div>
                         </div>
-                    </div>
+                    </Link>
                 </div>
             </div>
         )

@@ -852,6 +852,14 @@ label {
     display: flex;
 }
 
+.videocontainer a {
+    color: black;
+}
+
+.videocontainer a:hover {
+    text-decoration: none;
+}
+
 .mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
     font-size: 16px;
     font-weight: 500;
@@ -979,8 +987,10 @@ label {
 /* watchpage format */
 
 .watchpage-title {
+    font-family: 'Open Sans', sans-serif;
     margin-top: 0.75em;
-    font-size: 1.5em;
+    font-size: 1.2em;
+    font-weight: 600;
 }
 
 .publisher-bar {

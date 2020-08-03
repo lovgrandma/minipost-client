@@ -58,7 +58,7 @@ export default class Dash extends Component {
                                 <Videos mpd={video._fields[0].properties.mpd.toString()}
                                 title={video._fields[0].properties.title.toString()}
                                 description={video._fields[0].properties.description.toString()}
-                                publisher={video._fields[0].properties.author.toString()}
+                                author={video._fields[0].properties.author.toString()}
                                 published={video._fields[0].properties.publishDate.toString()}
                                 views={video._fields[0].properties.views}
                                 key={index}

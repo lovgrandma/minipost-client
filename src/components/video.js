@@ -17,7 +17,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-
+            title: ""
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -28,9 +28,15 @@ export default class Video extends Component {
         // Install polyfills to patch browser incompatibilies
         shaka.polyfill.installAll();
         console.log(this.props.location);
-        if (this.props.location.search) {
-            if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
-                this.initPlayer(await this.fetchCloudFrontUrl(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+        if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
+            if (this.props.location.search) {
+                if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
+                    this.initPlayer(await this.fetchCloudFrontUrl(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                }
+            }
+        } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
+            if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)) {
+                this.initPlayer(await this.fetchCloudFrontUrl(this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
             }
         }
     }
@@ -95,7 +101,9 @@ export default class Video extends Component {
                             document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
                             setTimeout(() => {
                                 if (!player.isBuffering()) {
-                                    document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                    if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                        document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                    }
                                 }
                             }, 10000);
                         }
@@ -119,6 +127,30 @@ export default class Video extends Component {
             console.error('Browser not supported!');
         }
     }
+
+    getTitle() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.title) {
+                    return this.props.location.props.title;
+                }
+            }
+        } else {
+            return this.state.title;
+        }
+    }
+
+    getAuthor() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.author) {
+                    return this.props.location.props.author;
+                }
+            }
+        } else {
+            return this.state.author;
+        }
+    }
      // TODO integrate videojs
     render() {
         return (
@@ -129,13 +161,13 @@ export default class Video extends Component {
                     poster={minipostpreviewbanner}
                     />
               </div>
-                <h2 className='watchpage-title'>Space X Falcon 9 launches TESS & Falcon 9 first stage landing</h2>
+                <h2 className='watchpage-title'>{this.getTitle()}</h2>
                 <div className='publisher-bar'>
                     <div className='publisher-info'>
                         <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
                         <span className='publisher-userandjoindate'>
                             <span>
-                                <span className='publisher-username'>Space X</span>
+                                <span className='publisher-username'>{this.getAuthor()}</span>
                                 <span className='publisher-followbutton'>follow</span>
                             </span>
 

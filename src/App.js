@@ -1746,6 +1746,9 @@ class App extends Component {
                             <Route path='/search' render={(props) => (
                                 <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
+                            <Route path='/watch?v=:videoId' render={(props) => (
+                                <Video {...props} />
+                            )}/>
                             <Route path='/watch' render={(props) => (
                                 <Video {...props} />
                             )}/>
