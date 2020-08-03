@@ -157,6 +157,10 @@ button {
     max-width: 230px;
 }
 
+.search-form-flex-users {
+    max-width: 98%;
+}
+
 
 
 @media (min-width: 1060px) {
@@ -610,6 +614,13 @@ ul li {
     margin-right: 10px;
 }
 
+.publisheravatar-dash {
+    width: 32px;
+    height: 32px;
+    border-radius: 7px;
+    margin-right: 10px;
+}
+
 .friendname,
 .otherusername {
     display: inline;
@@ -831,15 +842,42 @@ label {
     max-width: 980px;
 }
 
-.mainvideotitle {
-    font-size: 14px;
+.dash-video-bar {
+    display: inline-flex;
+    flex-wrap: wrap;
+    vertical-align: middle;
+}
+
+.dash-video-details-container {
+    display: flex;
+}
+
+.mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
+    font-size: 16px;
     font-weight: 500;
     height: auto;
-    max-height: 32px;
     margin-bottom: 4px;
-    padding: 0 4px;
-    overflow: hidden;
+    padding: 0 0px;
 }
+
+.video-author {
+    padding-left: 0 !important;
+}
+
+.mainvideotitle {
+    padding-top: 4.5px;
+    max-height: 44px;
+    overflow-y: hidden;
+    text-overflow: ellipsis;
+}
+
+.video-views, .video-author, .video-publish-date, .video-article-responses {
+    align-self: center;
+    white-space: nowrap;
+    font-size: 14px;
+    font-weight: 400;
+}
+
 
 .videogrid {
     display: flex;
@@ -854,12 +892,12 @@ label {
     min-width: 308px;
     width: calc(100%/7);
     padding: 0;
-    margin: 0 1.5px 15px;
+    margin: 0 2px 15px;
     flex-basis: auto;
 }
 
 .videothumb {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     width: 100%;
     height: auto;
     object-fit: cover;

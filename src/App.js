@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -602,7 +602,7 @@ function Social(props) { // social prop sp1
                 </div>
             </div>
             <div>
-                <form className="search-form-flex" onInput={props.debouncefetchusers} onChange={props.searchforminput} onSubmit={props.fetchuserpreventsubmit} noValidate='noValidate' autoComplete='off'>
+                <form className="search-form-flex-users" onInput={props.debouncefetchusers} onChange={props.searchforminput} onSubmit={props.fetchuserpreventsubmit} noValidate='noValidate' autoComplete='off'>
                     <span className="text-input-wrapper searchusers-text-input">
                         <input className="user-search" id="usersearch" type="search" placeholder="Search users.." name="usersearch"></input>
                         <span className="clear" onClick={props.searchformclear} title="Clear">&times;</span>
@@ -782,55 +782,6 @@ function Social(props) { // social prop sp1
             logout={props.fetchlogout}
             />
         </div>
-    )
-}
-
-function Video(props) {
-     // TODO integrate videojs
-    return (
-        <div id='videocontainer'>
-          <Player
-              playsInline
-              poster="/assets/poster.png"
-              src="//vjs.zencdn.net/v/oceans.mp4"
-            />
-            <h2 className='watchpage-title'>Space X Falcon 9 launches TESS & Falcon 9 first stage landing</h2>
-            <div className='publisher-bar'>
-                <div className='publisher-info'>
-                    <img className="publisher-avatar" src={require("./static/spacexavatar.jpg")}></img>
-                    <span className='publisher-userandjoindate'>
-                        <span>
-                            <span className='publisher-username'>Space X</span>
-                            <span className='publisher-followbutton'>follow</span>
-                        </span>
-
-                    </span>
-                </div>
-                
-                <div className='publisher-video-interact'>
-                    <img className="favorites-interact" src={heart} alt="favorites"></img>
-                    <div className='publisher-video-interact-block'>
-                        <img className="thumbsup-interact" src={thumbsup} alt="thumbsup"></img>
-                        <span>432K</span>
-                    </div>
-                    <div className='publisher-video-interact-block'>
-                        <img className="thumbsdown-interact" src={thumbsdown} alt="thumbsdown"></img>
-                        <span>12K</span>
-                    </div>
-                    <img className="share-interact" src={share} alt="share"></img>
-                    <div className='video-interact-border'></div>
-                    <span>32,392,329 views</span>
-                    <div className='more-options-ellipsis'>...</div>
-                </div>
-            </div>
-            <div className='video-description-info'>
-                Following its first test launch, Falcon Heavy is now the most powerful operational rocket in the world by a factor of two. With the ability to lift into orbit nearly 64 metric tons (141,000 lb)---a mass greater than a 737 jetliner loaded with passengers, crew, luggage and fuel--Falcon Heavy can lift more than twice the payload of the next closest operational vehicle, the Delta IV Heavy, at one-third the cost. Falcon Heavy draws upon the proven heritage and reliability of Falcon 9. 
-
-                #falcon9 #spacex #earth #iridium #satellite #weregoingtospace #tesla #flyingtesla
-            </div>
-            <div className='video-description-upload-date'>uploaded <span className='upload-date-append'>april 23, 2008</span> at <span class='upload-time-append'>3:20pm eastern</span></div>
-        </div>
-        
     )
 }
 
@@ -1792,7 +1743,7 @@ class App extends Component {
                             <Route exact path='/' render={(props) => (
                                 <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
-                            <Route path='/query' render={(props) => (
+                            <Route path='/search' render={(props) => (
                                 <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
                             <Route path='/watch' render={(props) => (

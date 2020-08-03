@@ -42,7 +42,7 @@ export default class Upload extends Component { // ulc upload component
         this.onKeyPress = this.onKeyPress.bind(this);
     }
 
-    /* Parses all key presses for componenet elements */
+    /* Parses all key presses for component elements */
     onKeyPress(e) {
         if (this.tagsInput.current == document.activeElement) {
             if (e.key == "," || e.keyCode == 13) {
@@ -84,6 +84,7 @@ export default class Upload extends Component { // ulc upload component
         this.setState({ tags: tempTags });
     }
 
+    /* Updates visual appearance of title on preview view */
     updateTitle(e, element) {
         if (element == "title") {
             if (this.titleIn.current) {
@@ -96,6 +97,7 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    /* Returns the current date to show in preview */
     getDate() {
         let today = new Date();
         let month = "";
@@ -128,10 +130,6 @@ export default class Upload extends Component { // ulc upload component
         return month + " " + (today.getDate()) + ", " + today.getFullYear();
     }
 
-    getDescPlaceholder() {
-        return this.state.placeholderDesc;
-    }
-
     tagInputFocus(e) {
         this.tagsInput.current.focus();
     }
@@ -141,7 +139,6 @@ export default class Upload extends Component { // ulc upload component
     }
 
     onError(error) {
-        console.log(error);
         console.error('Error code', error.code, 'object', error);
     }
 
@@ -182,8 +179,7 @@ export default class Upload extends Component { // ulc upload component
     componentWillUnmount() {
         if (this.state) {
             if (this.state.dotInterval) {
-                // Clear "dots" state updating interval to prevent memory leak
-                clearInterval(this.state.dotInterval);
+                clearInterval(this.state.dotInterval); // Clear "dots" state updating interval to prevent memory leak
             }
         }
     };
@@ -242,6 +238,7 @@ export default class Upload extends Component { // ulc upload component
                     this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
                 }
                 this.progress.emit('progress', 100);
+                console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
                 this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
             } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
                 if (this.state.progress == 0) {
@@ -424,6 +421,7 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    /* Updates a single video record in the backend database on mongodb and graph database */
     updateRecord = async () => {
         if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
             if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
@@ -517,7 +515,7 @@ export default class Upload extends Component { // ulc upload component
                             <label className="upl-vid-author-label">{this.props.isLoggedIn ? this.props.isLoggedIn : ""}</label>
                         </div>
                         <div className="video-detail-separator">&nbsp;</div>
-                        <label className={this.state.placeholderDesc == "" ? "upl-vid-desc-label upl-vid-desc-label-hidden" : "upl-vid-desc-label"}>{this.getDescPlaceholder()}</label>
+                        <label className={this.state.placeholderDesc == "" ? "upl-vid-desc-label upl-vid-desc-label-hidden" : "upl-vid-desc-label"}>{this.state.placeholderDesc}</label>
                         <label className={this.state.tags.length == 0 ? "upl-vid-tags-label upl-vid-tags-label-hidden" : "upl-vid-tags-label"}>{
                             this.state.tags.map((tag, index) => {
                                 return (

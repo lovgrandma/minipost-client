@@ -10,7 +10,7 @@ import currentrooturl from '../url.js';
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashvideos: [] };
+        this.state = { dashVideos: [] };
     }
 
     componentDidMount() {
@@ -39,7 +39,11 @@ export default class Dash extends Component {
                     return response.json();
                 })
                 .then((data) => {
-                    console.log(data);
+                    if (data.querystatus) {
+                        console.log(data.querystatus);
+                    } else if (Array.isArray(data)) {
+                        this.setState({ dashVideos: data });
+                    }
                 });
         }
     }
@@ -49,14 +53,18 @@ export default class Dash extends Component {
             <div className='videodash'>
                 <div className='flex-grid videogrid'>
                     {
-                        this.props.mainfeed.map((video, index) =>
-                            <Videos title={video.title}
-                            description={video.description}
-                            publisher={video.publisher}
-                            publish={video.publish}
-                            key={index}
-                            />
-                        )
+                        this.state.dashVideos.length > 0 ?
+                            this.state.dashVideos.map((video, index) =>
+                                <Videos mpd={video._fields[0].properties.mpd.toString()}
+                                title={video._fields[0].properties.title.toString()}
+                                description={video._fields[0].properties.description.toString()}
+                                publisher={video._fields[0].properties.author.toString()}
+                                published={video._fields[0].properties.publishDate.toString()}
+                                views={video._fields[0].properties.views}
+                                key={index}
+                                />
+                            )
+                        : null
                     }
                 </div>
             </div>
