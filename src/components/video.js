@@ -17,7 +17,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: ""
+            title: "", mpdCloudAddress: ""
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -27,7 +27,6 @@ export default class Video extends Component {
     async componentDidMount() {
         // Install polyfills to patch browser incompatibilies
         shaka.polyfill.installAll();
-        console.log(this.props.location);
         if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
             if (this.props.location.search) {
                 if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
@@ -67,6 +66,7 @@ export default class Video extends Component {
         return mpdUrl;
     }
     initPlayer(manifest) {
+        this.setState({ mpdCloudAddress: manifest });
         // Check browser support
         if (shaka.Player.isBrowserSupported()) {
             if (!manifest) {
