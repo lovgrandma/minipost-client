@@ -17,6 +17,14 @@ export default class Dash extends Component {
         this.fetchRecommendations();
     }
 
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps && this.props.username) {
+            if (prevProps.username != this.props.username || !prevProps.username && this.props.username) {
+                this.fetchRecommendations();
+            }
+        }
+    }
+
     componentDidCatchError(error, errorInfo) {
         console.log(error);
     }
@@ -45,6 +53,28 @@ export default class Dash extends Component {
                         this.setState({ dashVideos: data });
                     }
                 });
+        } else {
+            fetch(currentrooturl + 'm/serveVideos', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((data) => {
+                    if (data.querystatus) {
+                        console.log(data.querystatus);
+                    } else if (Array.isArray(data)) {
+                        this.setState({ dashVideos: data });
+                    }
+                });
         }
     }
 
@@ -61,6 +91,8 @@ export default class Dash extends Component {
                                 author={video._fields[0].properties.author.toString()}
                                 published={video._fields[0].properties.publishDate.toString()}
                                 views={video._fields[0].properties.views}
+                                articles={video._fields[0].properties.articles}
+                                tags={video._fields[0].properties.tags}
                                 key={index}
                                 />
                             )

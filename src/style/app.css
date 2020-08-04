@@ -989,12 +989,26 @@ label {
 .watchpage-title {
     font-family: 'Open Sans', sans-serif;
     margin-top: 0.75em;
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 600;
+    line-height: 1.5em;
+}
+
+.video-stats-bar {
+    font-size: 0.9em;
+    display: flex;
+    justify-content: space-between;
+    user-select: none;
+    border-bottom: 1px solid #d6d6d6;
+    padding-bottom: 8px;
+}
+
+.video-stats-main-stats {
+    color: #3c3c3c;
 }
 
 .publisher-bar {
-    margin-top: 1em;
+    margin-top: 0.5em;
     padding-bottom: 0.7em;
     display: flex;
     justify-content: space-between;
@@ -1010,32 +1024,56 @@ label {
 }
 
 .publisher-info {
+    display: flex;
     min-width: 195px;
+    width: 100%;
 }
-.publisher-userandjoindate {
 
+.video-desc-col {
+    width: 100%;
+}
+
+.publisher-userandjoindate {
+    display: flex;
+    justify-content: space-between;
 }
 
 .publisher-video-interact {
-    height: 25px;
-    margin-bottom: 0.7em;
+
 }
+
+.svg-inline--fa {
+    width: 1.1em !important;
+}
+
 .publisher-video-interact,
 .publisher-video-interact-block {
     display: flex;
     flex-direction: row;
 }
 
+.publisher-video-interact-block div {
+
+}
+
 .publisher-video-interact img,
-.publisher-video-interact-block img {
+.publisher-video-interact-block img,
+.publisher-video-interact svg,
+.publisher-video-interact-block svg {
     display: block;
     height: 18px;
     width: 20px;
     margin-left: 20px;
 }
 
+.publisher-video-interact-block svg:hover,
+.publisher-video-interact svg:hover {
+    color: black;
+}
+
 .thumbsup-interact,
-.thumbsdown-interact {
+.thumbsdown-interact,
+.favorites-interact {
     margin-right: 10px;
 }
 
@@ -1052,13 +1090,18 @@ label {
 }
 
 .publisher-followbutton {
-    font-size: 16px;
-    font-weight: 600;
+    font-size: 14px;
+    font-weight: 400;
     color: #f7796f;
     padding: 0px 8px;
     border: solid #f9958d 2px;
-    border-radius: 7px;
+    border-radius: 5px;
+    transition: 200ms;
+}
 
+.publisher-followbutton:hover {
+    background-color: #f9958d;
+    color: #fff;
 }
 
 .video-interact-border {
@@ -1070,6 +1113,12 @@ label {
 .more-options-ellipsis {
     margin: 0 20px;
     font-weight: 700;
+    color: grey;
+    padding-top: 1px;
+}
+
+.more-options-ellipsis:hover {
+    color: black;
 }
 
 .more-options-ellipsis:hover,
@@ -1091,9 +1140,14 @@ label {
 
 .video-description-info {
     padding-top: 0.7em;
+    margin-bottom: 0.5em;
     font-size: 14px;
     line-height: 1.4em;
     font-family: 'Lato', sans-serif;
+}
+
+.video-tags-list {
+    font-size: 14px;
 }
 
 /* social */
@@ -2490,6 +2544,7 @@ If user only has one friend, styling wont apply */
     min-height: 30px;
     border-color: grey;
     padding: 1px 2px;
+    padding-top: 2px;
     cursor: text;
     margin-bottom: 2px;
 }
@@ -2505,7 +2560,26 @@ If user only has one friend, styling wont apply */
     display: inline-block;
     background-color: #ddd;
     transition: all 0.1s linear;
-    border-radius: 20px;
+    border-radius: 12px;
+    vertical-align: middle;
+}
+
+.video-tags-list .video-tag-individual {
+    padding: 0.2em 0.5em;
+    margin: 0 2px;
+    display: inline-block;
+    background-color: #ddd;
+    transition: all 0.1s linear;
+    border-radius: 8px;
+    font-size: 0.95em;
+}
+
+.video-tags-list .video-tag-individual:first-child {
+    margin-left: 0;
+}
+
+.video-tags-list .video-tag-individual:hover {
+    cursor: pointer;
 }
 
 .tags-input-container .tag-close {

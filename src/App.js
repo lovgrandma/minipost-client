@@ -798,9 +798,8 @@ function Social(props) { // social prop sp1
 class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {
         super(props);
-        this.state = { isLoggedIn: (cookies.get('loggedIn')), username: cookies.get('loggedIn'),
-                      sidebarximgSrc: sidebarcloseimg, friends: [{}], users: {}, conversations: [],
-                      convoIds: [], searchuserinput: '', searchusers: [],
+        this.state = { isLoggedIn: (cookies.get('loggedIn')), sidebarximgSrc: sidebarcloseimg, friends: [{}], users: {},
+                      conversations: [], convoIds: [], searchuserinput: '', searchusers: [],
                       showingpendingrequests: "hidden", pendingfriendrequests: null,
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
@@ -828,15 +827,15 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     componentDidMount(e) {
-
-       if (this.props.sidebarStatus === 'open') {
-           document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
-           this.openSideBar();
-       } else {
-           document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
-           this.closeSideBar();
-       }
         
+        if (this.props.sidebarStatus === 'open') {
+            document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
+            this.openSideBar();
+        } else {
+            document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
+            this.closeSideBar();
+        }
+
         if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
             this.getfriends();
             this.getFriendConversations();
@@ -844,7 +843,18 @@ class Socialbar extends Component { // Main social entry point sb1
     };
         
     componentDidUpdate(e, prevState, prevProps) {
-
+        if (cookies.get('loggedIn')) {
+            if (this.state.loggedIn != cookies.get('loggedIn')) {
+                this.setState({ loggedIn: cookies.get('loggedIn')});
+            }
+        }
+        if (prevState) {
+            if (prevState.loggedIn != cookies.get('loggedIn')) {
+                if (this.state.loggedIn != cookies.get('loggedIn')) {
+                    this.setState({ loggedIn: cookies.get('loggedIn')});
+                }
+            }
+        }
     }
     
     openSocket = async () => {
@@ -1068,7 +1078,9 @@ class Socialbar extends Component { // Main social entry point sb1
             this.setState({ registererror: null });
             this.setState({ loginerror: null });
             if (data.querystatus== "loggedin") {
-                this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+                if (cookies.get('loggedIn')) {
+                    this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+                }
                 this.getfriends()
                 this.getFriendConversations();
             }
@@ -1350,7 +1362,7 @@ class Socialbar extends Component { // Main social entry point sb1
         // show variable must be null, "hidden" or "show"
         // search must be true to search after query or false to not search (e.g if want to close requests header but do not want to search)
         if (!username) {
-            username = this.state.username;
+            username = this.state.isLoggedIn;
         }
         if (!username) {
             username = cookies.get('loggedIn');

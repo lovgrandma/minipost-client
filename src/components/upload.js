@@ -289,34 +289,36 @@ export default class Upload extends Component { // ulc upload component
             const uiConfig = {};
             uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
 
-            //Set up shaka player UI
-            const ui = new shaka.ui.Overlay(player, videoContainer, video);
+            if (player && videoContainer && video) {
+                //Set up shaka player UI
+                const ui = new shaka.ui.Overlay(player, videoContainer, video);
 
-            ui.configure(uiConfig);
-            ui.getControls();
+                ui.configure(uiConfig);
+                ui.getControls();
 
-            // Listen for errors
-            player.addEventListener('error', this.onErrorEvent);
+                // Listen for errors
+                player.addEventListener('error', this.onErrorEvent);
 
-            // Ensures buffering spinner is never indefinitely spinning
-            player.addEventListener('buffering', (event) => {
-                setTimeout((event) => {
-                    if (player.isBuffering()) {
-                        if (document.getElementsByClassName("shaka-spinner")[0]) {
-                            document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
-                            setTimeout(() => {
-                                if (!player.isBuffering()) {
-                                    document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                                }
-                            }, 10000);
+                // Ensures buffering spinner is never indefinitely spinning
+                player.addEventListener('buffering', (event) => {
+                    setTimeout((event) => {
+                        if (player.isBuffering()) {
+                            if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
+                                setTimeout(() => {
+                                    if (!player.isBuffering()) {
+                                        document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                    }
+                                }, 10000);
+                            }
+                        } else {
+                            if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                            }
                         }
-                    } else {
-                        if (document.getElementsByClassName("shaka-spinner")[0]) {
-                            document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                        }
-                    }
-                }, 1000);
-            });
+                    }, 1000);
+                });
+            }
 
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(function() {

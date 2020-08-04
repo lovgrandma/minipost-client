@@ -69,7 +69,11 @@ export default class Videos extends Component {
                         pathname:`/watch?v=${this.props.mpd}`,
                         props:{
                             title: `${this.props.title}`,
-                            author: `${this.props.author}`
+                            author: `${this.props.author}`,
+                            views: `${this.props.views}`,
+                            published: `${this.props.published}`,
+                            description: `${this.props.description}`,
+                            tags: `${this.props.tags}`
                         }
                     }}>
                         <img className='videothumb' src={dummythumbnail}></img>
@@ -78,7 +82,7 @@ export default class Videos extends Component {
                             <div>
                                 <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
                                 <div className="dash-video-details-col">
-                                    <span className="dash-video-bar"><p className='video-author'>{this.props.author}</p>&nbsp;•&nbsp;<p className='video-views'>{this.props.views} views</p>&nbsp;•&nbsp;<p className="video-article-responses">0 articles</p>&nbsp;•&nbsp;<p className="video-publish-date">{this.convertDate(this.props.published)}</p></span>
+                                    <span className="dash-video-bar"><p className='video-author'>{this.props.author}</p>&nbsp;•&nbsp;<p className='video-views'>{this.props.views} views</p>&nbsp;•&nbsp;<p className="video-article-responses">{this.props.articles.length > 0 ? this.props.articles.length + "articles" : null}</p>{this.props.articles.length > 0 ? "&nbsp;•&nbsp;" : null}<p className="video-publish-date">{this.convertDate(this.props.published)}</p></span>
                                 </div>
                             </div>
                         </div>

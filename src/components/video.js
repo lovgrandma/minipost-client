@@ -7,17 +7,18 @@ import {
     NavLink
 } from 'react-router-dom';
 import currentrooturl from '../url';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faThumbsUp, faThumbsDown, faHeart, faShare } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 
-
 export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", mpdCloudAddress: ""
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpdCloudAddress: "", viewed: false
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -25,6 +26,7 @@ export default class Video extends Component {
     }
 
     async componentDidMount() {
+        this.setUpState();
         // Install polyfills to patch browser incompatibilies
         shaka.polyfill.installAll();
         if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
@@ -40,6 +42,34 @@ export default class Video extends Component {
         }
     }
 
+    setUpState() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.title) {
+                    this.setState({ title: this.props.location.props.title });
+                }
+                if (this.props.location.props.description) {
+                    this.setState({ description: this.props.location.props.description });
+                }
+                if (this.props.location.props.author) {
+                    this.setState({ author: this.props.location.props.author });
+                }
+                if (this.props.location.props.views) {
+                    this.setState({ views: this.props.location.props.views });
+                }
+                if (this.props.location.props.published) {
+                    this.setState({ published: this.props.location.props.published });
+                }
+                if (this.props.location.props.tags) {
+                    if (typeof this.props.location.props.tags === 'string') {
+
+                        this.setState({ tags: this.props.location.props.tags.split(',') });
+                    }
+                }
+            }
+        }
+
+    }
     async fetchCloudFrontUrl(rawMpd) {
         const mpdUrl = await fetch(currentrooturl + 'm/fetchCloudfrontUrl', {
             method: "POST",
@@ -85,40 +115,44 @@ export default class Video extends Component {
             uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
 
             //Set up shaka player UI
-            const ui = new shaka.ui.Overlay(player, videoContainer, video);
+            if (player && videoContainer && video) {
+                const ui = new shaka.ui.Overlay(player, videoContainer, video);
 
-            ui.configure(uiConfig);
-            ui.getControls();
+                ui.configure(uiConfig);
+                ui.getControls();
 
-            // Listen for errors
-            player.addEventListener('error', this.onErrorEvent);
+                // Listen for errors
+                player.addEventListener('error', this.onErrorEvent);
 
-            // Ensures buffering spinner is never indefinitely spinning
-            player.addEventListener('buffering', (event) => {
-                setTimeout((event) => {
-                    if (player.isBuffering()) {
-                        if (document.getElementsByClassName("shaka-spinner")[0]) {
-                            document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
-                            setTimeout(() => {
-                                if (!player.isBuffering()) {
-                                    if (document.getElementsByClassName("shaka-spinner")[0]) {
-                                        document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                // Ensures buffering spinner is never indefinitely spinning
+                player.addEventListener('buffering', (event) => {
+                    setTimeout((event) => {
+                        if (player.isBuffering()) {
+                            if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
+                                setTimeout(() => {
+                                    if (!player.isBuffering()) {
+                                        if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                            document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                        }
                                     }
-                                }
-                            }, 10000);
+                                }, 10000);
+                            }
+                        } else {
+                            if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                            }
                         }
-                    } else {
-                        if (document.getElementsByClassName("shaka-spinner")[0]) {
-                            document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                        }
-                    }
-                }, 1000);
-            });
+                    }, 1000);
+                });
+            }
 
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(() => {
                 console.log(this.videoComponent);
-                document.getElementsByClassName('shaka-video')[0].play();
+                if (document.getElementsByClassName('shaka-video')[0]) {
+                    document.getElementsByClassName('shaka-video')[0].play();
+                }
             }).catch(this.onError);
 
 
@@ -151,6 +185,42 @@ export default class Video extends Component {
             return this.state.author;
         }
     }
+
+    getViews() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.views) {
+                    return this.props.location.props.views;
+                }
+            }
+        } else {
+            return this.state.views;
+        }
+    }
+
+    getPublishDate() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.published) {
+                    return this.props.location.props.published;
+                }
+            }
+        } else {
+            return this.state.published;
+        }
+    }
+
+    getDescription() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.description) {
+                    return this.props.location.props.description;
+                }
+            }
+        } else {
+            return this.state.description;
+        }
+    }
      // TODO integrate videojs
     render() {
         return (
@@ -162,40 +232,46 @@ export default class Video extends Component {
                     />
               </div>
                 <h2 className='watchpage-title'>{this.getTitle()}</h2>
-                <div className='publisher-bar'>
-                    <div className='publisher-info'>
-                        <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
-                        <span className='publisher-userandjoindate'>
-                            <span>
-                                <span className='publisher-username'>{this.getAuthor()}</span>
-                                <span className='publisher-followbutton'>follow</span>
-                            </span>
-
-                        </span>
-                    </div>
-
+                <div className="video-stats-bar">
+                    <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + " views" : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
                     <div className='publisher-video-interact'>
-                        <img className="favorites-interact" src={heart} alt="favorites"></img>
-                        <div className='publisher-video-interact-block'>
-                            <img className="thumbsup-interact" src={thumbsup} alt="thumbsup"></img>
-                            <span>432K</span>
+                        <div className="publisher-video-interact-block">
+                            <FontAwesomeIcon className="favorites-interact" icon={faHeart} color={ 'grey' } alt="favorite"/>
+                            <div>favorite</div>
                         </div>
                         <div className='publisher-video-interact-block'>
-                            <img className="thumbsdown-interact" src={thumbsdown} alt="thumbsdown"></img>
-                            <span>12K</span>
+                            <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up"/>
+                            <div>432K</div>
                         </div>
-                        <img className="share-interact" src={share} alt="share"></img>
-                        <div className='video-interact-border'></div>
-                        <span>32,392,329 views</span>
+                        <div className='publisher-video-interact-block'>
+                            <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down"/>
+                            <div>12K</div>
+                        </div>
+                        <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
                         <div className='more-options-ellipsis'>...</div>
                     </div>
                 </div>
-                <div className='video-description-info'>
-                    Following its first test launch, Falcon Heavy is now the most powerful operational rocket in the world by a factor of two. With the ability to lift into orbit nearly 64 metric tons (141,000 lb)---a mass greater than a 737 jetliner loaded with passengers, crew, luggage and fuel--Falcon Heavy can lift more than twice the payload of the next closest operational vehicle, the Delta IV Heavy, at one-third the cost. Falcon Heavy draws upon the proven heritage and reliability of Falcon 9.
-
-                    #falcon9 #spacex #earth #iridium #satellite #weregoingtospace #tesla #flyingtesla
+                <div className='publisher-bar'>
+                    <div className='publisher-info'>
+                        <div className="publisher-avatar-col">
+                        <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
+                        </div>
+                        <div className="video-desc-col">
+                            <span className='publisher-userandjoindate'>
+                                <span className='publisher-username'>{this.state.author}</span>
+                                <span className='publisher-followbutton'>follow</span>
+                            </span>
+                            <div className='video-description-info'>{this.state.description}</div>
+                            <div className="video-tags-list">
+                                {this.state.tags ?
+                                    this.state.tags.map((tag, index) => (
+                                            <span className="video-tag-individual">{tag}</span>
+                                    )) : null
+                                }
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div className='video-description-upload-date'>uploaded <span className='upload-date-append'>april 23, 2008</span> at <span class='upload-time-append'>3:20pm eastern</span></div>
             </div>
         )
     }
