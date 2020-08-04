@@ -32,16 +32,17 @@ export default class Video extends Component {
         if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
             if (this.props.location.search) {
                 if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
-                    this.initPlayer(await this.fetchCloudFrontUrl(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                    this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
                 }
             }
         } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
             if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)) {
-                this.initPlayer(await this.fetchCloudFrontUrl(this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
             }
         }
     }
 
+    /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
     setUpState() {
         if (this.props.location) {
             if (this.props.location.props) {
@@ -62,7 +63,6 @@ export default class Video extends Component {
                 }
                 if (this.props.location.props.tags) {
                     if (typeof this.props.location.props.tags === 'string') {
-
                         this.setState({ tags: this.props.location.props.tags.split(',') });
                     }
                 }
@@ -70,8 +70,10 @@ export default class Video extends Component {
         }
 
     }
-    async fetchCloudFrontUrl(rawMpd) {
-        const mpdUrl = await fetch(currentrooturl + 'm/fetchCloudfrontUrl', {
+
+    /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
+    async fetchVideoPageData(rawMpd) {
+        const mpdUrl = await fetch(currentrooturl + 'm/fetchVideoPageData', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -86,8 +88,19 @@ export default class Video extends Component {
             return response.json();
         })
         .then((result) => {
-            if (result.querystatus) {
-                return result.querystatus;
+            console.log(result);
+            /* Sets all video document related data */
+            for (const [key, value] of Object.entries(result.video)) {
+                if (key == "published") {
+                    this.setState(this.setStateDynamic(key, this.roundTime(value)));
+                } else if (value) {
+                    this.setState(this.setStateDynamic(key, value));
+                } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
+                    this.setState(this.setStateDynamic(key, value));
+                }
+            }
+            if (result.video.mpd) {
+                return result.video.mpd;
             } else {
                 return false;
             }
@@ -95,6 +108,12 @@ export default class Video extends Component {
         })
         return mpdUrl;
     }
+
+    /* Dynamically sets state when given the key/value location and the name of the key name to be used */
+    setStateDynamic(key, value) {
+        return { [key]: value };
+    }
+
     initPlayer(manifest) {
         this.setState({ mpdCloudAddress: manifest });
         // Check browser support
@@ -112,7 +131,7 @@ export default class Video extends Component {
 
             // UI custom json
             const uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
+            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'overflow_menu', 'mute', 'volume', 'fullscreen'];
 
             //Set up shaka player UI
             if (player && videoContainer && video) {
@@ -149,9 +168,10 @@ export default class Video extends Component {
 
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(() => {
-                console.log(this.videoComponent);
-                if (document.getElementsByClassName('shaka-video')[0]) {
-                    document.getElementsByClassName('shaka-video')[0].play();
+                if (this.videoComponent) {
+                    if (this.videoComponent.current) {
+                        this.videoComponent.current.play();
+                    }
                 }
             }).catch(this.onError);
 
@@ -162,66 +182,21 @@ export default class Video extends Component {
         }
     }
 
-    getTitle() {
-        if (this.props.location) {
-            if (this.props.location.props) {
-                if (this.props.location.props.title) {
-                    return this.props.location.props.title;
-                }
+    /* Simplifies time format 00/00/0000, 0:00:00 AM to 00/00/00, 0:00 am */
+    roundTime(time) {
+        if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)) {
+            if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] && time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2]) {
+                return time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] + " " + time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2].toLowerCase();
             }
         } else {
-            return this.state.title;
+            return time;
         }
     }
 
-    getAuthor() {
-        if (this.props.location) {
-            if (this.props.location.props) {
-                if (this.props.location.props.author) {
-                    return this.props.location.props.author;
-                }
-            }
-        } else {
-            return this.state.author;
-        }
+    roundNumber(number) {
+        return number;
     }
 
-    getViews() {
-        if (this.props.location) {
-            if (this.props.location.props) {
-                if (this.props.location.props.views) {
-                    return this.props.location.props.views;
-                }
-            }
-        } else {
-            return this.state.views;
-        }
-    }
-
-    getPublishDate() {
-        if (this.props.location) {
-            if (this.props.location.props) {
-                if (this.props.location.props.published) {
-                    return this.props.location.props.published;
-                }
-            }
-        } else {
-            return this.state.published;
-        }
-    }
-
-    getDescription() {
-        if (this.props.location) {
-            if (this.props.location.props) {
-                if (this.props.location.props.description) {
-                    return this.props.location.props.description;
-                }
-            }
-        } else {
-            return this.state.description;
-        }
-    }
-     // TODO integrate videojs
     render() {
         return (
             <div id='videocontainer'>
@@ -231,21 +206,27 @@ export default class Video extends Component {
                     poster={minipostpreviewbanner}
                     />
               </div>
-                <h2 className='watchpage-title'>{this.getTitle()}</h2>
+                <h2 className='watchpage-title'>{this.state.title}</h2>
                 <div className="video-stats-bar">
                     <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + " views" : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
                     <div className='publisher-video-interact'>
                         <div className="publisher-video-interact-block">
-                            <FontAwesomeIcon className="favorites-interact" icon={faHeart} color={ 'grey' } alt="favorite"/>
-                            <div>favorite</div>
+                            <div className="favorite-click">
+                                <FontAwesomeIcon className="favorites-interact" icon={faHeart} color={ 'grey' } alt="favorite"/>
+                                <div>favorite</div>
+                            </div>
                         </div>
                         <div className='publisher-video-interact-block'>
-                            <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up"/>
-                            <div>432K</div>
+                            <div className="likes-click">
+                                <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up"/>
+                                <div>{this.roundNumber(this.state.likes)}</div>
+                            </div>
                         </div>
                         <div className='publisher-video-interact-block'>
-                            <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down"/>
-                            <div>12K</div>
+                            <div className="dislikes-click">
+                                <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down"/>
+                                <div>{this.roundNumber(this.state.dislikes)}</div>
+                            </div>
                         </div>
                         <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
                         <div className='more-options-ellipsis'>...</div>
@@ -265,7 +246,7 @@ export default class Video extends Component {
                             <div className="video-tags-list">
                                 {this.state.tags ?
                                     this.state.tags.map((tag, index) => (
-                                            <span className="video-tag-individual">{tag}</span>
+                                            <span className="video-tag-individual" key={index}>{tag}</span>
                                     )) : null
                                 }
                             </div>

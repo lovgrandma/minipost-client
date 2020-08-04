@@ -1077,6 +1077,18 @@ label {
     margin-right: 10px;
 }
 
+.likes-click,
+.favorite-click,
+.dislikes-click {
+    display: contents;
+}
+
+.thumbsup-interact:hover,
+.thumbsdown-interact:hover,
+.favorite-click:hover {
+    cursor: pointer;
+}
+
 .publisher-username {
     font-size: 0.9em;
     font-weight: 600;
@@ -2420,7 +2432,14 @@ If user only has one friend, styling wont apply */
 
 .upload-video-txt {
     font-size: 20px;
-    margin-bottom: 20px;
+    margin-bottom: 5px;
+}
+
+.upload-info {
+    text-align: center;
+    font-size: 12px;
+    color: #5f5f5f;
+    margin-bottom: 5px;
 }
 
 .choose-file,
@@ -2486,7 +2505,7 @@ If user only has one friend, styling wont apply */
 
 .progress-bar-container {
     transition: 200ms;
-    width: 90vw;
+    width: 100%;
 }
 
 .progress-bar-container-sidebaropen {

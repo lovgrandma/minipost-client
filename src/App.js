@@ -312,6 +312,12 @@ class Friend extends Component { // friend component fc1
                 this.setState({ chatlimit: 50 });
             }
         }
+
+        if (this.props.conversation) {
+            if (this.props.conversation.log.length > this.state.chatlimit && this.state.morechats == false) {
+                this.setState({ morechats: true });
+            }
+        }
     }
 
     /* Increases the amount of messages to display in specific chat and hides "see previous chats" button if showing max */
@@ -384,7 +390,7 @@ class Friend extends Component { // friend component fc1
             socket.emit('typing', ba);
         }
     }
-    
+
     resetchat = (e) => {
         this.inputRef._ref.value = ""; // Clear chat message
     }
@@ -450,11 +456,6 @@ class Friend extends Component { // friend component fc1
                             : this.props.friendchatopen == this.props.friend ? "friendchat-chat-container friendchat-chat-container-open"  // If friendchatopen == this current friend
                             : "friendchat-chat-container friendchat-chat-container-closed"
                         }>
-                        {
-                            this.props.conversation ?
-                                this.props.conversation.log.length > this.state.chatlimit && this.state.morechats == false ?
-                                        this.setState({ morechats: true }) : null : null
-                        }
                         {this.state.chatlength > 0 && this.state.morechats && this.props.friendchatopen == this.props.friend ?
                             <button className="load-more-chat" onClick={(e) => {this.raiseChatLimit(e)}}>See previous chats</button>
                             :
@@ -467,7 +468,7 @@ class Friend extends Component { // friend component fc1
                                         if (this.props.friendchatopen === this.props.friend) { // if the open chat is this friend, set open classes
                                             if (log.author == this.props.username) { // if the author is the user logged in
                                                 return (
-                                                    <div className='chat-log chat-log-user chat-log-open'>
+                                                    <div className='chat-log chat-log-user chat-log-open' key={index}>
                                                         <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div></div>
@@ -475,7 +476,7 @@ class Friend extends Component { // friend component fc1
                                                 )
                                             } else {
                                                 return (
-                                                    <div className='chat-log chat-log-other chat-log-open'>
+                                                    <div className='chat-log chat-log-other chat-log-open' key={index}>
                                                         <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
                                                     </div>
@@ -486,7 +487,7 @@ class Friend extends Component { // friend component fc1
                                             if (log.author == this.props.username) {
                                                 if (index == this.props.conversation.log.length-1) {
                                                     return (
-                                                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"}>
+                                                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-user chat-log-closed" : "chat-log chat-log-user" : "chat-log chat-log-user"} key={index}>
                                                             <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                             <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                                 <div>{log.content}</div></div>
@@ -494,7 +495,7 @@ class Friend extends Component { // friend component fc1
                                                     )
                                                 } else {
                                                     return (
-                                                        <div className='chat-log chat-log-user chat-log-closed'>
+                                                        <div className='chat-log chat-log-user chat-log-closed' key={index}>
                                                             <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                             <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                                 <div>{log.content}</div></div>
@@ -504,14 +505,14 @@ class Friend extends Component { // friend component fc1
                                             } else {
                                                 if (index == this.props.conversation.log.length-1) {
                                                     return (
-                                                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"}>
+                                                        <div className={this.props.typing ? this.props.typing.match(typingRegex)[2].length > 0 ? "chat-log chat-log-other chat-log-closed" : "chat-log chat-log-other" : "chat-log chat-log-other"} key={index}>
                                                             <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                             <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
                                                         </div>
                                                     )
                                                 } else {
                                                     return (
-                                                        <div className='chat-log chat-log-other chat-log-closed'>
+                                                        <div className='chat-log chat-log-other chat-log-closed' key={index}>
                                                             <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                             <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
                                                         </div>
@@ -1729,7 +1730,9 @@ class App extends Component {
             } else {
                 this.setState({ uploadStatus: update });
             }
-            this.setState({ errStatus: '' });
+            if (this.state.errStatus != '') {
+                this.setState({ errStatus: '' });
+            }
         }
     }
 
@@ -1737,7 +1740,9 @@ class App extends Component {
         if (err != '') {
             this.setState({ uploadStatus: '' });
         }
-        this.setState({ errStatus: err });
+        if (this.state.errStatus != err) {
+            this.setState({ errStatus: err });
+        }
     }
 
     updateSidebarStatus = (update) => {

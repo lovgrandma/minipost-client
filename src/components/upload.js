@@ -27,7 +27,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: ""
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: ""
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -40,7 +40,89 @@ export default class Upload extends Component { // ulc upload component
         this.onErrorEvent = this.onErrorEvent.bind(this);
 		this.onError = this.onError.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
+        this.uploadMessages = {
+            takeAWhile: 'Depending on the size of your video, uploading can take a while',
+            whileYoureGone: 'When your video is converting you can visit other pages and watch videos, we\'ll take care of this while you\'re gone',
+            copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our policy'
+        }
     }
+
+    componentDidMount() {
+        this.getSocket(0, 150);
+
+        /* Progress event for uploading video */
+        this.progress.on('progress', (percent, data) => {
+            if (this.state.percent != percent) {
+                this.setState({progress: percent});
+            }
+            if (this.progressBar.current) {
+                this.progressBar.current.style.width = Math.round(percent) + "%";
+            }
+            if (data) {
+                if (this.state.videoPreview != data.name) {
+                    this.loadPlayer(data);
+                }
+            }
+        });
+
+        // Install polyfills to patch browser incompatibilies
+        shaka.polyfill.installAll();
+
+        this.dotsAnim();
+        this.getUserVideos();
+    }
+
+    componentDidUpdate(prevProps, prevState) {
+        if (prevProps.mpd == "") {
+            if (this.props.mpd.length > 0) {
+                this.initPlayer(this.props.mpd);
+            }
+        }
+        if (prevProps.errStatus != this.props.errStatus && this.props.errStatus.length > 0) { // Reset page after receiving an error
+            this.resetPage();
+        }
+
+        if (prevProps && this.props) {
+            if (prevProps.uploadStatus && this.props.uploadStatus) {
+                if (prevProps.uploadStatus != this.props.uploadStatus && this.props.uploadStatus != "video ready") {
+                    this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
+                    if (this.state.uploadInfoInterval.length <= 0) {
+                        let infoIntervalId = setInterval = (() => {
+                            this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
+                            if (this.state.uploadStatus == "video ready") {
+                                clearInterval(this.state.uploadInfoInterval);
+                                this.setState({ uploadInfo: "" });
+                            }
+                        }, 15000);
+                        this.setState({ uploadInfoInterval: infoIntervalId });
+                        this.setState({ uploadInfo: "" });
+                    }
+                }
+            }
+        }
+
+
+    }
+
+    randomProperty(obj) {
+        let keys = Object.keys(obj);
+        return obj[ keys[ keys.length * Math.random() << 0]];
+    }
+
+    componentWillUnmount() {
+        if (this.state) {
+            if (this.state.dotInterval) {
+                if (this.state.dotInterval.length > 0) {
+                    clearInterval(this.state.dotInterval); // Clear "dots" state updating interval to prevent memory leak
+                }
+            }
+            if (this.state.uploadInfoInterval) {
+                if (this.state.uploadInfoInterval.length > 0) {
+                    clearInterval(this.state.uploadInfoInterval);
+                }
+            }
+        }
+    };
 
     /* Parses all key presses for component elements */
     onKeyPress(e) {
@@ -142,48 +224,6 @@ export default class Upload extends Component { // ulc upload component
         console.error('Error code', error.code, 'object', error);
     }
 
-    componentDidMount() {
-        this.getSocket(0, 150);
-
-        /* Progress event for uploading video */
-        this.progress.on('progress', (percent, data) => {
-            this.setState({progress: percent});
-            if (this.progressBar.current) {
-                this.progressBar.current.style.width = Math.round(percent) + "%";
-            }
-            if (data) {
-                if (this.state.videoPreview != data.name) {
-                    this.loadPlayer(data);
-                }
-            }
-        });
-
-        // Install polyfills to patch browser incompatibilies
-        shaka.polyfill.installAll();
-
-        this.dotsAnim();
-        this.getUserVideos();
-    }
-
-    componentDidUpdate(prevProps, prevState) {
-        if (prevProps.mpd == "") {
-            if (this.props.mpd.length > 0) {
-                this.initPlayer(this.props.mpd);
-            }
-        }
-        if (prevProps.errStatus != this.props.errStatus && this.props.errStatus.length > 0) { // Reset page after receiving an error
-            this.resetPage();
-        }
-    }
-
-    componentWillUnmount() {
-        if (this.state) {
-            if (this.state.dotInterval) {
-                clearInterval(this.state.dotInterval); // Clear "dots" state updating interval to prevent memory leak
-            }
-        }
-    };
-
     dotsAnim = () => {
         let intervalId = setInterval(() => {
             if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
@@ -219,7 +259,7 @@ export default class Upload extends Component { // ulc upload component
             return response.json(); // Parsed data
         })
         .then((data) => {
-            if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set to processing if video being processed
+            if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
                 this.props.updateErrStatus("");
                 this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
                 if (this.props.socket) {
@@ -231,7 +271,7 @@ export default class Upload extends Component { // ulc upload component
                     this.props.updateUploadStatus("processing video");
                 }
                 this.progress.emit('progress', 100);
-            } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set awaitinginfo state for video
+            } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
                 this.props.updateErrStatus("");
                 this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
                 if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
@@ -287,7 +327,7 @@ export default class Upload extends Component { // ulc upload component
 
             // UI custom json
             const uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause', 'spacer', 'mute', 'volume', 'time_and_duration', 'fullscreen', 'overflow_menu', , ];
+            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'overflow_menu', 'mute', 'volume', 'fullscreen'];
 
             if (player && videoContainer && video) {
                 //Set up shaka player UI
@@ -489,7 +529,7 @@ export default class Upload extends Component { // ulc upload component
         return (
             <div>
                 <div className="upload-video-txt">Upload video</div>
-                <div className={this.props.errStatus.length > 0 ? "upload-err-status" : ""}>{this.props.errStatus}</div>
+                <div className={this.props.errStatus.length > 0 ? "upload-err-status" : "upload-info"}>{this.props.errStatus.length ? this.props.errStatus : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
                     <div className="flex progress-update">
                         <div className="progress-upload-status">{this.props.uploadStatus}{this.state.dots}</div>
@@ -543,9 +583,9 @@ export default class Upload extends Component { // ulc upload component
                         <form className="nudity-radio">
                             <h2 className="nudity-question">Is there any nudity in your video?</h2>
                             <input type="radio" id="nudity-yes" name="nudity" value="yes"/>
-                            <label for="nudity-yes">Yes</label>
+                            <label htmlFor="nudity-yes">Yes</label>
                             <input type="radio" id="nudity-no" name="nudity" value="no" defaultChecked/>
-                            <label for="nudity-no">No</label>
+                            <label htmlFor="nudity-no">No</label>
                             <h3 className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></h3>
                         </form>
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>

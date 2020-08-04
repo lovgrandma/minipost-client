@@ -276,7 +276,7 @@ export default class NonFriendConversation extends Component { // non friend con
                                     if (this.props.otheruserchatopen === otheruser) { // if the open other user chat is this chat
                                         if (log.author == this.props.username) { // if this log is your chat
                                             return (
-                                                <div className='chat-log chat-log-user chat-log-open'>
+                                                <div className='chat-log chat-log-user chat-log-open' key={index}>
                                                     <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                     <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                         <div>{log.content}</div>
@@ -285,7 +285,7 @@ export default class NonFriendConversation extends Component { // non friend con
                                             )
                                         } else { // log belongs to other user
                                             return (
-                                                <div className='chat-log chat-log-other chat-log-open'>
+                                                <div className='chat-log chat-log-other chat-log-open' key={index}>
                                                     <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                     <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                         <div>{log.content}</div>
@@ -297,7 +297,7 @@ export default class NonFriendConversation extends Component { // non friend con
                                         if (log.author == this.props.username) {
                                             if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    <div className='chat-log chat-log-user'>
+                                                    <div className='chat-log chat-log-user' key={index}>
                                                         <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div>
@@ -306,7 +306,7 @@ export default class NonFriendConversation extends Component { // non friend con
                                                 )
                                             } else {
                                                 return (
-                                                    <div className='chat-log chat-log-user chat-log-closed'>
+                                                    <div className='chat-log chat-log-user chat-log-closed' key={index}>
                                                         <div className='author-of-chat author-of-chat-user'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div>
@@ -318,7 +318,7 @@ export default class NonFriendConversation extends Component { // non friend con
                                         } else {
                                             if (index == this.props.conversation.log.length-1) {
                                                 return (
-                                                    <div className='chat-log chat-log-other'>
+                                                    <div className='chat-log chat-log-other' key={index}>
                                                         <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div>
@@ -327,7 +327,7 @@ export default class NonFriendConversation extends Component { // non friend con
                                                 )
                                             } else {
                                                 return (
-                                                    <div className='chat-log chat-log-other chat-log-closed'>
+                                                    <div className='chat-log chat-log-other chat-log-closed' key={index}>
                                                         <div className='author-of-chat author-of-chat-other'>{log.author}</div>
                                                         <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
                                                             <div>{log.content}</div>
