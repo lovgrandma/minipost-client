@@ -94,6 +94,7 @@ export default class Dash extends Component {
                                 articles={video._fields[0].properties.articles}
                                 tags={video._fields[0].properties.tags}
                                 key={index}
+                                index={index}
                                 />
                             )
                         : null

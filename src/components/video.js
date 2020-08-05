@@ -22,6 +22,7 @@ export default class Video extends Component {
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
+        this.player = new React.createRef();
         this.progress = new EventEmitter();
     }
 
@@ -40,6 +41,12 @@ export default class Video extends Component {
                 this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
             }
         }
+    }
+
+    componentWillUnmount() {
+        // Untested. Supposd to remove event listeners from player when user leaves page
+        this.player.removeEventListener('buffering');
+        this.player.removeEventListener('error');
     }
 
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
@@ -128,6 +135,7 @@ export default class Video extends Component {
 
             // Initialize player
             let player = new shaka.Player(video);
+            this.player = player;
 
             // UI custom json
             const uiConfig = {};
@@ -171,6 +179,7 @@ export default class Video extends Component {
                 if (this.videoComponent) {
                     if (this.videoComponent.current) {
                         this.videoComponent.current.play();
+                        console.log(this.videoComponent.current);
                     }
                 }
             }).catch(this.onError);
@@ -187,6 +196,8 @@ export default class Video extends Component {
         if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)) {
             if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] && time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2]) {
                 return time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] + " " + time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2].toLowerCase();
+            } else {
+                return time;
             }
         } else {
             return time;

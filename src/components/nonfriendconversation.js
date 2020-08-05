@@ -38,7 +38,6 @@ export default class NonFriendConversation extends Component { // non friend con
                             }
                         }
                     }
-                    // console.log(i);
                     if (i>0) { i--; }
                     scrollChat(i, speed += 20); // Increase timeout time to ensure scroll
                 }, speed);
@@ -193,7 +192,6 @@ export default class NonFriendConversation extends Component { // non friend con
                 // If invite done or element invite to be friend option doesnt exist or if search user results container is not open
                 if (invDone || (element && (!element.getElementsByClassName("search-user-send-friend-request")[0] || element.getElementsByClassName("spinner-search-holder-visible"))) || !document.getElementsByClassName("search-users-results-container-opened")[0]) {
                     clearInterval(interval);
-                    console.log("interval clear: invite nonfriendcomponent");
                 }
             }, 100);
         })

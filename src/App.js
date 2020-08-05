@@ -32,7 +32,6 @@ import TextareaAutosize from 'react-textarea-autosize';
 import videofeedvar from './videofeedplaceholder';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { library } from '@fortawesome/fontawesome-svg-core';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 
@@ -44,7 +43,6 @@ const bumpEvent = new EventEmitter();
 bumpEvent.setMaxListeners(100);
 let socket; // Expose socket to entire application once it is created
 
-library.add();
 const cookies = new Cookies();
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
@@ -786,16 +784,7 @@ function Social(props) { // social prop sp1
     )
 }
 
-// Friends. Use array for now. Socket io. Add friend state to interact with backend api and update following info of friends (user in this case being that friend)
-// user.status
-// user.watching
-// user.watching.url === video.url
-// me.chats.host.user.log.mostrecent
-// user.url
-
 // Side Social Bar
-// Socket for chat functionality. Will create method for creating sockets for each friend and appending to array
-
 class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {
         super(props);
@@ -815,12 +804,6 @@ class Socialbar extends Component { // Main social entry point sb1
         this.limitedsearch = this.limitedsearch.bind(this);
         this.sidebar = React.createRef();
         this.sidebarx = React.createRef();
-    }
-    // function to run when mongodb gets information that state has changed.
-    // test if the current state is equal to new object array.
-    // then do something.
-    appendFriends() {
-        
     }
     
     componentWillMount(e) {

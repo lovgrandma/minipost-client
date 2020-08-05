@@ -15,6 +15,13 @@ export default class Videos extends Component {
         }
     }
 
+    componentDidMount() {
+
+    }
+    componentDidUpdate() {
+
+    }
+
     roundHour(hour) {
         if (Math.round(hour/3600) == 1) {
             return "1 hour ago";
@@ -50,9 +57,15 @@ export default class Videos extends Component {
         } else if (timeFromNow => 86400 && timeFromNow < 172800) {
             return "yesterday";
         } else {
-            return date.split(' ')[0]; // Returns date minus time
+            if (date.match(/([a-zA-Z0-9].*),/)) {
+                return date.match(/([a-zA-Z0-9].*),/)[1];
+            } else {
+                date = date.split(' ')[0];
+                return date.substring(0, date.length -1);
+            }
         }
-        return date.split(' ')[0];
+        date = date.split(' ')[0];
+        return date.substring(0, date.length -1);
     }
 
     cutTitle(title) {
@@ -61,6 +74,13 @@ export default class Videos extends Component {
         }
         return title;
     }
+
+    getFirstNodeWidth() {
+        if (document.getElementsByClassName('col')[0]) {
+            return document.getElementsByClassName('col')[0].width;
+        }
+    }
+
     render () {
         return (
             <div className="col">
