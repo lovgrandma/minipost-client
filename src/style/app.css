@@ -919,7 +919,7 @@ label {
     }
 }
 
-@media (max-width: 1600px) {
+@media (max-width: 1800px) {
     .col {
         width: calc(100%/4);
     }
@@ -929,13 +929,13 @@ label {
     }
 }
 
-@media (max-width: 1168px) {
+@media (max-width: 1266px) {
     .col {
         width: calc(100%/3);
     }
 }
 
-@media (max-width: 860px) {
+@media (max-width: 940px) {
     .col {
         width: calc(100%/2);
     }
@@ -1232,7 +1232,7 @@ label {
 .chat-log,
 .chat-log-other {
     direction: ltr;
-    transition: 1000ms;
+    transition: 500ms;
 }
 
 .chat-log-closed {
@@ -1273,7 +1273,7 @@ label {
 
 .friendchat-chat-container-closed .chat-log-user .content-of-chat,
 .otheruserchat-chat-container-closed .chat-log-user .content-of-chat {
-    transition: 400ms;
+    transition: 200ms;
     background-color: #e3e3e3;
 }
 
@@ -1306,7 +1306,7 @@ label {
 
 .friendchat-chat-container-closed .chat-log-other .content-of-chat,
 .otheruserchat-chat-container-closed .chat-log-other .content-of-chat {
-    transition: 400ms;
+    transition: 200ms;
     background-color: #75b6e6;
 }
 
@@ -2390,8 +2390,12 @@ If user only has one friend, styling wont apply */
 /* typing cell */
 /* Very specific changes made to ensure elements dont jitter around when typing cell is updated */
 
+.friend-chat-container {
+    transition: 200ms !important;
+}
+
 .typing-cell {
-    transition: 0ms !important;
+    transition: 100ms !important;
     display: none;
     opacity: 0;
 }
@@ -2403,26 +2407,22 @@ If user only has one friend, styling wont apply */
 .typing-cell-visible {
     display: block;
     opacity: 1;
+    height: 14px;
+    border-radius: 5px;
+    margin-bottom: 2.9px;
 }
 
 .friendchat-chat-container-closed .typing-cell,
 .friendchat-chat-container-closed .typing-cell .content-of-chat {
-    height: 14px !important;
     overflow-y: hidden;
     background-color: #85c0eb !important;
 }
 
-.friendchat-chat-container-closed .typing-cell {
-    margin-bottom: 2.5px;
-}
-
 .friendchat-chat-container-closed .chat-log-other:nth-last-child(2) .content-of-chat-long,
-.friendchat-chat-container-closed .chat-log-user:nth-last-child(2) .content-of-chat-long {
-    margin-bottom: 2.5px !important;
-}
-
-.typing-cell-visible {
-    border-radius: 5px;
+.friendchat-chat-container-closed .chat-log-user:nth-last-child(2) .content-of-chat-long,
+.friend-chat-container-closed .typing-cell,
+.chat-log-open {
+    margin-bottom: 2px !important;
 }
 
 .friendchat-chat-container-closed .typing-cell .content-of-chat div {

@@ -35,7 +35,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 
-import { debounce }from './methods/util.js';
+import { debounce } from './methods/utility.js';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -226,7 +226,7 @@ class Friend extends Component { // friend component fc1
             }
 
             let detectVeryCloseBottom = () => { // runs as typing is updated
-                if (this.state.chatinput) {
+                if (this.state.chatinput && this.scrollRef.current) {
                     let newlogheight = 0;
                     let scrollHeight = this.scrollRef.current.scrollHeight;
 
@@ -250,7 +250,9 @@ class Friend extends Component { // friend component fc1
                     }
                 }
             }
-            detectVeryCloseBottom();
+            setTimeout(() => {
+                detectVeryCloseBottom();
+            }, 150);
 
             let setStateScrollChat = () => {
                 if (this.props.typing) {

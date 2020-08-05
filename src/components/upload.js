@@ -226,16 +226,18 @@ export default class Upload extends Component { // ulc upload component
 
     dotsAnim = () => {
         let intervalId = setInterval(() => {
-            if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
-                if (this.state.dots.length < 2) {
-                    let dots = this.state.dots;
-                    dots += ".";
-                    this.setState({ dots: dots });
+            if (this.state) {
+                if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
+                    if (this.state.dots.length < 2) {
+                        let dots = this.state.dots;
+                        dots += ".";
+                        this.setState({ dots: dots });
+                    } else {
+                        this.setState({ dots: "" });
+                    }
                 } else {
                     this.setState({ dots: "" });
                 }
-            } else {
-                this.setState({ dots: "" });
             }
         }, 1000);
         this.setState({ dotInterval: intervalId });
@@ -561,7 +563,7 @@ export default class Upload extends Component { // ulc upload component
                         <label className={this.state.tags.length == 0 ? "upl-vid-tags-label upl-vid-tags-label-hidden" : "upl-vid-tags-label"}>{
                             this.state.tags.map((tag, index) => {
                                 return (
-                                    <span className="tag-label">{tag}</span>
+                                    <span className="tag-label" key={index}>{tag}</span>
                                 )
                             })
                         }
@@ -573,7 +575,7 @@ export default class Upload extends Component { // ulc upload component
                             {
                                 this.state.tags.map((tag, index) => {
                                     return (
-                                        <span className="tag">{tag}<span className="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
+                                        <span className="tag" key={index}>{tag}<span className="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
                                     )
                                 })
                             }

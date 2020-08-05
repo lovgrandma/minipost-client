@@ -54,7 +54,7 @@ export default class Videos extends Component {
             return "1 hour ago";
         } else if (timeFromNow < 86400) {
             return this.roundHour(timeFromNow); // Rounds hour for hours uploaded from now
-        } else if (timeFromNow => 86400 && timeFromNow < 172800) {
+        } else if (new Date(Date.now()).getDate() - new Date(date).getDate() == 1) {
             return "yesterday";
         } else {
             if (date.match(/([a-zA-Z0-9].*),/)) {

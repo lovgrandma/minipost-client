@@ -1,17 +1,26 @@
 /* Shaka player styling */
 
-.shaka-play-button {
+.shaka-play-button, .shaka-play-button[icon=play] {
     transition: 200ms;
     max-height: 20px;
     max-width: 20px;
     padding: 35px;
-    background-color: rgba(255,255,255, 0.3);
+    background-color: rgba(126, 126, 126, 0);
     border-radius: 35%;
+}
+
+.shaka-play-button[icon=play] {
+    opacity: 0.0;
+}
+
+.shaka-play-button[icon=play]:hover {
+    opacity: 0.3;
 }
 
 .shaka-play-button:hover {
     cursor: pointer;
-    background-color: rgba(255,255,255, 0.9);
+    background-color: rgba(255,255,255, 0.15);
+    opacity: 1;
 }
 
 .shaka-video {

@@ -18,7 +18,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpdCloudAddress: "", viewed: false
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: ""
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -34,19 +34,26 @@ export default class Video extends Component {
             if (this.props.location.search) {
                 if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
                     this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                    this.setState({ mpd: this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]});
                 }
             }
         } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
             if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)) {
                 this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                this.setState({ mpd: this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]});
             }
         }
     }
 
     componentWillUnmount() {
         // Untested. Supposd to remove event listeners from player when user leaves page
-        this.player.removeEventListener('buffering');
-        this.player.removeEventListener('error');
+        if (this.player) {
+            if (this.player.current) {
+                this.player.current.removeEventListener('buffering');
+                this.player.current.removeEventListener('error');
+            }
+        }
+        this.endViewCountInterval();
     }
 
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
@@ -80,7 +87,7 @@ export default class Video extends Component {
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
     async fetchVideoPageData(rawMpd) {
-        const mpdUrl = await fetch(currentrooturl + 'm/fetchVideoPageData', {
+        const mpdUrl = await fetch(currentrooturl + 'm/fetchvideopagedata', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -114,6 +121,33 @@ export default class Video extends Component {
             return false;
         })
         return mpdUrl;
+    }
+
+    async incrementView() {
+        if (this.state.mpd) {
+            let mpd = this.state.mpd;
+            await fetch(currentrooturl + 'm/incrementview', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        mpd
+                    })
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((result) => {
+                    if (result) {
+                        this.setState({ viewCounted: true });
+                        let viewCount = ++this.state.views;
+                        this.setState({ views: viewCount });
+                    }
+                })
+        }
     }
 
     /* Dynamically sets state when given the key/value location and the name of the key name to be used */
@@ -179,7 +213,7 @@ export default class Video extends Component {
                 if (this.videoComponent) {
                     if (this.videoComponent.current) {
                         this.videoComponent.current.play();
-                        console.log(this.videoComponent.current);
+                        this.viewCountedInterval();
                     }
                 }
             }).catch(this.onError);
@@ -188,6 +222,37 @@ export default class Video extends Component {
         } else {
             // This browser does not have the minimum set of APIs we need.
             console.error('Browser not supported!');
+        }
+    }
+
+    /** Determines if atleast x (25%) amount of video has been watched to determine view increment fetch request to database */
+    viewCountedInterval() {
+        if (!this.state.viewCounted && !this.state.viewInterval) {
+            let viewInterval = setInterval(() => {
+                let totalTime = 0;
+                if (this.videoComponent) {
+                    if (this.videoComponent.current) {
+                        for (let i = 0; i < this.videoComponent.current.played.length; i++) {
+                            if (!this.state.viewCounted) {
+                                totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
+                            }
+                        }
+                        if (totalTime / this.videoComponent.current.duration > 0.25) {
+                            this.incrementView();
+                            this.endViewCountInterval();
+                        }
+                    }
+                }
+            }, 5000);
+            this.setState({ viewInterval: viewInterval });
+        }
+    }
+
+    /** Ends view count interval and clears state record of interval */
+    endViewCountInterval() {
+        if (this.state.viewInterval) {
+            clearInterval(this.state.viewInterval);
+            this.setState({ viewInterval: "" });
         }
     }
 
@@ -219,7 +284,7 @@ export default class Video extends Component {
               </div>
                 <h2 className='watchpage-title'>{this.state.title}</h2>
                 <div className="video-stats-bar">
-                    <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + " views" : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
+                    <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
                     <div className='publisher-video-interact'>
                         <div className="publisher-video-interact-block">
                             <div className="favorite-click">

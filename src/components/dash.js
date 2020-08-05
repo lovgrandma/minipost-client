@@ -6,6 +6,7 @@ Appends videos to user dash */
 import React, { Component } from 'react';
 import Videos from './videos.js';
 import currentrooturl from '../url.js';
+import utility from '../methods/utility.js';
 
 export default class Dash extends Component {
     constructor(props) {
@@ -50,7 +51,7 @@ export default class Dash extends Component {
                     if (data.querystatus) {
                         console.log(data.querystatus);
                     } else if (Array.isArray(data)) {
-                        this.setState({ dashVideos: data });
+                        this.setState({ dashVideos: utility.shuffleArray(data) });
                     }
                 });
         } else {
@@ -72,7 +73,7 @@ export default class Dash extends Component {
                     if (data.querystatus) {
                         console.log(data.querystatus);
                     } else if (Array.isArray(data)) {
-                        this.setState({ dashVideos: data });
+                        this.setState({ dashVideos: utility.shuffleArray(data) });
                     }
                 });
         }
