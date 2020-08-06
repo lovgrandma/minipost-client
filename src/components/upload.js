@@ -261,6 +261,7 @@ export default class Upload extends Component { // ulc upload component
             return response.json(); // Parsed data
         })
         .then((data) => {
+            console.log(data);
             if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
                 this.props.updateErrStatus("");
                 this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
@@ -400,7 +401,13 @@ export default class Upload extends Component { // ulc upload component
                     loaded = progressEvent.loaded / 1000000;
                     total = file.size / 1000000;
                     uploadPercentage = (loaded/total) * 100;
-                    this.progress.emit('progress', uploadPercentage, this.upload.current.files[0]);
+                    if (this.upload.current) {
+                        if (this.upload.current.files) {
+                            if (this.upload.current.files[0]) {
+                                this.progress.emit('progress', uploadPercentage, this.upload.current.files[0]);
+                            }
+                        }
+                    }
                 },
                 headers: {
                     'content-type': 'multipart/form-data'
@@ -593,6 +600,7 @@ export default class Upload extends Component { // ulc upload component
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>
+            <div className="write-article-prompt">Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )
     }
