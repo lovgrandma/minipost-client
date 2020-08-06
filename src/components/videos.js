@@ -81,32 +81,44 @@ export default class Videos extends Component {
         }
     }
 
+    /** Stores data for video link props */
+    videoObjectLink() {
+        return {
+            pathname:`/watch?v=${this.props.mpd}`,
+            props:{
+                title: `${this.props.title}`,
+                author: `${this.props.author}`,
+                views: `${this.props.views}`,
+                published: `${this.props.published}`,
+                description: `${this.props.description}`,
+                tags: `${this.props.tags}`
+            }
+        }
+    }
+
     render () {
         return (
             <div className="col">
                 <div className='videocontainer'>
-                    <Link to={{
-                        pathname:`/watch?v=${this.props.mpd}`,
-                        props:{
-                            title: `${this.props.title}`,
-                            author: `${this.props.author}`,
-                            views: `${this.props.views}`,
-                            published: `${this.props.published}`,
-                            description: `${this.props.description}`,
-                            tags: `${this.props.tags}`
-                        }
-                    }}>
+                    <Link to={this.videoObjectLink()}>
                         <img className='videothumb' src={dummythumbnail}></img>
-                        <div className="dash-video-details-container">
-                            <img className="publisheravatar-dash" src={require("../static/bobby.jpg")}></img>
-                            <div>
+                    </Link>
+                    <div className="dash-video-details-container">
+                        <img className="publisheravatar-dash" src={require("../static/bobby.jpg")}></img>
+                        <div>
+                            <Link to={this.videoObjectLink()}>
                                 <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
-                                <div className="dash-video-details-col">
-                                    <span className="dash-video-bar"><p className='video-author'>{this.props.author}</p>&nbsp;•&nbsp;<p className='video-views'>{this.props.views} views</p>&nbsp;•&nbsp;<p className="video-article-responses">{this.props.articles.length > 0 ? this.props.articles.length + "articles" : null}</p>{this.props.articles.length > 0 ? "&nbsp;•&nbsp;" : null}<p className="video-publish-date">{this.convertDate(this.props.published)}</p></span>
-                                </div>
+                            </Link>
+                            <div className="dash-video-details-col">
+                                <span className="dash-video-bar">
+                                    <div><p className='video-author'>{this.props.author}</p></div>
+                                    <div className="dash-video-bar-stats">
+                                        <p className='video-views'>{this.props.views} {this.props.title ? "views" : null}</p>&nbsp;{this.props.title ? "•" : null}&nbsp;<p className="video-article-responses">{this.props.articles.length > 0 ? this.props.articles.length + "articles" : null}</p>{this.props.articles.length > 0 ? "&nbsp;•&nbsp;" : null}<p className="video-publish-date">{this.convertDate(this.props.published)}</p>
+                                    </div>
+                                </span>
                             </div>
                         </div>
-                    </Link>
+                    </div>
                 </div>
             </div>
         )

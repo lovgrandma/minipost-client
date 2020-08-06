@@ -843,9 +843,13 @@ label {
 }
 
 .dash-video-bar {
-    display: inline-flex;
     flex-wrap: wrap;
     vertical-align: middle;
+    color: #5f5f5f;
+}
+
+.dash-video-bar-stats {
+    display: inline-flex;
 }
 
 .dash-video-details-container {
@@ -869,6 +873,7 @@ label {
 }
 
 .video-author {
+    font-weight: 500 !important;
     padding-left: 0 !important;
 }
 
@@ -882,10 +887,17 @@ label {
 .video-views, .video-author, .video-publish-date, .video-article-responses {
     align-self: center;
     white-space: nowrap;
-    font-size: 14px;
+    font-size: 0.95em;
     font-weight: 400;
 }
 
+.video-views:hover, .video-author:hover, .video-publish-date:hover, .video-article-responses:hover {
+    color:#000;
+}
+
+.video-views, video-article-responses, .video-publish-date {
+    font-size: 0.9em;
+}
 
 .videogrid {
     display: flex;

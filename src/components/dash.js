@@ -11,7 +11,7 @@ import utility from '../methods/utility.js';
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashVideos: [] };
+        this.state = { dashVideos: this.tempData() };
     }
 
     componentDidMount() {
@@ -70,6 +70,7 @@ export default class Dash extends Component {
                     return response.json();
                 })
                 .then((data) => {
+                console.log(data);
                     if (data.querystatus) {
                         console.log(data.querystatus);
                     } else if (Array.isArray(data)) {
@@ -79,25 +80,50 @@ export default class Dash extends Component {
         }
     }
 
+    tempData() {
+        let data = [];
+        for (let i = 0; i < 12; i++) {
+            data.push({
+                _fields: [{
+                    properties: {
+                        articles: [],
+                        author: "",
+                        description: "",
+                        publishDate: "",
+                        views: "",
+                        tags: [],
+                        title: "",
+                        mpd: ""
+                    }
+                }]
+            });
+        }
+        return data;
+    }
+
+
+
     render() {
         return (
             <div className='videodash'>
                 <div className='flex-grid videogrid'>
                     {
-                        this.state.dashVideos.length > 0 ?
-                            this.state.dashVideos.map((video, index) =>
-                                <Videos mpd={video._fields[0].properties.mpd.toString()}
-                                title={video._fields[0].properties.title.toString()}
-                                description={video._fields[0].properties.description.toString()}
-                                author={video._fields[0].properties.author.toString()}
-                                published={video._fields[0].properties.publishDate.toString()}
-                                views={video._fields[0].properties.views}
-                                articles={video._fields[0].properties.articles}
-                                tags={video._fields[0].properties.tags}
-                                key={index}
-                                index={index}
-                                />
-                            )
+                        this.state.dashVideos ?
+                            this.state.dashVideos.length > 0 ?
+                                this.state.dashVideos.map((video, index) =>
+                                    <Videos mpd={video._fields[0].properties.mpd.toString()}
+                                    title={video._fields[0].properties.title.toString()}
+                                    description={video._fields[0].properties.description.toString()}
+                                    author={video._fields[0].properties.author.toString()}
+                                    published={video._fields[0].properties.publishDate.toString()}
+                                    views={video._fields[0].properties.views}
+                                    articles={video._fields[0].properties.articles}
+                                    tags={video._fields[0].properties.tags}
+                                    key={index}
+                                    index={index}
+                                    />
+                                )
+                            : null
                         : null
                     }
                 </div>

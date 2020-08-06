@@ -14,7 +14,7 @@
 }
 
 .shaka-play-button[icon=play]:hover {
-    opacity: 0.3;
+    opacity: 1;
 }
 
 .shaka-play-button:hover {
