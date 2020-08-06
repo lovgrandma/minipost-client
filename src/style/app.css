@@ -280,14 +280,16 @@ ul li {
 .nav-icon {
     height: 18px;
     width: auto;
+    z-index: 2;
 }
 
 .nav a {
     width: auto;
+    text-decoration: none;
 }
 
 .nav a:hover {
-    cursor:default;
+    cursor:pointer;
 }
 
 .nav-loggedin-config {
@@ -376,9 +378,9 @@ ul li {
     visibility:hidden;
     position: fixed;
     background-color: white;
-    padding: 3px 7px;
-    margin-top: 33px;
-    z-index: 20;
+    padding: 20px 8px 6px 8px;
+    z-index: 1;
+    margin-top: 15px;
 }
 
 .btn-desc-search {
@@ -839,7 +841,7 @@ label {
 
 
 #videocontainer {
-    max-width: 980px;
+    max-width: 1440px;
 }
 
 .dash-video-bar {
@@ -850,6 +852,8 @@ label {
 
 .dash-video-bar-stats {
     display: inline-flex;
+    font-size: 0.9em;
+    flex-wrap: wrap;
 }
 
 .dash-video-details-container {
@@ -864,8 +868,11 @@ label {
     text-decoration: none;
 }
 
-.mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
+.mainvideotitle {
     font-size: 16px;
+}
+
+.mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
     font-weight: 500;
     height: auto;
     margin-bottom: 4px;
@@ -875,6 +882,7 @@ label {
 .video-author {
     font-weight: 500 !important;
     padding-left: 0 !important;
+    font-size: 0.95em;
 }
 
 .mainvideotitle {
@@ -887,16 +895,11 @@ label {
 .video-views, .video-author, .video-publish-date, .video-article-responses {
     align-self: center;
     white-space: nowrap;
-    font-size: 0.95em;
     font-weight: 400;
 }
 
 .video-views:hover, .video-author:hover, .video-publish-date:hover, .video-article-responses:hover {
     color:#000;
-}
-
-.video-views, video-article-responses, .video-publish-date {
-    font-size: 0.9em;
 }
 
 .videogrid {
@@ -941,12 +944,23 @@ label {
     }
 }
 
+@media (max-width: 1330px) {
+    .maindashwide .col {
+        width: calc(100%/3);
+    }
+}
 @media (max-width: 1266px) {
     .col {
         width: calc(100%/3);
     }
+
 }
 
+@media (max-width: 1160px) {
+    .maindashwide .col {
+        width: calc(100%/2);
+    }
+}
 @media (max-width: 940px) {
     .col {
         width: calc(100%/2);
@@ -958,9 +972,15 @@ label {
     }
 }
 
-@media (max-width: 580px) {
-    .col {
+@media (max-width: 730px) {
+    .maindashwide .col {
         width: calc(100%/1);
+    }
+}
+
+@media (max-width: 640px) {
+    .col {
+        width: calc(100%/2);
     }
 
     .material-icon-search, .searchbox {
@@ -1037,6 +1057,7 @@ label {
 }
 
 .publisher-bar {
+    margin-bottom: 10px;
     margin-top: 0.5em;
     padding-bottom: 0.7em;
     display: flex;
@@ -1060,6 +1081,25 @@ label {
 
 .video-desc-col {
     width: 100%;
+    max-height: 200px;
+    overflow-y: hidden;
+}
+
+.video-desc-col-open {
+    max-height: 100%;
+}
+
+.video-desc-expand-button {
+    padding: 0;
+    border-radius: 10px;
+    border: 0px solid white;
+    color: #3c3c3c;
+    font-size: 12px;
+    background-color: transparent;
+}
+
+.video-desc-expand-button:focus {
+    outline: 1px solid black;
 }
 
 .publisher-userandjoindate {
@@ -1131,6 +1171,8 @@ label {
 }
 
 .publisher-followbutton {
+    width: 100px;
+    text-align: center;
     font-size: 14px;
     font-weight: 400;
     color: #f7796f;
@@ -1152,7 +1194,7 @@ label {
 }
 
 .more-options-ellipsis {
-    margin: 0 20px;
+    margin: 0 0 0 20px;
     font-weight: 700;
     color: grey;
     padding-top: 1px;
@@ -2806,4 +2848,11 @@ If user only has one friend, styling wont apply */
 
 .nudity-radio label {
     padding: 0 5px;
+}
+
+/* Articles */
+
+.article-responses {
+    font-size: 1em;
+    font-weight: 500;
 }

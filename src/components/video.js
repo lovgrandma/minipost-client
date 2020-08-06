@@ -18,7 +18,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: ""
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -269,6 +269,20 @@ export default class Video extends Component {
         }
     }
 
+    openDescription(e, boolean) {
+        this.setState({ descriptionOpen: boolean });
+    }
+
+    tallDescription() {
+        if (document.getElementsByClassName('video-description-info')[0]) {
+            if (document.getElementsByClassName('video-description-info')[0].offsetHeight > 200) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+    }
+
     roundNumber(number) {
         return number;
     }
@@ -313,7 +327,8 @@ export default class Video extends Component {
                         <div className="publisher-avatar-col">
                         <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
                         </div>
-                        <div className="video-desc-col">
+                        <div className="">
+                            <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
                             <span className='publisher-userandjoindate'>
                                 <span className='publisher-username'>{this.state.author}</span>
                                 <span className='publisher-followbutton'>follow</span>
@@ -327,7 +342,17 @@ export default class Video extends Component {
                                 }
                             </div>
                         </div>
+                        {this.tallDescription() ?
+                            !this.state.descriptionOpen ?
+                                <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, true)}}>expand</button>
+                                : <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, false)}}>less</button>
+                            : null
+                        }
+                        </div>
                     </div>
+                </div>
+                <div className='articles-bar'>
+                    <div className='article-responses'>Articles</div>
                 </div>
             </div>
         )

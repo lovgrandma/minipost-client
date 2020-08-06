@@ -4,7 +4,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -1671,26 +1671,28 @@ class App extends Component {
         }
 
         if (this.state.isLoggedIn) {
-            let username = this.state.isLoggedIn;
-            fetch(currentrooturl + 'm/setCloudCookies', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'include',
-                body: JSON.stringify({
-                    username
+            if (!cookies.get('CloudFrontCookiesSet')) {
+                let username = this.state.isLoggedIn;
+                fetch(currentrooturl + 'm/setCloudCookies', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include',
+                    body: JSON.stringify({
+                        username
+                    })
                 })
-            })
                 .then(function(response) {
-                return response.json();
-            })
+                    return response.json();
+                })
                 .then((data) => {
-                return data;
-            })
+                    return data;
+                })
                 .catch(error => { console.log(error);
-            });
+                });
+            }
         }
     }
 
@@ -1756,6 +1758,9 @@ class App extends Component {
                             )}/>
                             <Route path='/upload' render={(props) => (
                                 <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                            )}/>
+                            <Route path='/writearticle' render={(props) => (
+                                <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
                             )}/>
                         </div>
                     </div>
