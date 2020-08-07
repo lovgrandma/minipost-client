@@ -11,9 +11,9 @@ import {
 } from 'react-bootstrap';
 import $ from 'jquery';
 
-// Plugins not working: WordCount, Mention, Table, Image
+// Plugins not working: WordCount, Mention, Table, TableToolbar, Image, ImageCaption, Autoformat, CkFinderUploadAdapter, ImageToolbar
 ckEditor.defaultConfig = {
-    toolbar: ['heading', '|', 'Bold', 'Italic', 'Link', 'UnderLine', 'Strikethrough', 'Highlight', '|', 'Indent', 'Outdent', '|', 'Superscript', 'Subscript', 'BlockQuote', 'Code', 'CodeBlock', 'BulletedList', 'NumberedList']
+    toolbar: ['heading', '|', 'Bold', 'Italic', 'Link', 'UnderLine', 'Strikethrough', 'Highlight', '|', 'Indent', 'Outdent', 'Alignment', '|', 'Superscript', 'Subscript', 'BlockQuote', 'Code', 'CodeBlock', 'BulletedList', 'NumberedList', 'Horizontalline', 'RemoveFormat']
 }
 export default class writeArticle extends Component {
     constructor(props) {
@@ -42,7 +42,6 @@ export default class writeArticle extends Component {
 
     /** Experimental keeps bar open when user clicks bar or textfield. This is the only usage of jquery in the application. Checks if the target clicked is a descendant of the editor container */
     handleClick(e) {
-        console.log(e.target);
         if (!$.contains(document.getElementsByClassName('ck-editor')[0], e.target)) {
             if (document.getElementsByClassName('ck-sticky-panel__content')[0]) {
                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
@@ -60,7 +59,7 @@ export default class writeArticle extends Component {
             <div>
                 <div className="editor-container">
                 <div className="write-an-article-prompt">Write an article</div>
-                    <input type='text' id="upl-article-title" className="fixfocuscolor" ref={this.titleIn} name="upl-article-title" placeholder="title" autocomplete="off"></input>
+                    <input type='text' id="upl-article-title" className="fixfocuscolor" ref={this.titleIn} name="upl-article-title" placeholder="title" autoComplete="off"></input>
                     <CKEditor
                         editor={ ckEditor }
                         config={{
