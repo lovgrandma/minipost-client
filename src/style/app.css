@@ -2674,6 +2674,10 @@ If user only has one friend, styling wont apply */
     margin-bottom: 20px;
 }
 
+#upl-vid-title:focus {
+    outline: 1px solid #adadad !important;
+}
+
 #upl-vid-title, #upl-vid-desc, #upl-article-title {
     display: block;
     border-radius: 20px;
@@ -2967,7 +2971,7 @@ If user only has one friend, styling wont apply */
 }
 
 textarea:focus {
-    outline: none !important;
+    outline: 1px solid #adadad !important;
 }
 
 .editor-container {
@@ -2987,8 +2991,15 @@ textarea:focus {
     line-height: 24px !important;
 }
 
+.ck-focused {
+    border: 1px solid #adadad !important;
+}
+
 .publish-button-hidden {
     display: none;
     visibility: hidden;
 }
 
+#upl-article-title:focus {
+    outline: 1px solid #adadad !important;
+}
