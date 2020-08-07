@@ -854,7 +854,7 @@ label {
     max-width: 1340px;
 }
 
-@media(min-height:220px) {
+@media(min-height:320px) {
     #videocontainer {
         max-width:140vh;
     }
