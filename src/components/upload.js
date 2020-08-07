@@ -105,8 +105,12 @@ export default class Upload extends Component { // ulc upload component
     }
 
     randomProperty(obj) {
-        let keys = Object.keys(obj);
-        return obj[ keys[ keys.length * Math.random() << 0]];
+        if (obj) {
+            let keys = Object.keys(obj);
+            return obj[ keys[ keys.length * Math.random() << 0]];
+        } else {
+            return null;
+        }
     }
 
     componentWillUnmount() {
@@ -237,6 +241,10 @@ export default class Upload extends Component { // ulc upload component
                     }
                 } else {
                     this.setState({ dots: "" });
+                }
+            } else {
+                if (this.state.dotInterval) {
+                    clearInterval(this.state.dotInterval);
                 }
             }
         }, 1000);

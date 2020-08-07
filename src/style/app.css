@@ -131,7 +131,11 @@ button {
 }
 
 .minireel-nav {
-    display: block;
+    display: inline;
+}
+
+.minireel-nav-small {
+    display: none;
 }
 
 .navbtnsleft {
@@ -189,10 +193,16 @@ button {
 
 @media (max-width: 630px) {
     .minireel-nav {
-        display: none !important;
+        width: 10px;
+        display: none;
         margin-right: 10px;
         text-align: center;
     }
+
+    .minireel-nav-small {
+        display: inline;
+    }
+
     .search-field {
         width: 100% !important;
     }
@@ -841,7 +851,13 @@ label {
 
 
 #videocontainer {
-    max-width: 1440px;
+    max-width: 1340px;
+}
+
+@media(min-height:220px) {
+    #videocontainer {
+        max-width:140vh;
+    }
 }
 
 .dash-video-bar {
@@ -991,6 +1007,30 @@ label {
     }
 }
 
+@media (max-width: 580px) {
+    .col {
+        width: calc(100%/1);
+    }
+
+    .maindashcontainer {
+        height: 100vh;
+    }
+    .maindashwide .col {
+        width: 200px;
+        height: 100%;
+    }
+    .videocontainer {
+        height: 100%;
+        width: 100%;
+    }
+
+    .maindashwide {
+        height: 100%;
+        padding: 0;
+    }
+
+}
+
 .videodesc {
     padding: 0 4px;
     font-size: 12px;
@@ -1050,6 +1090,36 @@ label {
     user-select: none;
     border-bottom: 1px solid #d6d6d6;
     padding-bottom: 8px;
+}
+
+@media (max-width: 420px) {
+    .video-stats-bar {
+        flex-direction: column;
+    }
+
+    .video-stats-main-stats {
+        margin-bottom: 7px;
+    }
+
+    .favorites-interact, .thumbsup-interact, .thumbsdown-interact, .share-interact {
+        margin-right: 5px !important;
+    }
+
+    .publisher-video-interact-block {
+        margin-right: 5px;
+    }
+
+    .share-interact {
+        margin-right: 8px !important;
+    }
+
+    .more-options-ellipsis {
+        margin-left: 10px !important;
+    }
+
+    .favorites-interact {
+        margin-left: 0 !important;
+    }
 }
 
 .video-stats-main-stats {
@@ -2506,6 +2576,11 @@ If user only has one friend, styling wont apply */
     font-size: 20px;
     margin-bottom: 5px;
     color:#5f5f5f;
+    transition: 200ms;
+}
+
+.upload-video-txt:hover {
+    color:#000;
 }
 
 .upload-info {
@@ -2599,20 +2674,26 @@ If user only has one friend, styling wont apply */
     margin-bottom: 20px;
 }
 
-#upl-vid-title, #upl-vid-desc {
+#upl-vid-title, #upl-vid-desc, #upl-article-title {
     display: block;
     border-radius: 20px;
     border: 0.5px solid grey;
     padding: 5px 10px;
 }
 
-#upl-vid-title {
+#upl-vid-title, #upl-article-title {
     width: 650px;
     max-width: 100%;
     margin-bottom: 20px;
 }
 
-#upl-vid-title::placeholder {
+#upl-article-title {
+    color: #3c3c3c;
+    border: 0.5px solid transparent;
+    font-size: 20px;
+}
+
+#upl-vid-title::placeholder, #upl-article-title:placeholder {
     font-size: 0.9em;
 }
 
@@ -2663,7 +2744,7 @@ If user only has one friend, styling wont apply */
 
 .video-tags-list .video-tag-individual {
     padding: 0.2em 0.5em;
-    margin: 0 2px;
+    margin: 2px 2px;
     display: inline-block;
     background-color: #ddd;
     transition: all 0.1s linear;
@@ -2863,11 +2944,16 @@ If user only has one friend, styling wont apply */
     font-size: 0.95em;
 }
 
-.write-an-article-title {
+.write-an-article-prompt {
     font-weight: 500;
     font-size: 20px;
     margin-bottom: 50px;
     color:#5f5f5f;
+    transition: 200ms;
+}
+
+.write-an-article-prompt:hover {
+    color: #000;
 }
 
 .article-responses {
@@ -2881,4 +2967,17 @@ If user only has one friend, styling wont apply */
 
 textarea:focus {
     outline: none !important;
+}
+
+.editor-container {
+    margin: 0 auto;
+    max-width: 1400px;
+}
+
+.ck.ck-editor__main>.ck-editor__editable:not(.ck-focused) {
+    border-color: transparent;
+}
+
+.ck-content {
+    line-height: 24px !important;
 }
