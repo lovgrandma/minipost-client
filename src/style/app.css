@@ -2979,6 +2979,16 @@ textarea:focus {
     border-color: transparent;
 }
 
+.ck-editor {
+    margin-bottom: 88px !important;
+}
+
 .ck-content {
     line-height: 24px !important;
 }
+
+.publish-button-hidden {
+    display: none;
+    visibility: hidden;
+}
+

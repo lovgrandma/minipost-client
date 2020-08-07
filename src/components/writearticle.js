@@ -19,7 +19,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-
+            published: false
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -82,6 +82,7 @@ export default class writeArticle extends Component {
                             console.log( 'Focus.', editor );
                         } }
                     />
+                    <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"}>Publish</Button>
                 </div>
             </div>
         )
