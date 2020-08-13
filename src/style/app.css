@@ -1,3 +1,8 @@
+html {
+  overflow-y: scroll;
+}
+
+/* Check index file for cdn import */
 .millerbolditalic {
     font-family: "Miller Text Bd It";
     font-display: swap;
@@ -5,14 +10,63 @@
     font-weight: normal;
 }
 
+.millertextsemibolditalic {
+    font-family: "Miller Text Semibold It";
+    font-display: swap;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.millerbannersemibold {
+    font-family: "Miller Ban Semi Bd";
+    font-display: swap;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.ck-content h2, .ck-content h3, .ck-content h4 {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 500;
+    letter-spacing: -0.5px;
+}
+
+.ck-content h2 {
+    margin-top: 22px;
+    margin-bottom: 22px;
+}
+
+.ck-content h3 {
+    margin-top: 20px;
+    margin-bottom: 20px;
+}
+
+.ck-content h4 {
+    margin-top: 18px;
+    margin-bottom: 18px;
+}
+
+#upl-article-title {
+    font-family: "Miller Text Bd It";
+}
+
 h2 {
-    font-size: 13px;
-    font-weight: 400;
+    font-size: 28px;
+    font-weight: 500;
 }
 
 h3 {
-    font-size: 11px;
-    font-weight: 400;
+    font-size: 24px;
+    font-weight: 500;
+}
+
+h4 {
+    font-size: 20px;
+    font-weight: 500;
+}
+
+h5 {
+    font-size: 16px;
+    font-weight: 500;
 }
 
 .logo-nav-font {
@@ -40,6 +94,19 @@ h3 {
 .logo-nav-container {
     padding: 0;
     margin: 0;
+}
+
+.prompt-basic {
+    font-size: 0.9em;
+}
+
+.grey-out {
+    color: grey;
+    transition: 200ms;
+}
+
+.grey-out:hover {
+    color: #4e4e4e;
 }
 
 .App-logo {
@@ -93,6 +160,7 @@ button {
 
 .hidden, .hidden-overflow {
   visibility: hidden;
+  display: none;
   opacity: 0;
   transition: visibility 0s 500ms, opacity 500ms linear;
 }
@@ -839,6 +907,17 @@ label {
     max-width: 2280px;
 }
 
+.videodash-recommended-header {
+    margin: 0px 0 15px 3px;
+    color: grey;
+    transition: 200ms;
+    width: fit-content;
+}
+
+.videodash-recommended-header:hover {
+    color: black;
+}
+
 .maindash {
     margin: 50px auto;
     padding-left: 50px;
@@ -995,6 +1074,29 @@ label {
 }
 
 @media (max-width: 640px) {
+    .maindash {
+        padding: 0;
+    }
+
+    .videodash {
+        padding-left: 12px;
+    }
+
+    .col .videocontainer {
+        margin-bottom: 10px;
+    }
+    #videocontainer {
+        padding-left: 14.5px;
+    }
+
+    .watchpage-title, .video-stats-bar, .publisher-bar, .articles-bar, .dash-video-details-container {
+        margin: 0 10px;
+    }
+
+    .videodash-recommended-header {
+        margin-left: 10px;
+    }
+
     .col {
         width: calc(100%/2);
     }
@@ -2562,6 +2664,7 @@ If user only has one friend, styling wont apply */
 /* upload page */
 
 .info-blurb {
+    font-size: 0.75em;
     transition: 200ms;
     color: grey;
     max-width: 700px;
@@ -2571,7 +2674,7 @@ If user only has one friend, styling wont apply */
     color: #4e4e4e;
 }
 
-.upload-video-txt {
+.upload-video-text {
     font-weight: 500;
     font-size: 20px;
     margin-bottom: 5px;
@@ -2579,7 +2682,7 @@ If user only has one friend, styling wont apply */
     transition: 200ms;
 }
 
-.upload-video-txt:hover {
+.upload-video-text:hover {
     color:#000;
 }
 
@@ -2686,7 +2789,7 @@ If user only has one friend, styling wont apply */
 }
 
 #upl-vid-title, #upl-article-title {
-    width: 650px;
+    min-width: 650px;
     max-width: 100%;
     margin-bottom: 20px;
 }
@@ -2694,8 +2797,9 @@ If user only has one friend, styling wont apply */
 #upl-article-title {
     color: #3c3c3c;
     border: 0.5px solid transparent;
-    font-size: 20px;
+    font-size: 36px;
     margin-bottom: 16px;
+    width: 100%;
 }
 
 #upl-vid-title::placeholder, #upl-article-title:placeholder {
@@ -2936,6 +3040,7 @@ If user only has one friend, styling wont apply */
 }
 
 .nudity-question {
+    font-size: 0.9em;
     color: black;
 }
 
@@ -2945,6 +3050,9 @@ If user only has one friend, styling wont apply */
 
 /* Articles */
 
+.write-article-editor-container {
+    transition: 200ms;
+}
 .write-article-prompt {
     font-size: 0.95em;
 }
@@ -2995,6 +3103,11 @@ textarea:focus {
     border: 1px solid #adadad !important;
 }
 
+.ck-editor__main > .ck-editor__editable, .ck-editor__main {
+    min-height: 350px !important;
+
+}
+
 .publish-button-hidden {
     display: none;
     visibility: hidden;
@@ -3002,4 +3115,19 @@ textarea:focus {
 
 #upl-article-title:focus {
     outline: 1px solid #adadad !important;
+}
+
+.publish-confirmed {
+    transition: 400ms;
+    opacity: 100%;
+}
+
+.publish-confirmed-hidden {
+    opacity: 0%;
+}
+
+/* Overwrite rules */
+
+.bottom-50 {
+    margin-bottom: 50px;
 }

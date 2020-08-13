@@ -99,7 +99,10 @@ export default class Navbar extends Component {
                         <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>
                         <div className="btn-desc btn-desc-yourpro">your profile</div>
                         <NavLink to='/upload/' className="nav-icon"><div className="nav-icon upload material-icons" onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}}>publish</div></NavLink>
-                        <div className="btn-desc btn-desc-upl" onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}}><NavLink exact to="/upload" className="hyperlink">upload videos</NavLink> or <NavLink exact to="/writearticle" className="hyperlink">write an article</NavLink></div>
+                        <div className="btn-desc btn-desc-upl" onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}}>
+                            <NavLink exact to="/upload" className="hyperlink">upload videos</NavLink>
+                            &nbsp;or&nbsp;
+                            <NavLink exact to="/writearticle" className="hyperlink">write an article</NavLink></div>
                         <div className="nav-loggedin-config nav-icon" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
                         <div className="btn-desc btn-desc-conf" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>change various user settings and preferences</div>
                     </ul>

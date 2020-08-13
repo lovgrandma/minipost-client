@@ -106,6 +106,7 @@ export default class Dash extends Component {
     render() {
         return (
             <div className='videodash'>
+                <h5 className="videodash-recommended-header">Recommended</h5>
                 <div className='flex-grid videogrid'>
                     {
                         this.state.dashVideos ?

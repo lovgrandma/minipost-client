@@ -14,9 +14,10 @@ import {
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
 import logo from './static/minireel-dot-com-3.svg'; import mango from './static/minireel-mangologo.svg'; import heart from './static/heart.svg'; import whiteheart from './static/heart-white.svg'; import history from './static/history.svg'; import searchwhite from './static/search-white.svg'; import search from './static/search.svg'; import notifications from './static/notifications.svg'; import profile from './static/profile.svg'; import upload from './static/upload.svg'; import thumbsup from './static/thumbsup.svg'; import thumbsdown from './static/thumbsdown.svg'; import share from './static/share.svg'; import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import dummythumbnail from './static/warrenbuffetthumb.jpg'; import chatblack from './static/chat-black.svg'; import close from './static/close.svg'; import hamburger from './static/hamburger.svg'; import pointingfinger from './static/pointingfinger.svg'; import circlemenu from './static/circlemenu.svg'; import newspaperblack from './static/newspaper.svg'; import play from './static/play.svg'; import television from './static/tv.svg'; import sendarrow from './static/sendarrow.svg'; import subscribe from './static/subscribe.svg'; import friendswhite from './static/friendsWhite.svg'; import nonFriendsWhite from './static/nonFriendsWhite.svg'; import circlemenulight from './static/circlemenulight.svg'; import minimize from'./static/minimize.svg'; import maximize from './static/maximize.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg'; import settings from './static/settings.svg';
-import './style/sass.scss';
+// import './style/sass.scss';
 import './style/app.css';
 import './style/player.css';
+
 import {
     Form,
     FormGroup,

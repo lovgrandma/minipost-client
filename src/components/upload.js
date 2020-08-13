@@ -253,57 +253,59 @@ export default class Upload extends Component { // ulc upload component
 
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
     getUserVideos = () => {
-        let username = this.props.isLoggedIn;
-        fetch(currentrooturl + 'm/getUserVideos', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                username
+        if (this.props.isLoggedIn) {
+            let username = this.props.isLoggedIn;
+            fetch(currentrooturl + 'm/getUserVideos', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    username
+                })
             })
-        })
-        .then((response) => {
-            return response.json(); // Parsed data
-        })
-        .then((data) => {
-            console.log(data);
-            if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
-                this.props.updateErrStatus("");
-                this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
-                if (this.props.socket) {
-                    this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
-                } else if (this.state.socket) {
-                    this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                .then((response) => {
+                return response.json(); // Parsed data
+            })
+                .then((data) => {
+                console.log(data);
+                if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
+                    this.props.updateErrStatus("");
+                    this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
+                    if (this.props.socket) {
+                        this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                    } else if (this.state.socket) {
+                        this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                    }
+                    if (this.props.uploadStatus.length < 1) {
+                        this.props.updateUploadStatus("processing video");
+                    }
+                    this.progress.emit('progress', 100);
+                } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
+                    this.props.updateErrStatus("");
+                    this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                    if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
+                        this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
+                    }
+                    this.progress.emit('progress', 100);
+                    console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                    this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
+                    if (this.state.progress == 0) {
+                        this.props.updateUploadStatus("");
+                        this.props.updateUploadStatus("remove mpd");
+                    }
+                } else if (data.querystatus.toString() == null) {
+                    // no video processing found
                 }
-                if (this.props.uploadStatus.length < 1) {
-                    this.props.updateUploadStatus("processing video");
-                }
-                this.progress.emit('progress', 100);
-            } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
-                this.props.updateErrStatus("");
-                this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
-                    this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
-                }
-                this.progress.emit('progress', 100);
-                console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-            } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
-                if (this.state.progress == 0) {
-                    this.props.updateUploadStatus("");
-                    this.props.updateUploadStatus("remove mpd");
-                }
-            } else if (data.querystatus.toString() == null) {
-                // no video processing found
-            }
-            return data;
-        })
-        .catch(error => {
-            console.log(error);
-        })
+                return data;
+            })
+                .catch(error => {
+                console.log(error);
+            })
+        }
     }
 
     getSocket = (i, interval) => { // Manually returns socket from main component to ensure socket communication during upload
@@ -353,19 +355,29 @@ export default class Upload extends Component { // ulc upload component
                 // Ensures buffering spinner is never indefinitely spinning
                 player.addEventListener('buffering', (event) => {
                     setTimeout((event) => {
-                        if (player.isBuffering()) {
-                            if (document.getElementsByClassName("shaka-spinner")[0]) {
-                                document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
-                                setTimeout(() => {
-                                    if (!player.isBuffering()) {
-                                        document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                                    }
-                                }, 10000);
+                        try {
+                            if (player.isBuffering()) {
+                                if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                    document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
+                                    setTimeout(() => {
+                                        try {
+                                            if (!player.isBuffering()) {
+                                                if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                                    document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                                }
+                                            }
+                                        } catch (err) {
+                                            // there was an error locating the shaka spinner on document page. User may have changed pages or spinner div was removed temporarily.
+                                        }
+                                    }, 10000);
+                                }
+                            } else {
+                                if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                    document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                }
                             }
-                        } else {
-                            if (document.getElementsByClassName("shaka-spinner")[0]) {
-                                document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                            }
+                        } catch (err) {
+                             // there was an error locating the shaka spinner on document page. User may have changed pages or spinner div was removed temporarily.
                         }
                     }, 1000);
                 });
@@ -509,7 +521,7 @@ export default class Upload extends Component { // ulc upload component
                 } else if (this.state.videoId.length > 0) {
                     mpd = this.state.videoId;
                 }
-                fetch(currentrooturl + 'm/publishVideo', {
+                fetch(currentrooturl + 'm/publishvideo', {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
@@ -545,8 +557,9 @@ export default class Upload extends Component { // ulc upload component
     render() {
         return (
             <div>
-                <div className="upload-video-txt">Upload video</div>
-                <div className={this.props.errStatus.length > 0 ? "upload-err-status" : "upload-info"}>{this.props.errStatus.length ? this.props.errStatus : this.state.uploadInfo}</div>
+                <div className={this.props.isLoggedIn ? "upload-video-text" : "upload-video-text bottom-50"}>Upload video</div>
+                {!this.props.isLoggedIn ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
+                <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
                     <div className="flex progress-update">
                         <div className="progress-upload-status">{this.props.uploadStatus}{this.state.dots}</div>
@@ -554,7 +567,7 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
-                <div>
+                <div className={this.props.isLoggedIn ? "" : "hidden"}>
                     <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
                     <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
                 </div>
@@ -596,19 +609,19 @@ export default class Upload extends Component { // ulc upload component
                             }
                             <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} placeholder={this.state.tags.length == 0 ? "tags" : ""}></input>
                         </div>
-                        <h3 className="info-blurb tags-blurb">Tags help us in organizing content on minipost. Enter relevant tags to help users find your content easier</h3>
+                        <div className="info-blurb tags-blurb">Tags help us in organizing content on minipost. Enter relevant tags to help users find your content easier</div>
                         <form className="nudity-radio">
-                            <h2 className="nudity-question">Is there any nudity in your video?</h2>
+                            <div className="nudity-question">Is there any nudity in your video?</div>
                             <input type="radio" id="nudity-yes" name="nudity" value="yes"/>
                             <label htmlFor="nudity-yes">Yes</label>
                             <input type="radio" id="nudity-no" name="nudity" value="no" defaultChecked/>
                             <label htmlFor="nudity-no">No</label>
-                            <h3 className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></h3>
+                            <div className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></div>
                         </form>
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>
-            <div className="write-article-prompt">Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
+            <div className={this.props.isLoggedIn ? "write-article-prompt" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )
     }
