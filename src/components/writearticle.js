@@ -17,6 +17,9 @@ import {
     NavLink
 } from 'react-router-dom';
 import $ from 'jquery';
+import TextareaAutosize from 'react-textarea-autosize';
+
+import { cookies } from '../App.js';
 
 // Plugins not working: WordCount, Mention, Table, TableToolbar, Image, ImageCaption, Autoformat, CkFinderUploadAdapter, ImageToolbar
 ckEditor.defaultConfig = {
@@ -28,11 +31,14 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: ""
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
         }
+        this.titleIn = React.createRef();
+        this.byAuthor = React.createRef();
+        this.editor = React.createRef();
     }
 
     componentDidMount() {
@@ -94,29 +100,79 @@ export default class writeArticle extends Component {
         }, timeout);
     }
 
+    /* Publish article route. Will fire fetch request to post document of article on database and publish */
     publishArticle() {
-        if (this.props.isLoggedIn && !this.state.published) {
-            const username = this.props.isLoggedIn;
-            fetch(currentrooturl + 'm/publisharticle', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    username
-                })
-            })
-            .then((response) => {
-                return response.json(); // Parsed data
-            })
-            .then((data) => {
-                if (data.querystatus == "article posted") {
-                    this.setState({published: true});
+        try {
+            if (cookies.get('loggedIn') && !this.state.published) {
+                if (this.titleIn.current._ref && this.editor) {
+                    if (this.titleIn.current._ref.value.length > 0 && this.editor.getData().length > 0) {
+                        this.setState({ publishing: true });
+                        const author = cookies.get('loggedIn');
+                        const body = this.editor.getData();
+                        const title = this.titleIn.current._ref.value;
+                        fetch(currentrooturl + 'm/publisharticle', {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                author, title, body
+                            })
+                        })
+                        .then((response) => {
+                            return response.json(); // Parsed data
+                        })
+                        .then((data) => {
+                            if (data.querystatus == "article posted") {
+                                this.setState({published: true });
+                            } else if (data.querystatus == "you have already posted an article with this title") {
+                                this.setState({ currentErr: "you have already posted an article with this title" });
+                            }
+                            console.log(data);
+                        })
+                        .then(() => {
+                            this.setState({ publishing: false });
+                        });
+                    }
                 }
-                console.log(data);
-            })
+            }
+        } catch (err) {
+            // Fetch failed to fire
+            console.log(err);
+            this.setState({ publishing: false });
+        }
+    }
+
+    /* Sets author div to visible when title is hovered over for peace of mind when typing */
+    setAuthorVisible(e, bool) {
+        try {
+            if (this.byAuthor.current) {
+                if (bool) {
+                    this.byAuthor.current.classList.add("grey-out-show");
+                } else {
+                    this.byAuthor.current.classList.remove("grey-out-show");
+                }
+            }
+        } catch (err) {
+            // Ref on document did not exist
+        }
+    }
+
+    reduceTitleSize(e) {
+        try {
+            if (this.titleIn.current) {
+                if (this.titleIn.current._ref.value.length > 200) {
+                    e.preventDefault();
+                    let temp = this.titleIn.current._ref.value
+                    temp = temp.slice(0, 200);
+                    $("#upl-article-title").val(temp);
+                }
+            }
+        } catch (err) {
+            console.log(err);
+            // Ref on document did not exist
         }
     }
 
@@ -131,9 +187,10 @@ export default class writeArticle extends Component {
                 <div className="editor-container">
                     <div className="write-an-article-prompt">Write an article</div>
                     <div className={this.state.currentErr ? "article-err-status" : "article-err-status hidden"}>{this.state.currentErr > 0 ? this.props.currentErr : ""}</div>
-                    {!this.props.isLoggedIn ? <div className="prompt-basic grey-out">You are not logged in please log in to write an article</div> : null}
-                    <div className={this.props.isLoggedIn && !this.state.published ? "write-article-editor-container" : "write-article-editor-container hidden"}>
-                        <input type='text' id="upl-article-title" className="fixfocuscolor" ref={this.titleIn} name="upl-article-title" placeholder="title" autoComplete="off"></input>
+                    {!cookies.get('loggedIn') ? <div className="prompt-basic grey-out">You are not logged in please log in to write an article</div> : null}
+                    <div className={cookies.get('loggedIn') && !this.state.published ? "write-article-editor-container" : "write-article-editor-container hidden"}>
+                        <TextareaAutosize type='text' id="upl-article-title" className="fixfocuscolor" ref={this.titleIn} onMouseOver={(e) => {this.setAuthorVisible(e, true)}} onMouseOut={(e) => {this.setAuthorVisible(e, false)}} onInput={(e) => {this.reduceTitleSize(e)}} onKeyUp={(e) => {this.reduceTitleSize(e)}} onKeyDown={(e) => {this.reduceTitleSize(e)}} rows="1" name="upl-article-title" placeholder="title" autoComplete="off"></TextareaAutosize>
+                        <div className={cookies.get('loggedIn') && !this.state.published ? "write-article-author prompt-basic-s grey-out-hide" : "write-article-author hidden"} ref={this.byAuthor}>by {this.props.isLoggedIn}</div>
                         <CKEditor
                             editor={ ckEditor }
                             config={{
@@ -141,20 +198,21 @@ export default class writeArticle extends Component {
                             }}
                             onInit={ editor => {
                                 // You can store the "editor" and use when it is needed.
+                                this.editor = editor;
                                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
-                                console.log( 'Editor is ready to use!', editor );
+                                //console.log( 'Editor is ready to use!', editor );
                             } }
                             onChange={ ( event, editor ) => {
                                 const data = editor.getData();
-                                console.log( { event, editor, data } );
+                                // console.log( { event, editor, data } );
                             } }
                             onBlur={ ( event, editor ) => {
                                     this.catchBlur(2);
-                                console.log( 'Blur.', editor );
+                                //console.log( 'Blur.', editor );
                             } }
                             onFocus={ ( event, editor ) => {
                                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "visible";
-                                console.log( 'Focus.', editor );
+                                //console.log( 'Focus.', editor );
                             } }
                         />
                         <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"} onClick={(e) => {this.publishArticle(e)}}>Publish</Button>

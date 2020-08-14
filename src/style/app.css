@@ -100,14 +100,36 @@ h5 {
     font-size: 0.9em;
 }
 
+.prompt-basic-s {
+    font-size: 0.8em;
+}
+
 .grey-out {
     color: grey;
     transition: 200ms;
 }
 
-.grey-out:hover {
+.grey-out-l {
+    color: #c6c6c6;
+    transition: 200ms;
+}
+
+.grey-out:hover, .grey-out-l:hover {
     color: #4e4e4e;
 }
+
+.grey-out-hide {
+    height: 0;
+    color: #ffffff;
+    transition: 200ms;
+}
+
+.grey-out-show {
+    height: 8px;
+    color: #4e4e4e;
+    transition: 200ms;
+}
+
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
@@ -2789,7 +2811,6 @@ If user only has one friend, styling wont apply */
 }
 
 #upl-vid-title, #upl-article-title {
-    min-width: 650px;
     max-width: 100%;
     margin-bottom: 20px;
 }
@@ -2798,8 +2819,15 @@ If user only has one friend, styling wont apply */
     color: #3c3c3c;
     border: 0.5px solid transparent;
     font-size: 36px;
-    margin-bottom: 16px;
+    margin-bottom: 2px;
     width: 100%;
+    resize: none;
+    max-height: 270px;
+}
+
+.write-article-author {
+    padding-left: 10px;
+    margin-bottom: 16px;
 }
 
 #upl-vid-title::placeholder, #upl-article-title:placeholder {
