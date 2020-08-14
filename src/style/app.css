@@ -3044,7 +3044,7 @@ If user only has one friend, styling wont apply */
     margin-bottom: 10px;
 }
 
-.upload-err-status {
+.upload-err-status, .err-status {
     margin: 0 auto;
     width: 80%;
     max-width: 400px;
@@ -3057,6 +3057,7 @@ If user only has one friend, styling wont apply */
     border-radius: 10px;
     border: 1px solid #ffc7c7;
     transition: 200ms;
+    cursor: pointer;
 }
 
 .nudity-radio {
@@ -3158,4 +3159,15 @@ textarea:focus {
 
 .bottom-50 {
     margin-bottom: 50px;
+}
+
+.times-exit-float-right {
+    margin-right: 3px;
+    float: right;
+}
+
+.times-exit-float-right::after {
+    content: "";
+    clear: both;
+    display: table;
 }

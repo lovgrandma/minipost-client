@@ -176,6 +176,10 @@ export default class writeArticle extends Component {
         }
     }
 
+    deleteErr(e) {
+        this.setState({ currentErr: "" });
+    }
+
     randomPlaceholder() {
 
     }
@@ -186,7 +190,7 @@ export default class writeArticle extends Component {
             <div>
                 <div className="editor-container">
                     <div className="write-an-article-prompt">Write an article</div>
-                    <div className={this.state.currentErr ? "article-err-status" : "article-err-status hidden"}>{this.state.currentErr > 0 ? this.props.currentErr : ""}</div>
+                    <div className={this.state.currentErr ? "article-err-status err-status" : "article-err-status hidden"} onClick={(e)=>{this.deleteErr(e)}}>{this.state.currentErr ? this.state.currentErr: ""}<span className="times-exit-float-right">&times;</span></div>
                     {!cookies.get('loggedIn') ? <div className="prompt-basic grey-out">You are not logged in please log in to write an article</div> : null}
                     <div className={cookies.get('loggedIn') && !this.state.published ? "write-article-editor-container" : "write-article-editor-container hidden"}>
                         <TextareaAutosize type='text' id="upl-article-title" className="fixfocuscolor" ref={this.titleIn} onMouseOver={(e) => {this.setAuthorVisible(e, true)}} onMouseOut={(e) => {this.setAuthorVisible(e, false)}} onInput={(e) => {this.reduceTitleSize(e)}} onKeyUp={(e) => {this.reduceTitleSize(e)}} onKeyDown={(e) => {this.reduceTitleSize(e)}} rows="1" name="upl-article-title" placeholder="title" autoComplete="off"></TextareaAutosize>
