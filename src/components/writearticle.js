@@ -104,39 +104,47 @@ export default class writeArticle extends Component {
     publishArticle() {
         try {
             if (cookies.get('loggedIn') && !this.state.published) {
-                if (this.titleIn.current._ref && this.editor) {
-                    if (this.titleIn.current._ref.value.length > 0 && this.editor.getData().length > 0) {
-                        this.setState({ publishing: true });
-                        const author = cookies.get('loggedIn');
-                        const body = this.editor.getData();
-                        const title = this.titleIn.current._ref.value;
-                        fetch(currentrooturl + 'm/publisharticle', {
-                            method: "POST",
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            credentials: 'same-origin',
-                            body: JSON.stringify({
-                                author, title, body
-                            })
+                if (this.titleIn.current._ref.value.length > 0 && this.editor.getData().length > 250) {
+                    this.setState({ publishing: true });
+                    const author = cookies.get('loggedIn');
+                    const body = this.editor.getData();
+                    const title = this.titleIn.current._ref.value;
+                    fetch(currentrooturl + 'm/publisharticle', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            author, title, body
                         })
-                        .then((response) => {
-                            return response.json(); // Parsed data
-                        })
-                        .then((data) => {
-                            if (data.querystatus == "article posted") {
-                                this.setState({published: true });
-                            } else if (data.querystatus == "you have already posted an article with this title") {
-                                this.setState({ currentErr: "you have already posted an article with this title" });
-                            }
-                            console.log(data);
-                        })
-                        .then(() => {
-                            this.setState({ publishing: false });
-                        });
+                    })
+                    .then((response) => {
+                        return response.json(); // Parsed data
+                    })
+                    .then((data) => {
+                        if (data.querystatus == "article posted") {
+                            this.setState({published: true });
+                        } else if (data.querystatus == "you have already posted an article with this title") {
+                            this.setState({ currentErr: "You have already posted an article with this title" });
+                        }
+                        console.log(data);
+                    })
+                    .then(() => {
+                        this.setState({ publishing: false });
+                    });
+                } else {
+                    if (this.titleIn.current._ref.value.length == 0 && this.editor.getData().length < 250) {
+                        this.setState({ currentErr: "An article needs a title and atleast 250 characters of content, please review your article" });
+                    } else if (this.titleIn.current._ref.value.length == 0) {
+                        this.setState({ currentErr: "An article needs a title" });
+                    } else if (this.editor.getData().length < 250) {
+                        this.setState({ currentErr: "An article needs atleast 250 characters of content, please review your article" });
                     }
                 }
+            } else {
+                this.setState({ currentErr: "You must be logged in to publish an article" });
             }
         } catch (err) {
             // Fetch failed to fire
