@@ -14,7 +14,8 @@ import {
 import {
     BrowserRouter,
     Route,
-    NavLink
+    NavLink,
+    Link
 } from 'react-router-dom';
 import $ from 'jquery';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -31,7 +32,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseMpd: "", responseTitle: "", responseType: ""
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -43,6 +44,13 @@ export default class writeArticle extends Component {
 
     componentDidMount() {
         // console.log(ckEditor.builtinPlugins.map( plugin => plugin.pluginName ));
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.responseMpd && this.props.location.props.responseTitle && this.props.location.props.responseType) {
+                    this.setState({ responseMpd: this.props.location.props.responseMpd, responseTitle: this.props.location.props.responseTitle, responseType: this.props.location.props.responseType });
+                }
+            }
+        }
         window.addEventListener("mousedown", this.handleClick);
     }
 
@@ -109,6 +117,12 @@ export default class writeArticle extends Component {
                     const author = cookies.get('loggedIn');
                     const body = this.editor.getData();
                     const title = this.titleIn.current._ref.value;
+                    let responseTo = "";
+                    let responseType = "";
+                    if (this.state.responseMpd && this.state.responseType) {
+                        responseTo = this.state.responseMpd;
+                        responseType = this.state.responseType;
+                    }
                     fetch(currentrooturl + 'm/publisharticle', {
                         method: "POST",
                         headers: {
@@ -117,7 +131,7 @@ export default class writeArticle extends Component {
                         },
                         credentials: 'same-origin',
                         body: JSON.stringify({
-                            author, title, body
+                            author, title, body, responseTo, responseType
                         })
                     })
                     .then((response) => {
@@ -188,10 +202,6 @@ export default class writeArticle extends Component {
         this.setState({ currentErr: "" });
     }
 
-    randomPlaceholder() {
-
-    }
-
     render() {
         return (
 
@@ -227,6 +237,7 @@ export default class writeArticle extends Component {
                                 //console.log( 'Focus.', editor );
                             } }
                         />
+                        <div className={this.state.responseTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={{ pathname:`/watch?v=${this.state.responseMpd}`}}>{this.state.responseTitle}</Link></div>
                         <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"} onClick={(e) => {this.publishArticle(e)}}>Publish</Button>
                     </div>
                     <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden"}>Your article was published, view it here</div>

@@ -20,7 +20,7 @@ export default class Dash extends Component {
 
     componentDidUpdate(prevProps, prevState) {
         if (prevProps && this.props.username) {
-            if (prevProps.username != this.props.username || !prevProps.username && this.props.username) {
+            if ((prevProps.username !== this.props.username) || (!prevProps.username && this.props.username)) {
                 this.fetchRecommendations();
             }
         }

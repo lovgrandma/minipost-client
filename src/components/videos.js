@@ -6,6 +6,7 @@ import {
     Link
 } from 'react-router-dom';
 import dummythumbnail from '../static/warrenbuffetthumb.jpg';
+import ArticlePreview from './articlepreview.js';
 
 export default class Videos extends Component {
     constructor(props) {
@@ -13,6 +14,7 @@ export default class Videos extends Component {
         this.state = {
 
         }
+        this.articleContainer = React.createRef();
     }
 
     componentDidMount() {
@@ -75,12 +77,6 @@ export default class Videos extends Component {
         return title;
     }
 
-    getFirstNodeWidth() {
-        if (document.getElementsByClassName('col')[0]) {
-            return document.getElementsByClassName('col')[0].width;
-        }
-    }
-
     /** Stores data for video link props */
     videoObjectLink() {
         return {
@@ -92,6 +88,16 @@ export default class Videos extends Component {
                 published: `${this.props.published}`,
                 description: `${this.props.description}`,
                 tags: `${this.props.tags}`
+            }
+        }
+    }
+
+    showArticles = (e, show) => {
+        if (this.articleContainer.current) {
+            if (show) {
+                this.articleContainer.current.classList.add("hidden-visible");
+            } else {
+                this.articleContainer.current.classList.remove("hidden-visible");
             }
         }
     }
@@ -113,7 +119,20 @@ export default class Videos extends Component {
                                 <span className="dash-video-bar">
                                     <div><p className='video-author'>{this.props.author}</p></div>
                                     <div className="dash-video-bar-stats">
-                                        <p className='video-views'>{this.props.views} {this.props.title ? "views" : null}</p>&nbsp;{this.props.title ? "•" : null}&nbsp;<p className="video-article-responses">{this.props.articles.length > 0 ? this.props.articles.length + "articles" : null}</p>{this.props.articles.length > 0 ? "&nbsp;•&nbsp;" : null}<p className="video-publish-date">{this.convertDate(this.props.published)}</p>
+                                        <p className='video-views'>{this.props.views} {this.props.title ? "views" : null}</p>
+                                        <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>
+                                        <div className="video-article-responses" onMouseOver={(e)=>{this.showArticles(e, true)}} onMouseOut={(e)=>{this.showArticles(e, false)}}>
+                                            <div className="video-article-responses-length">{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.length + " articles" : null : null}</div>
+                                            <div className="video-article-responses-preview-container dropdown-menu hidden-fast" ref={this.articleContainer}>{this.props.articles.length > 0 ? this.props.articles.map((article) =>
+                                                <ArticlePreview title={article.properties.title}
+                                                author={article.properties.author}
+                                                body={article.properties.body}
+                                                />
+                                            ) : null}
+                                            </div>
+                                        </div>
+                                        <span>{this.props.articles ? this.props.articles.length > 0 ? "\u00A0•\u00A0" : null : null}</span>
+                                        <p className="video-publish-date">{this.convertDate(this.props.published)}</p>
                                     </div>
                                 </span>
                             </div>

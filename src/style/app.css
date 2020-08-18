@@ -104,7 +104,7 @@ h5 {
     font-size: 0.8em;
 }
 
-.grey-out {
+.grey-out, .grey-out a {
     color: grey;
     transition: 200ms;
 }
@@ -114,7 +114,7 @@ h5 {
     transition: 200ms;
 }
 
-.grey-out:hover, .grey-out-l:hover {
+.grey-out:hover, .grey-out-l:hover, .grey-out a:hover {
     color: #4e4e4e;
 }
 
@@ -130,6 +130,25 @@ h5 {
     transition: 200ms;
 }
 
+.dropdown-menu a {
+    text-decoration: none;
+    color: grey;
+}
+
+.dropdown-menu a:hover {
+    color: #4e4e4e;
+}
+
+.dropdown-menu {
+    float: none;
+    left: auto;
+    position: absolute;
+    right: -5px;
+    top: -5px;
+    z-index: 0;
+    border-radius: 0;
+    border: none;
+}
 
 .App-logo {
   animation: App-logo-spin infinite 20s linear;
@@ -185,6 +204,19 @@ button {
   display: none;
   opacity: 0;
   transition: visibility 0s 500ms, opacity 500ms linear;
+}
+
+.hidden-fast {
+    visibility: hidden;
+    display: none;
+    opacity: 0;
+    transition: visibility 0s 250ms, opacity 250ms linear;
+}
+
+.hidden-visible {
+    opacity: 100;
+    display: block;
+    visibility: visible;
 }
 
 .hidden-overflow {
@@ -973,6 +1005,10 @@ label {
     flex-wrap: wrap;
 }
 
+.dash-video-bar-stats > div, .dash-video-bar-stats > span, .dash-video-bar-stats > p {
+    padding-bottom: 10px;
+}
+
 .dash-video-details-container {
     display: flex;
 }
@@ -985,10 +1021,6 @@ label {
     text-decoration: none;
 }
 
-.mainvideotitle {
-    font-size: 16px;
-}
-
 .mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
     font-weight: 500;
     height: auto;
@@ -996,17 +1028,90 @@ label {
     padding: 0 0px;
 }
 
+/* For dropdown article responses preview container */
+.video-article-responses {
+    position: relative;
+}
+
+.video-article-responses .video-article-responses-length:hover {
+    cursor: pointer;
+}
+
+.video-article-responses-preview-container {
+    border: 1px solid #bababa;
+    display: flex;
+    top: 18px;
+    right: 0;
+    width: 240px;
+    left: -78px;
+    z-index: 5;
+    overflow-x: scroll;
+    overflow-y: hidden;
+    border-radius: 10px;
+    padding-top: 5px;
+}
+
+/*
+.video-article-responses-preview-container:after {
+    position: absolute;
+    width: 50px;
+    height: 50px;
+    border-top: 2px solid #ffffff;
+    border-bottom: 2px solid #ffffff;
+    border-right: 2px solid #ffffff;
+    border-left: 2px solid #ffffff;
+    top: 100%;
+    left: 50%;
+    margin-left: -25px;
+    content: '';
+}
+*/
+
+.video-article-responses-preview-container .article-container {
+    margin: 0 10px;
+    min-width: 150px;
+}
+
+.video-article-responses-preview-container::-webkit-scrollbar {
+    width: 0.65em;
+    height: 0.9em;
+    border-radius: 10px;
+}
+
+.video-article-responses-preview-container::-webkit-scrollbar-track {
+    background-color: #f6f6f6;
+    border-radius: 0 0 10px 10px;
+}
+
+.video-article-responses-preview-container::-webkit-scrollbar-thumb {
+    background-color: #bababa;
+    border-radius: 0 0 8px 8px;
+    outline: 1px solid slategrey;
+}
+
+
+.video-article-responses-preview-container::-webkit-scrollbar-thumb:hover {
+    background-color: #939393;
+}
+
+.video-article-responses-preview-container::-webkit-scrollbar-button:hover {
+  color: rgb(155, 155, 155);
+}
+
 .video-author {
     font-weight: 500 !important;
     padding-left: 0 !important;
-    font-size: 0.95em;
+    font-size: 0.9em;
+    margin-bottom: 0px;
 }
 
 .mainvideotitle {
+    font-size: 16px;
     max-height: 42px;
     overflow-y: hidden;
     text-overflow: ellipsis;
     line-height: 20px;
+    margin-bottom: 8px;
 }
 
 .video-views, .video-author, .video-publish-date, .video-article-responses {
@@ -1034,7 +1139,7 @@ label {
 }
 
 .col .videocontainer {
-    margin: 0 3px 35px;
+    margin: 0 3px 30px;
 }
 
 .videothumb {
@@ -1387,11 +1492,28 @@ label {
     height: 23px;
 }
 
+.more-options-ellipsis-container {
+    position: relative;
+}
+
 .more-options-ellipsis {
     margin: 0 0 0 20px;
     font-weight: 700;
     color: grey;
     padding-top: 1px;
+}
+
+.more-options-ellipsis-dropdown {
+    border: 1px solid #d6d6d6;
+    border-radius: 5px;
+}
+
+.more-options-ellipsis-dropdown li {
+    padding-bottom: 5px;
+}
+
+.more-options-ellipsis-dropdown li:last-child {
+    padding-bottom: 0px;
 }
 
 .more-options-ellipsis:hover {
@@ -2795,7 +2917,11 @@ If user only has one friend, styling wont apply */
     position: relative;
 }
 
-.upload-media-container {
+.write-article-prompt {
+    margin-top: 20px;
+}
+
+.response-title {
     margin-bottom: 20px;
 }
 
@@ -2813,6 +2939,10 @@ If user only has one friend, styling wont apply */
 #upl-vid-title, #upl-article-title {
     max-width: 100%;
     margin-bottom: 20px;
+}
+
+#upl-vid-title {
+    min-width: 50vw;
 }
 
 #upl-article-title {
@@ -3060,6 +3190,10 @@ If user only has one friend, styling wont apply */
     cursor: pointer;
 }
 
+.err-status {
+    max-width: 600px;
+}
+
 .nudity-radio {
     margin-bottom: 20px;
 }
@@ -3159,6 +3293,30 @@ textarea:focus {
     .editor-container {
         margin:0 20px 0 32px;
     }
+}
+
+.article-preview-title {
+    font-family: "Miller Ban Semi Bd";
+    font-display: swap;
+    font-style: normal;
+    font-weight: normal;
+    margin-bottom: 5px;
+}
+
+.article-preview-body p {
+    font-size: 0.85em;
+    line-height: 1.3em;
+    max-width: 150px;
+    height: 100px;
+    word-break: normal;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow-y: hidden;
+    margin-bottom: 0;
+}
+
+.article-preview-body p:hover {
+    cursor: pointer;
 }
 
 /* Overwrite rules */

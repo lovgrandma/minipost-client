@@ -4,12 +4,14 @@ import { Player } from 'video-react';
 import {
     BrowserRouter,
     Route,
-    NavLink
+    NavLink,
+    Link
 } from 'react-router-dom';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
+import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -23,13 +25,12 @@ export default class Video extends Component {
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
         this.player = new React.createRef();
+        this.moreOptions = new React.createRef();
         this.progress = new EventEmitter();
     }
 
     async componentDidMount() {
         this.setUpState();
-        // Install polyfills to patch browser incompatibilies
-        shaka.polyfill.installAll();
         if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
             if (this.props.location.search) {
                 if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
@@ -46,12 +47,10 @@ export default class Video extends Component {
     }
 
     componentWillUnmount() {
-        // Untested. Supposd to remove event listeners from player when user leaves page
+        // Untested. Supposed to remove event listeners from player when user leaves page
         if (this.player) {
-            if (this.player.current) {
-                this.player.current.removeEventListener('buffering');
-                this.player.current.removeEventListener('error');
-            }
+            this.player.removeEventListener('buffering');
+            this.player.removeEventListener('error');
         }
         this.endViewCountInterval();
     }
@@ -124,7 +123,7 @@ export default class Video extends Component {
     }
 
     async incrementView() {
-        if (this.state.mpd) {
+        if (this.state.mpd && !this.state.viewCounted) {
             let mpd = this.state.mpd;
             await fetch(currentrooturl + 'm/incrementview', {
                     method: "POST",
@@ -155,8 +154,12 @@ export default class Video extends Component {
         return { [key]: value };
     }
 
+    /* Initialize player and player error handlers */
     initPlayer(manifest) {
         this.setState({ mpdCloudAddress: manifest });
+        // Install polyfills to patch browser incompatibilies
+        shaka.polyfill.installAll();
+        encryptionSchemePolyfills.install();
         // Check browser support
         if (shaka.Player.isBrowserSupported()) {
             if (!manifest) {
@@ -177,13 +180,17 @@ export default class Video extends Component {
 
             //Set up shaka player UI
             if (player && videoContainer && video) {
+                console.log(player);
                 const ui = new shaka.ui.Overlay(player, videoContainer, video);
 
                 ui.configure(uiConfig);
                 ui.getControls();
 
                 // Listen for errors
-                player.addEventListener('error', this.onErrorEvent);
+                player.addEventListener('error', (err) => {
+                    this.onErrorEvent();
+                    console.log(err);
+                });
 
                 // Ensures buffering spinner is never indefinitely spinning
                 player.addEventListener('buffering', (event) => {
@@ -240,6 +247,9 @@ export default class Video extends Component {
                         if (totalTime / this.videoComponent.current.duration > 0.25) {
                             this.incrementView();
                             this.endViewCountInterval();
+                        } else if (totalTime > 60) {
+                            this.incrementView();
+                            this.endViewCountInterval();
                         }
                     }
                 }
@@ -271,6 +281,16 @@ export default class Video extends Component {
 
     openDescription(e, boolean) {
         this.setState({ descriptionOpen: boolean });
+    }
+
+    showMoreOptions(e, show) {
+        if (this.moreOptions.current) {
+            if (show) {
+                this.moreOptions.current.classList.add("hidden-visible");
+            } else {
+                this.moreOptions.current.classList.remove("hidden-visible");
+            }
+        }
     }
 
     tallDescription() {
@@ -319,7 +339,27 @@ export default class Video extends Component {
                             </div>
                         </div>
                         <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
-                        <div className='more-options-ellipsis'>...</div>
+                        <div className="more-options-ellipsis-container" onMouseOver={(e) => {this.showMoreOptions(e, true)}} onMouseOut={(e) => {this.showMoreOptions(e, false)}}>
+                            <div className='more-options-ellipsis'>...</div>
+                            <ul className='more-options-ellipsis-dropdown prompt-basic dropdown-menu hidden' ref={this.moreOptions}>
+                                <li><Link to={{
+                                    pathname:`/writearticle`,
+                                    props:{
+                                        responseMpd: `${this.state.mpd}`,
+                                        responseTitle: `${this.state.title}`,
+                                        responseType: "video"
+                                    }
+                                }}>Write article response</Link></li>
+                                <li><Link to={{
+                                    pathname:`/upload`,
+                                    props:{
+                                        responseMpd: `${this.state.mpd}`,
+                                        responseTitle: `${this.state.title}`,
+                                        responseType: "video"
+                                    }
+                                }}>Publish video response</Link></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
                 <div className='publisher-bar'>

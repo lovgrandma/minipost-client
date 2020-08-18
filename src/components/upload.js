@@ -27,7 +27,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: ""
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -70,6 +70,9 @@ export default class Upload extends Component { // ulc upload component
 
         this.dotsAnim();
         this.getUserVideos();
+        if (this.props.uploadStatus === "video ready") {
+            this.clearMsgInt();
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -82,26 +85,30 @@ export default class Upload extends Component { // ulc upload component
             this.resetPage();
         }
 
-        if (prevProps && this.props) {
+        if (prevProps && this.props && !this.state.busyInt) {
             if (prevProps.uploadStatus && this.props.uploadStatus) {
                 if (prevProps.uploadStatus != this.props.uploadStatus && this.props.uploadStatus != "video ready") {
-                    this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
-                    if (this.state.uploadInfoInterval.length <= 0) {
-                        let infoIntervalId = setInterval = (() => {
-                            this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
-                            if (this.state.uploadStatus == "video ready") {
-                                clearInterval(this.state.uploadInfoInterval);
-                                this.setState({ uploadInfo: "" });
-                            }
-                        }, 15000);
-                        this.setState({ uploadInfoInterval: infoIntervalId });
-                        this.setState({ uploadInfo: "" });
-                    }
+                    this.setMsgInt();
                 }
             }
         }
+    }
 
+    setMsgInt() {
+        this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
+        if (this.state.uploadInfoInterval.length <= 0) {
+            let infoIntervalId = setInterval = (() => {
+                this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
+            }, 15000);
+            this.setState({ uploadInfoInterval: infoIntervalId });
+            this.setState({ uploadInfo: "" });
+        }
+    }
 
+    clearMsgInt() {
+        console.log("clear msg int ran");
+        clearInterval(this.state.uploadInfoInterval);
+        this.setState({ uploadInfo: "" });
     }
 
     randomProperty(obj) {
@@ -253,59 +260,68 @@ export default class Upload extends Component { // ulc upload component
 
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
     getUserVideos = () => {
-        if (this.props.isLoggedIn) {
-            let username = this.props.isLoggedIn;
-            fetch(currentrooturl + 'm/getUserVideos', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    username
+        if (!this.state.gettingUserVideos) {
+            this.setState({ gettingUserVideos: true });
+            if (this.props.isLoggedIn) {
+                let username = this.props.isLoggedIn;
+                fetch(currentrooturl + 'm/getUserVideos', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        username
+                    })
                 })
-            })
-                .then((response) => {
-                return response.json(); // Parsed data
-            })
-                .then((data) => {
-                console.log(data);
-                if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
-                    this.props.updateErrStatus("");
-                    this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
-                    if (this.props.socket) {
-                        this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
-                    } else if (this.state.socket) {
-                        this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                    .then((response) => {
+                    return response.json(); // Parsed data
+                })
+                    .then((data) => {
+                    console.log(data);
+                    if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
+                        this.props.updateErrStatus("");
+                        this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
+                        if (this.props.socket) {
+                            this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                        } else if (this.state.socket) {
+                            this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                        }
+                        if (this.props.uploadStatus.length < 1) {
+                            this.props.updateUploadStatus("processing video");
+                        }
+                        this.progress.emit('progress', 100);
+                    } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
+                        this.props.updateErrStatus("");
+                        if (this.props.uploadStatus !== "video ready") {
+                            this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                        } else {
+                            this.clearMsgInt();
+                        }
+                        if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
+                            this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
+                        }
+                        this.progress.emit('progress', 100);
+                        console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                        this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                    } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
+                        if (this.state.progress == 0) {
+                            this.props.updateUploadStatus("");
+                            this.props.updateUploadStatus("remove mpd");
+                        }
+                    } else if (data.querystatus.toString() == null) {
+                        // no video processing found
                     }
-                    if (this.props.uploadStatus.length < 1) {
-                        this.props.updateUploadStatus("processing video");
-                    }
-                    this.progress.emit('progress', 100);
-                } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
-                    this.props.updateErrStatus("");
-                    this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                    if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
-                        this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
-                    }
-                    this.progress.emit('progress', 100);
-                    console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                    this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
-                    if (this.state.progress == 0) {
-                        this.props.updateUploadStatus("");
-                        this.props.updateUploadStatus("remove mpd");
-                    }
-                } else if (data.querystatus.toString() == null) {
-                    // no video processing found
-                }
-                return data;
-            })
-                .catch(error => {
-                console.log(error);
-            })
+
+                    return data;
+                })
+                    .catch(error => {
+                    console.log(error);
+                })
+            }
         }
+        this.setState({ gettingUserVideos: false });
     }
 
     getSocket = (i, interval) => { // Manually returns socket from main component to ensure socket communication during upload
@@ -537,6 +553,9 @@ export default class Upload extends Component { // ulc upload component
                 })
                 .then((data) => {
                     this.setState({ publishing: false });
+                    if (data.querystatus === "record published/updated") {
+                        this.setState({ published: true });
+                    }
                     console.log(data);
                 });
             }
@@ -556,7 +575,7 @@ export default class Upload extends Component { // ulc upload component
     // Must add thumbnail option in input section
     render() {
         return (
-            <div>
+            <div className={!this.state.gettingUserVideos || !this.state.published ? "hidden hidden-visible" : "hidden"}>
                 <div className={this.props.isLoggedIn ? "upload-video-text" : "upload-video-text bottom-50"}>Upload video</div>
                 {!this.props.isLoggedIn ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
@@ -618,10 +637,11 @@ export default class Upload extends Component { // ulc upload component
                             <label htmlFor="nudity-no">No</label>
                             <div className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></div>
                         </form>
-                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
+                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>
-            <div className={this.props.isLoggedIn ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
+                <div className={this.state.published === false ? "hidden" : "hidden hidden-visible"}>Your video has been published, watch it here at {currentrooturl + "watch?v=" + this.state.publishedMpd}</div>
+                <div className={this.props.isLoggedIn ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )
     }

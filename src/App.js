@@ -1,4 +1,3 @@
-'use strict';
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
@@ -65,7 +64,7 @@ class Friend extends Component { // friend component fc1
             this.bumpBtnRef = React.createRef();
             this.handleChange = this.handleChange.bind(this);
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: 0, typingOld: null, morechats: false, chatlimit: 100 }
+                chatlength: 0, typingOld: null, morechats: false, chatlimit: 100, socketOn: true }
         }
 
     componentDidMount() {
@@ -78,16 +77,20 @@ class Friend extends Component { // friend component fc1
             this.setState({ chatlength: currentchatlength }); // Sets length of chat when it is equal to null at componentDidMount
         }
 
+        if (socket) {
+            this.setState({ socketOn: true });
+        }
+
         bumpEvent.on('bump', (data) => { // Bump functionality. Bumps friend via socket room.
             /* Shake, shakes a friend node to denote you are recieving a bump from that friend */
             let user = data.match(bumpRegex)[2];
-            if (user == this.props.friend) {
+            if (user === this.props.friend) {
                 if (this.shakeRef.current) {
                     this.shakeRef.current.classList.add("shake", "shake-constant", "shake-bump");
                     shakeRunning +=1;
                     setTimeout(() => { // turn off rumble after short time
                         shakeRunning--;
-                        if (shakeRunning == 0) {
+                        if (shakeRunning === 0) {
                             this.shakeRef.current.classList.remove("shake", "shake-constant", "shake-bump");
                         }
                     }, 200);
@@ -396,6 +399,16 @@ class Friend extends Component { // friend component fc1
         this.inputRef._ref.value = ""; // Clear chat message
     }
 
+    checkSocket = (e) => {
+        if (socket) {
+            if (!this.state.socketOn) {
+                this.setState({ socketOn: true });
+            }
+        } else if (this.state.socketOn) {
+            this.setState({ socketOn: false });
+        }
+    }
+
     render() {
         let conversationid;
         if (this.props.conversation) {
@@ -447,7 +460,7 @@ class Friend extends Component { // friend component fc1
                     <div className='request-and-block-container'>
                         <span className='search-user-profile prevent-open-toggle'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
                         <span className='search-user-watch-friend'>watch<img className="searched-user-icon" src={play} alt="play"></img></span>
-                        <span className={socket ? 'search-user-bump-friend prevent-open-toggle' : 'search-user-bump-friend prevent-open-toggle bump-btn-offline'} ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid )}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
+                        <span className={this.state.socketOn ? 'search-user-bump-friend prevent-open-toggle' : 'search-user-bump-friend prevent-open-toggle bump-btn-offline'} ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid ), this.checkSocket(e)}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                     </div>
                     <div className="friendchat friendchat-container">
@@ -1708,7 +1721,9 @@ class App extends Component {
             console.log(update);
             if (update.match(/video ready;([a-z0-9].*)/)) {
                 this.setState({ uploading: null, uploadedMpd: update.match(/video ready;([a-z0-9].*)/)[1] });
-                this.setState({ uploadStatus: "video ready" });
+                if (this.state.uploadStatus !== "video ready") {
+                    this.setState({ uploadStatus: "video ready" });
+                }
                 cookies.remove('uplsession'); // Upload complete, delete session cookie
             } else if (update == "video ready") {
                 this.setState({ uploading: null });
