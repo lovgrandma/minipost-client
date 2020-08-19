@@ -175,6 +175,14 @@ h5 {
   to { transform: rotate(360deg); }
 }
 
+.pointer {
+    cursor: pointer;
+}
+
+.select-none {
+    user-select: none;
+}
+
 /* Minireel Application */
 
 
@@ -1243,6 +1251,15 @@ label {
     z-index: 3;
 }
 
+.videothumb-placeholder, .avatar-placeholder {
+    background-color: SlateGray;
+    position:relative;
+    opacity: 0.20;
+    -moz-opacity: 20%;
+    -webkit-opacity: 20%;
+    z-index: 2;
+}
+
 @media (max-width: 2068px) {
     .col {
         width: calc(100%/5);
@@ -1350,7 +1367,6 @@ label {
         height: 100%;
         padding: 0;
     }
-
 }
 
 .videodesc {
@@ -1467,8 +1483,13 @@ label {
 
 .publisher-info {
     display: flex;
+    justify-content: space-between;
     min-width: 195px;
     width: 100%;
+}
+
+.avatar-author-desc-videopage {
+    display: flex;
 }
 
 .video-desc-col {
@@ -1538,6 +1559,15 @@ label {
     margin-right: 10px;
 }
 
+.read-interact-s, .thumbsup-interact-s, .thumbsdown-interact-s {
+    margin-right: 5px;
+    transition: 200ms;
+}
+
+.stats-container-s, .article-stats-videopage {
+    color: grey;
+}
+
 .likes-click,
 .favorite-click,
 .dislikes-click {
@@ -1564,6 +1594,7 @@ label {
 
 .publisher-followbutton {
     width: 100px;
+    min-width: 100px;
     text-align: center;
     font-size: 14px;
     font-weight: 400;
@@ -1572,6 +1603,8 @@ label {
     border: solid #f9958d 2px;
     border-radius: 5px;
     transition: 200ms;
+    line-height: normal;
+    height: 24px;
 }
 
 .publisher-followbutton:hover {
@@ -3309,6 +3342,8 @@ If user only has one friend, styling wont apply */
 /* Articles */
 
 .write-article-editor-container {
+    max-width: 1400px;
+    margin: 0 auto;
     transition: 200ms;
 }
 .write-article-prompt {
@@ -3430,6 +3465,54 @@ textarea:focus {
 
 .article-preview-body p:hover {
     cursor: pointer;
+}
+
+.article-container-articlepage {
+    max-width: 1400px;
+    margin: 0 auto;
+}
+
+.article-title-articlepage {
+    font-family: "Miller Text Bd It";
+    font-display: swap;
+    font-style: italic;
+    font-weight: normal;
+    font-size: 36px;
+}
+
+.article-body-articlepage {
+    line-height: 24px;
+}
+
+.article-author-articlepage {
+    margin-bottom: 20px;
+}
+
+@media (min-width: 641px) {
+    .article-title-articlepage {
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 641px) {
+    .article-container-articlepage {
+        padding: 0 30px;
+    }
+}
+
+.article-stats-articlepage span, article-stats-articlepage .stats-container {
+    color: grey;
+    transition: 200ms;
+    cursor: pointer;
+}
+
+.article-stats-articlepage .stats-container-s:hover svg,
+.article-stats-articlepage .stats-container-s:hover {
+    color: black;
+}
+
+.nbsp-w {
+    margin: 0 5px;
 }
 
 /* Overwrite rules */

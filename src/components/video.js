@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faThumbsDown, faHeart, faShare } from '@fortawesome/free-solid-svg-icons';
+import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
@@ -84,7 +84,6 @@ export default class Video extends Component {
                 }
             }
         }
-
     }
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
@@ -105,6 +104,7 @@ export default class Video extends Component {
             return response.json();
         })
         .then((result) => {
+            console.log(result);
             articleResponses = result.articleResponses;
             /* Sets all video document related data */
             for (const [key, value] of Object.entries(result.video)) {
@@ -130,6 +130,10 @@ export default class Video extends Component {
 
     async incrementView() {
         if (this.state.mpd && !this.state.viewCounted) {
+            let user = "";
+            if (cookies.get('loggedIn')) {
+                user = cookies.get('loggedIn');
+            }
             let mpd = this.state.mpd;
             await fetch(currentrooturl + 'm/incrementview', {
                     method: "POST",
@@ -139,7 +143,7 @@ export default class Video extends Component {
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify({
-                        mpd
+                        mpd, user
                     })
                 })
                 .then(function(response) {
@@ -240,27 +244,31 @@ export default class Video extends Component {
 
     /** Determines if atleast 25% or 45 seconds of video has been watched to determine view increment fetch request to database */
     viewCountedInterval() {
-        if (!this.state.viewCounted && !this.state.viewInterval) {
-            let viewInterval = setInterval(() => {
-                let totalTime = 0;
-                if (this.videoComponent) {
-                    if (this.videoComponent.current) {
-                        for (let i = 0; i < this.videoComponent.current.played.length; i++) {
-                            if (!this.state.viewCounted) {
-                                totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
+        try {
+            if (!this.state.viewCounted && !this.state.viewInterval) {
+                let viewInterval = setInterval(() => {
+                    let totalTime = 0;
+                    if (this.videoComponent) {
+                        if (this.videoComponent.current) {
+                            for (let i = 0; i < this.videoComponent.current.played.length; i++) {
+                                if (!this.state.viewCounted) {
+                                    totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
+                                }
+                            }
+                            if (totalTime / this.videoComponent.current.duration > 0.25) {
+                                this.incrementView();
+                                this.endViewCountInterval();
+                            } else if (totalTime > 45) {
+                                this.incrementView();
+                                this.endViewCountInterval();
                             }
                         }
-                        if (totalTime / this.videoComponent.current.duration > 0.25) {
-                            this.incrementView();
-                            this.endViewCountInterval();
-                        } else if (totalTime > 45) {
-                            this.incrementView();
-                            this.endViewCountInterval();
-                        }
                     }
-                }
-            }, 5000);
-            this.setState({ viewInterval: viewInterval });
+                }, 5000);
+                this.setState({ viewInterval: viewInterval });
+            }
+        } catch (err) {
+            // Set interval may not have ran due to window not being available. User left page
         }
     }
 
@@ -394,31 +402,33 @@ export default class Video extends Component {
                 </div>
                 <div className='publisher-bar'>
                     <div className='publisher-info'>
-                        <div className="publisher-avatar-col">
-                        <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
-                        </div>
-                        <div className="">
-                            <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
-                            <span className='publisher-userandjoindate'>
-                                <span className='publisher-username'>{this.state.author}</span>
-                                <span className='publisher-followbutton'>follow</span>
-                            </span>
-                            <div className='video-description-info'>{this.state.description}</div>
-                            <div className="video-tags-list">
-                                {this.state.tags ?
-                                    this.state.tags.map((tag, index) => (
-                                            <span className="video-tag-individual" key={index}>{tag}</span>
-                                    )) : null
+                        <div className="avatar-author-desc-videopage">
+                            <div className="publisher-avatar-col">
+                                <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
+                            </div>
+                            <div className="video-desc-container">
+                                <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
+                                    <span className='publisher-userandjoindate'>
+                                        <span className='publisher-username'>{this.state.author}</span>
+                                    </span>
+                                    <div className='video-description-info'>{this.state.description}</div>
+                                    <div className="video-tags-list">
+                                        {this.state.tags ?
+                                            this.state.tags.map((tag, index) => (
+                                                    <span className="video-tag-individual" key={index}>{tag}</span>
+                                            )) : null
+                                        }
+                                    </div>
+                                </div>
+                                {this.tallDescription() ?
+                                    !this.state.descriptionOpen ?
+                                        <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, true)}}>expand</button>
+                                        : <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, false)}}>less</button>
+                                    : null
                                 }
                             </div>
                         </div>
-                        {this.tallDescription() ?
-                            !this.state.descriptionOpen ?
-                                <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, true)}}>expand</button>
-                                : <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, false)}}>less</button>
-                            : null
-                        }
-                        </div>
+                        <span className='publisher-followbutton'>follow</span>
                     </div>
                 </div>
                 <div className='articles-bar'>
@@ -430,7 +440,7 @@ export default class Video extends Component {
                                 this.state.articleResponses.map((article, i) => {
                                     return (
                                         article.id && article ?
-                                        <div className="article-container-videopage">
+                                        <div className="article-container-videopage" key={i}>
                                             <Link to={{
                                                 pathname:`/read?a=${article.id}`,
                                                 props:{
@@ -438,7 +448,7 @@ export default class Video extends Component {
                                                     body: `${article.body}`,
                                                     title: `${article.title}`,
                                                     id: `${article.id}`,
-                                                    publishDate: `${article.publishDate}`,
+                                                    published: `${article.publishDate}`,
                                                     likes: `${article.likes}`,
                                                     dislikes: `${article.dislikes}`,
                                                     reads: `${article.reads}`
@@ -446,11 +456,12 @@ export default class Video extends Component {
                                             }}>
                                                 <div className="article-title-videopage">{this.shortenTitle(article.title)}</div>
                                                 <div className="article-body-videopage">{this.parseBody(article.body)}</div>
+                                                <div className="article-stats-videopage">
+                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{article.reads}</span><span>&nbsp;•&nbsp;</span>
+                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{article.likes}</span><span>&nbsp;•&nbsp;</span>
+                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{article.dislikes}</span>
+                                                </div>
                                             </Link>
-                                            <div className="article-stats-videopage">
-                                                <span className="prompt-basic">{article.reads}{article.reads == 1 ? " read" : " reads"}</span>&nbsp;•&nbsp;
-                                                <span className="prompt-basic">{article.likes}{article.likes == 1 ? " like" : " likes"}</span>
-                                            </div>
                                         </div>
                                         : null
                                     )

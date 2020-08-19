@@ -5,7 +5,8 @@ import {
     NavLink,
     Link
 } from 'react-router-dom';
-import dummythumbnail from '../static/warrenbuffetthumb.jpg';
+import dummythumbnail from '../static/greythumb.jpg';
+import dummyavatar from '../static/greyavatar.jpg';
 import ArticlePreview from './articlepreview.js';
 
 export default class Videos extends Component {
@@ -107,10 +108,12 @@ export default class Videos extends Component {
             <div className="col">
                 <div className='videocontainer'>
                     <Link to={this.videoObjectLink()}>
-                        <img className='videothumb' src={dummythumbnail}></img>
+                        <div>
+                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={dummythumbnail}></img>
+                        </div>
                     </Link>
                     <div className="dash-video-details-container">
-                        <img className="publisheravatar-dash" src={require("../static/bobby.jpg")}></img>
+                        <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'publisheravatar-dash' : 'publisheravatar-dash avatar-placeholder' : 'publisheravatar-dash avatar-placeholder'} src={dummyavatar}></img>
                         <div>
                             <Link to={this.videoObjectLink()}>
                                 <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
@@ -131,7 +134,7 @@ export default class Videos extends Component {
                                                 likes={article.properties.likes}
                                                 dislikes={article.properties.dislikes}
                                                 reads={article.properties.reads}
-                                                publishDate={article.properties.publishDate}
+                                                published={article.properties.publishDate}
                                                 key={index}
                                                 />
                                             ) : null : null}

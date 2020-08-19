@@ -43,7 +43,7 @@ export default class articlepreview extends Component {
                         body: `${this.props.body}`,
                         title: `${this.props.title}`,
                         id: `${this.props.id}`,
-                        publishDate: `${this.props.publishDate}`,
+                        published: `${this.props.published}`,
                         likes: `${this.props.likes}`,
                         dislikes: `${this.props.dislikes}`,
                         reads: `${this.props.reads}`

@@ -26,7 +26,8 @@ import { cookies } from '../App.js';
 ckEditor.defaultConfig = {
     toolbar: ['heading', '|', 'Bold', 'Italic', 'UnderLine', 'Strikethrough', 'Highlight', 'Link', '|', 'Indent', 'Outdent', 'Alignment', '|', 'Superscript', 'Subscript', 'BlockQuote', 'Code', 'CodeBlock', 'BulletedList', 'NumberedList', 'Horizontalline', 'RemoveFormat', 'Emoji']
 }
-ckEditor.editorUrl= "../editor/ckeditor4/ckeditor.js";
+
+// ckEditor.editorUrl= "../editor/ckeditor5/build/ckeditor.js";
 
 export default class writeArticle extends Component {
     constructor(props) {
