@@ -123,12 +123,18 @@ export default class Videos extends Component {
                                         <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>
                                         <div className="video-article-responses" onMouseOver={(e)=>{this.showArticles(e, true)}} onMouseOut={(e)=>{this.showArticles(e, false)}}>
                                             <div className="video-article-responses-length">{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.length + " articles" : null : null}</div>
-                                            <div className="video-article-responses-preview-container dropdown-menu hidden-fast" ref={this.articleContainer}>{this.props.articles.length > 0 ? this.props.articles.map((article) =>
+                                            <div className={this.props.articles ? this.props.articles.length > 1 ? "video-article-responses-preview-container dropdown-menu hidden-fast" : "video-article-responses-preview-container article-responses-preview-container-single dropdown-menu hidden-fast" : "video-article-responses-preview-container dropdown-menu hidden-fast"} ref={this.articleContainer}>{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.map((article, index) =>
                                                 <ArticlePreview title={article.properties.title}
                                                 author={article.properties.author}
                                                 body={article.properties.body}
+                                                id={article.properties.id}
+                                                likes={article.properties.likes}
+                                                dislikes={article.properties.dislikes}
+                                                reads={article.properties.reads}
+                                                publishDate={article.properties.publishDate}
+                                                key={index}
                                                 />
-                                            ) : null}
+                                            ) : null : null}
                                             </div>
                                         </div>
                                         <span>{this.props.articles ? this.props.articles.length > 0 ? "\u00A0•\u00A0" : null : null}</span>

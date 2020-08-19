@@ -253,6 +253,8 @@ button {
 }
 
 .minireel-nav {
+    position: relative;
+    z-index: 5;
     display: inline;
 }
 
@@ -507,7 +509,7 @@ ul li {
 .btn-desc {
     font-size: 12px;
     display: none;
-    visibility:hidden;
+    visibility: hidden;
     position: fixed;
     background-color: white;
     padding: 20px 8px 6px 8px;
@@ -516,11 +518,11 @@ ul li {
 }
 
 .btn-desc-search {
-    margin-top: 10.5px;
+    margin-top: -7px;
 }
 
 .btn-desc-home {
-    margin-top: 38px;
+    margin-top: 20px;
 }
 .visible {
     display:block;
@@ -1049,9 +1051,13 @@ label {
     overflow-y: hidden;
     border-radius: 10px;
     padding-top: 5px;
+    padding: 3px;
 }
 
-/*
+.article-responses-preview-container-single {
+    width: 190px;
+}
+
 .video-article-responses-preview-container:after {
     position: absolute;
     width: 50px;
@@ -1060,21 +1066,28 @@ label {
     border-bottom: 2px solid #ffffff;
     border-right: 2px solid #ffffff;
     border-left: 2px solid #ffffff;
-    top: 100%;
+    bottom: 100%;
     left: 50%;
     margin-left: -25px;
     content: '';
 }
-*/
 
 .video-article-responses-preview-container .article-container {
-    margin: 0 10px;
+    margin: 6px 10px;
     min-width: 150px;
+    transition: 200ms;
+    padding: 10px;
+    padding-top: 5px;
+    border-radius: 5px;
+}
+
+.video-article-responses-preview-container .article-container:hover {
+    background-color: #f0f0f0;
 }
 
 .video-article-responses-preview-container::-webkit-scrollbar {
     width: 0.65em;
-    height: 0.9em;
+    height: 1.15em;
     border-radius: 10px;
 }
 
@@ -3301,13 +3314,16 @@ textarea:focus {
     font-style: normal;
     font-weight: normal;
     margin-bottom: 5px;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
 }
 
 .article-preview-body p {
-    font-size: 0.85em;
-    line-height: 1.3em;
+    font-size: 0.82em;
+    line-height: 1.22em;
     max-width: 150px;
-    height: 100px;
+    height: 115px;
     word-break: normal;
     white-space: pre-wrap;
     overflow-wrap: break-word;

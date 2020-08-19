@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -844,14 +844,14 @@ class Socialbar extends Component { // Main social entry point sb1
         
     componentDidUpdate(e, prevState, prevProps) {
         if (cookies.get('loggedIn')) {
-            if (this.state.loggedIn != cookies.get('loggedIn')) {
-                this.setState({ loggedIn: cookies.get('loggedIn')});
+            if (this.state.isloggedIn != cookies.get('loggedIn')) {
+                this.setState({ isloggedIn: cookies.get('loggedIn')});
             }
         }
         if (prevState) {
-            if (prevState.loggedIn != cookies.get('loggedIn')) {
-                if (this.state.loggedIn != cookies.get('loggedIn')) {
-                    this.setState({ loggedIn: cookies.get('loggedIn')});
+            if (prevState.isloggedIn != cookies.get('loggedIn')) {
+                if (this.state.isloggedIn != cookies.get('loggedIn')) {
+                    this.setState({ isloggedIn: cookies.get('loggedIn')});
                 }
             }
         }
@@ -1055,7 +1055,7 @@ class Socialbar extends Component { // Main social entry point sb1
         })
     }
 
-    // Entry point method after login
+    // Entry point method after login.
     fetchlogin = (e) => {
         e.preventDefault();
         let email = document.getElementById('email').value;
@@ -1066,7 +1066,8 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
+            mode: 'same-origin',
+            credentials: 'include',
             body: JSON.stringify({
                 email, password
             })
@@ -1077,7 +1078,9 @@ class Socialbar extends Component { // Main social entry point sb1
         .then((data) => {
             this.setState({ registererror: null });
             this.setState({ loginerror: null });
+            console.log(cookies.get('loggedIn'));
             if (data.querystatus== "loggedin") {
+                this.props.updateLogin();
                 if (cookies.get('loggedIn')) {
                     this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
                 }
@@ -1368,7 +1371,7 @@ class Socialbar extends Component { // Main social entry point sb1
             username = cookies.get('loggedIn');
         }
 
-        if (search || !this.state.pendingfriendrequests) { // If searching again or pendingfriendrequests is null
+        if ((search || !this.state.pendingfriendrequests) && username) { // If searching again or pendingfriendrequests is null
             fetch(currentrooturl + 'm/pendingrequests', {
                 method: "POST",
                 headers: {
@@ -1434,30 +1437,34 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     getfriends = () => {
-        let username = this.state.isLoggedIn;
-        fetch(currentrooturl + 'm/getfriends', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                username
+        if (!this.state.isLoggedIn) {
+            this.setState({ isLoggedIn: cookies.get('isLoggedIn')});
+        }
+        if (this.state.isLoggedIn) {
+            let username = this.state.isLoggedIn;
+            fetch(currentrooturl + 'm/getfriends', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    username
+                })
             })
-        })
-        .then(function(response) {
-            return response.json();
-        })
-        .then((data) => {
-            console.log("Friends of", username, ":", data);
-            this.setState({ friends: data });
-            return data;
-        })
-        .catch(error => {
-            console.log(error);
-        })
-        
+            .then(function(response) {
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Friends of", username, ":", data);
+                this.setState({ friends: data });
+                return data;
+            })
+            .catch(error => {
+                console.log(error);
+            })
+        }
     }
 
     beginchat = (e, chatwith, message, convoId, fromSearch ) => {
@@ -1710,6 +1717,12 @@ class App extends Component {
         }
     }
 
+    updateLogin = () => {
+        if (this.state.isLoggedIn != cookies.get('loggedIn')) {
+            this.setState({ isLoggedIn: cookies.get('loggedIn')});
+        }
+    };
+
     getSocket = async => {
         return socket;
     }
@@ -1757,7 +1770,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
@@ -1768,6 +1781,9 @@ class App extends Component {
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
                                 <Video {...props} />
+                            )}/>
+                            <Route path='/read?v=:articleId' render={(props) => (
+                                <Article {...props} />
                             )}/>
                             <Route path='/watch' render={(props) => (
                                 <Video {...props} />

@@ -20,7 +20,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: []
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -40,8 +40,8 @@ export default class Video extends Component {
             }
         } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
             if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)) {
-                this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
-                this.setState({ mpd: this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]});
+                this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
             }
         }
     }
@@ -49,8 +49,10 @@ export default class Video extends Component {
     componentWillUnmount() {
         // Untested. Supposed to remove event listeners from player when user leaves page
         if (this.player) {
-            this.player.removeEventListener('buffering');
-            this.player.removeEventListener('error');
+            if (this.player.removeEventListener) {
+                this.player.removeEventListener('buffering');
+                this.player.removeEventListener('error');
+            }
         }
         this.endViewCountInterval();
     }
@@ -101,7 +103,7 @@ export default class Video extends Component {
             return response.json();
         })
         .then((result) => {
-            console.log(result);
+            this.setState({ articleResponses: result.articleResponses });
             /* Sets all video document related data */
             for (const [key, value] of Object.entries(result.video)) {
                 if (key == "published") {

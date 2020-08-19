@@ -576,7 +576,7 @@ export default class Upload extends Component { // ulc upload component
     render() {
         return (
             <div className={!this.state.gettingUserVideos || !this.state.published ? "hidden hidden-visible" : "hidden"}>
-                <div className={this.props.isLoggedIn ? "upload-video-text" : "upload-video-text bottom-50"}>Upload video</div>
+                <div className={cookies.get('loggedIn') ? "upload-video-text" : "upload-video-text bottom-50"}>Upload video</div>
                 {!this.props.isLoggedIn ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>

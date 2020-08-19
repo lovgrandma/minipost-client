@@ -22,7 +22,22 @@ let shuffleArray = function(array) {
   return array;
 }
 
+// Parses article id and any other uuid with 8, 4, 4, 4, 12 pattern: 0f64db58-1451-4931-bb55-434013efd774
+let parseId = function(encode, id) {
+    if (encode) {
+        id = id.replace(/[-]/g, '');
+    } else {
+        for (let i = 0; i < id.length; i++) {
+            if (i == 7 || i == 11 || i == 15 || i == 27) {
+                id.splice(i, 0, "-");
+            }
+        }
+    }
+    return id;
+}
+
 module.exports = {
     debounce: debounce,
-    shuffleArray: shuffleArray
+    shuffleArray: shuffleArray,
+    parseId: parseId
 }

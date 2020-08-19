@@ -1,6 +1,13 @@
 import React, {Component} from 'react';
 import currentrooturl from '../url';
+import {
+    BrowserRouter,
+    Route,
+    NavLink,
+    Link
+} from 'react-router-dom';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
+import { parseId } from '../methods/utility.js';
 
 export default class articlepreview extends Component {
     constructor(props) {
@@ -18,9 +25,8 @@ export default class articlepreview extends Component {
 
     parseBody = (body) => {
         if (body) {
-            if (body.length > 112) {
-                const html = ReactHtmlParser(body.slice(0, 112));
-                console.log(html);
+            if (body.length > 162) {
+                const html = ReactHtmlParser(body.slice(0, 162));
                 html[0].props.children[0] += "..";
                 this.setState({ body: html });
             }
@@ -30,8 +36,17 @@ export default class articlepreview extends Component {
     render() {
         return (
             <div className="article-container">
-                <div className="article-preview-title">{this.props.title}</div>
-                <div className="article-preview-body">{this.state.body}</div>
+                <Link to={{
+                    pathname:`/read?a=${parseId(true, this.props.id)}`,
+                    props:{
+                        responseMpd: `${this.state.mpd}`,
+                        responseTitle: `${this.state.title}`,
+                        responseType: "video"
+                    }
+                }}>
+                    <div className="article-preview-title">{this.props.title}</div>
+                    <div className="article-preview-body">{this.state.body}</div>
+                </Link>
             </div>
         )
     }
