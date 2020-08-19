@@ -1035,6 +1035,45 @@ label {
     position: relative;
 }
 
+.article-responses-container {
+    max-height: 500px;
+    display: flex;
+    overflow-y:auto;
+    flex-flow: wrap;
+}
+
+.article-responses-container a {
+    text-decoration: none;
+    color: black;
+}
+
+.article-responses-container p {
+    word-break: normal;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    min-width: calc(98%/3);
+    width: 100%;
+    max-width: 400px;
+}
+
+.article-responses-container > div {
+    width: calc(98%/4);
+    padding: 0 10px;
+}
+
+.article-title-videopage {
+    font-family: "Miller Ban Semi Bd";
+    font-display: swap;
+    font-style: normal;
+    font-weight: normal;
+    font-size: 1.2em;
+    padding-top: 5px;
+}
+
+.article-body-videopage {
+    font-size: 0.9em;
+}
+
 .video-article-responses .video-article-responses-length:hover {
     cursor: pointer;
 }
@@ -1081,8 +1120,49 @@ label {
     border-radius: 5px;
 }
 
-.video-article-responses-preview-container .article-container:hover {
-    background-color: #f0f0f0;
+.article-container-videopage {
+    position: relative;
+}
+
+.article-stats-videopage {
+    margin-bottom: 10px;
+}
+
+.article-responses-container .article-container-videopage .article-body-videopage {
+    padding-top: 8px;
+    overflow: hidden;
+    max-height: 301px;
+    margin-bottom: 5px;
+}
+
+.video-article-responses-preview-container .article-container:hover,
+.article-responses-container .article-container-videopage:hover {
+    background-color: #f5f5f5;
+}
+
+@media (max-width: 1096px) {
+    .article-container-videopage .article-body-videopage {
+        max-height: 210px;
+    }
+}
+
+@media (max-width: 1269px) {
+    .article-responses-container > div {
+        width: calc(98%/3);
+    }
+    .article-container-videopage .article-body-videopage {
+        max-height: 260px;
+    }
+}
+
+@media (max-height: 500px) {
+    .article-responses-container > div {
+        width: calc(98%/3);
+    }
+}
+
+.articles-bar {
+    margin-bottom: 20px;
 }
 
 .video-article-responses-preview-container::-webkit-scrollbar {
@@ -3217,7 +3297,9 @@ If user only has one friend, styling wont apply */
 
 .nudity-question {
     font-size: 0.9em;
+    margin-bottom: 2px;
     color: black;
+    user-select: none;
 }
 
 .nudity-radio label {
@@ -3245,9 +3327,24 @@ If user only has one friend, styling wont apply */
     color: #000;
 }
 
-.article-responses {
+.article-container-header {
     font-size: 1em;
     font-weight: 500;
+    margin-bottom: 8px;
+}
+
+.article-responses {
+    font-size: 0.85em;
+    color: grey;
+    font-weight: 500;
+    transition: 200ms;
+    padding-left: 10px;
+    margin-bottom: 6px;
+    width: 50px;
+}
+
+.article-responses:hover {
+    color: #484848;
 }
 
 .tox-statusbar__branding {

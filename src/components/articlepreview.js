@@ -37,11 +37,16 @@ export default class articlepreview extends Component {
         return (
             <div className="article-container">
                 <Link to={{
-                    pathname:`/read?a=${parseId(true, this.props.id)}`,
+                    pathname:`/read?a=${this.props.id}`,
                     props:{
-                        responseMpd: `${this.state.mpd}`,
-                        responseTitle: `${this.state.title}`,
-                        responseType: "video"
+                        author: `${this.props.author}`,
+                        body: `${this.props.body}`,
+                        title: `${this.props.title}`,
+                        id: `${this.props.id}`,
+                        publishDate: `${this.props.publishDate}`,
+                        likes: `${this.props.likes}`,
+                        dislikes: `${this.props.dislikes}`,
+                        reads: `${this.props.reads}`
                     }
                 }}>
                     <div className="article-preview-title">{this.props.title}</div>

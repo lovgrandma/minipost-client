@@ -12,6 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
+import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -29,7 +30,7 @@ export default class Video extends Component {
         this.progress = new EventEmitter();
     }
 
-    async componentDidMount() {
+    componentDidMount = async () => {
         this.setUpState();
         if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
             if (this.props.location.search) {
@@ -87,8 +88,9 @@ export default class Video extends Component {
     }
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
-    async fetchVideoPageData(rawMpd) {
-        const mpdUrl = await fetch(currentrooturl + 'm/fetchvideopagedata', {
+    fetchVideoPageData = async (rawMpd) => {
+        let articleResponses = [];
+        const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
             method: "POST",
             headers: {
                 'Accept': 'application/json',
@@ -99,11 +101,11 @@ export default class Video extends Component {
                 rawMpd
             })
         })
-        .then(function(response) {
+        .then((response) => {
             return response.json();
         })
         .then((result) => {
-            this.setState({ articleResponses: result.articleResponses });
+            articleResponses = result.articleResponses;
             /* Sets all video document related data */
             for (const [key, value] of Object.entries(result.video)) {
                 if (key == "published") {
@@ -114,14 +116,16 @@ export default class Video extends Component {
                     this.setState(this.setStateDynamic(key, value));
                 }
             }
-            if (result.video.mpd) {
-                return result.video.mpd;
-            } else {
-                return false;
+            if (result) {
+                return result;
             }
             return false;
         })
-        return mpdUrl;
+        if (videoData.video.mpd) {
+            this.setState({ articleResponses: videoData.articleResponses });
+            return videoData.video.mpd;
+        }
+        return false;
     }
 
     async incrementView() {
@@ -234,7 +238,7 @@ export default class Video extends Component {
         }
     }
 
-    /** Determines if atleast x (25%) amount of video has been watched to determine view increment fetch request to database */
+    /** Determines if atleast 25% or 45 seconds of video has been watched to determine view increment fetch request to database */
     viewCountedInterval() {
         if (!this.state.viewCounted && !this.state.viewInterval) {
             let viewInterval = setInterval(() => {
@@ -249,7 +253,7 @@ export default class Video extends Component {
                         if (totalTime / this.videoComponent.current.duration > 0.25) {
                             this.incrementView();
                             this.endViewCountInterval();
-                        } else if (totalTime > 60) {
+                        } else if (totalTime > 45) {
                             this.incrementView();
                             this.endViewCountInterval();
                         }
@@ -307,6 +311,30 @@ export default class Video extends Component {
 
     roundNumber(number) {
         return number;
+    }
+
+    shortenTitle = (title) => {
+        if (title) {
+            if (title.length > 70) {
+                return title.slice(0, 70) + "..";
+            } else {
+                return title;
+            }
+        }
+    }
+
+    parseBody = (body) => {
+        if (body) {
+            let html = "";
+            if (body.length < 600) {
+                html = ReactHtmlParser(body);
+            } else {
+                html = ReactHtmlParser(body.slice(0, 600));
+                html[0].props.children[0] += "..";
+            }
+            return html;
+        }
+        return body;
     }
 
     render() {
@@ -394,7 +422,42 @@ export default class Video extends Component {
                     </div>
                 </div>
                 <div className='articles-bar'>
-                    <div className='article-responses'>Articles</div>
+                    <div className='article-container-header'>Articles</div>
+                    <div className='article-responses'>responses</div>
+                    <div className='article-responses-container'>
+                        {this.state.articleResponses ?
+                            this.state.articleResponses.length > 0 ?
+                                this.state.articleResponses.map((article, i) => {
+                                    return (
+                                        article.id && article ?
+                                        <div className="article-container-videopage">
+                                            <Link to={{
+                                                pathname:`/read?a=${article.id}`,
+                                                props:{
+                                                    author: `${article.author}`,
+                                                    body: `${article.body}`,
+                                                    title: `${article.title}`,
+                                                    id: `${article.id}`,
+                                                    publishDate: `${article.publishDate}`,
+                                                    likes: `${article.likes}`,
+                                                    dislikes: `${article.dislikes}`,
+                                                    reads: `${article.reads}`
+                                                }
+                                            }}>
+                                                <div className="article-title-videopage">{this.shortenTitle(article.title)}</div>
+                                                <div className="article-body-videopage">{this.parseBody(article.body)}</div>
+                                            </Link>
+                                            <div className="article-stats-videopage">
+                                                <span className="prompt-basic">{article.reads}{article.reads == 1 ? " read" : " reads"}</span>&nbsp;•&nbsp;
+                                                <span className="prompt-basic">{article.likes}{article.likes == 1 ? " like" : " likes"}</span>
+                                            </div>
+                                        </div>
+                                        : null
+                                    )
+                                })
+                            : null : null
+                        }
+                    </div>
                 </div>
             </div>
         )

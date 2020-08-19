@@ -43,13 +43,12 @@ export default class Upload extends Component { // ulc upload component
         this.uploadMessages = {
             takeAWhile: 'Depending on the size of your video, uploading can take a while',
             whileYoureGone: 'When your video is converting you can visit other pages and watch videos, we\'ll take care of this while you\'re gone',
-            copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our policy'
+            copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our guidelines'
         }
     }
 
     componentDidMount() {
-        this.getSocket(0, 150);
-
+        socket = this.getSocket(0, 150);
         /* Progress event for uploading video */
         this.progress.on('progress', (percent, data) => {
             if (this.state.percent != percent) {
@@ -76,21 +75,27 @@ export default class Upload extends Component { // ulc upload component
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevProps.mpd == "") {
-            if (this.props.mpd.length > 0) {
-                this.initPlayer(this.props.mpd);
-            }
-        }
-        if (prevProps.errStatus != this.props.errStatus && this.props.errStatus.length > 0) { // Reset page after receiving an error
-            this.resetPage();
-        }
+        try {
+            if (this.state) {
+                if (prevProps.mpd == "") {
+                    if (this.props.mpd.length > 0) {
+                        this.initPlayer(this.props.mpd);
+                    }
+                }
+                if (prevProps.errStatus != this.props.errStatus && this.props.errStatus.length > 0) { // Reset page after receiving an error
+                    this.resetPage();
+                }
 
-        if (prevProps && this.props && !this.state.busyInt) {
-            if (prevProps.uploadStatus && this.props.uploadStatus) {
-                if (prevProps.uploadStatus != this.props.uploadStatus && this.props.uploadStatus != "video ready") {
-                    this.setMsgInt();
+                if (prevProps && this.props && !this.state.busyInt) {
+                    if (prevProps.uploadStatus && this.props.uploadStatus) {
+                        if (prevProps.uploadStatus != this.props.uploadStatus && this.props.uploadStatus != "video ready") {
+                            this.setMsgInt();
+                        }
+                    }
                 }
             }
+        } catch (err) {
+            // Page was unmounted, state not accessible. Catch error.
         }
     }
 
@@ -101,12 +106,11 @@ export default class Upload extends Component { // ulc upload component
                 this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
             }, 15000);
             this.setState({ uploadInfoInterval: infoIntervalId });
-            this.setState({ uploadInfo: "" });
         }
     }
 
+    // Clears message interval for showing randomized upload info text blurbs
     clearMsgInt() {
-        console.log("clear msg int ran");
         clearInterval(this.state.uploadInfoInterval);
         this.setState({ uploadInfo: "" });
     }
@@ -282,6 +286,7 @@ export default class Upload extends Component { // ulc upload component
                     console.log(data);
                     if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
                         this.props.updateErrStatus("");
+                        this.setMsgInt();
                         this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
                         if (this.props.socket) {
                             this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);

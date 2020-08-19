@@ -1727,11 +1727,11 @@ class App extends Component {
         return socket;
     }
 
+    // Updates upload status for video upload process. Access update parameter for update information
     updateUploadStatus = (update) => {
         if (update.match(/processing;([a-z0-9].*)/)) { // If update matches background video upload update, change uploading state, else just change upload status
             this.setState({ uploading: update.match(/processing;([a-z0-9].*)/)[1] });
         } else {
-            console.log(update);
             if (update.match(/video ready;([a-z0-9].*)/)) {
                 this.setState({ uploading: null, uploadedMpd: update.match(/video ready;([a-z0-9].*)/)[1] });
                 if (this.state.uploadStatus !== "video ready") {
@@ -1782,7 +1782,7 @@ class App extends Component {
                             <Route path='/watch?v=:videoId' render={(props) => (
                                 <Video {...props} />
                             )}/>
-                            <Route path='/read?v=:articleId' render={(props) => (
+                            <Route path='/read?a=:articleId' render={(props) => (
                                 <Article {...props} />
                             )}/>
                             <Route path='/watch' render={(props) => (
