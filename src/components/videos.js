@@ -125,7 +125,7 @@ export default class Videos extends Component {
                                         <p className='video-views'>{this.props.views} {this.props.title ? "views" : null}</p>
                                         <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>
                                         <div className="video-article-responses" onMouseOver={(e)=>{this.showArticles(e, true)}} onMouseOut={(e)=>{this.showArticles(e, false)}}>
-                                            <div className="video-article-responses-length">{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.length + " articles" : null : null}</div>
+                                            <div className="video-article-responses-length">{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.length == 1 ? this.props.articles.length + " article" : this.props.articles.length + " articles" : null : null}</div>
                                             <div className={this.props.articles ? this.props.articles.length > 1 ? "video-article-responses-preview-container dropdown-menu hidden-fast" : "video-article-responses-preview-container article-responses-preview-container-single dropdown-menu hidden-fast" : "video-article-responses-preview-container dropdown-menu hidden-fast"} ref={this.articleContainer}>{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.map((article, index) =>
                                                 <ArticlePreview title={article.properties.title}
                                                 author={article.properties.author}

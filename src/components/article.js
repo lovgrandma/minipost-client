@@ -9,6 +9,7 @@ import currentrooturl from '../url';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen } from '@fortawesome/free-solid-svg-icons';
+import { roundTime } from '../methods/utility.js';
 
 export default class Article extends Component {
     constructor(props) {
@@ -95,7 +96,7 @@ export default class Article extends Component {
         return (
             <div className="article-container-articlepage">
                 <div className="article-title-articlepage">{this.state.title}</div>
-                <div className="article-author-articlepage prompt-basic-s grey-out">published by {this.state.author} at {this.state.published}</div>
+                <div className="article-author-articlepage prompt-basic-s grey-out">published by {this.state.author} at {roundTime(this.state.published)}</div>
                 <div className="article-body-articlepage">{this.parseBody(this.state.body)}</div>
                 <div className="article-stats-articlepage">
                     <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{this.state.reads}</span>

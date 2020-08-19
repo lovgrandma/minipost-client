@@ -13,6 +13,8 @@ import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen } from '@fortawe
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
+import { roundTime } from '../methods/utility.js';
+
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -109,7 +111,7 @@ export default class Video extends Component {
             /* Sets all video document related data */
             for (const [key, value] of Object.entries(result.video)) {
                 if (key == "published") {
-                    this.setState(this.setStateDynamic(key, this.roundTime(value)));
+                    this.setState(this.setStateDynamic(key, roundTime(value)));
                 } else if (value) {
                     this.setState(this.setStateDynamic(key, value));
                 } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
@@ -277,19 +279,6 @@ export default class Video extends Component {
         if (this.state.viewInterval) {
             clearInterval(this.state.viewInterval);
             this.setState({ viewInterval: "" });
-        }
-    }
-
-    /* Simplifies time format 00/00/0000, 0:00:00 AM to 00/00/00, 0:00 am */
-    roundTime(time) {
-        if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)) {
-            if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] && time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2]) {
-                return time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] + " " + time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2].toLowerCase();
-            } else {
-                return time;
-            }
-        } else {
-            return time;
         }
     }
 

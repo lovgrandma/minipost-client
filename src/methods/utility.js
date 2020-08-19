@@ -36,8 +36,23 @@ let parseId = function(encode, id) {
     return id;
 }
 
+/* Simplifies time format 00/00/0000, 0:00:00 AM to 00/00/00, 0:00 am */
+let roundTime = function(time) {
+    if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)) {
+        if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] && time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2]) {
+            return time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] + " " + time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2].toLowerCase();
+        } else {
+            return time;
+        }
+    } else {
+        return time;
+    }
+    return time;
+}
+
 module.exports = {
     debounce: debounce,
     shuffleArray: shuffleArray,
-    parseId: parseId
+    parseId: parseId,
+    roundTime: roundTime
 }

@@ -1163,6 +1163,12 @@ label {
     }
 }
 
+@media (max-width: 600px) {
+    .article-responses-container > div {
+        width: calc(98%/2);
+    }
+}
+
 @media (max-height: 500px) {
     .article-responses-container > div {
         width: calc(98%/3);
@@ -3482,6 +3488,11 @@ textarea:focus {
 
 .article-body-articlepage {
     line-height: 24px;
+    max-width: 100%;
+}
+
+.article-body-articlepage img {
+    max-width: 100%;
 }
 
 .article-author-articlepage {
