@@ -1,4 +1,10 @@
 import React, {Component} from 'react';
+import {
+    BrowserRouter,
+    Route,
+    NavLink,
+    Link
+} from 'react-router-dom';
 import currentrooturl from '../url';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -8,7 +14,7 @@ export default class Article extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            title: "", author: "", body: "", published: "", reads: "", likes: "", dislikes: ""
+            title: "", author: "", body: "", published: "", reads: "", likes: "", dislikes: "", responseToMpd: "", responseToTitle: "", responseToType: "", responseToId: ""
         }
     }
 
@@ -46,6 +52,18 @@ export default class Article extends Component {
                         this.setState({ tags: this.props.location.props.tags.split(',') });
                     }
                 }
+                if (this.props.location.props.responseToId) {
+                    this.setState({ responseToId: this.props.location.props.responseToId });
+                }
+                if (this.props.location.props.responseToMpd) {
+                    this.setState({ responseToMpd: this.props.location.props.responseToMpd });
+                }
+                if (this.props.location.props.responseToTitle) {
+                    this.setState({ responseToTitle: this.props.location.props.responseToTitle });
+                }
+                if (this.props.location.props.responseToType) {
+                    this.setState({ responseToType: this.props.location.props.responseToType });
+                }
             }
         }
     }
@@ -55,6 +73,22 @@ export default class Article extends Component {
             return ReactHtmlParser(body);
         }
         return body;
+    }
+
+    setResponseParentLink() {
+        if (this.state.responseToMpd) { // Response is video set watch pathname
+            return {
+                pathname:`/watch?v=${this.state.responseToMpd}`
+            }
+        } else if (this.state.responseToId) { // Response is article set read pathname
+            return {
+                pathname:`/read?a=${this.state.responseToId}`
+            }
+        } else {
+            return {
+                pathname:`/`
+            }
+        }
     }
 
     render() {
@@ -70,6 +104,7 @@ export default class Article extends Component {
                     <span className="nbsp-w">&nbsp;•&nbsp;</span>
                     <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{this.state.dislikes}</span>
                 </div>
+                <div className="prompt-basic">{this.state.responseToTitle ? "Response to " : ""}<span className="grey-out">{this.state.responseToType && this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link> : "" : ""}</span></div>
             </div>
         )
     }

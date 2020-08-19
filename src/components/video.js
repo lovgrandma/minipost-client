@@ -451,7 +451,10 @@ export default class Video extends Component {
                                                     published: `${article.publishDate}`,
                                                     likes: `${article.likes}`,
                                                     dislikes: `${article.dislikes}`,
-                                                    reads: `${article.reads}`
+                                                    reads: `${article.reads}`,
+                                                    responseToMpd: `${this.state.mpd}`,
+                                                    responseToTitle: `${this.state.title}`,
+                                                    responseToType: "video"
                                                 }
                                             }}>
                                                 <div className="article-title-videopage">{this.shortenTitle(article.title)}</div>

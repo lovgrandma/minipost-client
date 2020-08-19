@@ -135,6 +135,9 @@ export default class Videos extends Component {
                                                 dislikes={article.properties.dislikes}
                                                 reads={article.properties.reads}
                                                 published={article.properties.publishDate}
+                                                responseToMpd={this.props.mpd}
+                                                responseToTitle={this.props.title}
+                                                responseToType="video"
                                                 key={index}
                                                 />
                                             ) : null : null}

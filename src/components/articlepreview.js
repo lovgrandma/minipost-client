@@ -46,7 +46,10 @@ export default class articlepreview extends Component {
                         published: `${this.props.published}`,
                         likes: `${this.props.likes}`,
                         dislikes: `${this.props.dislikes}`,
-                        reads: `${this.props.reads}`
+                        reads: `${this.props.reads}`,
+                        responseToMpd: `${this.props.responseToMpd}`,
+                        responseToTitle: `${this.props.responseToTitle}`,
+                        responseToType: `${this.props.responseToType}`
                     }
                 }}>
                     <div className="article-preview-title">{this.props.title}</div>

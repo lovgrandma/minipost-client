@@ -3506,6 +3506,14 @@ textarea:focus {
     cursor: pointer;
 }
 
+.article-stats-articlepage {
+    margin-bottom: 22px;
+}
+
+.article-body-articlepage * {
+    word-break: break-word;
+}
+
 .article-stats-articlepage .stats-container-s:hover svg,
 .article-stats-articlepage .stats-container-s:hover {
     color: black;
