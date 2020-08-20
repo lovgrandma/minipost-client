@@ -33,7 +33,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseMpd: "", responseTitle: "", responseType: ""
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: ""
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -44,11 +44,12 @@ export default class writeArticle extends Component {
     }
 
     componentDidMount() {
+        this.setUpState();
         // console.log(ckEditor.builtinPlugins.map( plugin => plugin.pluginName ));
         if (this.props.location) {
             if (this.props.location.props) {
-                if (this.props.location.props.responseMpd && this.props.location.props.responseTitle && this.props.location.props.responseType) {
-                    this.setState({ responseMpd: this.props.location.props.responseMpd, responseTitle: this.props.location.props.responseTitle, responseType: this.props.location.props.responseType });
+                if (this.props.location.props.responseToMpd && this.props.location.props.responseToTitle && this.props.location.props.responseToType) {
+                    this.setState({ responseToMpd: this.props.location.props.responseToMpd, responseToTitle: this.props.location.props.responseToTitle, responseToType: this.props.location.props.responseToType });
                 }
             }
         }
@@ -62,6 +63,26 @@ export default class writeArticle extends Component {
     randomProperty(obj) {
         let keys = Object.keys(obj);
         return obj[ keys[ keys.length * Math.random() << 0]];
+    }
+
+    /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
+    setUpState() {
+        if (this.props.location) {
+            if (this.props.location.props) {
+                if (this.props.location.props.responseToId) {
+                    this.setState({ responseToId: this.props.location.props.responseToId });
+                }
+                if (this.props.location.props.responseToMpd) {
+                    this.setState({ responseToMpd: this.props.location.props.responseToMpd });
+                }
+                if (this.props.location.props.responseToTitle) {
+                    this.setState({ responseToTitle: this.props.location.props.responseToTitle });
+                }
+                if (this.props.location.props.responseToType) {
+                    this.setState({ responseToType: this.props.location.props.responseToType });
+                }
+            }
+        }
     }
 
     /** Experimental keeps bar open when user clicks bar or textfield. This is the only usage of jquery in the application. Checks if the target clicked is a descendant of the editor container */
@@ -120,9 +141,9 @@ export default class writeArticle extends Component {
                     const title = this.titleIn.current._ref.value;
                     let responseTo = "";
                     let responseType = "";
-                    if (this.state.responseMpd && this.state.responseType) {
-                        responseTo = this.state.responseMpd;
-                        responseType = this.state.responseType;
+                    if (this.state.responseToMpd && this.state.responseToType) {
+                        responseTo = this.state.responseToMpd;
+                        responseType = this.state.responseToType;
                     }
                     fetch(currentrooturl + 'm/publisharticle', {
                         method: "POST",
@@ -203,6 +224,22 @@ export default class writeArticle extends Component {
         this.setState({ currentErr: "" });
     }
 
+    setResponseParentLink() {
+        if (this.state.responseToMpd) { // Response is video set watch pathname
+            return {
+                pathname:`/watch?v=${this.state.responseToMpd}`
+            }
+        } else if (this.state.responseToId) { // Response is article set read pathname
+            return {
+                pathname:`/read?a=${this.state.responseToId}`
+            }
+        } else {
+            return {
+                pathname:`/`
+            }
+        }
+    }
+
     render() {
         return (
 
@@ -238,7 +275,7 @@ export default class writeArticle extends Component {
                                 //console.log( 'Focus.', editor );
                             } }
                         />
-                        <div className={this.state.responseTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={{ pathname:`/watch?v=${this.state.responseMpd}`}}>{this.state.responseTitle}</Link></div>
+                        <div className={this.state.responseToTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link></div>
                         <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"} onClick={(e) => {this.publishArticle(e)}}>Publish</Button>
                     </div>
                     <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden"}>Your article was published, view it here</div>

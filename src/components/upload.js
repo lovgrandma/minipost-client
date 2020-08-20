@@ -12,7 +12,8 @@ import {
 import {
     BrowserRouter,
     Route,
-    NavLink
+    NavLink,
+    Link
 } from 'react-router-dom';
 import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
@@ -27,7 +28,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: ""
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -48,6 +49,7 @@ export default class Upload extends Component { // ulc upload component
     }
 
     componentDidMount() {
+        this.setUpState();
         socket = this.getSocket(0, 150);
         /* Progress event for uploading video */
         this.progress.on('progress', (percent, data) => {
@@ -138,6 +140,28 @@ export default class Upload extends Component { // ulc upload component
             }
         }
     };
+
+    // Sets up state for response data gathering
+    setUpState() {
+        if (this.props) {
+            if (this.props.location) {
+                if (this.props.location.props) {
+                    if (this.props.location.props.responseToMpd) {
+                        this.setState({ responseToMpd: this.props.location.props.responseToMpd });
+                    }
+                    if (this.props.location.props.responseToId) {
+                        this.setState({ responseToId: this.props.location.props.responseToId });
+                    }
+                    if (this.props.location.props.responseToType) {
+                        this.setState({ responseToType: this.props.location.props.responseToType });
+                    }
+                    if (this.props.location.props.responseToTitle) {
+                        this.setState({ responseToTitle: this.props.location.props.responseToTitle });
+                    }
+                }
+            }
+        }
+    }
 
     /* Parses all key presses for component elements */
     onKeyPress(e) {
@@ -577,6 +601,23 @@ export default class Upload extends Component { // ulc upload component
             this.progressBar.current.style.width = 0 + "%";
         }
     }
+
+    setResponseParentLink() {
+        if (this.state.responseToMpd) { // Response is video set watch pathname
+            return {
+                pathname:`/watch?v=${this.state.responseToMpd}`
+            }
+        } else if (this.state.responseToId) { // Response is article set read pathname
+            return {
+                pathname:`/read?a=${this.state.responseToId}`
+            }
+        } else {
+            return {
+                pathname:`/`
+            }
+        }
+    }
+
     // Must add thumbnail option in input section
     render() {
         return (
@@ -591,7 +632,7 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
-                <div className={this.props.isLoggedIn ? "" : "hidden"}>
+                <div className={this.props.isLoggedIn ? "upload-button-container" : "hidden"}>
                     <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
                     <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
                 </div>
@@ -645,6 +686,7 @@ export default class Upload extends Component { // ulc upload component
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>
+                <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
                 <div className={this.state.published === false ? "hidden" : "hidden hidden-visible"}>Your video has been published, watch it here at {currentrooturl + "watch?v=" + this.state.publishedMpd}</div>
                 <div className={this.props.isLoggedIn ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>

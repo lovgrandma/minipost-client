@@ -132,11 +132,11 @@ h5 {
 
 .dropdown-menu a {
     text-decoration: none;
-    color: grey;
+    color: #696969;
 }
 
 .dropdown-menu a:hover {
-    color: #4e4e4e;
+    color: #393939;
 }
 
 .dropdown-menu {
@@ -2983,6 +2983,10 @@ If user only has one friend, styling wont apply */
     visibility: visible;
 }
 
+.upload-button-container {
+    margin-bottom: 8px;
+}
+
 .upload-button {
     display: block;
 }
@@ -3511,7 +3515,12 @@ textarea:focus {
     }
 }
 
-.article-stats-articlepage span, article-stats-articlepage .stats-container {
+.article-stats-articlepage .nbsp-w, .article-stats-articlepage .stats-container-s {
+    color: grey;
+    user-select: none;
+}
+
+.article-stats-articlepage .stats-container, .article-menu-flex > svg, .stats-container-s {
     color: grey;
     transition: 200ms;
     cursor: pointer;
@@ -3526,8 +3535,24 @@ textarea:focus {
 }
 
 .article-stats-articlepage .stats-container-s:hover svg,
-.article-stats-articlepage .stats-container-s:hover {
+.article-stats-articlepage .stats-container-s:hover,
+.article-menu-flex > svg:hover {
     color: black;
+}
+
+.article-menu-flex {
+    display: flex;
+    justify-content: space-between;
+}
+
+.more-options-articlepage-dropdown {
+    font-size: 0.8em;
+}
+
+.more-options-videopage-dropdown,
+.more-options-articlepage-dropdown {
+    font-weight: 500;
+    width: fit-content;
 }
 
 .nbsp-w {

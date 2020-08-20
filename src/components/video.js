@@ -23,7 +23,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: []
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: []
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -37,14 +37,18 @@ export default class Video extends Component {
         if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
             if (this.props.location.search) {
                 if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
-                    this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
-                    this.setState({ mpd: this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]});
+                    if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) {
+                        this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                        this.setState({ mpd: this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]});
+                    }
                 }
             }
         } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
             if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)) {
-                this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
-                this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
+                if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) {
+                    this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                    this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
+                }
             }
         }
     }
@@ -64,6 +68,9 @@ export default class Video extends Component {
     setUpState() {
         if (this.props.location) {
             if (this.props.location.props) {
+                if (this.props.location.props.mpd) {
+                    this.setState({ mpd: this.props.location.props.mpd })
+                }
                 if (this.props.location.props.title) {
                     this.setState({ title: this.props.location.props.title });
                 }
@@ -368,21 +375,21 @@ export default class Video extends Component {
                         <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
                         <div className="more-options-ellipsis-container" onMouseOver={(e) => {this.showMoreOptions(e, true)}} onMouseOut={(e) => {this.showMoreOptions(e, false)}}>
                             <div className='more-options-ellipsis'>...</div>
-                            <ul className='more-options-ellipsis-dropdown prompt-basic dropdown-menu hidden' ref={this.moreOptions}>
+                            <ul className='more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden' ref={this.moreOptions}>
                                 <li><Link to={{
                                     pathname:`/writearticle`,
                                     props:{
-                                        responseMpd: `${this.state.mpd}`,
-                                        responseTitle: `${this.state.title}`,
-                                        responseType: "video"
+                                        responseToMpd: `${this.state.mpd}`,
+                                        responseToTitle: `${this.state.title}`,
+                                        responseToType: "video"
                                     }
                                 }}>Write article response</Link></li>
                                 <li><Link to={{
                                     pathname:`/upload`,
                                     props:{
-                                        responseMpd: `${this.state.mpd}`,
-                                        responseTitle: `${this.state.title}`,
-                                        responseType: "video"
+                                        responseToMpd: `${this.state.mpd}`,
+                                        responseToTitle: `${this.state.title}`,
+                                        responseToType: "video"
                                     }
                                 }}>Publish video response</Link></li>
                             </ul>

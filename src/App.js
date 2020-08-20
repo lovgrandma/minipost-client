@@ -1330,10 +1330,11 @@ class Socialbar extends Component { // Main social entry point sb1
                     this.getfriends();
                     this.getFriendConversations();
                 } else if (data.querymsg) {
-                    if (data.querymsg == 'not friends') {
-                        this.getfriends();
-                        this.getFriendConversations();
-                    }
+                    this.getfriends();
+                    this.getFriendConversations();
+                } else {
+                    this.getfriends();
+                    this.getFriendConversations();
                 }
             } else {
                 // will have to add conversation state update when adding remove conversation functionality
@@ -1787,6 +1788,9 @@ class App extends Component {
                             )}/>
                             <Route path='/watch' render={(props) => (
                                 <Video {...props} />
+                            )}/>
+                            <Route path='/read' render={(props) => (
+                                <Article {...props} />
                             )}/>
                             <Route path='/upload' render={(props) => (
                                 <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
