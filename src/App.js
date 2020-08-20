@@ -35,7 +35,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 
-import { debounce } from './methods/utility.js';
+import { debounce, deepEquals } from './methods/utility.js';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -377,21 +377,24 @@ class Friend extends Component { // friend component fc1
             }
             sendchat(e);
 
-            let roomId = this.props.conversation ? this.props.conversation._id : null;
-            let leanString = this.props.username + ";" + "" + ";" + roomId;
-            let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
-            setTimeout(() => {
-                socket.emit('typing', ba);
-            }, 30);
-
+            if (socket) {
+                let roomId = this.props.conversation ? this.props.conversation._id : null;
+                let leanString = this.props.username + ";" + "" + ";" + roomId;
+                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                setTimeout(() => {
+                    socket.emit('typing', ba);
+                }, 30);
+            }
         }
     }
 
     handleChange = (e) => { // Emit typing to users in chat via socket
-        if (this.props.conversation) {
-            let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
-            let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
-            socket.emit('typing', ba);
+        if (socket) {
+            if (this.props.conversation) {
+                let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
+                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                socket.emit('typing', ba);
+            }
         }
     }
 
@@ -700,7 +703,7 @@ function Social(props) { // social prop sp1
 
                 {/* Append friends from social bar state (props.friends). For each friend return appropriate object info to build Friends div using Friends(props) function above. */}
                 {
-                    props.friends ?
+                    props.friends && props.conversations ?
                         props.friends.length === 0 ? <div className="nofriends">Right now you have no friends :( , but you can add one :) . Use the search bar above to send friend requests or ask friends to add you</div>
                         :
                         props.friends.map(function(friend, index) {
@@ -827,7 +830,6 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     componentDidMount(e) {
-        
         if (this.props.sidebarStatus === 'open') {
             document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
             this.openSideBar();
@@ -838,7 +840,6 @@ class Socialbar extends Component { // Main social entry point sb1
 
         if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
             this.getfriends();
-            this.getFriendConversations();
         }
     };
         
@@ -1011,48 +1012,55 @@ class Socialbar extends Component { // Main social entry point sb1
     getFriendConversations() {
         // This will retrieve all chats within "chats" in the user document.
         let username = this.state.isLoggedIn;
-
-        fetch(currentrooturl + 'm/getconversationlogs', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                username
+        if (!socket) {
+            fetch(currentrooturl + 'm/getconversationlogs', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    username
+                })
             })
-        })
-        .then(function(response) {
-            return response.json();
-        })
-        .then((data) => {
-            if (!socket) { // Do not run logic for mongo db
-                console.log("Conversations:", data);
-                if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
-                    this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations
+            .then(function(response) {
+                return response.json();
+            })
+            .then((data) => {
+                if (!socket) { // Do not run logic for mongo db converstations. Proceed to get redis data via socket instead
+                    console.log("Conversations:", data);
+                    if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
+                        this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
+                    }
+                    this.setState({ conversations: data }); // set state for conversations
+                    let convoIds = [];
+                    for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
+                        convoIds.push(data[i]._id);
+                    }
+                    this.setState({ convoIds: convoIds });
                 }
-                this.setState({ conversations: data }); // set state for conversations
-                let convoIds = [];
-                for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
-                    convoIds.push(data[i]._id);
-                }
-                this.setState({ convoIds: convoIds });
+                return data;
+            })
+            .then(() => {
+                this.rebuildSocketConnection();
+            })
+        } else {
+            this.rebuildSocketConnection();
+        }
+    }
+
+    rebuildSocketConnection = () => {
+        setTimeout(() => {
+            let delay = 0;
+            if (!socket) {
+                this.openSocket(); // open socket after friend conversations ran
+                delay = 500;
             }
-            return data;
-        })
-        .then(() => {
             setTimeout(() => {
-                let delay = 0;
-                if (!socket) {
-                    this.openSocket(); // open socket after friend conversations ran
-                    delay = 500;
-                }
-                setTimeout(() => {
-                    this.initializeLiveChat();
-                }, delay);
-            }, 200);
-        })
+                this.initializeLiveChat();
+            }, delay);
+        }, 200);
     }
 
     // Entry point method after login.
@@ -1084,8 +1092,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 if (cookies.get('loggedIn')) {
                     this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
                 }
-                this.getfriends()
-                this.getFriendConversations();
+                this.getfriends();
             }
             if (data.error) {
                 console.log(data.error);
@@ -1124,8 +1131,7 @@ class Socialbar extends Component { // Main social entry point sb1
             this.setState({ loginerror: null });
             if (data.querystatus== "loggedin") {
                 this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
-                this.getfriends()
-                this.getFriendConversations();
+                this.getfriends();
             }
             if (data.error) {
                 this.setState({ registererror: {error: data.error, type: data.type }});
@@ -1291,7 +1297,6 @@ class Socialbar extends Component { // Main social entry point sb1
             .then(function(data) {
             if (data == { querystatus: 'already friends' }) {
                 this.getfriends();
-                this.getFriendConversations();
             }
             return data; // `data` is the parsed version of the JSON returned from the above endpoint.
         })
@@ -1328,13 +1333,10 @@ class Socialbar extends Component { // Main social entry point sb1
                 console.log('bad query');
                 if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
                     this.getfriends();
-                    this.getFriendConversations();
                 } else if (data.querymsg) {
                     this.getfriends();
-                    this.getFriendConversations();
                 } else {
                     this.getfriends();
-                    this.getFriendConversations();
                 }
             } else {
                 // will have to add conversation state update when adding remove conversation functionality
@@ -1437,6 +1439,7 @@ class Socialbar extends Component { // Main social entry point sb1
         })
     }
     
+    // Fetches both user friends and userconversations from server. Avoids running two fetch requests. Costly
     getfriends = () => {
         if (!this.state.isLoggedIn) {
             this.setState({ isLoggedIn: cookies.get('isLoggedIn')});
@@ -1459,8 +1462,24 @@ class Socialbar extends Component { // Main social entry point sb1
             })
             .then((data) => {
                 console.log("Friends of", username, ":", data);
-                this.setState({ friends: data });
+                if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
+                    this.setState({ friends: data.userfriendslist });
+                }
+                let convoIds = [];
+                if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
+                    this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
+                }
+                if (!socket) { // Only append conversations from mongodb if socket is not valid. Otherwise application is getting conversations from redis live db
+                    this.setState({ conversations: data.conversations }); // set state for conversations
+                }
+                for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
+                    convoIds.push(data.conversations[i]._id);
+                }
+                this.setState({ convoIds: convoIds });
                 return data;
+            })
+            .then((data) => {
+                this.rebuildSocketConnection();
             })
             .catch(error => {
                 console.log(error);
@@ -1473,7 +1492,7 @@ class Socialbar extends Component { // Main social entry point sb1
         // All beginchat methods ran from searchbar will run as a fetch request.
         // Others will update via socket
         console.log("Socket" + socket, "from search " + fromSearch, "ConvoId " + convoId);
-        if (!convoId) { // Determine if chat sent from search exists in current chats
+        if (!convoId) { // Determine if chat sent via user search UI exists in current chats
             if (this.state.conversations) {
                 for (let i = 0; i < this.state.conversations.length; i++) {
                     if (this.state.conversations[i]) {

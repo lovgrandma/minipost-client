@@ -406,6 +406,7 @@ export default class Video extends Component {
                                 <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
                                     <span className='publisher-userandjoindate'>
                                         <span className='publisher-username'>{this.state.author}</span>
+                                        <span className='publisher-followbutton'>follow</span>
                                     </span>
                                     <div className='video-description-info'>{this.state.description}</div>
                                     <div className="video-tags-list">
@@ -424,7 +425,6 @@ export default class Video extends Component {
                                 }
                             </div>
                         </div>
-                        <span className='publisher-followbutton'>follow</span>
                     </div>
                 </div>
                 <div className='articles-bar'>

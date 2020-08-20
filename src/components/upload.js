@@ -102,19 +102,34 @@ export default class Upload extends Component { // ulc upload component
     }
 
     setMsgInt() {
-        this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
-        if (this.state.uploadInfoInterval.length <= 0) {
-            let infoIntervalId = setInterval = (() => {
-                this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
-            }, 15000);
-            this.setState({ uploadInfoInterval: infoIntervalId });
+        try {
+            this.state ? this.setState({uploadInfo: this.randomProperty(this.uploadMessages) }) : null
+            if (this.state.uploadInfoInterval.length <= 0) {
+                let infoIntervalId = setInterval = (() => {
+                    if (this.state) {
+                        this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
+                    }
+                }, 15000);
+                if (this.state) {
+                    this.setState({ uploadInfoInterval: infoIntervalId });
+                }
+            }
+        } catch (err) {
+            // Component may have been unmounted
         }
     }
 
     // Clears message interval for showing randomized upload info text blurbs
     clearMsgInt() {
-        clearInterval(this.state.uploadInfoInterval);
-        this.setState({ uploadInfo: "" });
+        try {
+            if (this.state) {
+                clearInterval(this.state.uploadInfoInterval);
+                this.setState({ uploadInfo: "" });
+            }
+        } catch (err) {
+            // Component may have been unmounted
+        }
+
     }
 
     randomProperty(obj) {
