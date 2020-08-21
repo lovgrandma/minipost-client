@@ -141,9 +141,13 @@ export default class writeArticle extends Component {
                     const title = this.titleIn.current._ref.value;
                     let responseTo = "";
                     let responseType = "";
-                    if (this.state.responseToMpd && this.state.responseToType) {
-                        responseTo = this.state.responseToMpd;
+                    if (this.state.responseToType) {
                         responseType = this.state.responseToType;
+                        if (this.state.responseToMpd) {
+                            responseTo = this.state.responseToMpd;
+                        } else if (this.state.responseToId) {
+                            responseTo = this.state.responseToId;
+                        }
                     }
                     fetch(currentrooturl + 'm/publisharticle', {
                         method: "POST",

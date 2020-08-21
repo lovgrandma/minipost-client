@@ -13,7 +13,7 @@ import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen } from '@fortawe
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
-import { roundTime } from '../methods/utility.js';
+import { roundTime, setStateDynamic } from '../methods/utility.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -23,7 +23,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: []
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: "", responseType: ""
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -34,23 +34,7 @@ export default class Video extends Component {
 
     componentDidMount = async () => {
         this.setUpState();
-        if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
-            if (this.props.location.search) {
-                if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)) {
-                    if (this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) {
-                        this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
-                        this.setState({ mpd: this.props.location.search.match(/([?v=]*)([a-zA-Z0-9].*)/)[2]});
-                    }
-                }
-            }
-        } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
-            if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)) {
-                if (this.props.location.pathname.match(/([/watch?v=]*)([a-zA-Z0-9].*)/)[2]) {
-                    this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
-                    this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
-                }
-            }
-        }
+        this.loadPage();
     }
 
     componentWillUnmount() {
@@ -64,6 +48,30 @@ export default class Video extends Component {
         this.endViewCountInterval();
     }
 
+    loadPage = async (reload = false) => {
+        if (reload) {
+            this.initPlayer(await this.fetchVideoPageData(reload) + "-mpd.mpd");
+            this.setState({ mpd: reload});
+        } else {
+            if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
+                if (this.props.location.search) {
+                    if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) {
+                            this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd");
+                            this.setState({ mpd: this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]});
+                        }
+                    }
+                }
+            } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
+                if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)) {
+                    if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) {
+                        this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
+                        this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
+                    }
+                }
+            }
+        }
+    }
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
     setUpState() {
         if (this.props.location) {
@@ -97,7 +105,6 @@ export default class Video extends Component {
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
     fetchVideoPageData = async (rawMpd) => {
-        let articleResponses = [];
         const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
             method: "POST",
             headers: {
@@ -114,24 +121,23 @@ export default class Video extends Component {
         })
         .then((result) => {
             console.log(result);
-            articleResponses = result.articleResponses;
             /* Sets all video document related data */
             for (const [key, value] of Object.entries(result.video)) {
                 if (key == "published") {
-                    this.setState(this.setStateDynamic(key, roundTime(value)));
+                    this.setState(setStateDynamic(key, roundTime(value)));
                 } else if (value) {
-                    this.setState(this.setStateDynamic(key, value));
+                    this.setState(setStateDynamic(key, value));
                 } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
-                    this.setState(this.setStateDynamic(key, value));
+                    this.setState(setStateDynamic(key, value));
                 }
             }
             if (result) {
                 return result;
             }
             return false;
-        })
+        });
         if (videoData.video.mpd) {
-            this.setState({ articleResponses: videoData.articleResponses });
+            this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo });
             return videoData.video.mpd;
         }
         return false;
@@ -166,11 +172,6 @@ export default class Video extends Component {
                     }
                 })
         }
-    }
-
-    /* Dynamically sets state when given the key/value location and the name of the key name to be used */
-    setStateDynamic(key, value) {
-        return { [key]: value };
     }
 
     /* Initialize player and player error handlers */
@@ -341,6 +342,24 @@ export default class Video extends Component {
         return body;
     }
 
+    setResponseToPath() {
+        if (this.state.responseTo) {
+            if (this.state.responseTo.type == "video") {
+                return "watch?v=" + this.state.responseTo.mpd;
+            } else if (this.state.responseTo.type == "article") {
+                return "read?a=" + this.state.responseTo.id;
+            }
+        }
+        return null;
+    }
+
+    // When accessing a response video from a video page. React router percieves this as the same page since window.location.pathname is still /watch. Pathnames omit data after query question marks. This method will force refetch from the server when user has clicked a link that would be a response or link to another video page.
+    refetch = () => {
+        if (this.state.responseTo.mpd) {
+            this.loadPage(this.state.responseTo.mpd);
+        }
+    }
+
     render() {
         return (
             <div id='videocontainer'>
@@ -426,6 +445,14 @@ export default class Video extends Component {
                             </div>
                         </div>
                     </div>
+                    {this.state.responseTo ?
+                        this.state.responseTo.title ?
+                            <div className="prompt-basic-s grey-out">
+                                response to <Link to={{pathname:`/${this.setResponseToPath()}`}} onClick={(e)=>{this.refetch()}}>
+                                {this.state.responseTo.title}</Link>
+                            </div>
+                        : null : null
+                    }
                 </div>
                 <div className='articles-bar'>
                     <div className='article-container-header'>Articles</div>

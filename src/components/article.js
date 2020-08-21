@@ -9,7 +9,7 @@ import currentrooturl from '../url';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faReply } from '@fortawesome/free-solid-svg-icons';
-import { roundTime } from '../methods/utility.js';
+import { roundTime, setStateDynamic } from '../methods/utility.js';
 
 export default class Article extends Component {
     constructor(props) {
@@ -57,17 +57,22 @@ export default class Article extends Component {
                         this.setState({ tags: this.props.location.props.tags.split(',') });
                     }
                 }
-                if (this.props.location.props.responseToId) {
-                    this.setState({ responseToId: this.props.location.props.responseToId });
-                }
-                if (this.props.location.props.responseToMpd) {
-                    this.setState({ responseToMpd: this.props.location.props.responseToMpd });
-                }
-                if (this.props.location.props.responseToTitle) {
-                    this.setState({ responseToTitle: this.props.location.props.responseToTitle });
+                let responseTo = {
+                    title: "",
+                    id: "",
+                    type: "",
+                    mpd: ""
                 }
                 if (this.props.location.props.responseToType) {
-                    this.setState({ responseToType: this.props.location.props.responseToType });
+                    responseTo.type = this.props.location.props.responseToType;
+                }
+                if (this.props.location.props.responseToTitle) {
+                    responseTo.title = this.props.location.props.responseToTitle;
+                }
+                if (this.props.location.props.responseToId) {
+                    responseTo.id = this.props.location.props.responseToId;
+                } else if (this.props.location.props.responseToMpd) {
+                    responseTo.mpd = this.props.location.props.responseToMpd;
                 }
             }
         }
@@ -76,31 +81,52 @@ export default class Article extends Component {
 
     // Will run when user loads from external link or not from within minipost
     fetchPageData = async () => {
-        if (!this.state.title || !this.state.author || !this.state.title || !this.state.published || this.state.relevant.length == 0) {
-            if (this.props) {
-                if (this.props.location) {
-                    if (this.props.location.search) {
-                        if (this.props.location.search.match(/([?a=]*)([a-zA-Z0-9].*)/)) {
-                            if (this.props.location.search.match(/([?a=]*)([a-zA-Z0-9].*)/)[2]) {
-                                let id = this.props.location.search.match(/([?a=]*)([a-zA-Z0-9].*)/)[2];
-                                const articleData = await fetch(currentrooturl + 'm/fetcharticlepagedata', {
-                                    method: "POST",
-                                    headers: {
-                                        'Accept': 'application/json',
-                                        'Content-Type': 'application/json'
-                                    },
-                                    credentials: 'same-origin',
-                                    body: JSON.stringify({
-                                        id
-                                    })
-                                })
-                                .then((response) => {
-                                    return response.json();
-                                })
-                                .then((result) => {
-                                    console.log(result);
-                                });
+        if (this.props) {
+            if (this.props.location) {
+                if (this.props.location.search || this.props.location.pathname) {
+                    let id = "";
+                    if (this.props.location.search.match(/\?a=([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.search.match(/\?a=([a-zA-Z0-9].*)/)[1]) {
+                            id = this.props.location.search.match(/\?a=([a-zA-Z0-9].*)/)[1];
+                        }
+                    } else if (this.props.location.pathname.match(/(\/read\?a=)([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.pathname.match(/(\/read\?a=)([a-zA-Z0-9].*)/)[2]) {
+                            id = this.props.location.pathname.match(/(\/read\?a=)([a-zA-Z0-9].*)/)[2];
+                        }
+                    }
+                    if (id) {
+                        const articleData = await fetch(currentrooturl + 'm/fetcharticlepagedata', {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                id
+                            })
+                        })
+                        .then((response) => {
+                            return response.json();
+                        })
+                        .then((result) => {
+                            for (const [key, value] of Object.entries(result.article)) {
+                                if (key == "published") { // If date, round value
+                                    this.setState(setStateDynamic(key, roundTime(value)));
+                                } else if (value) {
+                                    this.setState(setStateDynamic(key, value));
+                                } else if (!value && key == "reads" || !value && key == "likes" || !value && key == "dislikes") {
+                                    this.setState(setStateDynamic(key, value));
+                                }
                             }
+                            console.log(result);
+                            return result;
+                        });
+                        if (articleData.articleResponses) {
+                            this.setState({ articleResponses: articleData.articleResponses });
+                        }
+                        if (articleData.responseTo) {
+                            this.setState({ responseTo: articleData.responseTo, responseToTitle: articleData.responseTo.title });
                         }
                     }
                 }
@@ -116,18 +142,19 @@ export default class Article extends Component {
     }
 
     setResponseParentLink() {
-        if (this.state.responseToMpd) { // Response is video set watch pathname
-            return {
-                pathname:`/watch?v=${this.state.responseToMpd}`
+        if (this.state.responseTo) {
+            if (this.state.responseTo.mpd) { // Response is video set watch pathname
+                return {
+                    pathname:`/watch?v=${this.state.responseTo.mpd}`
+                }
+            } else if (this.state.responseTo.id) { // Response is article set read pathname
+                return {
+                    pathname:`/read?a=${this.state.responseTo.id}`
+                }
             }
-        } else if (this.state.responseToId) { // Response is article set read pathname
-            return {
-                pathname:`/read?a=${this.state.responseToId}`
-            }
-        } else {
-            return {
-                pathname:`/`
-            }
+        }
+        return {
+            pathname:`/`
         }
     }
 
@@ -177,7 +204,7 @@ export default class Article extends Component {
                         </ul>
                     </div>
                 </div>
-                <div className="prompt-basic">{this.state.responseToTitle ? "Response to " : ""}<span className="grey-out">{this.state.responseToType && this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link> : "" : ""}</span></div>
+                <div className="prompt-basic grey-out">{this.state.responseTo ? this.state.responseTo.title ? "Response to " : "" : ""}<span className="grey-out">{this.state.responseTo && this.state.responseTo.title ? this.state.responseTo.title.length > 0 ? <Link to={this.setResponseParentLink()}>{this.state.responseTo.title}</Link> : "" : ""}</span></div>
             </div>
         )
     }

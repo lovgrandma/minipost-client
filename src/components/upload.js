@@ -279,26 +279,30 @@ export default class Upload extends Component { // ulc upload component
     }
 
     dotsAnim = () => {
-        let intervalId = setInterval(() => {
-            if (this.state) {
-                if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
-                    if (this.state.dots.length < 2) {
-                        let dots = this.state.dots;
-                        dots += ".";
-                        this.setState({ dots: dots });
+        try {
+            let intervalId = setInterval(() => {
+                if (this.state) {
+                    if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
+                        if (this.state.dots.length < 2) {
+                            let dots = this.state.dots;
+                            dots += ".";
+                            this.setState({ dots: dots });
+                        } else {
+                            this.setState({ dots: "" });
+                        }
                     } else {
                         this.setState({ dots: "" });
                     }
                 } else {
-                    this.setState({ dots: "" });
+                    if (this.state.dotInterval) {
+                        clearInterval(this.state.dotInterval);
+                    }
                 }
-            } else {
-                if (this.state.dotInterval) {
-                    clearInterval(this.state.dotInterval);
-                }
-            }
-        }, 1000);
-        this.setState({ dotInterval: intervalId });
+            }, 1000);
+            this.setState({ dotInterval: intervalId });
+        } catch (err) {
+            // setInterval did not function as window object must have been deleted
+        }
     }
 
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
@@ -581,6 +585,13 @@ export default class Upload extends Component { // ulc upload component
                 } else if (this.state.videoId.length > 0) {
                     mpd = this.state.videoId;
                 }
+                let responseTo = "";
+                let responseType = this.state.responseToType;
+                if (this.state.responseToId) {
+                    responseTo = this.state.responseToId;
+                } else if (this.state.responseToMpd) {
+                    responseTo = this.state.responseToMpd;
+                }
                 fetch(currentrooturl + 'm/publishvideo', {
                     method: "POST",
                     headers: {
@@ -589,7 +600,7 @@ export default class Upload extends Component { // ulc upload component
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify({
-                        user, title, desc, tags, nudity, mpd
+                        user, title, desc, tags, nudity, mpd, responseTo, responseType
                     })
                 })
                 .then((response) => {

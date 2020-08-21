@@ -119,10 +119,16 @@ let roundTime = function(time) {
     return time;
 }
 
+/* Dynamically sets state when given the key/value location and the name of the key name to be used */
+let setStateDynamic = function(key, value) {
+    return { [key]: value };
+}
+
 module.exports = {
     debounce: debounce,
     deepEquals: deepEquals,
     shuffleArray: shuffleArray,
     parseId: parseId,
-    roundTime: roundTime
+    roundTime: roundTime,
+    setStateDynamic: setStateDynamic
 }

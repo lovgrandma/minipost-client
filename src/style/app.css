@@ -3236,6 +3236,18 @@ If user only has one friend, styling wont apply */
     white-space: pre-line;
 }
 
+@media (max-width: 800px) {
+    .upl-vid-desc-label {
+        max-width: 100%;
+    }
+}
+
+@media (max-width: 1200px) {
+    .upl-vid-desc-label {
+        max-width: 75%;
+    }
+}
+
 .upl-vid-tags-label {
     margin-top: 10px;
     padding: 0 5px 0 10px;
