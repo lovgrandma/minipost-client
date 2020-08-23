@@ -119,10 +119,25 @@ let roundTime = function(time) {
     return time;
 }
 
+const roundNumber = function(number) {
+    return number;
+}
+
+const shortenTitle = function (title, length = 70) {
+    if (title) {
+        if (title.length > length) {
+            return title.slice(0, length) + "..";
+        } else {
+            return title;
+        }
+    }
+}
+
 /* Dynamically sets state when given the key/value location and the name of the key name to be used */
-let setStateDynamic = function(key, value) {
+const setStateDynamic = (key, value) => {
     return { [key]: value };
 }
+
 
 module.exports = {
     debounce: debounce,
@@ -130,5 +145,7 @@ module.exports = {
     shuffleArray: shuffleArray,
     parseId: parseId,
     roundTime: roundTime,
+    shortenTitle: shortenTitle,
+    roundNumber: roundNumber,
     setStateDynamic: setStateDynamic
 }

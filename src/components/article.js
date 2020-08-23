@@ -10,12 +10,13 @@ import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faReply } from '@fortawesome/free-solid-svg-icons';
 import { roundTime, setStateDynamic } from '../methods/utility.js';
+import parseBody from '../methods/htmlparser.js';
 
 export default class Article extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            id: "", title: "", author: "", body: "", published: "", reads: "", likes: "", dislikes: "", responseToMpd: "", responseToTitle: "", responseToType: "", responseToId: "", articleResponses: [], videoResponses: [], relevant: []
+            id: "", title: "", author: "", body: "", published: "", reads: "", likes: "", dislikes: "", responseTo: {}, articleResponses: [], videoResponses: [], relevant: []
         }
         this.moreOptions = React.createRef();
     }
@@ -74,6 +75,7 @@ export default class Article extends Component {
                 } else if (this.props.location.props.responseToMpd) {
                     responseTo.mpd = this.props.location.props.responseToMpd;
                 }
+                this.setState({ responseTo: responseTo });
             }
         }
         this.fetchPageData();
@@ -126,7 +128,7 @@ export default class Article extends Component {
                             this.setState({ articleResponses: articleData.articleResponses });
                         }
                         if (articleData.responseTo) {
-                            this.setState({ responseTo: articleData.responseTo, responseToTitle: articleData.responseTo.title });
+                            this.setState({ responseTo: articleData.responseTo });
                         }
                     }
                 }
@@ -134,20 +136,13 @@ export default class Article extends Component {
         }
     }
 
-    parseBody(body) {
-        if (body) {
-            return ReactHtmlParser(body);
-        }
-        return body;
-    }
-
-    setResponseParentLink() {
+    setResponseToParentPath() {
         if (this.state.responseTo) {
-            if (this.state.responseTo.mpd) { // Response is video set watch pathname
+            if (this.state.responseTo.type == "video" && this.state.responseTo.mpd) { // Response is video set watch pathname
                 return {
                     pathname:`/watch?v=${this.state.responseTo.mpd}`
                 }
-            } else if (this.state.responseTo.id) { // Response is article set read pathname
+            } else if (this.state.responseTo.type == "article" && this.state.responseTo.id) { // Response is article set read pathname
                 return {
                     pathname:`/read?a=${this.state.responseTo.id}`
                 }
@@ -173,7 +168,7 @@ export default class Article extends Component {
             <div className="article-container-articlepage">
                 <div className="article-title-articlepage">{this.state.title}</div>
                 <div className="article-author-articlepage prompt-basic-s grey-out">published by {this.state.author} at {roundTime(this.state.published)}</div>
-                <div className="article-body-articlepage">{this.parseBody(this.state.body)}</div>
+                <div className="article-body-articlepage">{parseBody(this.state.body)}</div>
                 <div className="article-menu-flex">
                     <div className="article-stats-articlepage">
                         <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{this.state.reads}</span>
@@ -204,7 +199,7 @@ export default class Article extends Component {
                         </ul>
                     </div>
                 </div>
-                <div className="prompt-basic grey-out">{this.state.responseTo ? this.state.responseTo.title ? "Response to " : "" : ""}<span className="grey-out">{this.state.responseTo && this.state.responseTo.title ? this.state.responseTo.title.length > 0 ? <Link to={this.setResponseParentLink()}>{this.state.responseTo.title}</Link> : "" : ""}</span></div>
+                <div className="prompt-basic grey-out">{this.state.responseTo ? this.state.responseTo.title ? "Response to " : "" : ""}<span className="grey-out">{this.state.responseTo && this.state.responseTo.title ? this.state.responseTo.title.length > 0 ? <Link to={this.setResponseToParentPath()}>{this.state.responseTo.title}</Link> : "" : ""}</span></div>
             </div>
         )
     }

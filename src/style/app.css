@@ -1099,6 +1099,7 @@ label {
     border-radius: 10px;
     padding-top: 5px;
     padding: 3px;
+    max-height: 190px;
 }
 
 .article-responses-preview-container-single {
@@ -3471,6 +3472,11 @@ textarea:focus {
     overflow: hidden;
     white-space: nowrap;
     text-overflow: ellipsis;
+}
+
+.article-preview-body {
+    max-height: 115px;
+    overflow: hidden;
 }
 
 .article-preview-body p {

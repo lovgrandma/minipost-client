@@ -12,8 +12,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
-import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
-import { roundTime, setStateDynamic } from '../methods/utility.js';
+import { roundTime, setStateDynamic, roundNumber, shortenTitle } from '../methods/utility.js';
+import parseBody from '../methods/htmlparser.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -23,7 +23,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: "", responseType: ""
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -99,6 +99,24 @@ export default class Video extends Component {
                         this.setState({ tags: this.props.location.props.tags.split(',') });
                     }
                 }
+                let responseTo = {
+                    title: "",
+                    id: "",
+                    type: "",
+                    mpd: ""
+                }
+                if (this.props.location.props.responseToType) {
+                    responseTo.type = this.props.location.props.responseToType;
+                }
+                if (this.props.location.props.responseToTitle) {
+                    responseTo.title = this.props.location.props.responseToTitle;
+                }
+                if (this.props.location.props.responseToId) {
+                    responseTo.id = this.props.location.props.responseToId;
+                } else if (this.props.location.props.responseToMpd) {
+                    responseTo.mpd = this.props.location.props.responseToMpd;
+                }
+                this.setState({ responseTo: responseTo });
             }
         }
     }
@@ -143,6 +161,7 @@ export default class Video extends Component {
         return false;
     }
 
+    // Increments view on video by one on backend and visually on front end
     async incrementView() {
         if (this.state.mpd && !this.state.viewCounted) {
             let user = "";
@@ -314,46 +333,24 @@ export default class Video extends Component {
         }
     }
 
-    roundNumber(number) {
-        return number;
-    }
-
-    shortenTitle = (title) => {
-        if (title) {
-            if (title.length > 70) {
-                return title.slice(0, 70) + "..";
-            } else {
-                return title;
-            }
-        }
-    }
-
-    parseBody = (body) => {
-        if (body) {
-            let html = "";
-            if (body.length < 600) {
-                html = ReactHtmlParser(body);
-            } else {
-                html = ReactHtmlParser(body.slice(0, 600));
-                html[0].props.children[0] += "..";
-            }
-            return html;
-        }
-        return body;
-    }
-
-    setResponseToPath() {
+    setResponseToParentPath() {
         if (this.state.responseTo) {
-            if (this.state.responseTo.type == "video") {
-                return "watch?v=" + this.state.responseTo.mpd;
-            } else if (this.state.responseTo.type == "article") {
-                return "read?a=" + this.state.responseTo.id;
+            if (this.state.responseTo.type == "video" && this.state.responseTo.mpd) {
+                return {
+                    pathname:`/watch?v=${this.state.responseTo.mpd}`
+                }
+            } else if (this.state.responseTo.type == "article" && this.state.responseTo.id) {
+                return {
+                    pathname:`/read?a=${this.state.responseTo.id}`
+                }
             }
         }
-        return null;
+        return {
+            pathname:`/`
+        }
     }
 
-    // When accessing a response video from a video page. React router percieves this as the same page since window.location.pathname is still /watch. Pathnames omit data after query question marks. This method will force refetch from the server when user has clicked a link that would be a response or link to another video page.
+    // When accessing a response video from a video page. React router can percieve this as the same page since window.location.pathname is still /watch. Pathnames omit data after query question marks. This method will force refetch from the server when user has clicked a link that would be a response or link to another video page.
     refetch = () => {
         if (this.state.responseTo.mpd) {
             this.loadPage(this.state.responseTo.mpd);
@@ -382,13 +379,13 @@ export default class Video extends Component {
                         <div className='publisher-video-interact-block'>
                             <div className="likes-click">
                                 <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up"/>
-                                <div>{this.roundNumber(this.state.likes)}</div>
+                                <div>{roundNumber(this.state.likes)}</div>
                             </div>
                         </div>
                         <div className='publisher-video-interact-block'>
                             <div className="dislikes-click">
                                 <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down"/>
-                                <div>{this.roundNumber(this.state.dislikes)}</div>
+                                <div>{roundNumber(this.state.dislikes)}</div>
                             </div>
                         </div>
                         <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
@@ -448,8 +445,7 @@ export default class Video extends Component {
                     {this.state.responseTo ?
                         this.state.responseTo.title ?
                             <div className="prompt-basic-s grey-out">
-                                response to <Link to={{pathname:`/${this.setResponseToPath()}`}} onClick={(e)=>{this.refetch()}}>
-                                {this.state.responseTo.title}</Link>
+                                response to <Link to={this.setResponseToParentPath()} onClick={(e)=> {this.refetch()}}>{this.state.responseTo.title}</Link>
                             </div>
                         : null : null
                     }
@@ -480,8 +476,8 @@ export default class Video extends Component {
                                                     responseToType: "video"
                                                 }
                                             }}>
-                                                <div className="article-title-videopage">{this.shortenTitle(article.title)}</div>
-                                                <div className="article-body-videopage">{this.parseBody(article.body)}</div>
+                                                <div className="article-title-videopage">{shortenTitle(article.title)}</div>
+                                                <div className="article-body-videopage">{parseBody(article.body, 600)}</div>
                                                 <div className="article-stats-videopage">
                                                     <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{article.reads}</span><span>&nbsp;•&nbsp;</span>
                                                     <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{article.likes}</span><span>&nbsp;•&nbsp;</span>
