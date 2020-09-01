@@ -504,48 +504,45 @@ export default class Upload extends Component { // ulc upload component
                 this.props.updateUploadStatus("uploading video");
                 axios.post(currentrooturl + 'm/videoupload', data, options)
                     .then(async (response) => {
-                    console.log(response);
-                    if (response.data.err) {
-                        if (response.data.err == "reset") {
-                            if (response.data.querystatus) {
-                                if (response.data.querystatus == "Bad resolution") {
-                                    this.props.updateErrStatus("Bad resolution");
+                        console.log(response);
+                        if (response.data.err) {
+                            if (response.data.err == "reset") {
+                                if (response.data.querystatus) {
+                                    if (response.data.querystatus == "Bad resolution") {
+                                        this.props.updateErrStatus("Bad resolution");
+                                    } else {
+                                        this.props.updateErrStatus("Video upload failed");
+                                    }
                                 } else {
                                     this.props.updateErrStatus("Video upload failed");
                                 }
-                            } else {
-                                this.props.updateErrStatus("Video upload failed");
+                                this.resetPage();
                             }
-                            this.resetPage();
-                        }
-                    } else if (response.data.querystatus) {
-                        if (response.data.querystatus.match(/processbegin/)[0]) {
-                            let uplRoom = response.data.querystatus.match(/;([upla-z0-9].*)/)[1];
-                            cookies.set('uplsession', uplRoom, { path: '/', sameSite: true, signed: true, maxAge: 86400 }); // Max age for video upload session 24 hours.
-                            if (uplRoom.match(/upl-([a-z0-9].*)/)) {
-                                this.setState({ videoId: uplRoom.match(/upl-([a-z0-9].*)/)[1] });
-                                this.props.updateUploadStatus("processing;" + uplRoom.match(/upl-([a-z0-9].*)/)[1]);
-                            }
-                            if (this.props.uploadStatus == "uploading video") {
-                                this.props.updateUploadStatus("waiting in queue");
-                            }
-                            if (this.props.socket) {
-                                this.props.socket.emit('joinUploadSession', uplRoom);
-                            } else if (this.state.socket) {
-                                this.state.socket.emit('joinUploadSession', uplRoom);
-                            } else if (userSocket) {
-                                userSocket.emit('joinUploadSession', uplRoom);
+                        } else if (response.data.querystatus) {
+                            if (response.data.querystatus.match(/processbegin/)[0]) {
+                                let uplRoom = response.data.querystatus.match(/;([upla-z0-9].*)/)[1];
+                                cookies.set('uplsession', uplRoom, { path: '/', sameSite: true, signed: true, maxAge: 86400 }); // Max age for video upload session 24 hours.
+                                if (uplRoom.match(/upl-([a-z0-9].*)/)) {
+                                    this.setState({ videoId: uplRoom.match(/upl-([a-z0-9].*)/)[1] });
+                                    this.props.updateUploadStatus("processing;" + uplRoom.match(/upl-([a-z0-9].*)/)[1]);
+                                }
+                                if (this.props.uploadStatus == "uploading video") {
+                                    this.props.updateUploadStatus("waiting in queue");
+                                }
+                                if (this.props.socket) {
+                                    this.props.socket.emit('joinUploadSession', uplRoom);
+                                } else if (this.state.socket) {
+                                    this.state.socket.emit('joinUploadSession', uplRoom);
+                                } else if (userSocket) {
+                                    userSocket.emit('joinUploadSession', uplRoom);
+                                }
                             }
                         }
-                    }
-                    return { response };
-                })
-                .then((data) => {
-                    console.log(data);
-                })
-                .catch((error) => {
-                    error => console.log(error);
-                });
+                        return { response };
+                    })
+                    .catch((error) => {
+                        error => console.log(error);
+                    });
             }
         } else {
             if (!rerun && this.state.beginUpload == false) {

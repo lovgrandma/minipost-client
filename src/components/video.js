@@ -9,11 +9,14 @@ import {
 } from 'react-router-dom';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen } from '@fortawesome/free-solid-svg-icons';
+import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
-import { roundTime, setStateDynamic, roundNumber, shortenTitle } from '../methods/utility.js';
+import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate } from '../methods/utility.js';
 import parseBody from '../methods/htmlparser.js';
+import dummythumbnail from '../static/greythumb.jpg';
+import dummyavatar from '../static/greyavatar.jpg';
+
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -28,6 +31,7 @@ export default class Video extends Component {
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
         this.player = new React.createRef();
+        this.controls = new React.createRef();
         this.moreOptions = new React.createRef();
         this.progress = new EventEmitter();
     }
@@ -155,7 +159,7 @@ export default class Video extends Component {
             return false;
         });
         if (videoData.video.mpd) {
-            this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo });
+            this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
             return videoData.video.mpd;
         }
         return false;
@@ -224,6 +228,7 @@ export default class Video extends Component {
 
                 ui.configure(uiConfig);
                 ui.getControls();
+                this.controls = ui;
 
                 // Listen for errors
                 player.addEventListener('error', (err) => {
@@ -351,9 +356,33 @@ export default class Video extends Component {
     }
 
     // When accessing a response video from a video page. React router can percieve this as the same page since window.location.pathname is still /watch. Pathnames omit data after query question marks. This method will force refetch from the server when user has clicked a link that would be a response or link to another video page.
-    refetch = () => {
-        if (this.state.responseTo.mpd) {
+    refetch = (link = null) => {
+        this.resetPlayer();
+        if (link) {
+            this.loadPage(link);
+        } else if (this.state.responseTo.mpd) {
             this.loadPage(this.state.responseTo.mpd);
+        }
+    }
+
+    // Resets all player data for fresh reload on same page.
+    resetPlayer = async() => {
+        if (this.player) {
+            if (this.player.unload) {
+                await this.player.unload();
+            }
+            if (this.player.destroy) {
+                await this.player.destroy();
+            }
+            if (this.player.detach) {
+                await this.player.detach();
+            }
+            this.player = null;
+        }
+        if (this.controls) {
+            if (this.controls.destroy) {
+                await this.controls.destroy();
+            }
         }
     }
 
@@ -444,15 +473,15 @@ export default class Video extends Component {
                     </div>
                     {this.state.responseTo ?
                         this.state.responseTo.title ?
-                            <div className="prompt-basic-s grey-out">
+                            <div className="response-to-link prompt-basic-s grey-out">
                                 response to <Link to={this.setResponseToParentPath()} onClick={(e)=> {this.refetch()}}>{this.state.responseTo.title}</Link>
                             </div>
                         : null : null
                     }
                 </div>
+                <div className='responses'>responses</div>
                 <div className='articles-bar'>
-                    <div className='article-container-header'>Articles</div>
-                    <div className='article-responses'>responses</div>
+                    <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>
                     <div className='article-responses-container'>
                         {this.state.articleResponses ?
                             this.state.articleResponses.length > 0 ?
@@ -477,7 +506,7 @@ export default class Video extends Component {
                                                 }
                                             }}>
                                                 <div className="article-title-videopage">{shortenTitle(article.title)}</div>
-                                                <div className="article-body-videopage">{parseBody(article.body, 600)}</div>
+                                                <div className="article-body-videopage">{parseBody(article.body, 600, true)}</div>
                                                 <div className="article-stats-videopage">
                                                     <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{article.reads}</span><span>&nbsp;•&nbsp;</span>
                                                     <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{article.likes}</span><span>&nbsp;•&nbsp;</span>
@@ -485,6 +514,50 @@ export default class Video extends Component {
                                                 </div>
                                             </Link>
                                         </div>
+                                        : null
+                                    )
+                                })
+                            : null : null
+                        }
+                    </div>
+                </div>
+                <div className='videos-bar'>
+                    <div className='video-container-header'>{this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos" : null : null}</div>
+                    <div className='video-responses-container flex-grid videogrid'>
+                        {this.state.videoResponses ?
+                            this.state.videoResponses.length > 0 ?
+                                this.state.videoResponses.map((video, i) => {
+                                    return (
+                                        video.mpd && video ?
+                                            <div className="video-container-videopage videocontainer" key={i} onClick={(e) => {this.refetch(video.mpd)}}>
+                                                <Link to={{
+                                                    pathname:`/watch?v=${video.mpd}`,
+                                                    props:{
+                                                        author: `${video.author}`,
+                                                        body: `${video.body}`,
+                                                        title: `${video.title}`,
+                                                        id: `${video.id}`,
+                                                        published: `${video.publishDate}`,
+                                                        likes: `${video.likes}`,
+                                                        dislikes: `${video.dislikes}`,
+                                                        views: `${video.views}`,
+                                                        responseToMpd: `${this.state.mpd}`,
+                                                        responseToTitle: `${this.state.title}`,
+                                                        responseToType: "video"
+                                                    }
+                                                }}>
+                                                    <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={dummythumbnail}></img>
+                                                    <div className="video-title-videopage mainvideotitle">{shortenTitle(video.title)}</div>
+                                                    <div className="dash-video-bar-stats dash-video-bar-stats-videopage">
+                                                        <div className='video-author-videopage'>{video.author}</div>&nbsp;•&nbsp;<div className="video-publish-date-videopage">{convertDate(video.publishDate)}</div>
+                                                    </div>
+                                                    <div className="video-stats-videopage">
+                                                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faEye} color={ 'grey' } alt="views"/>{video.views}</span><span>&nbsp;•&nbsp;</span>
+                                                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{video.likes}</span><span>&nbsp;•&nbsp;</span>
+                                                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{video.dislikes}</span>
+                                                    </div>
+                                                </Link>
+                                            </div>
                                         : null
                                     )
                                 })

@@ -8,6 +8,7 @@ import {
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import ArticlePreview from './articlepreview.js';
+import { convertDate, roundHour} from '../methods/utility.js';
 
 export default class Videos extends Component {
     constructor(props) {
@@ -23,52 +24,6 @@ export default class Videos extends Component {
     }
     componentDidUpdate() {
 
-    }
-
-    roundHour(hour) {
-        if (Math.round(hour/3600) == 1) {
-            return "1 hour ago";
-        } else {
-            return Math.round(hour/3600) + " hours ago";
-        }
-        return Math.round(hour/3600) + "hours ago";
-    }
-
-    /* Converts static document date into relevant publish time from now */
-    convertDate(date) {
-        let timeFromNow = (Date.now() - new Date(date).getTime())/1000;
-        if (timeFromNow <= 60) {
-            return "1 minute ago";
-        } else if (timeFromNow <= 120) {
-            return "2 minutes ago";
-        } else if (timeFromNow <= 180) {
-            return "3 minutes ago";
-        } else if (timeFromNow <= 300) {
-            return "5 minutes ago";
-        } else if (timeFromNow <= 600) {
-            return "10 minutes ago";
-        } else if (timeFromNow <= 900) {
-            return "15 minutes ago";
-        } else if (timeFromNow <= 1200) {
-            return "20 minutes ago";
-        } else if (timeFromNow <= 1800) {
-            return "Half an hour ago";
-        } else if (timeFromNow <= 3600) {
-            return "1 hour ago";
-        } else if (timeFromNow < 86400) {
-            return this.roundHour(timeFromNow); // Rounds hour for hours uploaded from now
-        } else if (new Date(Date.now()).getDate() - new Date(date).getDate() == 1) {
-            return "yesterday";
-        } else {
-            if (date.match(/([a-zA-Z0-9].*),/)) {
-                return date.match(/([a-zA-Z0-9].*),/)[1];
-            } else {
-                date = date.split(' ')[0];
-                return date.substring(0, date.length -1);
-            }
-        }
-        date = date.split(' ')[0];
-        return date.substring(0, date.length -1);
     }
 
     cutTitle(title) {
@@ -144,7 +99,7 @@ export default class Videos extends Component {
                                             </div>
                                         </div>
                                         <span>{this.props.articles ? this.props.articles.length > 0 ? "\u00A0•\u00A0" : null : null}</span>
-                                        <p className="video-publish-date">{this.convertDate(this.props.published)}</p>
+                                        <p className="video-publish-date">{convertDate(this.props.published)}</p>
                                     </div>
                                 </span>
                             </div>

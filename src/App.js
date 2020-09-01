@@ -1107,6 +1107,8 @@ class Socialbar extends Component { // Main social entry point sb1
 
     fetchregister = (e) => {
         e.preventDefault();
+        this.setState({ registererror: null });
+        this.setState({ loginerror: null });
         let username = document.getElementById("username").value;
         let regemail = document.getElementById("regemail").value;
         let regpassword = document.getElementById("regpw").value;
@@ -1126,11 +1128,8 @@ class Socialbar extends Component { // Main social entry point sb1
                 return response.json(); // Parsed data
         })
         .then((data) => {
-            console.log(data);  // { "userId": 1, "id": 1, "title": "...", "body": "..." }
-            this.setState({ registererror: null });
-            this.setState({ loginerror: null });
-            if (data.querystatus== "loggedin") {
-                this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+            if (data.querystatus== "loggedin" && data.user ) {
+                this.setState({ isLoggedIn: data.user });
                 this.getfriends();
             }
             if (data.error) {

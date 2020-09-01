@@ -133,6 +133,55 @@ const shortenTitle = function (title, length = 70) {
     }
 }
 
+/* Converts static document date into relevant publish time from now */
+const convertDate = function (date) {
+    if (date) {
+        let timeFromNow = (Date.now() - new Date(date).getTime())/1000;
+        if (timeFromNow <= 60) {
+            return "1 minute ago";
+        } else if (timeFromNow <= 120) {
+            return "2 minutes ago";
+        } else if (timeFromNow <= 180) {
+            return "3 minutes ago";
+        } else if (timeFromNow <= 300) {
+            return "5 minutes ago";
+        } else if (timeFromNow <= 600) {
+            return "10 minutes ago";
+        } else if (timeFromNow <= 900) {
+            return "15 minutes ago";
+        } else if (timeFromNow <= 1200) {
+            return "20 minutes ago";
+        } else if (timeFromNow <= 1800) {
+            return "Half an hour ago";
+        } else if (timeFromNow <= 3600) {
+            return "1 hour ago";
+        } else if (timeFromNow < 86400) {
+            return roundHour(timeFromNow); // Rounds hour for hours uploaded from now
+        } else if (new Date(Date.now()).getDate() - new Date(date).getDate() == 1) {
+            return "yesterday";
+        } else {
+            if (date.match(/([a-zA-Z0-9].*),/)) {
+                return date.match(/([a-zA-Z0-9].*),/)[1];
+            } else {
+                date = date.split(' ')[0];
+                return date.substring(0, date.length -1);
+            }
+        }
+        date = date.split(' ')[0];
+        return date.substring(0, date.length -1);
+    }
+    return null;
+}
+
+const roundHour = function (hour) {
+    if (Math.round(hour/3600) == 1) {
+        return "1 hour ago";
+    } else {
+        return Math.round(hour/3600) + " hours ago";
+    }
+    return Math.round(hour/3600) + "hours ago";
+}
+
 /* Dynamically sets state when given the key/value location and the name of the key name to be used */
 const setStateDynamic = (key, value) => {
     return { [key]: value };
@@ -147,5 +196,6 @@ module.exports = {
     roundTime: roundTime,
     shortenTitle: shortenTitle,
     roundNumber: roundNumber,
-    setStateDynamic: setStateDynamic
+    setStateDynamic: setStateDynamic,
+    convertDate: convertDate
 }

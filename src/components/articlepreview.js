@@ -8,6 +8,7 @@ import {
 } from 'react-router-dom';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { parseId } from '../methods/utility.js';
+import parseBody from '../methods/htmlparser.js';
 
 export default class articlepreview extends Component {
     constructor(props) {
@@ -19,17 +20,7 @@ export default class articlepreview extends Component {
 
     componentDidMount() {
         if (this.props.body) {
-            this.parseBody(this.props.body);
-        }
-    }
-
-    parseBody = (body) => {
-        if (body) {
-            if (body.length > 162) {
-                const html = ReactHtmlParser(body.slice(0, 162));
-                html[0].props.children[0] += "..";
-                this.setState({ body: html });
-            }
+            this.setState({ body: parseBody(this.props.body, 132) });
         }
     }
 
