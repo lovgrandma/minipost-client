@@ -127,40 +127,47 @@ export default class Video extends Component {
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
     fetchVideoPageData = async (rawMpd) => {
-        const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: 'same-origin',
-            body: JSON.stringify({
-                rawMpd
+        try {
+            const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    rawMpd
+                })
             })
-        })
-        .then((response) => {
-            return response.json();
-        })
-        .then((result) => {
-            console.log(result);
-            /* Sets all video document related data */
-            for (const [key, value] of Object.entries(result.video)) {
-                if (key == "published") {
-                    this.setState(setStateDynamic(key, roundTime(value)));
-                } else if (value) {
-                    this.setState(setStateDynamic(key, value));
-                } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
-                    this.setState(setStateDynamic(key, value));
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                console.log(result);
+                /* Sets all video document related data */
+                for (const [key, value] of Object.entries(result.video)) {
+                    if (this.state) {
+                        if (key == "published") {
+                            this.setState(setStateDynamic(key, roundTime(value)));
+                        } else if (value) {
+                            this.setState(setStateDynamic(key, value));
+                        } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
+                            this.setState(setStateDynamic(key, value));
+                        }
+                    }
                 }
+                if (result) {
+                    return result;
+                }
+                return false;
+            });
+            if (videoData.video.mpd) {
+                this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
+                return videoData.video.mpd;
             }
-            if (result) {
-                return result;
-            }
+        } catch (err) {
+            // Componenent unmounted during method
             return false;
-        });
-        if (videoData.video.mpd) {
-            this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
-            return videoData.video.mpd;
         }
         return false;
     }
@@ -473,7 +480,7 @@ export default class Video extends Component {
                     </div>
                     {this.state.responseTo ?
                         this.state.responseTo.title ?
-                            <div className="response-to-link prompt-basic-s grey-out">
+                            <div className="response-to-link prompt-basic grey-out">
                                 response to <Link to={this.setResponseToParentPath()} onClick={(e)=> {this.refetch()}}>{this.state.responseTo.title}</Link>
                             </div>
                         : null : null

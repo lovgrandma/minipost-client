@@ -1785,6 +1785,18 @@ class App extends Component {
         this.setState({sidebarStatus: update });
     }
 
+    /* Returns correct location pathname. Application sometimes interprets query params under window.location.search or the whole path under pathname.
+    Without this method, when traversing back through history, appropriate content may not update
+    */
+    getPath() {
+        if (window.location.search) {
+            if (window.location.search.length > 0) {
+                return window.location.pathname + window.location.search;
+            }
+        }
+        return window.location.pathname;
+    }
+
     render() {                    
         return (
             <BrowserRouter>
@@ -1799,16 +1811,16 @@ class App extends Component {
                                 <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
-                                <Video {...props} key={window.location.pathname} />
+                                <Video {...props} key={this.getPath()} />
                             )}/>
                             <Route path='/read?a=:articleId' render={(props) => (
-                                <Article {...props} key={window.location.pathname} />
+                                <Article {...props} key={this.getPath()} />
                             )}/>
                             <Route path='/watch' render={(props) => (
-                                <Video {...props} key={window.location.pathname} />
+                                <Video {...props} key={this.getPath()} />
                             )}/>
                             <Route path='/read' render={(props) => (
-                                <Article {...props} key={window.location.pathname} />
+                                <Article {...props} key={this.getPath()} />
                             )}/>
                             <Route path='/upload' render={(props) => (
                                 <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />

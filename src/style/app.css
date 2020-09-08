@@ -3617,6 +3617,10 @@ textarea:focus {
     margin: 0 5px;
 }
 
+.response-to {
+    margin-bottom: 10px;
+}
+
 /* Overwrite rules */
 
 .bottom-50 {

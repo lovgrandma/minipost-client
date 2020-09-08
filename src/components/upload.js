@@ -710,7 +710,7 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                 </div>
                 <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
-                <div className={this.state.published === false ? "hidden" : "hidden hidden-visible"}>Your video has been published, watch it here at {currentrooturl + "watch?v=" + this.state.publishedMpd}</div>
+                <div className={this.state.published === false ? "hidden" : "hidden hidden-visible prompt-basic"}>Your video has been published, watch it here at <a href={currentrooturl + "watch?v=" + this.state.publishedMpd}>{currentrooturl + "watch?v=" + this.state.publishedMpd}</a></div>
                 <div className={this.props.isLoggedIn ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )
