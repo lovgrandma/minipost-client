@@ -130,6 +130,14 @@ h5 {
     transition: 200ms;
 }
 
+.margin-bottom-10 {
+    margin-bottom: 10px;
+}
+
+.margin-bottom-5 {
+    margin-bottom: 5px;
+}
+
 .dropdown-menu a {
     text-decoration: none;
     color: #696969;
@@ -1284,7 +1292,7 @@ label {
 }
 
 .videothumb-videopage {
-    height: calc(100%/1.5);
+    height: calc(100%/1.6);
 }
 
 .videothumb-placeholder, .avatar-placeholder {
@@ -2972,6 +2980,16 @@ If user only has one friend, styling wont apply */
 }
 
 /* upload page */
+
+.set-thumbnail-btn {
+    margin-bottom: 10px;
+    font-size: 0.9em;
+    display: block;
+}
+
+.canvas-thumbnail-preview {
+    margin-bottom: 10px;
+}
 
 .info-blurb {
     font-size: 0.75em;

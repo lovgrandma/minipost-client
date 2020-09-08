@@ -18,6 +18,7 @@ import {
 import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
+import { dataURItoBlob } from '../methods/utility.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -38,6 +39,7 @@ export default class Upload extends Component { // ulc upload component
         this.progress = new EventEmitter();
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
+        this.thumbnailpreview = new React.createRef();
         this.onErrorEvent = this.onErrorEvent.bind(this);
 		this.onError = this.onError.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
@@ -448,9 +450,13 @@ export default class Upload extends Component { // ulc upload component
             }
 
             // Try to load a manifest Asynchronous
-            player.load(manifestUri).then(function() {
+            player.load(manifestUri).then(() => {
+                setTimeout(() => {
+                    this.setThumbnailPreview();
+                }, 200);
                 console.log('video has now been loaded!');
             }).catch(this.onError);
+
 
 
         } else {
@@ -553,7 +559,7 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    /* Updates a single video record in the backend database on mongodb and graph database */
+    /* Publish. Updates a single video record in the backend database on mongodb and graph database */
     updateRecord = async () => {
         if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
             if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
@@ -589,27 +595,40 @@ export default class Upload extends Component { // ulc upload component
                 } else if (this.state.responseToMpd) {
                     responseTo = this.state.responseToMpd;
                 }
-                fetch(currentrooturl + 'm/publishvideo', {
-                    method: "POST",
+                const options = {
                     headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
+                        'content-type': 'multipart/form-data'
                     },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
-                        user, title, desc, tags, nudity, mpd, responseTo, responseType
-                    })
-                })
-                .then((response) => {
-                    return response.json();
-                })
-                .then((data) => {
-                    this.setState({ publishing: false });
-                    if (data.querystatus === "record published/updated") {
-                        this.setState({ published: true });
+                    timeout: 1000000
+                };
+                let data = new FormData();
+                data.append('title', this.titleIn.current.value);
+                data.append('user', this.props.isLoggedIn);
+                data.append('desc', desc);
+                data.append('tags', tags);
+                data.append('nudity', nudity);
+                data.append('mpd', mpd);
+                data.append('responseTo', responseTo);
+                data.append('responseType', responseType);
+                data.append('extension', 'jpeg');
+                let thumbUrl = null;
+                if (this.thumbnailpreview) {
+                    if (this.thumbnailpreview.current) {
+                        thumbUrl = this.thumbnailpreview.current.toDataURL('image/jpeg');
+                        if (thumbUrl) {
+                            let blob = dataURItoBlob(thumbUrl);
+                            data.append('image', blob);
+                        }
                     }
-                    console.log(data);
-                });
+                }
+                axios.post(currentrooturl + 'm/publishvideo', data, options)
+                    .then((data) => {
+                        this.setState({ publishing: false });
+                        if (data.data.querystatus === "record published/updated") {
+                            this.setState({ published: true });
+                        }
+                        console.log(data);
+                    });
             }
         }
     }
@@ -637,6 +656,17 @@ export default class Upload extends Component { // ulc upload component
         } else {
             return {
                 pathname:`/`
+            }
+        }
+    }
+
+    setThumbnailPreview(e) {
+        if (this.thumbnailpreview) {
+            if (this.thumbnailpreview.current) {
+                this.thumbnailpreview.current.width = 320;
+                this.thumbnailpreview.current.height = 180;
+                let ctx = this.thumbnailpreview.current.getContext('2d');
+                ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
             }
         }
     }
@@ -706,6 +736,11 @@ export default class Upload extends Component { // ulc upload component
                             <label htmlFor="nudity-no">No</label>
                             <div className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></div>
                         </form>
+                        <div>
+                            <Button className="set-thumbnail-btn btn btn-default" onClick={(e)=>{this.setThumbnailPreview(e)}}>Set thumbnail</Button>
+                            <div className="info-blurb margin-bottom-5">Select a timepoint above once your video has loaded and click the button above to choose a thumbnail for your video</div>
+                            <canvas className="canvas-thumbnail-preview" ref={this.thumbnailpreview}></canvas>
+                        </div>
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
                     </div>
                 </div>

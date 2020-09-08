@@ -58,13 +58,20 @@ export default class Videos extends Component {
         }
     }
 
+    getThumb = () => {
+        if (this.props.thumbnailUrl) {
+            return this.props.cloud + "/" + this.props.thumbnailUrl + ".jpeg";
+        }
+        return dummythumbnail;
+    }
+
     render () {
         return (
             <div className="col">
                 <div className='videocontainer'>
                     <Link to={this.videoObjectLink()}>
                         <div>
-                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={dummythumbnail}></img>
+                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()}></img>
                         </div>
                     </Link>
                     <div className="dash-video-details-container">

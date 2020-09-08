@@ -1474,6 +1474,9 @@ class Socialbar extends Component { // Main social entry point sb1
                 for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
                     convoIds.push(data.conversations[i]._id);
                 }
+                if (data.cloud) {
+                    this.props.setCloud(data.cloud);
+                }
                 this.setState({ convoIds: convoIds });
                 return data;
             })
@@ -1700,7 +1703,7 @@ class App extends Component {
 
         this.state = { 
                         mainfeed: videofeed[0].main, watching: "", sidebarStatus: cookies.get('sidebarStatus'),
-                        isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: ''
+                        isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: ""
                      };
     }
     
@@ -1797,15 +1800,19 @@ class App extends Component {
         return window.location.pathname;
     }
 
+    setCloud = (cloud) => {
+        this.setState({ cloud: cloud });
+    }
+
     render() {                    
         return (
             <BrowserRouter>
                 <div className="App">
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
-                                <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
+                                <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} cloud={this.state.cloud} />
                             )}/>
                             <Route path='/search' render={(props) => (
                                 <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />

@@ -93,7 +93,8 @@ export default class Dash extends Component {
                         views: "",
                         tags: [],
                         title: "",
-                        mpd: ""
+                        mpd: "",
+                        thumbnailUrl: ""
                     }
                 }]
             });
@@ -101,6 +102,12 @@ export default class Dash extends Component {
         return data;
     }
 
+    setData(video, type) {
+        if (!video._fields[0].properties[type] || video._fields[0].properties[type].length == 0 || video._fields[0].properties[type] == undefined) {
+            return video._fields[0].properties[type] = "";
+        }
+        return video._fields[0].properties[type]
+    }
 
 
     render() {
@@ -114,12 +121,14 @@ export default class Dash extends Component {
                                 this.state.dashVideos.map((video, index) =>
                                     <Videos mpd={video._fields[0].properties.mpd.toString()}
                                     title={video._fields[0].properties.title.toString()}
-                                    description={video._fields[0].properties.description.toString()}
+                                    description={this.setData(video, "description")}
+                                    thumbnailUrl={this.setData(video, "thumbnailUrl")}
                                     author={video._fields[0].properties.author.toString()}
                                     published={video._fields[0].properties.publishDate.toString()}
                                     views={video._fields[0].properties.views}
                                     articles={video._fields[0].properties.articles}
                                     tags={video._fields[0].properties.tags}
+                                    cloud={this.props.cloud}
                                     key={index}
                                     index={index}
                                     />
