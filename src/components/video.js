@@ -13,6 +13,8 @@ import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate } from '../methods/utility.js';
+import { setResponseToParentPath } from '../methods/context.js';
+import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
@@ -230,7 +232,6 @@ export default class Video extends Component {
 
             //Set up shaka player UI
             if (player && videoContainer && video) {
-                console.log(player);
                 const ui = new shaka.ui.Overlay(player, videoContainer, video);
 
                 ui.configure(uiConfig);
@@ -273,6 +274,9 @@ export default class Video extends Component {
                         this.videoComponent.current.play();
                         this.viewCountedInterval();
                     }
+                }
+                if (this.player) {
+                    updateHistory.call(this);
                 }
             }).catch(this.onError);
 
@@ -341,54 +345,6 @@ export default class Video extends Component {
                 return true;
             } else {
                 return false;
-            }
-        }
-    }
-
-    setResponseToParentPath() {
-        if (this.state.responseTo) {
-            if (this.state.responseTo.type == "video" && this.state.responseTo.mpd) {
-                return {
-                    pathname:`/watch?v=${this.state.responseTo.mpd}`
-                }
-            } else if (this.state.responseTo.type == "article" && this.state.responseTo.id) {
-                return {
-                    pathname:`/read?a=${this.state.responseTo.id}`
-                }
-            }
-        }
-        return {
-            pathname:`/`
-        }
-    }
-
-    // When accessing a response video from a video page. React router can percieve this as the same page since window.location.pathname is still /watch. Pathnames omit data after query question marks. This method will force refetch from the server when user has clicked a link that would be a response or link to another video page.
-    refetch = (link = null) => {
-        this.resetPlayer();
-        if (link) {
-            this.loadPage(link);
-        } else if (this.state.responseTo.mpd) {
-            this.loadPage(this.state.responseTo.mpd);
-        }
-    }
-
-    // Resets all player data for fresh reload on same page.
-    resetPlayer = async() => {
-        if (this.player) {
-            if (this.player.unload) {
-                await this.player.unload();
-            }
-            if (this.player.destroy) {
-                await this.player.destroy();
-            }
-            if (this.player.detach) {
-                await this.player.detach();
-            }
-            this.player = null;
-        }
-        if (this.controls) {
-            if (this.controls.destroy) {
-                await this.controls.destroy();
             }
         }
     }
@@ -481,7 +437,7 @@ export default class Video extends Component {
                     {this.state.responseTo ?
                         this.state.responseTo.title ?
                             <div className="response-to-link prompt-basic grey-out">
-                                response to <Link to={this.setResponseToParentPath()} onClick={(e)=> {this.refetch()}}>{this.state.responseTo.title}</Link>
+                                response to <Link to={setResponseToParentPath.call(this)}>{this.state.responseTo.title}</Link>
                             </div>
                         : null : null
                     }
@@ -536,7 +492,7 @@ export default class Video extends Component {
                                 this.state.videoResponses.map((video, i) => {
                                     return (
                                         video.mpd && video ?
-                                            <div className="video-container-videopage videocontainer" key={i} onClick={(e) => {this.refetch(video.mpd)}}>
+                                            <div className="video-container-videopage videocontainer" key={i}>
                                                 <Link to={{
                                                     pathname:`/watch?v=${video.mpd}`,
                                                     props:{

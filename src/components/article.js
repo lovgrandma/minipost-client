@@ -10,6 +10,8 @@ import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faReply, faEye } from '@fortawesome/free-solid-svg-icons';
 import { roundTime, setStateDynamic, shortenTitle, convertDate } from '../methods/utility.js';
+import { setResponseToParentPath } from '../methods/context.js';
+import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
@@ -114,13 +116,18 @@ export default class Article extends Component {
                             return response.json();
                         })
                         .then((result) => {
-                            for (const [key, value] of Object.entries(result.article)) {
-                                if (key == "published") { // If date, round value
-                                    this.setState(setStateDynamic(key, roundTime(value)));
-                                } else if (value) {
-                                    this.setState(setStateDynamic(key, value));
-                                } else if (!value && key == "reads" || !value && key == "likes" || !value && key == "dislikes") {
-                                    this.setState(setStateDynamic(key, value));
+                            if (result.article) {
+                                for (const [key, value] of Object.entries(result.article)) {
+                                    if (key == "published") { // If date, round value
+                                        this.setState(setStateDynamic(key, roundTime(value)));
+                                    } else if (value) {
+                                        this.setState(setStateDynamic(key, value));
+                                    } else if (!value && key == "reads" || !value && key == "likes" || !value && key == "dislikes") {
+                                        this.setState(setStateDynamic(key, value));
+                                    }
+                                }
+                                if (result.article.body) {
+                                    updateHistory.call(this, 'article');
                                 }
                             }
                             console.log(result);
@@ -138,23 +145,6 @@ export default class Article extends Component {
                     }
                 }
             }
-        }
-    }
-
-    setResponseToParentPath() {
-        if (this.state.responseTo) {
-            if (this.state.responseTo.type == "video" && this.state.responseTo.mpd) { // Response is video set watch pathname
-                return {
-                    pathname:`/watch?v=${this.state.responseTo.mpd}`
-                }
-            } else if (this.state.responseTo.type == "article" && this.state.responseTo.id) { // Response is article set read pathname
-                return {
-                    pathname:`/read?a=${this.state.responseTo.id}`
-                }
-            }
-        }
-        return {
-            pathname:`/`
         }
     }
 
@@ -204,7 +194,7 @@ export default class Article extends Component {
                         </ul>
                     </div>
                 </div>
-                <div className="prompt-basic grey-out response-to">{this.state.responseTo ? this.state.responseTo.title ? "Response to " : "" : ""}<span className="grey-out">{this.state.responseTo && this.state.responseTo.title ? this.state.responseTo.title.length > 0 ? <Link to={this.setResponseToParentPath()}>{this.state.responseTo.title}</Link> : "" : ""}</span></div>
+                <div className="prompt-basic grey-out response-to">{this.state.responseTo ? this.state.responseTo.title ? "Response to " : "" : ""}<span className="grey-out">{this.state.responseTo && this.state.responseTo.title ? this.state.responseTo.title.length > 0 ? <Link to={setResponseToParentPath.call(this)}>{this.state.responseTo.title}</Link> : "" : ""}</span></div>
                 <div className='responses'>responses</div>
                 <div className='articles-bar'>
                     <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>

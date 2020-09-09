@@ -13,7 +13,6 @@ import {
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
 import logo from './static/minireel-dot-com-3.svg'; import mango from './static/minireel-mangologo.svg'; import heart from './static/heart.svg'; import whiteheart from './static/heart-white.svg'; import history from './static/history.svg'; import searchwhite from './static/search-white.svg'; import search from './static/search.svg'; import notifications from './static/notifications.svg'; import profile from './static/profile.svg'; import upload from './static/upload.svg'; import thumbsup from './static/thumbsup.svg'; import thumbsdown from './static/thumbsdown.svg'; import share from './static/share.svg'; import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import dummythumbnail from './static/warrenbuffetthumb.jpg'; import chatblack from './static/chat-black.svg'; import close from './static/close.svg'; import hamburger from './static/hamburger.svg'; import pointingfinger from './static/pointingfinger.svg'; import circlemenu from './static/circlemenu.svg'; import newspaperblack from './static/newspaper.svg'; import play from './static/play.svg'; import television from './static/tv.svg'; import sendarrow from './static/sendarrow.svg'; import subscribe from './static/subscribe.svg'; import friendswhite from './static/friendsWhite.svg'; import nonFriendsWhite from './static/nonFriendsWhite.svg'; import circlemenulight from './static/circlemenulight.svg'; import minimize from'./static/minimize.svg'; import maximize from './static/maximize.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg'; import settings from './static/settings.svg';
-// import './style/sass.scss';
 import './style/app.css';
 import './style/player.css';
 
@@ -35,7 +34,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 
-import { debounce, deepEquals } from './methods/utility.js';
+import { debounce, deepEquals, getPath } from './methods/utility.js';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -1388,8 +1387,7 @@ class Socialbar extends Component { // Main social entry point sb1
             .then(function(response) {
                 return response.json();
             })
-            .then((data) => {
-                console.log("Pending requests:", data);
+            .then((data) => { // Pending requests will appear as an array in the data member here
                 let pendingfriendrequestquery = data;
                 if (show == "hidden") { // Changes state to show pending requests if argument is passed
                     this.setState({showpendingrequests : "hidden"});
@@ -1713,29 +1711,28 @@ class App extends Component {
             cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
         }
 
-        if (this.state.isLoggedIn) {
-            if (!cookies.get('CloudFrontCookiesSet')) {
-                let username = this.state.isLoggedIn;
-                fetch(currentrooturl + 'm/setCloudCookies', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        username
-                    })
+        if (!cookies.get('CloudFrontCookiesSet')) {
+            let username = this.state.isLoggedIn;
+            fetch(currentrooturl + 'm/setCloudCookies', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include',
+                body: JSON.stringify({
+                    username
                 })
-                .then(function(response) {
-                    return response.json();
-                })
-                .then((data) => {
-                    return data;
-                })
-                .catch(error => { console.log(error);
-                });
-            }
+            })
+            .then(function(response) {
+                return response.json();
+            })
+            .then((data) => {
+                return data;
+            })
+            .catch(error => {
+                console.log(error);
+            });
         }
     }
 
@@ -1788,18 +1785,6 @@ class App extends Component {
         this.setState({sidebarStatus: update });
     }
 
-    /* Returns correct location pathname. Application sometimes interprets query params under window.location.search or the whole path under pathname.
-    Without this method, when traversing back through history, appropriate content may not update
-    */
-    getPath() {
-        if (window.location.search) {
-            if (window.location.search.length > 0) {
-                return window.location.pathname + window.location.search;
-            }
-        }
-        return window.location.pathname;
-    }
-
     setCloud = (cloud) => {
         this.setState({ cloud: cloud });
     }
@@ -1818,16 +1803,16 @@ class App extends Component {
                                 <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
-                                <Video {...props} key={this.getPath()} />
+                                <Video {...props} key={getPath()} />
                             )}/>
                             <Route path='/read?a=:articleId' render={(props) => (
-                                <Article {...props} key={this.getPath()} />
+                                <Article {...props} key={getPath()} />
                             )}/>
                             <Route path='/watch' render={(props) => (
-                                <Video {...props} key={this.getPath()} />
+                                <Video {...props} key={getPath()} />
                             )}/>
                             <Route path='/read' render={(props) => (
-                                <Article {...props} key={this.getPath()} />
+                                <Article {...props} key={getPath()} />
                             )}/>
                             <Route path='/upload' render={(props) => (
                                 <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />

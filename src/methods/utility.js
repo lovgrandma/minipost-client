@@ -206,6 +206,24 @@ const dataURItoBlob = (dataURI) => {
     return new Blob([ia], {type:mimeString});
 }
 
+/* Returns correct location pathname. Application sometimes interprets query params under window.location.search or the whole path under pathname.
+    Without this method, when traversing back through history, appropriate content may not update
+    */
+const getPath = () => {
+    if (window) {
+        if (window.location) {
+            console.log(window.location);
+            if (window.location.search) {
+                if (window.location.search.length > 0) {
+                    return window.location.pathname + window.location.search; // This will return majority of the time
+                }
+            }
+            return window.location.pathname;
+        }
+    }
+    return false;
+}
+
 
 module.exports = {
     debounce: debounce,
@@ -217,5 +235,6 @@ module.exports = {
     roundNumber: roundNumber,
     setStateDynamic: setStateDynamic,
     convertDate: convertDate,
-    dataURItoBlob: dataURItoBlob
+    dataURItoBlob: dataURItoBlob,
+    getPath: getPath
 }

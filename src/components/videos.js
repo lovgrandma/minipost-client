@@ -84,7 +84,7 @@ export default class Videos extends Component {
                                 <span className="dash-video-bar">
                                     <div><p className='video-author'>{this.props.author}</p></div>
                                     <div className="dash-video-bar-stats">
-                                        <p className='video-views'>{this.props.views} {this.props.title ? "views" : null}</p>
+                                        <p className='video-views'>{this.props.views} {this.props.title ? this.props.views == 1 ? "view" : "views" : null}</p>
                                         <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>
                                         <div className="video-article-responses" onMouseOver={(e)=>{this.showArticles(e, true)}} onMouseOut={(e)=>{this.showArticles(e, false)}}>
                                             <div className="video-article-responses-length">{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.length == 1 ? this.props.articles.length + " article" : this.props.articles.length + " articles" : null : null}</div>
