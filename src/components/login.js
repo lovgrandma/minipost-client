@@ -202,7 +202,7 @@ export default class Login extends Component {
                     </div>
                     <button className="btn btn-primary registerbtn" type="submit" onClick={this.submitRegister}>sign up</button>
                     { this.props.registererror ?
-                        this.props.registererror.type == "register error" ? <div class="loginerror">{this.props.registererror.error}</div>
+                        this.props.registererror.type == "register error" ? <div className="loginerror">{this.props.registererror.error}</div>
                         : <div></div>
                     : <div></div>
                     }

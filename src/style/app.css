@@ -937,6 +937,22 @@ label {
     background: linear-gradient(to right, rgb(255, 174, 168) 0%, rgb(255, 137, 127) 100%);
 }
 
+.flex-button-center {
+    display: flex;
+    align-content: center;
+}
+
+.flex-button-center-btn[type="button"] {
+    font-size: 0.75em;
+    margin: 0 auto;
+    background: #dddddd;
+    transition: 700ms;
+}
+
+.flex-button-center-btn[type="button"]:hover {
+    background: linear-gradient(to right, rgb(237, 237, 237) 0%, rgb(222, 222, 222) 100%) !important;
+}
+
 .loginbtn,
 .registerbtn {
     margin-bottom: 10px;

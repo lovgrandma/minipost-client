@@ -7,15 +7,24 @@ import React, { Component } from 'react';
 import Videos from './videos.js';
 import currentrooturl from '../url.js';
 import utility from '../methods/utility.js';
+import {
+    Form,
+    FormGroup,
+    FormControl,
+    Button,
+    Col, Grid, Row, Clearfix,
+} from 'react-bootstrap';
+const EventEmitter = require('events');
 
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashVideos: this.tempData() };
+        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false };
     }
 
     componentDidMount() {
         this.fetchRecommendations();
+        window.addEventListener('scroll', this.handleMouseDown.bind(this), true);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -30,40 +39,59 @@ export default class Dash extends Component {
         console.log(error);
     }
 
-    fetchRecommendations = () => {
-        if (this.props.username) {
-            let user = this.props.username;
-            fetch(currentrooturl + 'm/serveVideos', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
-                        user
-                    })
-                })
-                .then((response) => {
-                    return response.json();
-                })
-                .then((data) => {
-                    if (data.querystatus) {
-                        console.log(data.querystatus);
-                    } else if (Array.isArray(data)) {
-                        this.setState({ dashVideos: utility.shuffleArray(data) });
-                    }
-                });
-        } else {
-            fetch(currentrooturl + 'm/serveVideos', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
+    componentWillUnmount() {
+        window.removeEventListener('scroll', this.handleMouseDown.bind(this), true);
+    }
 
+    handleMouseDown() {
+        if (this) {
+            if (this.state) {
+                if (utility.checkAtBottom()) {
+                    if (!this.state.bottom) {
+                        this.setState({ bottom: true });
+                        if (this.state.dashVideos && !this.state.fetching) {
+                            this.fetchRecommendations();
+                        }
+                    }
+                } else {
+                    if (this.state.bottom) {
+                        this.setState({ bottom: false });
+                    }
+                }
+            }
+        }
+    }
+
+    fetchRecommendations = () => {
+        try {
+            this.setState({ fetching: true });
+            let user = null;
+            if (this.props.username) {
+                user = this.props.username;
+            }
+            let append = [];
+            if (this.state) {
+                if (this.state.dashVideos && this.state.dashVideos[0]) {
+                    if (this.state.dashVideos[0]._fields) {
+                        if (this.state.dashVideos[0]._fields[0]) {
+                            if (this.state.dashVideos[0]._fields[0].properties) {
+                                if (this.state.dashVideos[0]._fields[0].properties.author) {
+                                    append = this.state.dashVideos;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            fetch(currentrooturl + 'm/serveVideos', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        user, append
                     })
                 })
                 .then((response) => {
@@ -73,10 +101,16 @@ export default class Dash extends Component {
                 console.log(data);
                     if (data.querystatus) {
                         console.log(data.querystatus);
-                    } else if (Array.isArray(data)) {
-                        this.setState({ dashVideos: utility.shuffleArray(data) });
+                    } else if (Array.isArray(data.main)) {
+                        this.setState({ dashVideos: data.main });
+                    }
+                    if (data.cloud) {
+                        this.props.setCloud(data.cloud);
                     }
                 });
+            this.setState({ fetching: false });
+        } catch (err) {
+            this.setState({ fetching: false });
         }
     }
 
@@ -136,6 +170,9 @@ export default class Dash extends Component {
                             : null
                         : null
                     }
+                </div>
+                <div className="flex-button-center">
+                    <Button className="flex-button-center-btn" onClick={(e)=>{this.fetchRecommendations()}}>More videos</Button>
                 </div>
             </div>
         )

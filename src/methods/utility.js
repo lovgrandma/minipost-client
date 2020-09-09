@@ -212,7 +212,6 @@ const dataURItoBlob = (dataURI) => {
 const getPath = () => {
     if (window) {
         if (window.location) {
-            console.log(window.location);
             if (window.location.search) {
                 if (window.location.search.length > 0) {
                     return window.location.pathname + window.location.search; // This will return majority of the time
@@ -222,6 +221,32 @@ const getPath = () => {
         }
     }
     return false;
+}
+
+const checkAtBottom = () => {
+    try {
+        if (window && document) {
+            if (document.documentElement) {
+                const windowHeight = "innerHeight" in window ? window.innerHeight : document.documentElement.offsetHeight;
+                const body = document.body;
+                const html = document.documentElement;
+                const docHeight = Math.max(body.scrollHeight, body.offsetHeight, html.clientHeight, html.scrollHeight, html.offsetHeight);
+                const windowBottom = windowHeight + window.pageYOffset;
+                if (windowBottom >= docHeight) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    } catch (err) {
+        return false;
+    }
+}
+
+const get = function(obj, key) {
+    return key.split(".").reduce(function(o, x) {
+        return (typeof o == "undefined" || o === null) ? o : o[x];
+    }, obj);
 }
 
 
@@ -236,5 +261,7 @@ module.exports = {
     setStateDynamic: setStateDynamic,
     convertDate: convertDate,
     dataURItoBlob: dataURItoBlob,
-    getPath: getPath
+    getPath: getPath,
+    checkAtBottom: checkAtBottom,
+    get: get
 }

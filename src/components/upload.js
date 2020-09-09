@@ -621,14 +621,26 @@ export default class Upload extends Component { // ulc upload component
                         }
                     }
                 }
-                axios.post(currentrooturl + 'm/publishvideo', data, options)
-                    .then((data) => {
-                        this.setState({ publishing: false });
-                        if (data.data.querystatus === "record published/updated") {
-                            this.setState({ published: true });
+                try {
+                    axios.post(currentrooturl + 'm/publishvideo', data, options)
+                        .then((data) => {
+                            this.setState({ publishing: false });
+                            if (data.data.querystatus === "record published/updated") {
+                                this.setState({ published: true });
+                            }
+                            console.log(data);
+                        });
+                } catch (err) { // axios request failed to publish video
+                    try {
+                        if (this) {
+                            if (this.state) {
+                                this.setState({ currentErr: "video failed to publish "});
+                            }
                         }
-                        console.log(data);
-                    });
+                    } catch (err) {
+                        // component unmounted
+                    }
+                }
             }
         }
     }

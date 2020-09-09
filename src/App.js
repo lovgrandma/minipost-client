@@ -28,8 +28,6 @@ import $ from 'jquery';
 import lzw from './compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
 
-import videofeedvar from './videofeedplaceholder';
-
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
@@ -46,9 +44,6 @@ const cookies = new Cookies();
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
-
-// placeholder import video info
-let videofeed = videofeedvar;
 
 let bumpRunning = 0;
 let shakeRunning = 0;
@@ -1472,9 +1467,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
                     convoIds.push(data.conversations[i]._id);
                 }
-                if (data.cloud) {
-                    this.props.setCloud(data.cloud);
-                }
                 this.setState({ convoIds: convoIds });
                 return data;
             })
@@ -1700,7 +1692,7 @@ class App extends Component {
         super(props); 
 
         this.state = { 
-                        mainfeed: videofeed[0].main, watching: "", sidebarStatus: cookies.get('sidebarStatus'),
+                        watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: ""
                      };
     }
@@ -1797,10 +1789,10 @@ class App extends Component {
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
-                                <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} cloud={this.state.cloud} />
+                                <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud}/>
                             )}/>
                             <Route path='/search' render={(props) => (
-                                <Dash {...props} username={this.state.isLoggedIn} mainfeed={this.state.mainfeed} />
+                                <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
                                 <Video {...props} key={getPath()} />

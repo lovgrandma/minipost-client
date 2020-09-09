@@ -39,6 +39,7 @@ export const updateHistory = function(type = "video") {
             }
         }
     }
+    // If appending history video, check to ensure video is valid before adding location to history, else it is article. Article runs article validity check in article.js on page fetch
     if (type == "video") {
         if (doubleCheck.call(this)) {
             appendHistory();
