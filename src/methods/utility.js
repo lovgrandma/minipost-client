@@ -255,6 +255,14 @@ const get = function(obj, key) {
     }
 }
 
+// Returns opposite value, useful for determining whether to allow user to like, dislike something
+// User has not liked yet? Pass true to like
+const opposite = function(value) {
+    if (value) {
+        return false;
+    }
+    return true;
+}
 
 module.exports = {
     debounce: debounce,
@@ -269,5 +277,6 @@ module.exports = {
     dataURItoBlob: dataURItoBlob,
     getPath: getPath,
     checkAtBottom: checkAtBottom,
-    get: get
+    get: get,
+    opposite: opposite
 }

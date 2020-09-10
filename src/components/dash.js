@@ -19,7 +19,7 @@ const EventEmitter = require('events');
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, loaded: false };
+        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, fetchingTimeout: "", loaded: false };
         this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
@@ -41,6 +41,9 @@ export default class Dash extends Component {
     }
 
     componentWillUnmount() {
+        if (this.state.fetchingTimeout) {
+            clearTimeout(this.state.fetchingTimeout);
+        }
         window.removeEventListener('scroll', this.handleMouseDown, true);
     }
 
@@ -70,6 +73,16 @@ export default class Dash extends Component {
     fetchRecommendations = () => {
         try {
             this.setState({ fetching: true });
+            // Ensures that fetch videos does not run excessively in short periods of time
+            let timeout = setTimeout(() => {
+                if (this) {
+                    if (this.state) {
+                        this.setState({ fetching: false });
+                        this.setState({ fetchingTimeout: "" });
+                    }
+                }
+            }, 2000);
+            this.setState({ fetchingTimeout: timeout });
             let user = null;
             if (this.props.username) {
                 user = this.props.username;

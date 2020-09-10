@@ -12,14 +12,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
-import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate } from '../methods/utility.js';
-import { setResponseToParentPath } from '../methods/context.js';
+import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite } from '../methods/utility.js';
+import { setResponseToParentPath, incrementLike, incrementDislike } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 
-const cookies = new Cookies();
+import { cookies } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 
@@ -27,7 +27,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -369,13 +369,13 @@ export default class Video extends Component {
                         </div>
                         <div className='publisher-video-interact-block'>
                             <div className="likes-click">
-                                <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up"/>
+                                <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
                                 <div>{roundNumber(this.state.likes)}</div>
                             </div>
                         </div>
                         <div className='publisher-video-interact-block'>
                             <div className="dislikes-click">
-                                <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down"/>
+                                <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
                                 <div>{roundNumber(this.state.dislikes)}</div>
                             </div>
                         </div>
