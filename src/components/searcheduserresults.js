@@ -23,7 +23,6 @@ export default class SearchedUserResults extends Component { // search user comp
 
     promptremovefriend = (e) => {
         this.setState({ removeprompt: true });
-        console.log('remove friend prompt');
     }
     promptexitremovefriend = (e) => {
         this.setState({ removeprompt: false });
@@ -36,7 +35,6 @@ export default class SearchedUserResults extends Component { // search user comp
     }
 
     openchatinput = (e) => {
-        // console.log(this.props.index);
         console.log(this.props.searchtotal);
         for (let i = 0; i < this.props.searchtotal; i++) { // Check other chatforms and remove
             if (document.getElementsByClassName('search-chat-form')[i]) {

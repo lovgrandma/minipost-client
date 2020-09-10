@@ -57,7 +57,7 @@ export const incrementDislike = async function(increment, id, type, user) {
     return false;
 }
 
-// like property: False for dislike, true for like. Increment is true or false, id contains either video mpd/id or article id, type defines video or article, user is name of user to record on users document data they have liked/disliked
+// like property: true for like, false for dislike. Increment is true or false, id contains either video mpd/id or article id, type defines video or article, user is name of user to record on users document data they have liked/disliked
 const incrementLikeDislike = async function(like, increment, id, type, user) {
     try {
         return await fetch(currentrooturl + 'm/likedislike', {
@@ -71,11 +71,12 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
                 like, increment, id, type, user
             })
         })
-            .then((response) => {
+        .then((response) => {
             return response.json();
         })
-            .then((result) => {
+        .then((result) => {
             console.log(result);
+            return true;
         })
     } catch (err) {
         return false;

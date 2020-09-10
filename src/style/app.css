@@ -2880,6 +2880,16 @@ If user only has one friend, styling wont apply */
   top: 34px;
   left: 120px;
 }
+
+.ldio-oo3b7d4nmnr-dash div {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    top: 5px;
+    left: 35px;
+}
+
 .ldio-oo3b7d4nmnr div:nth-child(1) {
   background: #000000;
   animation: ldio-oo3b7d4nmnr 1.6666666666666665s linear infinite;
@@ -2900,6 +2910,11 @@ If user only has one friend, styling wont apply */
   height: 68px;
   overflow: hidden;
   background: none;
+}
+
+.loadingio-spinner-dual-ball-m6fvn6j93c-dash {
+    width: 100px;
+    height: 18px;
 }
 
 .loadingio-spinner-dual-ball {
@@ -2928,6 +2943,15 @@ If user only has one friend, styling wont apply */
     visibility: hidden;
     opacity: 0;
     overflow-y: hidden;
+}
+
+.spinner-video-dash {
+    margin: 0 auto;
+    align-self: center;
+}
+
+.ldio-oo3b7d4nmnr div {
+    background: grey !important;
 }
 
 /* Visibility of loading css anim that blocks new requests while old fetch request still running. Triggered by .spinner-search-holder-visible class */
