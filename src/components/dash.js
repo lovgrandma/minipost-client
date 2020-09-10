@@ -19,12 +19,13 @@ const EventEmitter = require('events');
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false };
+        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, loaded: false };
+        this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
     componentDidMount() {
         this.fetchRecommendations();
-        window.addEventListener('scroll', this.handleMouseDown.bind(this), true);
+        window.addEventListener('scroll', this.handleMouseDown, true);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -40,25 +41,29 @@ export default class Dash extends Component {
     }
 
     componentWillUnmount() {
-        window.removeEventListener('scroll', this.handleMouseDown.bind(this), true);
+        window.removeEventListener('scroll', this.handleMouseDown, true);
     }
 
     handleMouseDown() {
-        if (this) {
-            if (this.state) {
-                if (utility.checkAtBottom()) {
-                    if (!this.state.bottom) {
-                        this.setState({ bottom: true });
-                        if (this.state.dashVideos && !this.state.fetching) {
-                            this.fetchRecommendations();
+        try {
+            if (this) {
+                if (this.state) {
+                    if (utility.checkAtBottom()) {
+                        if (!this.state.bottom) {
+                            this.setState({ bottom: true });
+                            if (this.state.dashVideos && !this.state.fetching) {
+                                this.fetchRecommendations();
+                            }
                         }
-                    }
-                } else {
-                    if (this.state.bottom) {
-                        this.setState({ bottom: false });
+                    } else {
+                        if (this.state.bottom) {
+                            this.setState({ bottom: false });
+                        }
                     }
                 }
             }
+        } catch (err) {
+            // Component unmounted. No-op
         }
     }
 
@@ -98,17 +103,20 @@ export default class Dash extends Component {
                     return response.json();
                 })
                 .then((data) => {
-                console.log(data);
+                    console.log(data);
                     if (data.querystatus) {
                         console.log(data.querystatus);
                     } else if (Array.isArray(data.main)) {
+                        if (data.main.length > 0 && !this.state.loaded) {
+                            this.setState({ loaded: true });
+                        }
                         this.setState({ dashVideos: data.main });
                     }
                     if (data.cloud) {
                         this.props.setCloud(data.cloud);
                     }
+                    this.setState({ fetching: false });
                 });
-            this.setState({ fetching: false });
         } catch (err) {
             this.setState({ fetching: false });
         }
@@ -172,7 +180,9 @@ export default class Dash extends Component {
                     }
                 </div>
                 <div className="flex-button-center">
-                    <Button className="flex-button-center-btn" onClick={(e)=>{this.fetchRecommendations()}}>More videos</Button>
+                    {this.state.loaded ?
+                    <Button className="flex-button-center-btn" onClick={(e)=>{this.fetchRecommendations()}}>More videos</Button> : null
+                    }
                 </div>
             </div>
         )

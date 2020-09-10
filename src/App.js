@@ -1789,7 +1789,7 @@ class App extends Component {
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
-                                <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud}/>
+                                <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                             <Route path='/search' render={(props) => (
                                 <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />

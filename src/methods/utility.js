@@ -223,6 +223,8 @@ const getPath = () => {
     return false;
 }
 
+// author: enqtran/[ReactJS] Detect Scrolls To Bottom
+// https://gist.github.com/enqtran/25c6b222a73dc497cc3a64c090fb6700
 const checkAtBottom = () => {
     try {
         if (window && document) {
@@ -244,9 +246,13 @@ const checkAtBottom = () => {
 }
 
 const get = function(obj, key) {
-    return key.split(".").reduce(function(o, x) {
-        return (typeof o == "undefined" || o === null) ? o : o[x];
-    }, obj);
+    try {
+        return key.split(".").reduce(function(o, x) {
+            return (typeof o == "undefined" || o === null) ? o : o[x];
+        }, obj);
+    } catch (err) {
+        return false;
+    }
 }
 
 
