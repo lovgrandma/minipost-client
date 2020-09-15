@@ -19,20 +19,25 @@ export const setResponseToParentPath = function() {
 
 // Increment or decrements like.
 export const incrementLike = async function(increment, id, type, user) {
-    if (type == "video" && this) {
-        if (this.player) {
-            if (this.player.getAssetUri()) {
-                return await incrementLikeDislike(true, increment, id, type, user);
+    try {
+        if (type == "video" && this) {
+            if (this.player) {
+                if (this.player.getAssetUri()) {
+                    return await incrementLikeDislike.call(this, true, increment, id, type, user);
+                }
             }
-        }
-    } else if (type == "article" && this) {
-        if (this.state) {
-            if (this.state.body) {
-                if (this.state.body.length > 0) {
-                    return await incrementLikeDislike(true, increment, id, type, user);
+        } else if (type == "article" && this) {
+            if (this.state) {
+                if (this.state.body) {
+                    if (this.state.body.length > 0) {
+                        return await incrementLikeDislike.call(this, true, increment, id, type, user);
+                    }
                 }
             }
         }
+    } catch (err) {
+        console.log(err);
+        return false;
     }
     return false;
 }
@@ -42,14 +47,14 @@ export const incrementDislike = async function(increment, id, type, user) {
     if (type == "video" && this) {
         if (this.player) {
             if (this.player.getAssetUri()) {
-                return await incrementLikeDislike(false, increment, id, type, user);
+                return await incrementLikeDislike.call(this, false, increment, id, type, user);
             }
         }
     } else if (type == "article" && this) {
         if (this.state) {
             if (this.state.body) {
                 if (this.state.body.length > 0) {
-                    return await incrementLikeDislike(false, increment, id, type, user);
+                    return await incrementLikeDislike.call(this, false, increment, id, type, user);
                 }
             }
         }
@@ -76,9 +81,39 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
         })
         .then((result) => {
             console.log(result);
-            return true;
+            if (result) {
+                let likes = this.state.likes;
+                let dislikes = this.state.dislikes;
+                if (like) {
+                    if (increment) {
+                        this.setState({ likes: likes + 1 });
+                        this.setState({ liked: true });
+                        if (this.state.disliked) {
+                            this.setState({ dislikes: dislikes - 1 });
+                        }
+                        this.setState({ disliked: false });
+                    } else {
+                        this.setState({ likes: likes - 1 });
+                        this.setState({ liked: false });
+                    }
+                } else {
+                    if (increment) {
+                        this.setState({ dislikes: dislikes + 1 });
+                        this.setState({ disliked: true });
+                        if (this.state.liked) {
+                            this.setState({ likes: likes - 1 });
+                        }
+                        this.setState({ liked: false });
+                    } else {
+                        this.setState({ dislikes: dislikes - 1 });
+                        this.setState({ disliked: false });
+                    }
+                }
+            }
+            return result;
         })
     } catch (err) {
+        console.log(err);
         return false;
     }
 }

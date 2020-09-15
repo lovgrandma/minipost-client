@@ -21,7 +21,7 @@ export default class Article extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            id: "", title: "", author: "", body: "", published: "", reads: "", likes: "", dislikes: "", responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false
+            id: "", title: "", author: "", body: "", published: "", reads: "", responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0
         }
         this.moreOptions = React.createRef();
     }
@@ -171,7 +171,7 @@ export default class Article extends Component {
                         <span className="nbsp-w">&nbsp;•&nbsp;</span>
                         <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.id, "article", cookies.get('loggedIn'))}}/>{this.state.likes}</span>
                         <span className="nbsp-w">&nbsp;•&nbsp;</span>
-                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.liked), this.state.id, "article", cookies.get('loggedIn'))}}/>{this.state.dislikes}</span>
+                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.id, "article", cookies.get('loggedIn'))}}/>{this.state.dislikes}</span>
                     </div>
                     <div className="more-options-ellipsis-container" onMouseOver={(e) => {this.showMoreOptions(e, true)}} onMouseOut={(e) => {this.showMoreOptions(e, false)}}>
                         <FontAwesomeIcon className="read-interact-s" icon={faReply} color={ 'grey' } alt="reply"/>
