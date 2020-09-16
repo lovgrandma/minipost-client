@@ -1620,6 +1620,7 @@ label {
 .thumbsup-interact,
 .thumbsdown-interact,
 .favorites-interact {
+    transition: 200ms;
     margin-right: 10px;
 }
 
@@ -1642,6 +1643,10 @@ label {
 .thumbsdown-interact:hover,
 .favorite-click:hover {
     cursor: pointer;
+}
+
+.active-black {
+    color: black;
 }
 
 .publisher-username {

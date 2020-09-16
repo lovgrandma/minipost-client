@@ -376,19 +376,19 @@ export default class Video extends Component {
                         <div className="publisher-video-interact-block">
                             <div className="favorite-click">
                                 <FontAwesomeIcon className="favorites-interact" icon={faHeart} color={ 'grey' } alt="favorite"/>
-                                <div>favorite</div>
+                                <div>save</div>
                             </div>
                         </div>
                         <div className='publisher-video-interact-block'>
                             <div className="likes-click">
-                                <FontAwesomeIcon className="thumbsup-interact" icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
-                                <div>{roundNumber(this.state.likes)}</div>
+                                <FontAwesomeIcon className={this.state.liked ? "thumbsup-interact active-black" : "thumbsup-interact"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
+                                <div className={this.state.liked ? "active-black" : ""}>{roundNumber(this.state.likes)}</div>
                             </div>
                         </div>
                         <div className='publisher-video-interact-block'>
                             <div className="dislikes-click">
-                                <FontAwesomeIcon className="thumbsdown-interact" icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
-                                <div>{roundNumber(this.state.dislikes)}</div>
+                                <FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact active-black" : "thumbsdown-interact"}icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
+                                <div className={this.state.disliked ? "active-black" : ""}>{roundNumber(this.state.dislikes)}</div>
                             </div>
                         </div>
                         <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
