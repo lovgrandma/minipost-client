@@ -123,7 +123,8 @@ export default class Dash extends Component {
                         if (data.main.length > 0 && !this.state.loaded) {
                             this.setState({ loaded: true });
                         }
-                        this.setState({ dashVideos: data.main });
+                        let appendDash = append.concat(data.main); // Response will only return added videos, append new dash videos to old view and set state
+                        this.setState({ dashVideos: appendDash });
                     }
                     if (data.cloud) {
                         this.props.setCloud(data.cloud);

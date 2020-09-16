@@ -128,6 +128,10 @@ export default class Video extends Component {
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
     fetchVideoPageData = async (rawMpd) => {
+        let user = "";
+        if (cookies.get('loggedIn')) {
+            user = cookies.get('loggedIn');
+        }
         try {
             const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
                 method: "POST",
@@ -137,7 +141,7 @@ export default class Video extends Component {
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({
-                    rawMpd
+                    rawMpd, user
                 })
             })
             .then((response) => {
@@ -150,6 +154,14 @@ export default class Video extends Component {
                     if (this.state) {
                         if (key == "published") {
                             this.setState(setStateDynamic(key, roundTime(value)));
+                        } else if (key == "likedDisliked") {
+                            if (value == "likes") {
+                                this.setState({ liked: true });
+                                this.setState({ disliked: false });
+                            } else if (value == "dislikes") {
+                                this.setState({ disliked: true });
+                                this.setState({ liked: false });
+                            }
                         } else if (value) {
                             this.setState(setStateDynamic(key, value));
                         } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {

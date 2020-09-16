@@ -102,6 +102,10 @@ export default class Article extends Component {
                         }
                     }
                     if (id) {
+                        let user = "";
+                        if (cookies.get('loggedIn')) {
+                            user = cookies.get('loggedIn');
+                        }
                         const articleData = await fetch(currentrooturl + 'm/fetcharticlepagedata', {
                             method: "POST",
                             headers: {
@@ -110,7 +114,7 @@ export default class Article extends Component {
                             },
                             credentials: 'same-origin',
                             body: JSON.stringify({
-                                id
+                                id, user
                             })
                         })
                         .then((response) => {
@@ -142,6 +146,15 @@ export default class Article extends Component {
                         }
                         if (articleData.responseTo) {
                             this.setState({ responseTo: articleData.responseTo });
+                        }
+                        if (articleData.likedDisliked) {
+                            if (articleData.likedDisliked == "likes") {
+                                this.setState({ liked: true });
+                                this.setState({ disliked: false });
+                            } else if (articleData.likedDisliked == "dislikes") {
+                                this.setState({ disliked: true });
+                                this.setState({ liked: false });
+                            }
                         }
                     }
                 }
