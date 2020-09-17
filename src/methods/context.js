@@ -36,7 +36,6 @@ export const incrementLike = async function(increment, id, type, user) {
             }
         }
     } catch (err) {
-        console.log(err);
         return false;
     }
     return false;
@@ -112,7 +111,6 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
             return result;
         })
     } catch (err) {
-        console.log(err);
         return false;
     }
 }

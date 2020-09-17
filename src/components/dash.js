@@ -130,9 +130,16 @@ export default class Dash extends Component {
                         this.props.setCloud(data.cloud);
                     }
                     this.setState({ fetching: false });
+                })
+                .catch((err) => {
+                    // Error occured while making fetch request
                 });
         } catch (err) {
-            this.setState({ fetching: false });
+            if (this) {
+                if (this.state) {
+                    this.setState({ fetching: false });
+                }
+            }
         }
     }
 

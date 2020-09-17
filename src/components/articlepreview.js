@@ -20,7 +20,7 @@ export default class articlepreview extends Component {
 
     componentDidMount() {
         if (this.props.body) {
-            this.setState({ body: parseBody(this.props.body, 132) });
+            this.setState({ body: parseBody(this.props.body, 132, true) });
         }
     }
 

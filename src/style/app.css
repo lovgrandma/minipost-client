@@ -3047,7 +3047,8 @@ If user only has one friend, styling wont apply */
     color: #4e4e4e;
 }
 
-.upload-video-text {
+.upload-video-text,
+.page-header-text {
     font-weight: 500;
     font-size: 20px;
     margin-bottom: 5px;
@@ -3055,7 +3056,8 @@ If user only has one friend, styling wont apply */
     transition: 200ms;
 }
 
-.upload-video-text:hover {
+.upload-video-text:hover,
+.page-header-text:hover {
     color:#000;
 }
 
