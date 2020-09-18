@@ -69,6 +69,14 @@ h5 {
     font-weight: 500;
 }
 
+.weight500 {
+    font-weight: 500;
+}
+
+.off-black {
+    color: #454545;
+}
+
 .logo-nav-font {
     transition: 200ms;
     color: grey;
@@ -247,6 +255,23 @@ button {
 .flex {
     display: flex;
     justify-content: space-between;
+}
+
+.flex-profile {
+    display: flex;
+}
+
+.main-profile-header {
+    margin-bottom: 5px;
+}
+
+.flex-profile > div,
+.flex-profile > Button {
+    margin-right: 10px;
+}
+
+.align-center {
+    align-items: center;
 }
 
 /* Top Navigation Bar */
@@ -763,6 +788,13 @@ ul li {
     width: 25px;
     height: 25px;
     border-radius: 7px;
+    margin-right: 10px;
+}
+
+.profileavatar {
+    width: 60px;
+    height: 60px;
+    border-radius: 16px;
     margin-right: 10px;
 }
 

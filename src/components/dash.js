@@ -24,15 +24,23 @@ export default class Dash extends Component {
     }
 
     componentDidMount() {
-        this.fetchRecommendations();
-        window.addEventListener('scroll', this.handleMouseDown, true);
+        try {
+            this.fetchRecommendations();
+            window.addEventListener('scroll', this.handleMouseDown, true);
+        } catch (err) {
+            // Component may have unmounted
+        }
     }
 
     componentDidUpdate(prevProps, prevState) {
-        if (prevProps && this.props.username) {
-            if ((prevProps.username !== this.props.username) || (!prevProps.username && this.props.username)) {
-                this.fetchRecommendations();
+        try {
+            if (prevProps && this.props.username) {
+                if ((prevProps.username !== this.props.username) || (!prevProps.username && this.props.username)) {
+                    this.fetchRecommendations();
+                }
             }
+        } catch (err) {
+            // Component may have unmounted
         }
     }
 
@@ -41,10 +49,14 @@ export default class Dash extends Component {
     }
 
     componentWillUnmount() {
+        try {
         if (this.state.fetchingTimeout) {
             clearTimeout(this.state.fetchingTimeout);
         }
         window.removeEventListener('scroll', this.handleMouseDown, true);
+        } catch (err) {
+            // Component may have unmounted
+        }
     }
 
     handleMouseDown() {
@@ -144,32 +156,42 @@ export default class Dash extends Component {
     }
 
     tempData() {
-        let data = [];
-        for (let i = 0; i < 12; i++) {
-            data.push({
-                _fields: [{
-                    properties: {
-                        articles: [],
-                        author: "",
-                        description: "",
-                        publishDate: "",
-                        views: "",
-                        tags: [],
-                        title: "",
-                        mpd: "",
-                        thumbnailUrl: ""
-                    }
-                }]
-            });
+        try {
+            let data = [];
+            for (let i = 0; i < 12; i++) {
+                data.push({
+                    _fields: [{
+                        properties: {
+                            articles: [],
+                            author: "",
+                            description: "",
+                            publishDate: "",
+                            views: "",
+                            tags: [],
+                            title: "",
+                            mpd: "",
+                            thumbnailUrl: ""
+                        }
+                    }]
+                });
+            }
+            return data;
+        } catch (err) {
+            // Component may have unmounted
         }
-        return data;
+        return [];
     }
 
     setData(video, type) {
-        if (!video._fields[0].properties[type] || video._fields[0].properties[type].length == 0 || video._fields[0].properties[type] == undefined) {
-            return video._fields[0].properties[type] = "";
+        try {
+            if (!video._fields[0].properties[type] || video._fields[0].properties[type].length == 0 || video._fields[0].properties[type] == undefined) {
+                return video._fields[0].properties[type] = "";
+            }
+            return video._fields[0].properties[type]
+        } catch (err) {
+            // Component may have unmounted
+            return "";
         }
-        return video._fields[0].properties[type]
     }
 
 

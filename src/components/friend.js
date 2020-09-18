@@ -81,219 +81,226 @@ export default class Friend extends Component { // friend component fc1
     }
 
     componentDidUpdate(prevProps, prevState) {
+        try {
+            // reset shake if error and still rumbling
+            if (this.shakeRef.current) {
+                this.shakeRef.current.classList.remove("shake", "shake-constant", "shake-bump");
+            }
 
-        // reset shake if error and still rumbling
-        if (this.shakeRef.current) {
-            this.shakeRef.current.classList.remove("shake", "shake-constant", "shake-bump");
-        }
-
-        if (this.bumpBtnRef.current) {
-            this.bumpBtnRef.current.classList.remove("shake", "shake-constant", "shake-bump");
-        }
-        // On update, scroll chat down to most recent chat if user is not actively scrolling through
-        if (prevProps && prevState) { // if previous props
-            let currentchatlength;
-            if (prevState.chatinput == false && this.state.chatinput == true) { // If chat was closed in previous state, scroll chat down now that it is open. Does not fire when chat is already open
-                let getHeight = function() { // get height of chat
-                    if (document.getElementById('openfriendchat')) {
-                        let height = document.getElementById('openfriendchat').scrollHeight;
-                        return height;
+            if (this.bumpBtnRef.current) {
+                this.bumpBtnRef.current.classList.remove("shake", "shake-constant", "shake-bump");
+            }
+            // On update, scroll chat down to most recent chat if user is not actively scrolling through
+            if (prevProps && prevState) { // if previous props
+                let currentchatlength;
+                if (prevState.chatinput == false && this.state.chatinput == true) { // If chat was closed in previous state, scroll chat down now that it is open. Does not fire when chat is already open
+                    let getHeight = function() { // get height of chat
+                        if (document.getElementById('openfriendchat')) {
+                            let height = document.getElementById('openfriendchat').scrollHeight;
+                            return height;
+                        }
                     }
-                }
 
-                if (getHeight() > 4000) {
-                    if (this.scrollRef) {
-                        if (this.scrollRef.current) {
-                            if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
-                                this.scrollRef.current.scrollBy({
-                                    top: getHeight()-3000,
-                                    behavior: "auto"
-                                });
+                    if (getHeight() > 4000) {
+                        if (this.scrollRef) {
+                            if (this.scrollRef.current) {
+                                if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+                                    this.scrollRef.current.scrollBy({
+                                        top: getHeight()-3000,
+                                        behavior: "auto"
+                                    });
+                                }
                             }
                         }
                     }
+                    let tempHeight = getHeight();
+                    let scrollChat = (i, speed) => { // Recursive scroll function, runs 3 times to definitively get length of scroll
+                        if (this.scrollRef.current) {
+                            if (i != 0) {
+                                setTimeout(() => {
+                                    if (getHeight() > tempHeight) {
+                                        tempHeight = getHeight();
+                                        if (this.scrollRef) {
+                                            if (this.scrollRef.current) {
+                                                if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+                                                    this.scrollRef.current.scrollBy({
+                                                        top: getHeight()*2,
+                                                        behavior: "smooth"
+                                                    });
+                                                }
+                                            }
+                                        }
+                                        i++; // If scroll ran, increment once
+                                    }
+                                    if (i>0) { i--; }
+                                    scrollChat(i, speed += 20); // Increase timeout time to ensure scroll
+                                }, speed);
+                            }
+                        }
+                    }
+                    scrollChat(4, 10);
                 }
-                let tempHeight = getHeight();
-                let scrollChat = (i, speed) => { // Recursive scroll function, runs 3 times to definitively get length of scroll
-                    if (this.scrollRef.current) {
-                        if (i != 0) {
-                            setTimeout(() => {
-                                if (getHeight() > tempHeight) {
-                                    tempHeight = getHeight();
-                                    if (this.scrollRef) {
-                                        if (this.scrollRef.current) {
-                                            if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+
+                let getChatLength = () => {
+                    if (this.props.conversation) {
+                        currentchatlength = this.props.conversation.log.length;
+                    }
+                }
+
+                /* This determines if scroll position is near bottom of chat. If scrollheight - scrolltop position - newlog height is less than ... then scroll to bottom for new chat. Value scrollheight - scrolltop usually gets is 362.
+                This occurs so that when user is near bottom of chat they do not have to scroll down to see new chat. It will automatically update, but if user is NOT near bottom, do not interrupt their reading of previous chat logs by scrolling. */
+
+                let detectNearBottom = () => {
+                    if (this.state.chatinput) {
+                        let newlogheight = 0;
+                        if (this.scrollRef) { // Gets height of new log
+                            if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
+                                newlogheight += this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1].getBoundingClientRect().height;
+                            }
+
+                            let scrollHeight = this.scrollRef.current.scrollHeight;
+                            if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.20 ||
+                                (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 362) {
+                                if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
+                                    if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight) {
+                                        let height = document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight;
+                                        document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
+                                            top: height,
+                                            behavior: "smooth"
+                                        });
+                                    }
+                                }
+                            }
+                            if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
+                                if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight <= 1500) {
+                                    if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
+                                        if (this.scrollRef) {
+                                            if (this.scrollRef.current) {
                                                 this.scrollRef.current.scrollBy({
-                                                    top: getHeight()*2,
+                                                    top: 1000,
                                                     behavior: "smooth"
                                                 });
                                             }
                                         }
                                     }
-                                    i++; // If scroll ran, increment once
                                 }
-                                if (i>0) { i--; }
-                                scrollChat(i, speed += 20); // Increase timeout time to ensure scroll
-                            }, speed);
+                            }
                         }
                     }
                 }
-                scrollChat(4, 10);
-            }
 
-            let getChatLength = () => {
-                if (this.props.conversation) {
-                    currentchatlength = this.props.conversation.log.length;
-                }
-            }
-
-            /* This determines if scroll position is near bottom of chat. If scrollheight - scrolltop position - newlog height is less than ... then scroll to bottom for new chat. Value scrollheight - scrolltop usually gets is 362.
-            This occurs so that when user is near bottom of chat they do not have to scroll down to see new chat. It will automatically update, but if user is NOT near bottom, do not interrupt their reading of previous chat logs by scrolling. */
-
-            let detectNearBottom = () => {
-                if (this.state.chatinput) {
-                    let newlogheight = 0;
-                    if (this.scrollRef) { // Gets height of new log
-                        if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
-                            newlogheight += this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1].getBoundingClientRect().height;
-                        }
-
+                let detectVeryCloseBottom = () => { // runs as typing is updated
+                    if (this.state.chatinput && this.scrollRef.current) {
+                        let newlogheight = 0;
                         let scrollHeight = this.scrollRef.current.scrollHeight;
-                        if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.20 ||
-                            (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 362) {
-                            if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                                if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight) {
-                                    let height = document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight;
+
+                        if (this.props.typing) {
+                            if (this.scrollRef) {
+                                if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
+                                    if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
+                                        newlogheight += this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1].getBoundingClientRect().height;
+                                    }
+                                }
+                            }
+                            if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.05 ||
+                                (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 363) {
+                                if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
                                     document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
-                                        top: height,
+                                        top: this.scrollRef.current.scrollHeight,
                                         behavior: "smooth"
                                     });
                                 }
                             }
                         }
-                        if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                            if (document.getElementsByClassName("friendchat-chat-container-open")[0].scrollHeight <= 1500) {
-                                if (this.scrollRef.current.classList.contains("friendchat-chat-container")) {
-                                    if (this.scrollRef) {
-                                        if (this.scrollRef.current) {
-                                            this.scrollRef.current.scrollBy({
-                                                top: 1000,
-                                                behavior: "smooth"
-                                            });
-                                        }
-                                    }
-                                }
-                            }
-                        }
                     }
                 }
-            }
+                setTimeout(() => {
+                    detectVeryCloseBottom();
+                }, 150);
 
-            let detectVeryCloseBottom = () => { // runs as typing is updated
-                if (this.state.chatinput && this.scrollRef.current) {
-                    let newlogheight = 0;
-                    let scrollHeight = this.scrollRef.current.scrollHeight;
-
+                let setStateScrollChat = () => {
                     if (this.props.typing) {
-                        if (this.scrollRef) {
-                            if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
-                                if (this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1]) {
-                                    newlogheight += this.scrollRef.current.getElementsByClassName('chat-log')[this.scrollRef.current.childElementCount-1].getBoundingClientRect().height;
-                                }
+                        if (!prevProps.typing && this.props.typing.match(typingRegex)[2].length > 0) {
+                            detectNearBottom();
+                        }
+                    }
+                    if (prevProps.typing && this.props.typing) {
+                        if(prevProps.typing.match(typingRegex)[2].length == 0 && this.props.typing.match(typingRegex)[2].length > 0) {
+                            detectNearBottom();
+                        }
+                    }
+
+                    if (currentchatlength) {
+                        if (this.state.chatlength < currentchatlength) { // NEW CHAT, Chat length has been updated. Run scroll anim
+                            // This will only fire when there is a valid current chat length and its value is greater than the recorded state chat length.
+                            if (this.scrollRef.current.hasChildNodes()) { // A check to ensure that this scroll ref has chats belonging to it in the DOM.
+                                this.setState({ chatlength: currentchatlength });
                             }
+                            detectNearBottom();
+
                         }
-                        if ((this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= scrollHeight*0.05 ||
-                            (this.scrollRef.current.scrollHeight - this.scrollRef.current.scrollTop - newlogheight) <= 363) {
-                            if (document.getElementsByClassName("friendchat-chat-container-open")[0]) {
-                                document.getElementsByClassName("friendchat-chat-container-open")[0].scrollBy({
-                                    top: this.scrollRef.current.scrollHeight,
-                                    behavior: "smooth"
-                                });
-                            }
-                        }
-                    }
-                }
-            }
-            setTimeout(() => {
-                detectVeryCloseBottom();
-            }, 150);
-
-            let setStateScrollChat = () => {
-                if (this.props.typing) {
-                    if (!prevProps.typing && this.props.typing.match(typingRegex)[2].length > 0) {
-                        detectNearBottom();
-                    }
-                }
-                if (prevProps.typing && this.props.typing) {
-                    if(prevProps.typing.match(typingRegex)[2].length == 0 && this.props.typing.match(typingRegex)[2].length > 0) {
-                        detectNearBottom();
+                    } else if (!currentchatlength && this.state.chatlength != 0 ) {
+                        // If data curruption or chat wrongly assigned chatlength, this will return it to 0 if there is an undefined chatlength.
+                        // This will be useful when a chat conversation is cleared or deleted some how
+                        this.setState({ chatlength: 0 });
                     }
                 }
 
-                if (currentchatlength) {
-                    if (this.state.chatlength < currentchatlength) { // NEW CHAT, Chat length has been updated. Run scroll anim
-                        // This will only fire when there is a valid current chat length and its value is greater than the recorded state chat length.
-                        if (this.scrollRef.current.hasChildNodes()) { // A check to ensure that this scroll ref has chats belonging to it in the DOM.
-                            this.setState({ chatlength: currentchatlength });
-                        }
-                        detectNearBottom();
-
-                    }
-                } else if (!currentchatlength && this.state.chatlength != 0 ) {
-                    // If data curruption or chat wrongly assigned chatlength, this will return it to 0 if there is an undefined chatlength.
-                    // This will be useful when a chat conversation is cleared or deleted some how
-                    this.setState({ chatlength: 0 });
-                }
-            }
-
-            let changeChatLengthState = new Promise((resolve, reject) => {
-                resolve(getChatLength());
-            })
-
-            if (this.props.friend) {
-                changeChatLengthState.then((e) => {
-                    setStateScrollChat();
+                let changeChatLengthState = new Promise((resolve, reject) => {
+                    resolve(getChatLength());
                 })
-            }
-        }
 
-        if (prevState) { // Changes chat input from true to false. Demonstrating if chat is open or not. If there was a previous state
-            if (!prevState.chatinput) { // If previous chat input was false
-                if (this.props.friendchatopen == this.props.friend) { // If this friend is the current open chat
-                    if (this.state.chatinput == false) { // and if this chatinput is still false
-                        this.setState({ chatinput: true }); // change to true
-                    }
-                }
-            } else {
-                if (this.props.friendchatopen !== this.props.friend) {
-                    if (this.state.chatinput == true) {
-                        this.setState({ chatinput: false });
-                    }
+                if (this.props.friend) {
+                    changeChatLengthState.then((e) => {
+                        setStateScrollChat();
+                    })
                 }
             }
 
-            if (prevState.chatinput && this.state.chatinput == false) {
-                this.setState({ chatlimit: 50 });
-            }
-        }
+            if (prevState) { // Changes chat input from true to false. Demonstrating if chat is open or not. If there was a previous state
+                if (!prevState.chatinput) { // If previous chat input was false
+                    if (this.props.friendchatopen == this.props.friend) { // If this friend is the current open chat
+                        if (this.state.chatinput == false) { // and if this chatinput is still false
+                            this.setState({ chatinput: true }); // change to true
+                        }
+                    }
+                } else {
+                    if (this.props.friendchatopen !== this.props.friend) {
+                        if (this.state.chatinput == true) {
+                            this.setState({ chatinput: false });
+                        }
+                    }
+                }
 
-        if (this.props.conversation) {
-            if (this.props.conversation.log.length > this.state.chatlimit && this.state.morechats == false) {
-                this.setState({ morechats: true });
+                if (prevState.chatinput && this.state.chatinput == false) {
+                    this.setState({ chatlimit: 50 });
+                }
             }
+
+            if (this.props.conversation) {
+                if (this.props.conversation.log.length > this.state.chatlimit && this.state.morechats == false) {
+                    this.setState({ morechats: true });
+                }
+            }
+        } catch (err) {
+            // Component may have unmounted during update
         }
     }
 
     /* Increases the amount of messages to display in specific chat and hides "see previous chats" button if showing max */
     raiseChatLimit(e) {
-        if (this.props.conversation.log.length <= this.state.chatlimit) {
-            this.setState({ morechats: false });
-        } else {
-            let newLimit = this.state.chatlimit + 100;
-            this.setState({ chatlimit: newLimit });
-            if (this.props.conversation.log.length <= newLimit) {
+        try {
+            if (this.props.conversation.log.length <= this.state.chatlimit) {
                 this.setState({ morechats: false });
+            } else {
+                let newLimit = this.state.chatlimit + 100;
+                this.setState({ chatlimit: newLimit });
+                if (this.props.conversation.log.length <= newLimit) {
+                    this.setState({ morechats: false });
+                }
             }
+        } catch (err) {
+
         }
     }
 
@@ -311,64 +318,84 @@ export default class Friend extends Component { // friend component fc1
     }
 
     openchatinput = (e, minimize) => {
-        // Runs method in social component. If user clicks on bump or profile, do not open chat submit
-        let room;
-        if (this.props.conversation) {
-            room = this.props.conversation._id;
-        }
-        if (e.target.classList.contains("minimize-icon")) {
-            this.props.updatefriendchatopen(e, null);
-        } else {
-            this.props.updatefriendchatopen(e, this.props.friend, room );
-        }
-        if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
-            this.scrollRef.current.scrollBy({
-                top: this.scrollRef.current.scrollHeight,
-                behavior: "smooth"
-            });
+        try {
+            // Runs method in social component. If user clicks on bump or profile, do not open chat submit
+            let room;
+            if (this.props.conversation) {
+                room = this.props.conversation._id;
+            }
+            if (e.target.classList.contains("minimize-icon")) {
+                this.props.updatefriendchatopen(e, null);
+            } else {
+                this.props.updatefriendchatopen(e, this.props.friend, room );
+            }
+            if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
+                this.scrollRef.current.scrollBy({
+                    top: this.scrollRef.current.scrollHeight,
+                    behavior: "smooth"
+                });
+            }
+        } catch (err) {
+
         }
     }
 
     handleKeyPress = (e) => { // Emit cleared message when message is sent
-        if(e.key === 'Enter'){
-            e.preventDefault();
-            let sendchat = (e) => {
-                this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation ? this.props.conversation._id : null); this.resetchat(e);
-            }
-            sendchat(e);
+        try {
+            if(e.key === 'Enter'){
+                e.preventDefault();
+                let sendchat = (e) => {
+                    this.props.beginchat(e, this.props.friend, this.inputRef._ref.value, this.props.conversation ? this.props.conversation._id : null); this.resetchat(e);
+                }
+                sendchat(e);
 
-            if (socket) {
-                let roomId = this.props.conversation ? this.props.conversation._id : null;
-                let leanString = this.props.username + ";" + "" + ";" + roomId;
-                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
-                setTimeout(() => {
-                    socket.emit('typing', ba);
-                }, 30);
+                if (socket) {
+                    let roomId = this.props.conversation ? this.props.conversation._id : null;
+                    let leanString = this.props.username + ";" + "" + ";" + roomId;
+                    let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                    setTimeout(() => {
+                        socket.emit('typing', ba);
+                    }, 30);
+                }
             }
+        } catch (err) {
+            // Componenet may have unmounted
         }
     }
 
     handleChange = (e) => { // Emit typing to users in chat via socket
-        if (socket) {
-            if (this.props.conversation) {
-                let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
-                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
-                socket.emit('typing', ba);
+        try {
+            if (socket) {
+                if (this.props.conversation) {
+                    let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.conversation._id;
+                    let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                    socket.emit('typing', ba);
+                }
             }
+        } catch (err) {
+            // Component may have unmounted
         }
     }
 
     resetchat = (e) => {
-        this.inputRef._ref.value = ""; // Clear chat message
+        try {
+            this.inputRef._ref.value = ""; // Clear chat message
+        } catch (err) {
+            // Component may have unmounted
+        }
     }
 
     checkSocket = (e) => {
-        if (socket) {
-            if (!this.state.socketOn) {
-                this.setState({ socketOn: true });
+        try {
+            if (socket) {
+                if (!this.state.socketOn) {
+                    this.setState({ socketOn: true });
+                }
+            } else if (this.state.socketOn) {
+                this.setState({ socketOn: false });
             }
-        } else if (this.state.socketOn) {
-            this.setState({ socketOn: false });
+        } catch (err) {
+            // Component may have unmounted
         }
     }
 

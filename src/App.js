@@ -1291,7 +1291,7 @@ class App extends Component {
                             <Route path='/writearticle' render={(props) => (
                                 <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
                             )}/>
-                            <Route path='/profile?p=:personId' render={(props) => (
+                            <Route path='/profile?p=:username' render={(props) => (
                                 <Profile {...props} key={getPath()}/>
                             )}/>
                             <Route path='/profile' render={(props) => (
