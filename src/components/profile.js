@@ -14,6 +14,7 @@ import {
 } from 'react-bootstrap';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
+import { get } from '../methods/utility.js';
 
 export default class Profile extends Component {
     constructor() {
@@ -63,6 +64,15 @@ export default class Profile extends Component {
                 return response.json();
             })
             .then((result) => {
+                if (result.totalviews) {
+                    this.setState({ totalVideoViews: result.totalviews });
+                }
+                if (result.totalvideos) {
+                    this.setState({ videosUploaded: result.totalvideos });
+                }
+                if (get(result, "user.username")) {
+                    this.setState({ username: result.user.username });
+                }
                 console.log(result);
             })
         }
