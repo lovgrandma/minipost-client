@@ -19,7 +19,7 @@ import { get } from '../methods/utility.js';
 export default class Profile extends Component {
     constructor() {
         super();
-        this.state = { username: "", videosUploaded: 0, totalVideoViews: 0, following: 0, followers: 0, about: "" }
+        this.state = { username: "", content: [], videosUploaded: 0, totalVideoViews: 0, following: 0, followers: 0, about: "" }
     }
 
     componentDidMount = async () => {
@@ -47,35 +47,46 @@ export default class Profile extends Component {
 
     // Fetch profile data, always match by user name instead of id. Username more readily available
     fetchProfileData = async (user) => {
-        console.log(user);
-        if (user) {
-            return await fetch(currentrooturl + 'm/fetchprofilepagedata', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    user
+        try {
+            console.log(user);
+            if (user) {
+                return await fetch(currentrooturl + 'm/fetchprofilepagedata', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        user
+                    })
                 })
-            })
-            .then((response) => {
-                return response.json();
-            })
-            .then((result) => {
-                if (result.totalviews) {
-                    this.setState({ totalVideoViews: result.totalviews });
-                }
-                if (result.totalvideos) {
-                    this.setState({ videosUploaded: result.totalvideos });
-                }
-                if (get(result, "user.username")) {
-                    this.setState({ username: result.user.username });
-                }
-                console.log(result);
-            })
+                    .then((response) => {
+                    return response.json();
+                })
+                    .then((result) => {
+                    if (result.totalviews) {
+                        this.setState({ totalVideoViews: result.totalviews });
+                    }
+                    if (result.totalvideos) {
+                        this.setState({ videosUploaded: result.totalvideos });
+                    }
+                    if (get(result, "user.username")) {
+                        this.setState({ username: result.user.username });
+                    }
+                    if (result.content) {
+                        if (result.content.length > 0) {
+                            this.setState({ content: result.content });
+                        }
+                    }
+                    console.log(result);
+                })
+            }
+        } catch (err) {
+            // Component was unmounted
+            return false;
         }
+        return true;
     }
 
     render() {
@@ -87,16 +98,16 @@ export default class Profile extends Component {
                     <div>
                         <div className="flex-profile off-black align-center">
                             <div className="prompt-basic off-black weight500">{this.state.username}</div>
-                            <Button className="prompt-basic off-black weight500">follow</Button>
                             <div className="prompt-basic flex"><div className="off-black weight500">following</div>&nbsp;{this.state.following}</div>
                             <div className="prompt-basic flex"><div className="off-black weight500">followers</div>&nbsp;{this.state.followers}</div>
+                            <Button className="prompt-basic off-black weight500">follow</Button>
                         </div>
                         <div className="prompt-basic off-black">{this.state.about}</div>
                     </div>
                 </div>
                 <div className="flex-profile">
-                    <div className="prompt-basic-s grey-out">videos uploaded {this.state.videosUploaded}</div>
                     <div className="prompt-basic-s grey-out">total video views {this.state.totalVideoViews}</div>
+                    <div className="prompt-basic-s grey-out">videos uploaded {this.state.videosUploaded}</div>
                 </div>
                 <div>
 

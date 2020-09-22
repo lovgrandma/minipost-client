@@ -50,10 +50,10 @@ export default class Dash extends Component {
 
     componentWillUnmount() {
         try {
-        if (this.state.fetchingTimeout) {
-            clearTimeout(this.state.fetchingTimeout);
-        }
-        window.removeEventListener('scroll', this.handleMouseDown, true);
+            if (this.state.fetchingTimeout) {
+                clearTimeout(this.state.fetchingTimeout);
+            }
+            window.removeEventListener('scroll', this.handleMouseDown, true);
         } catch (err) {
             // Component may have unmounted
         }

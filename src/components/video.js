@@ -176,6 +176,7 @@ export default class Video extends Component {
             });
             if (videoData.video.mpd) {
                 this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
+                this.setState({ viewCounted: false });
                 return videoData.video.mpd;
             }
         } catch (err) {
@@ -311,10 +312,8 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
-                            if (totalTime / this.videoComponent.current.duration > 0.25) {
-                                this.incrementView();
-                                this.endViewCountInterval();
-                            } else if (totalTime > 45) {
+                            console.log(totalTime);
+                            if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) {
                                 this.incrementView();
                                 this.endViewCountInterval();
                             }
