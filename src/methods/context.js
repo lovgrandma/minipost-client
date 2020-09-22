@@ -1,4 +1,5 @@
 import currentrooturl from '../url.js';
+import $ from 'jquery';
 
 export const setResponseToParentPath = function() {
     if (this.state.responseTo) {
@@ -112,5 +113,32 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
         })
     } catch (err) {
         return false;
+    }
+}
+
+export const showMoreOptions = function(e) {
+    try {
+        if (this.moreOptions.current) {
+            if (!this.props.moreOptionsVisible) {
+                this.props.setMoreOptionsVisible();
+            }
+        }
+    } catch (err) {
+        // something went wrong
+    }
+}
+
+export const hideOptions = function(e) {
+    try {
+        console.log(e.target);
+        if (e.target) {
+            if (e.target.classList) {
+                if (!$.contains(document.getElementsByClassName('more-options-ellipsis-container')[0], e.target)) {
+                    this.setState({ moreOptionsVisible: false });
+                }
+            }
+        }
+    } catch (err) {
+        // something went wrong
     }
 }

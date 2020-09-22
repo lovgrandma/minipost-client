@@ -87,11 +87,15 @@ export default class Dash extends Component {
             this.setState({ fetching: true });
             // Ensures that fetch videos does not run excessively in short periods of time
             let timeout = setTimeout(() => {
-                if (this) {
-                    if (this.state) {
-                        this.setState({ fetching: false });
-                        this.setState({ fetchingTimeout: "" });
+                try {
+                    if (this) {
+                        if (this.state) {
+                            this.setState({ fetching: false });
+                            this.setState({ fetchingTimeout: "" });
+                        }
                     }
+                } catch (err) {
+                    // something went wrong
                 }
             }, 2000);
             this.setState({ fetchingTimeout: timeout });

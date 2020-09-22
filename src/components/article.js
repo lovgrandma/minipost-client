@@ -10,7 +10,7 @@ import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faReply, faEye } from '@fortawesome/free-solid-svg-icons';
 import { roundTime, setStateDynamic, shortenTitle, convertDate, opposite } from '../methods/utility.js';
-import { setResponseToParentPath, incrementLike, incrementDislike } from '../methods/context.js';
+import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
@@ -162,16 +162,6 @@ export default class Article extends Component {
         }
     }
 
-    showMoreOptions(e, show) {
-        if (this.moreOptions.current) {
-            if (show) {
-                this.moreOptions.current.classList.add("hidden-visible");
-            } else {
-                this.moreOptions.current.classList.remove("hidden-visible");
-            }
-        }
-    }
-
     render() {
         return (
             <div className="article-container-articlepage">
@@ -186,9 +176,9 @@ export default class Article extends Component {
                         <span className="nbsp-w">&nbsp;•&nbsp;</span>
                         <span className="prompt-basic stats-container-s"><FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact-s active-black" : "thumbsdown-interact-s"} icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.id, "article", cookies.get('loggedIn'))}}/>{this.state.dislikes}</span>
                     </div>
-                    <div className="more-options-ellipsis-container" onMouseOver={(e) => {this.showMoreOptions(e, true)}} onMouseOut={(e) => {this.showMoreOptions(e, false)}}>
-                        <FontAwesomeIcon className="read-interact-s" icon={faReply} color={ 'grey' } alt="reply"/>
-                        <ul className='more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-articlepage-dropdown hidden' ref={this.moreOptions}>
+                    <div className="more-options-ellipsis-container">
+                        <FontAwesomeIcon className="read-interact-s icon-hover" icon={faReply} color={ 'grey' } onClick={(e) => {showMoreOptions.call(this, e)}} alt="reply"/>
+                        <ul className={this.props.moreOptionsVisible ? "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden hidden-visible" : "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden"} ref={this.moreOptions}>
                             <li><Link to={{
                                 pathname:`/writearticle`,
                                 props:{

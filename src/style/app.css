@@ -3751,3 +3751,7 @@ a code:hover {
     color: #ffffff;
     background-color: red;
 }
+
+.icon-hover:hover {
+    cursor: pointer;
+}

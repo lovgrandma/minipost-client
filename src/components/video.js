@@ -13,7 +13,7 @@ import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite } from '../methods/utility.js';
-import { setResponseToParentPath, incrementLike, incrementDislike } from '../methods/context.js';
+import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
@@ -312,7 +312,6 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
-                            console.log(totalTime);
                             if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) {
                                 this.incrementView();
                                 this.endViewCountInterval();
@@ -337,16 +336,6 @@ export default class Video extends Component {
 
     openDescription(e, boolean) {
         this.setState({ descriptionOpen: boolean });
-    }
-
-    showMoreOptions(e, show) {
-        if (this.moreOptions.current) {
-            if (show) {
-                this.moreOptions.current.classList.add("hidden-visible");
-            } else {
-                this.moreOptions.current.classList.remove("hidden-visible");
-            }
-        }
     }
 
     tallDescription() {
@@ -391,9 +380,9 @@ export default class Video extends Component {
                             </div>
                         </div>
                         <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
-                        <div className="more-options-ellipsis-container" onMouseOver={(e) => {this.showMoreOptions(e, true)}} onMouseOut={(e) => {this.showMoreOptions(e, false)}}>
-                            <div className='more-options-ellipsis'>...</div>
-                            <ul className='more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden' ref={this.moreOptions}>
+                        <div className="more-options-ellipsis-container">
+                            <div className='more-options-ellipsis' onClick={(e) => {showMoreOptions.call(this, e)}}>...</div>
+                            <ul className={this.props.moreOptionsVisible ? "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden hidden-visible" : "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden"} ref={this.moreOptions}>
                                 <li><Link to={{
                                     pathname:`/writearticle`,
                                     props:{

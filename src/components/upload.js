@@ -51,30 +51,34 @@ export default class Upload extends Component { // ulc upload component
     }
 
     componentDidMount() {
-        this.setUpState();
-        socket = this.getSocket(0, 150);
-        /* Progress event for uploading video */
-        this.progress.on('progress', (percent, data) => {
-            if (this.state.percent != percent) {
-                this.setState({progress: percent});
-            }
-            if (this.progressBar.current) {
-                this.progressBar.current.style.width = Math.round(percent) + "%";
-            }
-            if (data) {
-                if (this.state.videoPreview != data.name) {
-                    this.loadPlayer(data);
+        try {
+            this.setUpState();
+            socket = this.getSocket(0, 150);
+            /* Progress event for uploading video */
+            this.progress.on('progress', (percent, data) => {
+                if (this.state.percent != percent) {
+                    this.setState({progress: percent});
                 }
+                if (this.progressBar.current) {
+                    this.progressBar.current.style.width = Math.round(percent) + "%";
+                }
+                if (data) {
+                    if (this.state.videoPreview != data.name) {
+                        this.loadPlayer(data);
+                    }
+                }
+            });
+
+            // Install polyfills to patch browser incompatibilies
+            shaka.polyfill.installAll();
+
+            this.dotsAnim();
+            this.getUserVideos();
+            if (this.props.uploadStatus === "video ready") {
+                this.clearMsgInt();
             }
-        });
-
-        // Install polyfills to patch browser incompatibilies
-        shaka.polyfill.installAll();
-
-        this.dotsAnim();
-        this.getUserVideos();
-        if (this.props.uploadStatus === "video ready") {
-            this.clearMsgInt();
+        } catch (err) {
+            // something went wrong
         }
     }
 
@@ -283,22 +287,26 @@ export default class Upload extends Component { // ulc upload component
     dotsAnim = () => {
         try {
             let intervalId = setInterval(() => {
-                if (this.state) {
-                    if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
-                        if (this.state.dots.length < 2) {
-                            let dots = this.state.dots;
-                            dots += ".";
-                            this.setState({ dots: dots });
+                try {
+                    if (this.state) {
+                        if (this.props.uploadStatus != "" && this.props.uploadStatus != "video ready") {
+                            if (this.state.dots.length < 2) {
+                                let dots = this.state.dots;
+                                dots += ".";
+                                this.setState({ dots: dots });
+                            } else {
+                                this.setState({ dots: "" });
+                            }
                         } else {
                             this.setState({ dots: "" });
                         }
                     } else {
-                        this.setState({ dots: "" });
+                        if (this.state.dotInterval) {
+                            clearInterval(this.state.dotInterval);
+                        }
                     }
-                } else {
-                    if (this.state.dotInterval) {
-                        clearInterval(this.state.dotInterval);
-                    }
+                } catch (err) {
+                    // something went wrong
                 }
             }, 1000);
             this.setState({ dotInterval: intervalId });

@@ -27,6 +27,7 @@ import './videoplayer.css';
 import $ from 'jquery';
 import lzw from './compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
+import { hideOptions } from './methods/context.js';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
@@ -1172,7 +1173,8 @@ class App extends Component {
 
         this.state = { 
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
-                        isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: ""
+                        isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
+                        moreOptionsVisible: false
                      };
     }
     
@@ -1260,10 +1262,18 @@ class App extends Component {
         this.setState({ cloud: cloud });
     }
 
+    setMoreOptionsVisible = () => {
+        if (!this.state.moreOptionsVisible) {
+            this.setState({ moreOptionsVisible: true });
+        } else {
+            this.setState({ moreOptionsVisible: false });
+        }
+    }
+
     render() {                    
         return (
             <BrowserRouter>
-                <div className="App">
+                <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
                     <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
@@ -1274,16 +1284,16 @@ class App extends Component {
                                 <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
-                                <Video {...props} key={getPath()} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
                             )}/>
                             <Route path='/read?a=:articleId' render={(props) => (
-                                <Article {...props} key={getPath()} />
+                                <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
                             )}/>
                             <Route path='/watch' render={(props) => (
-                                <Video {...props} key={getPath()} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
                             )}/>
                             <Route path='/read' render={(props) => (
-                                <Article {...props} key={getPath()} />
+                                <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
                             )}/>
                             <Route path='/upload' render={(props) => (
                                 <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
