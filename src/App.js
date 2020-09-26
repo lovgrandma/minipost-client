@@ -635,6 +635,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 console.log(data);
                 this.setState({ isLoggedIn: "",
                               friends: [] });
+                this.props.history.push('/');
                 return data;
             })
             .catch(error => { console.log(error);
@@ -1146,7 +1147,7 @@ class Socialbar extends Component { // Main social entry point sb1
             
         return (
             <div>
-                <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} />
+                <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} />
                 <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
                     <div className="sidebarcontainer">
                         {sidebar}
@@ -1302,10 +1303,16 @@ class App extends Component {
                                 <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
                             )}/>
                             <Route path='/profile?p=:username' render={(props) => (
-                                <Profile {...props} key={getPath()}/>
+                                <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
                             )}/>
                             <Route path='/profile' render={(props) => (
-                                <Profile {...props} key={getPath()}/>
+                                <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
+                            )}/>
+                            <Route path='/edit?v=:videoId' render={(props) => (
+                                <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
+                            )}/>
+                            <Route path='/edit?a=:articleId' render={(props) => (
+                                <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} />
                             )}/>
                         </div>
                     </div>

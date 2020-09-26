@@ -116,11 +116,31 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
     }
 }
 
-export const showMoreOptions = function(e) {
+export const showMoreOptions = function(e, type = "replies") {
     try {
-        if (this.moreOptions.current) {
-            if (!this.props.moreOptionsVisible) {
-                this.props.setMoreOptionsVisible();
+        if (type == "replies") {
+            if (this.moreOptions.current) {
+                if (!this.props.moreOptionsVisible) {
+                    this.props.setMoreOptionsVisible();
+                }
+            }
+        } else if (type == "upload") {
+            if (this.uploadOptions) {
+                if (this.uploadOptions.classList.contains("visible")) {
+                    return this.uploadOptions.classList.remove("visible");
+                } else if (!this.uploadOptions.classList.contains("visible")) {
+                    resetOpenMenus.call(this, "upload");
+                    return this.uploadOptions.classList.add("visible");
+                }
+            }
+        } else if (type == "profile") {
+            if (this.userOptions) {
+                if (this.userOptions.classList.contains("visible")) {
+                    return this.userOptions.classList.remove("visible");
+                } else if (!this.userOptions.classList.contains("visible")) {
+                    resetOpenMenus.call(this, "profile");
+                    return this.userOptions.classList.add("visible");
+                }
             }
         }
     } catch (err) {
@@ -128,13 +148,40 @@ export const showMoreOptions = function(e) {
     }
 }
 
-export const hideOptions = function(e) {
+export const resetOpenMenus = function(exclude) {
     try {
-        console.log(e.target);
-        if (e.target) {
-            if (e.target.classList) {
-                if (!$.contains(document.getElementsByClassName('more-options-ellipsis-container')[0], e.target)) {
-                    this.setState({ moreOptionsVisible: false });
+        if (exclude != "upload") {
+            if (document.getElementsByClassName('btn-desc-upl')) {
+                if (document.getElementsByClassName('btn-desc-upl')[0]) {
+                    if (document.getElementsByClassName('btn-desc-upl')[0].classList.contains("visible")) {
+                        document.getElementsByClassName('btn-desc-upl')[0].classList.remove("visible");
+                    }
+                }
+            }
+        }
+        if (exclude != "profile") {
+            if (document.getElementsByClassName('btn-desc-conf-menu')) {
+                if (document.getElementsByClassName('btn-desc-conf-menu')[0]) {
+                    if (document.getElementsByClassName('btn-desc-conf-menu')[0].classList.contains("visible")) {
+                        document.getElementsByClassName('btn-desc-conf-menu')[0].classList.remove("visible");
+                    }
+                }
+            }
+        }
+        return;
+    } catch (err) {
+        console.log(err);
+    }
+}
+
+export const hideOptions = function(e, type = "replies") {
+    try {
+        if (type == "replies") {
+            if (e.target) {
+                if (e.target.classList) {
+                    if (!$.contains(document.getElementsByClassName('more-options-ellipsis-container')[0], e.target)) {
+                        this.setState({ moreOptionsVisible: false });
+                    }
                 }
             }
         }

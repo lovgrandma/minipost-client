@@ -264,6 +264,18 @@ const opposite = function(value) {
     return true;
 }
 
+const setData = function(video, type) {
+    try {
+        if (!video._fields[0].properties[type] || video._fields[0].properties[type].length == 0 || video._fields[0].properties[type] == undefined) {
+            return video._fields[0].properties[type] = "";
+        }
+        return video._fields[0].properties[type]
+    } catch (err) {
+        // Component may have unmounted
+        return "";
+    }
+}
+
 module.exports = {
     debounce: debounce,
     deepEquals: deepEquals,
@@ -278,5 +290,6 @@ module.exports = {
     getPath: getPath,
     checkAtBottom: checkAtBottom,
     get: get,
-    opposite: opposite
+    opposite: opposite,
+    setData: setData
 }

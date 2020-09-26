@@ -6,12 +6,15 @@ import {
     NavLink
 } from 'react-router-dom';
 import logo from '../static/minireel-dot-com-3.svg'; import heart from '../static/heart.svg'; import history from '../static/history.svg'; import notifications from '../static/notifications.svg'; import profile from '../static/profile.svg'; import upload from '../static/upload.svg';
+import { showMoreOptions, hideOptions, resetOpenMenus } from '../methods/context.js';
 
 // Nav bar with appropriate links to likes, history, minireel home, search film bar, notifications, friends & upload.
 export default class Navbar extends Component {
     constructor(props) {
         super(props);
         this.navBtnsLeft = React.createRef();
+        this.uploadOptions = React.createRef();
+        this.userOptions = React.createRef();
     }
 
     ComponentDidMount() {
@@ -98,13 +101,19 @@ export default class Navbar extends Component {
                         <div className="btn-desc btn-desc-notif">notifications</div>
                         <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>
                         <div className="btn-desc btn-desc-yourpro">your profile</div>
-                        <NavLink to='/upload/' className="nav-icon"><div className="nav-icon upload material-icons" onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}}>publish</div></NavLink>
-                        <div className="btn-desc btn-desc-upl" onMouseOver={(e) => {this.hoverShow(e, "upload", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload", "exit")}}>
-                            <NavLink exact to="/upload" className="hyperlink">upload videos</NavLink>
+                        <div className="nav-icon upload material-icons" onClick={(e)=>{showMoreOptions.call(this, e, "upload")}}>publish</div>
+                        <div className="btn-desc btn-desc-upl" ref={tag => (this.uploadOptions = tag)}>
+                            <NavLink exact to="/upload" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>upload videos</NavLink>
                             &nbsp;or&nbsp;
-                            <NavLink exact to="/writearticle" className="hyperlink">write an article</NavLink></div>
-                        <div className="nav-loggedin-config nav-icon" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
+                            <NavLink exact to="/writearticle" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>write an article</NavLink>
+                        </div>
+                        <div className="nav-loggedin-config nav-icon" onClick={(e)=>{showMoreOptions.call(this, e, "profile")}} onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
                         <div className="btn-desc btn-desc-conf" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>change various user settings and preferences</div>
+                        <div className="btn-desc btn-desc-conf-menu" ref={tag => (this.userOptions = tag)}>
+                            <NavLink exact to="/profile" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>profile</NavLink>
+                            <NavLink exact to="/profile" className="hyperlink">options</NavLink>
+                            <a href="/" onClick={(e)=> {resetOpenMenus.call(this); this.props.fetchlogout()}} className="hyperlink">logout</a>
+                        </div>
                     </ul>
                     :<ul className="nav flex-grow2 flex-end nowrapbuttons offline-nav">
                         <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>

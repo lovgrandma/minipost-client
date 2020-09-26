@@ -12,7 +12,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
 import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
-import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite } from '../methods/utility.js';
+import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
@@ -351,7 +351,7 @@ export default class Video extends Component {
     render() {
         return (
             <div id='videocontainer'>
-                <div className="video-container video-container-preview" ref={this.videoContainer}>
+                <div className="video-container" ref={this.videoContainer}>
                     <video className="shaka-video"
                     ref={this.videoComponent}
                     poster={minipostpreviewbanner}
@@ -412,7 +412,7 @@ export default class Video extends Component {
                             <div className="video-desc-container">
                                 <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
                                     <span className='publisher-userandjoindate'>
-                                        <span className='publisher-username'>{this.state.author}</span>
+                                        <NavLink exact to={"/profile?p=" + this.state.author}><span className='publisher-username'>{this.state.author}</span></NavLink>
                                         <span className='publisher-followbutton'>follow</span>
                                     </span>
                                     <div className='video-description-info'>{this.state.description}</div>

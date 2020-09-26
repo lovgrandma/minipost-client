@@ -1,5 +1,5 @@
 html {
-  overflow-y: scroll;
+    overflow-y: scroll;
 }
 
 /* Check index file for cdn import */
@@ -268,6 +268,10 @@ button {
 .flex-profile > div,
 .flex-profile > Button {
     margin-right: 10px;
+}
+
+.profile-stats {
+    margin-bottom: 10px;
 }
 
 .align-center {
@@ -549,6 +553,7 @@ ul li {
 
 .btn-desc {
     font-size: 12px;
+    font-weight: 500;
     display: none;
     visibility: hidden;
     position: fixed;
@@ -565,6 +570,22 @@ ul li {
 .btn-desc-home {
     margin-top: 20px;
 }
+
+.btn-desc-conf-menu {
+    flex-direction: column;
+    display: flex !important;
+}
+
+.btn-desc > a {
+    color: #585858;
+    margin-bottom: 10px;
+}
+
+.btn-desc > a:hover {
+    color: #939393;
+    text-decoration: underline;
+}
+
 .visible {
     display:block;
     visibility: visible;
@@ -1087,8 +1108,19 @@ label {
     color: black;
 }
 
-.videocontainer a:hover {
-    text-decoration: none;
+
+.videocontainer a .video-author {
+    color: #5f5f5f;
+    transition: 200ms;
+    text-decoration: none !important;
+}
+
+.videocontainer a .video-author:hover {
+    color: black;
+}
+
+.dash-video-bar a:hover {
+    text-decoration: none !important;
 }
 
 .mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
@@ -1096,6 +1128,14 @@ label {
     height: auto;
     margin-bottom: 4px;
     padding: 0 0px;
+}
+
+.video-details-title-edit .mainvideotitle {
+    max-width: 90%;
+}
+
+.video-author {
+    text-decoration: none;
 }
 
 /* For dropdown article responses preview container */
@@ -1203,6 +1243,21 @@ label {
     padding: 10px;
     padding-top: 5px;
     border-radius: 5px;
+}
+
+.article-container-edit a {
+    color: black;
+    text-decoration: none;
+}
+
+.article-container-edit .edit-interact {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+.article-container-edit a:hover {
+    color: #5f5f5f;
 }
 
 .article-container-videopage {
@@ -1327,7 +1382,8 @@ label {
     flex-basis: auto;
 }
 
-.col .videocontainer {
+.col .videocontainer,
+.col .article-container-edit {
     margin: 0 3px 30px;
 }
 
@@ -1343,6 +1399,29 @@ label {
     height: calc(100%/1.6);
 }
 
+.video-details-title-edit {
+    width: 100%;
+    position: relative;
+}
+
+.video-details-title-edit .edit-interact {
+    transition: 200ms;
+    position: absolute;
+    top: 2px;
+    right: 5px;
+    height: 14px;
+}
+
+.article-container-edit .edit-interact {
+    transition: 200ms;
+}
+
+.video-details-title-edit .edit-interact:hover,
+.article-container-edit .edit-interact:hover {
+    color: #000000;
+}
+
+.videothumb-holder >
 .videothumb-placeholder, .avatar-placeholder {
     background-color: SlateGray;
     position:relative;
@@ -1614,6 +1693,10 @@ label {
 .publisher-userandjoindate {
     display: flex;
     justify-content: space-between;
+}
+
+.publisher-userandjoindate > a {
+    color: black;
 }
 
 .publisher-video-interact {
@@ -3529,6 +3612,10 @@ If user only has one friend, styling wont apply */
     color: #484848;
 }
 
+.video-container {
+    max-height: 80vh;
+}
+
 .responses {
     font-size: 0.9em;
     color: #484848;
@@ -3600,6 +3687,14 @@ textarea:focus {
     }
 }
 
+.article-container .article-preview-title {
+    max-width: 130px;
+}
+
+.article-container-edit .article-preview-title {
+    max-width: 92%;
+}
+
 .article-preview-title {
     font-family: "Miller Ban Semi Bd";
     font-display: swap;
@@ -3628,7 +3723,28 @@ textarea:focus {
     margin-bottom: 0;
 }
 
-.article-preview-body p:hover {
+.article-container-edit {
+    position: relative;
+    max-height: 258.328px;
+    overflow: hidden;
+}
+
+.article-preview-body-edit p,
+.article-preview-body-edit h1,
+.article-preview-body-edit h2,
+.article-preview-body-edit h3,
+.article-preview-body-edit h4,
+.article-preview-body-edit figure {
+    font-size: 0.82em;
+    line-height: 1.22em;
+    word-break: normal;
+    white-space: pre-wrap;
+    overflow-wrap: break-word;
+    overflow-y: hidden;
+    margin-bottom: 0;
+}
+
+.article-preview-body p:hover, .article-preview-body-edit p {
     cursor: pointer;
 }
 
@@ -3736,9 +3852,9 @@ textarea:focus {
 }
 
 code {
-    color: #ff9fcb;
+    color: #ff9fcb !important;
     padding: 2px 5px;
-    background-color: #101010;
+    background-color: #272727 !important;
     text-decoration: none;
 }
 

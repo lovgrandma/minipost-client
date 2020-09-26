@@ -9,6 +9,8 @@ import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import ArticlePreview from './articlepreview.js';
 import { convertDate, roundHour} from '../methods/utility.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faEdit } from '@fortawesome/free-solid-svg-icons';
 
 export default class Videos extends Component {
     constructor(props) {
@@ -48,6 +50,20 @@ export default class Videos extends Component {
         }
     }
 
+    videoEditLink() {
+        return {
+            pathname:`/edit?v=${this.props.mpd}`,
+            props:{
+                title: `${this.props.title}`,
+                author: `${this.props.author}`,
+                views: `${this.props.views}`,
+                published: `${this.props.published}`,
+                description: `${this.props.description}`,
+                tags: `${this.props.tags}`
+            }
+        }
+    }
+
     showArticles = (e, show) => {
         if (this.articleContainer.current) {
             if (show) {
@@ -69,20 +85,24 @@ export default class Videos extends Component {
         return (
             <div className="col">
                 <div className='videocontainer'>
-                    <Link to={this.videoObjectLink()}>
-                        <div>
-                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()}></img>
-                        </div>
-                    </Link>
+                        <Link to={this.videoObjectLink()}>
+                            <div className="videothumb-holder">
+                                <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()}></img>
+                            </div>
+                        </Link>
                     <div className="dash-video-details-container">
                         <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'publisheravatar-dash' : 'publisheravatar-dash avatar-placeholder' : 'publisheravatar-dash avatar-placeholder'} src={dummyavatar}></img>
-                        <div>
+                        <div className={this.props.edit ? "video-details-title-edit" : ""}>
                             <Link to={this.videoObjectLink()}>
                                 <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
                             </Link>
+                            {
+                                this.props.edit ?
+                                    <Link to={this.videoEditLink()}><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit"/></Link> : null
+                            }
                             <div className="dash-video-details-col">
                                 <span className="dash-video-bar">
-                                    <div><p className='video-author'>{this.props.author}</p></div>
+                                    <NavLink exact to={"/profile?p=" + this.props.author}><p className='video-author'>{this.props.author}</p></NavLink>
                                     <div className="dash-video-bar-stats">
                                         <p className='video-views'>{this.props.views} {this.props.title ? this.props.views == 1 ? "view" : "views" : null}</p>
                                         <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>

@@ -186,19 +186,6 @@ export default class Dash extends Component {
         return [];
     }
 
-    setData(video, type) {
-        try {
-            if (!video._fields[0].properties[type] || video._fields[0].properties[type].length == 0 || video._fields[0].properties[type] == undefined) {
-                return video._fields[0].properties[type] = "";
-            }
-            return video._fields[0].properties[type]
-        } catch (err) {
-            // Component may have unmounted
-            return "";
-        }
-    }
-
-
     render() {
         return (
             <div className='videodash'>
@@ -210,8 +197,8 @@ export default class Dash extends Component {
                                 this.state.dashVideos.map((video, index) =>
                                     <Videos mpd={video._fields[0].properties.mpd.toString()}
                                     title={video._fields[0].properties.title.toString()}
-                                    description={this.setData(video, "description")}
-                                    thumbnailUrl={this.setData(video, "thumbnailUrl")}
+                                    description={utility.setData(video, "description")}
+                                    thumbnailUrl={utility.setData(video, "thumbnailUrl")}
                                     author={video._fields[0].properties.author.toString()}
                                     published={video._fields[0].properties.publishDate.toString()}
                                     views={video._fields[0].properties.views}

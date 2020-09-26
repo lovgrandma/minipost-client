@@ -18,7 +18,7 @@ import {
 import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
-import { dataURItoBlob } from '../methods/utility.js';
+import { dataURItoBlob, get } from '../methods/utility.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -39,6 +39,7 @@ export default class Upload extends Component { // ulc upload component
         this.progress = new EventEmitter();
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
+        this.player = new React.createRef();
         this.thumbnailpreview = new React.createRef();
         this.onErrorEvent = this.onErrorEvent.bind(this);
 		this.onError = this.onError.bind(this);
@@ -52,32 +53,59 @@ export default class Upload extends Component { // ulc upload component
 
     componentDidMount() {
         try {
-            this.setUpState();
-            socket = this.getSocket(0, 150);
-            /* Progress event for uploading video */
-            this.progress.on('progress', (percent, data) => {
-                if (this.state.percent != percent) {
-                    this.setState({progress: percent});
+            if (!this.props.edit) {
+                this.setUpState();
+                socket = this.getSocket(0, 150);
+                /* Progress event for uploading video */
+                this.progress.on('progress', (percent, data) => {
+                    if (this.state.percent != percent) {
+                        this.setState({progress: percent});
+                    }
+                    if (this.progressBar.current) {
+                        this.progressBar.current.style.width = Math.round(percent) + "%";
+                    }
+                    if (data) {
+                        if (this.state.videoPreview != data.name) {
+                            this.loadPlayer(data);
+                        }
+                    }
+                });
+
+                // Install polyfills to patch browser incompatibilies
+                shaka.polyfill.installAll();
+
+                this.dotsAnim();
+                this.getUserVideos();
+                if (this.props.uploadStatus === "video ready") {
+                    this.clearMsgInt();
                 }
-                if (this.progressBar.current) {
-                    this.progressBar.current.style.width = Math.round(percent) + "%";
-                }
-                if (data) {
-                    if (this.state.videoPreview != data.name) {
-                        this.loadPlayer(data);
+            } else { //Edit page, not uploading new video. Editing data members of video that has already been published
+                if (this.props.location) {
+                    if (get(this, "props.location.pathname")) {
+                        if (this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)) {
+                            this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1] + "-mpd.mpd", true);
+                            this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1], progress: 100 });
+                        }
+                    }
+                    if (this.props.location.props) {
+                        if (this.props.location.props.title) {
+                            this.setState({ placeholderTitle: this.props.location.props.title });
+                        }
+                        if (this.props.location.props.author) {
+                            this.setState({ author: this.props.location.props.author });
+                        }
+                        if (this.props.location.props.description) {
+                            this.setState({ placeholderDesc: this.props.location.props.author });
+                        }
+                        if (this.props.location.props.tags) {
+                            let tags = this.props.location.props.tags.split(',');
+                            this.setState({ tags: tags });
+                        }
                     }
                 }
-            });
-
-            // Install polyfills to patch browser incompatibilies
-            shaka.polyfill.installAll();
-
-            this.dotsAnim();
-            this.getUserVideos();
-            if (this.props.uploadStatus === "video ready") {
-                this.clearMsgInt();
             }
         } catch (err) {
+            console.log(err);
             // something went wrong
         }
     }
@@ -86,7 +114,7 @@ export default class Upload extends Component { // ulc upload component
         try {
             if (this.state) {
                 if (prevProps.mpd == "") {
-                    if (this.props.mpd.length > 0) {
+                    if (this.props.mpd.length > 0 && !this.props.edit) {
                         this.initPlayer(this.props.mpd);
                     }
                 }
@@ -398,7 +426,7 @@ export default class Upload extends Component { // ulc upload component
         });
     }
 
-    initPlayer(manifest) {
+    initPlayer(manifest, edit) {
         // Check browser support
         if (shaka.Player.isBrowserSupported()) {
             if (!manifest) {
@@ -457,10 +485,13 @@ export default class Upload extends Component { // ulc upload component
                 });
             }
 
+            this.player = player;
+
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(() => {
                 setTimeout(() => {
                     this.setThumbnailPreview();
+                    this.videoComponent.current.currentTime = 0;
                 }, 200);
                 console.log('video has now been loaded!');
             }).catch(this.onError);
@@ -569,85 +600,88 @@ export default class Upload extends Component { // ulc upload component
 
     /* Publish. Updates a single video record in the backend database on mongodb and graph database */
     updateRecord = async () => {
-        if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
-            if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
-                this.setState({ publishing: true});
-                const title = this.titleIn.current.value;
-                const user = this.props.isLoggedIn;
-                let desc = "";
-                if (this.descIn.current) {
-                    if (this.descIn.current.value.length > 0) {
-                        desc = this.descIn.current.value;
-                    }
-                }
-                let tags = [];
-                for (let tag of this.state.tags) {
-                    tags.push(tag);
-                }
-                let nudity = null;
-                if (document.getElementById("nudity-no").checked) {
-                    nudity = false;
-                } else if (document.getElementById("nudity-yes").checked) {
-                    nudity = true;
-                }
-                let mpd = "";
-                if (this.props.uploading != null) {
-                    mpd = this.props.uploading;
-                } else if (this.state.videoId.length > 0) {
-                    mpd = this.state.videoId;
-                }
-                let responseTo = "";
-                let responseType = this.state.responseToType;
-                if (this.state.responseToId) {
-                    responseTo = this.state.responseToId;
-                } else if (this.state.responseToMpd) {
-                    responseTo = this.state.responseToMpd;
-                }
-                const options = {
-                    headers: {
-                        'content-type': 'multipart/form-data'
-                    },
-                    timeout: 1000000
-                };
-                let data = new FormData();
-                data.append('title', this.titleIn.current.value);
-                data.append('user', this.props.isLoggedIn);
-                data.append('desc', desc);
-                data.append('tags', tags);
-                data.append('nudity', nudity);
-                data.append('mpd', mpd);
-                data.append('responseTo', responseTo);
-                data.append('responseType', responseType);
-                data.append('extension', 'jpeg');
-                let thumbUrl = null;
-                if (this.thumbnailpreview) {
-                    if (this.thumbnailpreview.current) {
-                        thumbUrl = this.thumbnailpreview.current.toDataURL('image/jpeg');
-                        if (thumbUrl) {
-                            let blob = dataURItoBlob(thumbUrl);
-                            data.append('image', blob);
+        if (this.player.getAssetUri()) {
+            if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
+                if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
+                    this.setState({ publishing: true});
+                    const title = this.titleIn.current.value;
+                    const user = this.props.isLoggedIn;
+                    let desc = "";
+                    if (this.descIn.current) {
+                        if (this.descIn.current.value.length > 0) {
+                            desc = this.descIn.current.value;
                         }
                     }
-                }
-                try {
-                    axios.post(currentrooturl + 'm/publishvideo', data, options)
-                        .then((data) => {
-                            this.setState({ publishing: false });
-                            if (data.data.querystatus === "record published/updated") {
-                                this.setState({ published: true });
+                    let tags = [];
+                    for (let tag of this.state.tags) {
+                        tags.push(tag);
+                    }
+                    let nudity = null;
+                    if (document.getElementById("nudity-no").checked) {
+                        nudity = false;
+                    } else if (document.getElementById("nudity-yes").checked) {
+                        nudity = true;
+                    }
+                    let mpd = "";
+                    if (this.props.uploading != null) {
+                        mpd = this.props.uploading;
+                    } else if (this.state.videoId.length > 0) {
+                        mpd = this.state.videoId;
+                    }
+                    let responseTo = "";
+                    let responseType = this.state.responseToType;
+                    if (this.state.responseToId) {
+                        responseTo = this.state.responseToId;
+                    } else if (this.state.responseToMpd) {
+                        responseTo = this.state.responseToMpd;
+                    }
+                    const options = {
+                        headers: {
+                            'content-type': 'multipart/form-data'
+                        },
+                        timeout: 1000000
+                    };
+                    let data = new FormData();
+                    data.append('title', this.titleIn.current.value);
+                    data.append('user', this.props.isLoggedIn);
+                    data.append('desc', desc);
+                    data.append('tags', tags);
+                    data.append('nudity', nudity);
+                    data.append('mpd', mpd);
+                    data.append('responseTo', responseTo);
+                    data.append('responseType', responseType);
+                    data.append('extension', 'jpeg');
+                    let thumbUrl = null;
+                    if (this.thumbnailpreview) {
+                        if (this.thumbnailpreview.current) {
+                            thumbUrl = this.thumbnailpreview.current.toDataURL('image/jpeg');
+                            if (thumbUrl) {
+                                let blob = dataURItoBlob(thumbUrl);
+                                data.append('image', blob);
                             }
-                            console.log(data);
-                        });
-                } catch (err) { // axios request failed to publish video
+                        }
+                    }
                     try {
-                        if (this) {
-                            if (this.state) {
-                                this.setState({ currentErr: "video failed to publish "});
+                        axios.post(currentrooturl + 'm/publishvideo', data, options)
+                            .then((data) => {
+                                this.setState({ publishing: false });
+                                if (data.data.querystatus === "record published/updated") {
+                                    this.setState({ published: true });
+                                }
+                                console.log(data);
+                            });
+                    } catch (err) { // axios request failed to publish video
+                        try {
+                            if (this) {
+                                if (this.state) {
+                                    this.setState({ currentErr: "video failed to publish "});
+                                }
                             }
+                        } catch (err) {
+                            // component unmounted
                         }
-                    } catch (err) {
-                        // component unmounted
                     }
+
                 }
             }
         }
@@ -694,8 +728,8 @@ export default class Upload extends Component { // ulc upload component
     // Must add thumbnail option in input section
     render() {
         return (
-            <div className={!this.state.gettingUserVideos || !this.state.published ? "hidden hidden-visible" : "hidden"}>
-                <div className={cookies.get('loggedIn') ? "upload-video-text" : "upload-video-text bottom-50"}>Upload video</div>
+            <div className={!this.state.gettingUserVideos  && !this.props.edit || !this.state.published && !this.props.edit || this.props.edit ? "hidden hidden-visible" : "hidden"}>
+                <div className={cookies.get('loggedIn') ? "upload-video-text" : "upload-video-text bottom-50"}>{!this.props.edit ? "Upload video" : "Edit video"}</div>
                 {!this.props.isLoggedIn ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
@@ -735,8 +769,13 @@ export default class Upload extends Component { // ulc upload component
                         }
                         </label>
                         <div className="video-preview-input-separator">&nbsp;</div>
-                        <input type='text' id="upl-vid-title" className="fixfocuscolor" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video" autoComplete="off"></input>
-                        <textarea type='text' id="upl-vid-desc" className="fixfocuscolor" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about"></textarea>
+                        <div>
+                            <Button className="set-thumbnail-btn btn btn-default" onClick={(e)=>{this.setThumbnailPreview(e)}}>Set thumbnail</Button>
+                            <div className="info-blurb margin-bottom-5">Select a timepoint above once your video has loaded and click the button above to choose a thumbnail for your video</div>
+                            <canvas className="canvas-thumbnail-preview" ref={this.thumbnailpreview}></canvas>
+                        </div>
+                        <input type='text' id="upl-vid-title" className="fixfocuscolor" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video" autoComplete="off" value={this.state.placeholderTitle}></input>
+                        <textarea type='text' id="upl-vid-desc" className="fixfocuscolor" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about" value={this.state.placeholderDesc}></textarea>
                         <div className="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
                             {
                                 this.state.tags.map((tag, index) => {
@@ -756,17 +795,13 @@ export default class Upload extends Component { // ulc upload component
                             <label htmlFor="nudity-no">No</label>
                             <div className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></div>
                         </form>
-                        <div>
-                            <Button className="set-thumbnail-btn btn btn-default" onClick={(e)=>{this.setThumbnailPreview(e)}}>Set thumbnail</Button>
-                            <div className="info-blurb margin-bottom-5">Select a timepoint above once your video has loaded and click the button above to choose a thumbnail for your video</div>
-                            <canvas className="canvas-thumbnail-preview" ref={this.thumbnailpreview}></canvas>
-                        </div>
-                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>Publish</Button>
+                        <div className={this.props.edit ? "prompt-basic-s grey-out margin-bottom-5" : "hidden"}>{this.props.edit ? "If you've made changes that you don\'t want to save you can just leave this page and nothing will be changed. Otherwise you can revise your changes and click the button below" : null}</div>
+                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>{!this.props.edit ? "Publish" : "Update"}</Button>
                     </div>
                 </div>
                 <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
                 <div className={this.state.published === false ? "hidden" : "hidden hidden-visible prompt-basic"}>Your video has been published, watch it here at <a href={currentrooturl + "watch?v=" + this.state.publishedMpd}>{currentrooturl + "watch?v=" + this.state.publishedMpd}</a></div>
-                <div className={this.props.isLoggedIn ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
+                <div className={this.props.isLoggedIn && !this.props.edit ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )
     }
