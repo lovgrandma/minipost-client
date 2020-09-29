@@ -59,7 +59,8 @@ export default class Videos extends Component {
                 views: `${this.props.views}`,
                 published: `${this.props.published}`,
                 description: `${this.props.description}`,
-                tags: `${this.props.tags}`
+                tags: `${this.props.tags}`,
+                thumbnailUrl: `${this.props.thumbnailUrl}`
             }
         }
     }

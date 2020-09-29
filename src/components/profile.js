@@ -50,7 +50,6 @@ export default class Profile extends Component {
     // Fetch profile data, always match by user name instead of id. Username more readily available
     fetchProfileData = async (user) => {
         try {
-            console.log(user);
             if (user) {
                 return await fetch(currentrooturl + 'm/fetchprofilepagedata', {
                     method: "POST",

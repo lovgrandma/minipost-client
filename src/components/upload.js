@@ -29,7 +29,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: ""
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: ""
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -95,11 +95,14 @@ export default class Upload extends Component { // ulc upload component
                             this.setState({ author: this.props.location.props.author });
                         }
                         if (this.props.location.props.description) {
-                            this.setState({ placeholderDesc: this.props.location.props.author });
+                            this.setState({ placeholderDesc: this.props.location.props.description });
                         }
                         if (this.props.location.props.tags) {
                             let tags = this.props.location.props.tags.split(',');
                             this.setState({ tags: tags });
+                        }
+                        if (this.props.location.props.thumbnailUrl) {
+                            this.setState({ thumbnailUrl: this.props.location.props.thumbnailUrl });
                         }
                     }
                 }
@@ -490,7 +493,11 @@ export default class Upload extends Component { // ulc upload component
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(() => {
                 setTimeout(() => {
-                    this.setThumbnailPreview();
+                    if (this.state.thumbnailUrl) {
+                        this.setThumbnailPreview(this.state.thumbnailUrl);
+                    } else {
+                        this.setThumbnailPreview();
+                    }
                     this.videoComponent.current.currentTime = 0;
                 }, 200);
                 console.log('video has now been loaded!');
@@ -714,13 +721,22 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    setThumbnailPreview(e) {
+    setThumbnailPreview(url) {
         if (this.thumbnailpreview) {
             if (this.thumbnailpreview.current) {
                 this.thumbnailpreview.current.width = 320;
                 this.thumbnailpreview.current.height = 180;
                 let ctx = this.thumbnailpreview.current.getContext('2d');
-                ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
+                if (url) { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
+                    let img = new Image;
+                    let cloudUrl = this.props.cloud + "/" + url + ".jpeg";
+                    img.src = cloudUrl;
+                    img.onload = () => {
+                        ctx.drawImage(img, 0, 0, 320, 180);
+                    }
+                } else {
+                    ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
+                }
             }
         }
     }
@@ -770,7 +786,7 @@ export default class Upload extends Component { // ulc upload component
                         </label>
                         <div className="video-preview-input-separator">&nbsp;</div>
                         <div>
-                            <Button className="set-thumbnail-btn btn btn-default" onClick={(e)=>{this.setThumbnailPreview(e)}}>Set thumbnail</Button>
+                            <Button className="set-thumbnail-btn btn btn-default" onClick={(e)=>{this.setThumbnailPreview()}}>Set thumbnail</Button>
                             <div className="info-blurb margin-bottom-5">Select a timepoint above once your video has loaded and click the button above to choose a thumbnail for your video</div>
                             <canvas className="canvas-thumbnail-preview" ref={this.thumbnailpreview}></canvas>
                         </div>

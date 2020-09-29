@@ -19,6 +19,7 @@ import {
 } from 'react-router-dom';
 import $ from 'jquery';
 import TextareaAutosize from 'react-textarea-autosize';
+import { get } from '../methods/utility.js';
 
 import { cookies } from '../App.js';
 
@@ -33,7 +34,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: ""
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: ""
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -67,20 +68,27 @@ export default class writeArticle extends Component {
 
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
     setUpState() {
-        if (this.props.location) {
-            if (this.props.location.props) {
-                if (this.props.location.props.responseToId) {
-                    this.setState({ responseToId: this.props.location.props.responseToId });
-                }
-                if (this.props.location.props.responseToMpd) {
-                    this.setState({ responseToMpd: this.props.location.props.responseToMpd });
-                }
-                if (this.props.location.props.responseToTitle) {
-                    this.setState({ responseToTitle: this.props.location.props.responseToTitle });
-                }
-                if (this.props.location.props.responseToType) {
-                    this.setState({ responseToType: this.props.location.props.responseToType });
-                }
+        if (get(this, 'props.location.props')) {
+            if (this.props.location.props.responseToId) {
+                this.setState({ responseToId: this.props.location.props.responseToId });
+            }
+            if (this.props.location.props.responseToMpd) {
+                this.setState({ responseToMpd: this.props.location.props.responseToMpd });
+            }
+            if (this.props.location.props.responseToTitle) {
+                this.setState({ responseToTitle: this.props.location.props.responseToTitle });
+            }
+            if (this.props.location.props.responseToType) {
+                this.setState({ responseToType: this.props.location.props.responseToType });
+            }
+            if (this.props.location.props.title) {
+                this.titleIn.current._ref.value = this.props.location.props.title;
+            }
+            if (this.props.location.props.body) {
+                this.setState({ existingBody: this.props.location.props.body });
+            }
+            if (this.props.location.props.id) {
+                this.setState({ editId: this.props.location.props.id });
             }
         }
     }
@@ -149,6 +157,12 @@ export default class writeArticle extends Component {
                             responseTo = this.state.responseToId;
                         }
                     }
+                    let edit = false;
+                    let id = "";
+                    if (this.props.edit) {
+                        edit = true;
+                        id = this.state.editId;
+                    }
                     fetch(currentrooturl + 'm/publisharticle', {
                         method: "POST",
                         headers: {
@@ -157,7 +171,7 @@ export default class writeArticle extends Component {
                         },
                         credentials: 'same-origin',
                         body: JSON.stringify({
-                            author, title, body, responseTo, responseType
+                            author, title, body, responseTo, responseType, edit, id
                         })
                     })
                     .then((response) => {
@@ -249,10 +263,11 @@ export default class writeArticle extends Component {
 
             <div>
                 <div className="editor-container">
-                    <div className="write-an-article-prompt">Write an article</div>
+                    <div className="write-an-article-prompt">{ !this.props.edit ? "Write an article" : "Edit an article"}</div>
                     <div className={this.state.currentErr ? "article-err-status err-status" : "article-err-status hidden"} onClick={(e)=>{this.deleteErr(e)}}>{this.state.currentErr ? this.state.currentErr: ""}<span className="times-exit-float-right">&times;</span></div>
-                    {!cookies.get('loggedIn') ? <div className="prompt-basic grey-out">You are not logged in please log in to write an article</div> : null}
+                    { !cookies.get('loggedIn') ? <div className="prompt-basic grey-out">You are not logged in please log in to write an article</div> : null }
                     <div className={cookies.get('loggedIn') && !this.state.published ? "write-article-editor-container" : "write-article-editor-container hidden"}>
+                        {this.props.edit ? <div className="currently-editing">currently editing</div> : null }
                         <TextareaAutosize type='text' id="upl-article-title" className="fixfocuscolor" ref={this.titleIn} onMouseOver={(e) => {this.setAuthorVisible(e, true)}} onMouseOut={(e) => {this.setAuthorVisible(e, false)}} onInput={(e) => {this.reduceTitleSize(e)}} onKeyUp={(e) => {this.reduceTitleSize(e)}} onKeyDown={(e) => {this.reduceTitleSize(e)}} rows="1" name="upl-article-title" placeholder="title" autoComplete="off"></TextareaAutosize>
                         <div className={cookies.get('loggedIn') && !this.state.published ? "write-article-author prompt-basic-s grey-out-hide" : "write-article-author hidden"} ref={this.byAuthor}>by {this.props.isLoggedIn}</div>
                         <CKEditor
@@ -263,6 +278,9 @@ export default class writeArticle extends Component {
                             onInit={ editor => {
                                 // You can store the "editor" and use when it is needed.
                                 this.editor = editor;
+                                if (this.state.existingBody) {
+                                    editor.setData(this.state.existingBody);
+                                }
                                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
                                 //console.log( 'Editor is ready to use!', editor );
                             } }

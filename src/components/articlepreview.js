@@ -38,7 +38,27 @@ export default class articlepreview extends Component {
                 author: `${this.props.author}`,
                 reads: `${this.props.reads}`,
                 published: `${this.props.published}`,
-                body: `${this.props.body}`
+                body: `${this.props.body}`,
+                id: `${this.props.id}`
+            }
+        }
+    }
+
+    linkToArticle() {
+        return {
+            pathname:`/read?a=${this.props.id}`,
+            props:{
+                author: `${this.props.author}`,
+                body: `${this.props.body}`,
+                title: `${this.props.title}`,
+                id: `${this.props.id}`,
+                published: `${this.props.published}`,
+                likes: `${this.props.likes}`,
+                dislikes: `${this.props.dislikes}`,
+                reads: `${this.props.reads}`,
+                responseToMpd: `${this.props.responseToMpd}`,
+                responseToTitle: `${this.props.responseToTitle}`,
+                responseToType: `${this.props.responseToType}`
             }
         }
     }
@@ -47,27 +67,14 @@ export default class articlepreview extends Component {
         return (
             <div className={this.props.edit ? "col" : ""}>
                 <div className={!this.props.edit ? "article-container" : "article-container-edit"}>
-                    <Link to={{
-                        pathname:`/read?a=${this.props.id}`,
-                        props:{
-                            author: `${this.props.author}`,
-                            body: `${this.props.body}`,
-                            title: `${this.props.title}`,
-                            id: `${this.props.id}`,
-                            published: `${this.props.published}`,
-                            likes: `${this.props.likes}`,
-                            dislikes: `${this.props.dislikes}`,
-                            reads: `${this.props.reads}`,
-                            responseToMpd: `${this.props.responseToMpd}`,
-                            responseToTitle: `${this.props.responseToTitle}`,
-                            responseToType: `${this.props.responseToType}`
-                        }
-                    }}>
+                    <Link to={this.linkToArticle()}>
                         <div className="article-preview-title">{this.props.title}</div>
-                        {
-                            this.props.edit ?
-                                <Link to={this.articleEditLink()}><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit"/></Link> : null
-                        }
+                    </Link>
+                    {
+                        this.props.edit ?
+                            <Link to={this.articleEditLink()}><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit"/></Link> : null
+                    }
+                    <Link to={this.linkToArticle()}>
                         <div className={!this.props.edit ? "article-preview-body" : "article-preview-body-edit"}>{this.state.body}</div>
                     </Link>
                 </div>

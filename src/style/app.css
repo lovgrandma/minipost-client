@@ -73,6 +73,10 @@ h5 {
     font-weight: 500;
 }
 
+.no-select {
+    user-select: none;
+}
+
 .off-black {
     color: #454545;
 }
@@ -3295,6 +3299,12 @@ If user only has one friend, styling wont apply */
     min-width: 50vw;
 }
 
+.currently-editing {
+    color: grey;
+    font-size: 14px;
+    padding-left: 12px;
+}
+
 #upl-article-title {
     color: #3c3c3c;
     border: 0.5px solid transparent;
@@ -3303,6 +3313,11 @@ If user only has one friend, styling wont apply */
     width: 100%;
     resize: none;
     max-height: 270px;
+    transition: 200ms;
+}
+
+#upl-article-title:focus {
+    margin-top: 5px;
 }
 
 .write-article-author {
