@@ -34,7 +34,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: ""
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: ""
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -178,10 +178,15 @@ export default class writeArticle extends Component {
                         return response.json(); // Parsed data
                     })
                     .then((data) => {
+                        if (data.id) {
+                            this.setState({ id: data.id });
+                        }
                         if (data.querystatus == "article posted") {
-                            this.setState({published: true });
+                            this.setState({ published: true });
                         } else if (data.querystatus == "you have already posted an article with this title") {
                             this.setState({ currentErr: "You have already posted an article with this title" });
+                        } else if (data.querystatus == "article updated") {
+                            this.setState({ published: true });
                         }
                         console.log(data);
                     })
@@ -300,7 +305,7 @@ export default class writeArticle extends Component {
                         <div className={this.state.responseToTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link></div>
                         <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"} onClick={(e) => {this.publishArticle(e)}}>Publish</Button>
                     </div>
-                    <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden"}>Your article was published, view it here</div>
+                    <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden"}>Your article was published, view it <Link to={{ pathname:`/read?a=${this.state.id}`}}>here</Link></div>
                 </div>
             </div>
         )

@@ -88,7 +88,7 @@ export default class Navbar extends Component {
                     <div className="nav-icon favorites material-icons" onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}}>favorite</div>
                     <div className="btn-desc btn-desc-saved">view videos you've saved</div>
                     <div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div>
-                    <div className="btn-desc btn-desc-hist">view your video history</div>
+                    <div className="btn-desc btn-desc-hist">view your content history</div>
                 </ul>
                 <div className="brand flex-grow1">
                     <NavLink exact to="/" className="logo-nav-container" onMouseOver={(e) => {this.hoverShow(e, "home", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "home", "exit")}}><div className="minireel-nav millerbolditalic logo-nav-font difference-text">minipost</div><div className="minireel-nav-small millerbolditalic logo-nav-font difference-text">m</div></NavLink>

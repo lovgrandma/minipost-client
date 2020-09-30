@@ -69,15 +69,15 @@
 }
 
 .video-container-preview .shaka-video {
-    /* max-height: 500px; */
+    max-height: 500px;
 }
 
 .shaka-video-container {
     background-color: black;
 }
 
-.shaka-video-container .shaka-video {
-    /* max-height: 80vh; */
+.shaka-video-container-preview .shaka-video {
+    max-height: 80vh;
 }
 
 .shaka-overflow-button-label,

@@ -240,7 +240,7 @@ export default class Video extends Component {
 
             // UI custom json
             const uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'overflow_menu', 'mute', 'volume', 'fullscreen'];
+            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'overflow_menu', 'fullscreen'];
 
             //Set up shaka player UI
             if (player && videoContainer && video) {
@@ -301,6 +301,23 @@ export default class Video extends Component {
 
     /** Determines if atleast 25% or 45 seconds of video has been watched to determine view increment fetch request to database */
     viewCountedInterval() {
+        let refreshIntervalRate = () => { // Returns a appropriate interval rate to accomodate for shorter videos so user does not leave page before view is incremented. Otherwise really short videos could be adversely effected.
+            try {
+                if (get(this, 'videoComponent.current.played.end')) {
+                    if (this.videoComponent.current.duration > 60) {
+                        return 5000;
+                    } else if (this.videoComponent.current.duration > 10) {
+                        return 3000;
+                    } else {
+                        return 1650; // Accomodate for really short videos below 10 seconds
+                    }
+                }
+                return 5000;
+            } catch (err) {
+                // Something went wrong
+                return 5000;
+            }
+        }
         try {
             if (!this.state.viewCounted && !this.state.viewInterval) {
                 let viewInterval = setInterval(() => {
@@ -312,13 +329,13 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
-                            if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) {
+                            if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) { // Increment video view if user has watched more than 25% of the video or the totalTime watched is more than 45 seconds
                                 this.incrementView();
                                 this.endViewCountInterval();
                             }
                         }
                     }
-                }, 5000);
+                }, refreshIntervalRate());
                 this.setState({ viewInterval: viewInterval });
             }
         } catch (err) {

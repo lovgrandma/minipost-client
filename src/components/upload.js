@@ -29,7 +29,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: ""
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -445,7 +445,7 @@ export default class Upload extends Component { // ulc upload component
 
             // UI custom json
             const uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'overflow_menu', 'mute', 'volume', 'fullscreen'];
+            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'overflow_menu', 'fullscreen'];
 
             if (player && videoContainer && video) {
                 //Set up shaka player UI
@@ -493,13 +493,19 @@ export default class Upload extends Component { // ulc upload component
             // Try to load a manifest Asynchronous
             player.load(manifestUri).then(() => {
                 setTimeout(() => {
-                    if (this.state.thumbnailUrl) {
-                        this.setThumbnailPreview(this.state.thumbnailUrl);
-                    } else {
-                        this.setThumbnailPreview();
+                    try {
+                        if (this.state.thumbnailUrl) {
+                            this.setThumbnailPreview(this.state.thumbnailUrl);
+                        } else {
+                            this.setThumbnailPreview();
+                        }
+                        if (get(this, 'videoComponent.current')) {
+                            this.videoComponent.current.currentTime = 0;
+                        }
+                    } catch (err) {
+                        // Something went wrong
                     }
-                    this.videoComponent.current.currentTime = 0;
-                }, 200);
+                }, 500);
                 console.log('video has now been loaded!');
             }).catch(this.onError);
 
@@ -655,11 +661,12 @@ export default class Upload extends Component { // ulc upload component
                     data.append('tags', tags);
                     data.append('nudity', nudity);
                     data.append('mpd', mpd);
+                    data.append('thumbnailLoaded', this.state.thumbnailLoaded);
                     data.append('responseTo', responseTo);
                     data.append('responseType', responseType);
                     data.append('extension', 'jpeg');
                     let thumbUrl = null;
-                    if (this.thumbnailpreview) {
+                    if (this.thumbnailpreview && this.state.thumbnailLoaded) {
                         if (this.thumbnailpreview.current) {
                             thumbUrl = this.thumbnailpreview.current.toDataURL('image/jpeg');
                             if (thumbUrl) {
@@ -673,7 +680,7 @@ export default class Upload extends Component { // ulc upload component
                             .then((data) => {
                                 this.setState({ publishing: false });
                                 if (data.data.querystatus === "record published/updated") {
-                                    this.setState({ published: true });
+                                    this.setState({ published: true, publishedMpd: data.data.mpd });
                                 }
                                 console.log(data);
                             });
@@ -721,23 +728,42 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    setThumbnailPreview(url) {
-        if (this.thumbnailpreview) {
-            if (this.thumbnailpreview.current) {
-                this.thumbnailpreview.current.width = 320;
-                this.thumbnailpreview.current.height = 180;
-                let ctx = this.thumbnailpreview.current.getContext('2d');
-                if (url) { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
-                    let img = new Image;
-                    let cloudUrl = this.props.cloud + "/" + url + ".jpeg";
-                    img.src = cloudUrl;
-                    img.onload = () => {
+    setThumbnailPreview(url, retry = true) {
+        try {
+            if (this.thumbnailpreview) {
+                if (this.thumbnailpreview.current) {
+                    this.thumbnailpreview.current.width = 320;
+                    this.thumbnailpreview.current.height = 180;
+                    let ctx = this.thumbnailpreview.current.getContext('2d');
+                    if (url) { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
+                        let img = new Image;
+                        img.crossOrigin = 'anonymous';
+                        let cloudUrl = this.props.cloud + "/" + url + ".jpeg";
+                        img.src = cloudUrl;
+                        img.onload = () => {
                         ctx.drawImage(img, 0, 0, 320, 180);
+                        }
+                    } else {
+                        ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
                     }
-                } else {
-                    ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
+                    let totalData = 0;
+                    for (let i = 0; i < 500; i++) {
+                        totalData += ctx.getImageData(0, 0, 320, 180).data[i];
+                    }
+                    if (totalData == 0) {
+                        this.setState({ thumbnailLoaded: false });
+                        setTimeout(() => {
+                            if (retry) { // Will retry setting thumbnail once but second parameter ensures it does not fire again
+                                this.setThumbnailPreview(url, false);
+                            }
+                        }, 1500);
+                    } else {
+                        this.setState({ thumbnailLoaded: true });
+                    }
                 }
             }
+        } catch (err) {
+            console.log(err);
         }
     }
 
@@ -787,7 +813,7 @@ export default class Upload extends Component { // ulc upload component
                         <div className="video-preview-input-separator">&nbsp;</div>
                         <div>
                             <Button className="set-thumbnail-btn btn btn-default" onClick={(e)=>{this.setThumbnailPreview()}}>Set thumbnail</Button>
-                            <div className="info-blurb margin-bottom-5">Select a timepoint above once your video has loaded and click the button above to choose a thumbnail for your video</div>
+                            <div className="info-blurb margin-bottom-5">{ !this.props.edit ? "Select a timepoint above once your video has loaded and click the button above to choose a thumbnail for your video" : "If your saved thumbnail does not load here, don't worry. If you wish to keep the same thumbnail don't set a new one before updating this video. If you do set a new thumbnail it will overwrite the old one when you click update" }</div>
                             <canvas className="canvas-thumbnail-preview" ref={this.thumbnailpreview}></canvas>
                         </div>
                         <input type='text' id="upl-vid-title" className="fixfocuscolor" ref={this.titleIn} onChange={(e) => {this.updateTitle(e, "title")}} name="upl-vid-title" placeholder="enter a fitting title for your video" autoComplete="off" value={this.state.placeholderTitle}></input>
@@ -816,7 +842,7 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                 </div>
                 <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
-                <div className={this.state.published === false ? "hidden" : "hidden hidden-visible prompt-basic"}>Your video has been published, watch it here at <a href={currentrooturl + "watch?v=" + this.state.publishedMpd}>{currentrooturl + "watch?v=" + this.state.publishedMpd}</a></div>
+                <div className={this.state.published === false ? "hidden" : "hidden hidden-visible prompt-basic"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.state.publishedMpd}`}}>here</Link></div>
                 <div className={this.props.isLoggedIn && !this.props.edit ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )
