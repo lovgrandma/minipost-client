@@ -18,7 +18,7 @@ import {
 import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
-import { dataURItoBlob, get } from '../methods/utility.js';
+import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -140,11 +140,11 @@ export default class Upload extends Component { // ulc upload component
 
     setMsgInt() {
         try {
-            this.state ? this.setState({uploadInfo: this.randomProperty(this.uploadMessages) }) : null
+            this.state ? this.setState({uploadInfo: randomProperty(this.uploadMessages) }) : null
             if (this.state.uploadInfoInterval.length <= 0) {
                 let infoIntervalId = setInterval = (() => {
                     if (this.state) {
-                        this.setState({uploadInfo: this.randomProperty(this.uploadMessages) });
+                        this.setState({uploadInfo: randomProperty(this.uploadMessages) });
                     }
                 }, 15000);
                 if (this.state) {
@@ -167,15 +167,6 @@ export default class Upload extends Component { // ulc upload component
             // Component may have been unmounted
         }
 
-    }
-
-    randomProperty(obj) {
-        if (obj) {
-            let keys = Object.keys(obj);
-            return obj[ keys[ keys.length * Math.random() << 0]];
-        } else {
-            return null;
-        }
     }
 
     componentWillUnmount() {

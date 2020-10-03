@@ -21,7 +21,7 @@ export default class Article extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            id: "", title: "", author: "", body: "", published: "", reads: "", responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0
+            id: "", title: "", author: "", body: "", published: "", reads: "", responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0, thumbnail: ""
         }
         this.moreOptions = React.createRef();
     }

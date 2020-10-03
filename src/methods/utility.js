@@ -276,6 +276,15 @@ const setData = function(video, type) {
     }
 }
 
+const randomProperty = function(obj) {
+    if (obj) {
+        let keys = Object.keys(obj);
+        return obj[ keys[ keys.length * Math.random() << 0]];
+    } else {
+        return null;
+    }
+}
+
 module.exports = {
     debounce: debounce,
     deepEquals: deepEquals,
@@ -291,5 +300,6 @@ module.exports = {
     checkAtBottom: checkAtBottom,
     get: get,
     opposite: opposite,
-    setData: setData
+    setData: setData,
+    randomProperty: randomProperty
 }

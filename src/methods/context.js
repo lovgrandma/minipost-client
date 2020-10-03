@@ -2,19 +2,25 @@ import currentrooturl from '../url.js';
 import $ from 'jquery';
 
 export const setResponseToParentPath = function() {
-    if (this.state.responseTo) {
-        if (this.state.responseTo.type == "video" && this.state.responseTo.mpd) {
-            return {
-                pathname:`/watch?v=${this.state.responseTo.mpd}`
-            }
-        } else if (this.state.responseTo.type == "article" && this.state.responseTo.id) {
-            return {
-                pathname:`/read?a=${this.state.responseTo.id}`
+    try {
+        if (this.state.responseTo) {
+            if (this.state.responseTo.type == "video" && this.state.responseTo.mpd) {
+                return {
+                    pathname:`/watch?v=${this.state.responseTo.mpd}`
+                }
+            } else if (this.state.responseTo.type == "article" && this.state.responseTo.id) {
+                return {
+                    pathname:`/read?a=${this.state.responseTo.id}`
+                }
             }
         }
-    }
-    return {
-        pathname:`/`
+        return {
+            pathname:`/`
+        }
+    } catch (err) {
+        return {
+            pathname: '/'
+        }
     }
 }
 
@@ -44,20 +50,24 @@ export const incrementLike = async function(increment, id, type, user) {
 
 // Increment or decrements dislike
 export const incrementDislike = async function(increment, id, type, user) {
-    if (type == "video" && this) {
-        if (this.player) {
-            if (this.player.getAssetUri()) {
-                return await incrementLikeDislike.call(this, false, increment, id, type, user);
-            }
-        }
-    } else if (type == "article" && this) {
-        if (this.state) {
-            if (this.state.body) {
-                if (this.state.body.length > 0) {
+    try {
+        if (type == "video" && this) {
+            if (this.player) {
+                if (this.player.getAssetUri()) {
                     return await incrementLikeDislike.call(this, false, increment, id, type, user);
                 }
             }
+        } else if (type == "article" && this) {
+            if (this.state) {
+                if (this.state.body) {
+                    if (this.state.body.length > 0) {
+                        return await incrementLikeDislike.call(this, false, increment, id, type, user);
+                    }
+                }
+            }
         }
+    } catch (err) {
+        return false;
     }
     return false;
 }

@@ -87,7 +87,7 @@ export default class Navbar extends Component {
                 <ul className={this.props.sidebarStatus == "open" ? "nav flex-grow2 nowrapbuttons navbtnsleft navbtnsleft-opened" : "nav flex-grow2 nowrapbuttons navbtnsleft"} ref={tag => (this.navBtnsLeft = tag)}>
                     <div className="nav-icon favorites material-icons" onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}}>favorite</div>
                     <div className="btn-desc btn-desc-saved">view videos you've saved</div>
-                    <div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div>
+                    <NavLink exact to="/history" className="hyperlink"><div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div></NavLink>
                     <div className="btn-desc btn-desc-hist">view your content history</div>
                 </ul>
                 <div className="brand flex-grow1">

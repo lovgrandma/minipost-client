@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import { Cookies, socket, bumpEvent, EventEmitter } from '../App.js';
+import { cookies, socket, bumpEvent, EventEmitter } from '../App.js';
 
 import profile from '../static/profile.svg'; import chatblack from '../static/chat-black.svg'; import minimize from '../static/minimize.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import sendarrow from '../static/sendarrow.svg'; import circlemenulight from '../static/circlemenulight.svg';
 
