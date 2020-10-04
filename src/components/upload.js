@@ -29,7 +29,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -84,7 +84,7 @@ export default class Upload extends Component { // ulc upload component
                     if (get(this, "props.location.pathname")) {
                         if (this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)) {
                             this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1] + "-mpd.mpd", true);
-                            this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1], progress: 100 });
+                            this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1], progress: 100, publishedAwait: false });
                         }
                     }
                     if (this.props.location.props) {
@@ -343,7 +343,7 @@ export default class Upload extends Component { // ulc upload component
             this.setState({ gettingUserVideos: true });
             if (this.props.isLoggedIn) {
                 let username = this.props.isLoggedIn;
-                fetch(currentrooturl + 'm/getUserVideos', {
+                fetch(currentrooturl + 'm/getuservideos', {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
@@ -358,8 +358,22 @@ export default class Upload extends Component { // ulc upload component
                     return response.json(); // Parsed data
                 })
                     .then((data) => {
-                    console.log(data);
                     if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
+                        if (data.title) {
+                            if (data.title.length > 0) {
+                                this.setState({ placeholderTitle: data.title });
+                            }
+                        }
+                        if (data.description) {
+                            this.setState({ placeholderDesc: data.description });
+                        }
+                        if (data.tags && data.tags != undefined) {
+                            if (data.tags.length > 0) {
+                                if (data.tags[0] != "") {
+                                    this.setState({ tags: data.tags });
+                                }
+                            }
+                        }
                         this.props.updateErrStatus("");
                         this.setMsgInt();
                         this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
@@ -492,6 +506,7 @@ export default class Upload extends Component { // ulc upload component
                         }
                         if (get(this, 'videoComponent.current')) {
                             this.videoComponent.current.currentTime = 0;
+                            this.setState({ publishedAwait: false });
                         }
                     } catch (err) {
                         // Something went wrong
@@ -604,90 +619,97 @@ export default class Upload extends Component { // ulc upload component
 
     /* Publish. Updates a single video record in the backend database on mongodb and graph database */
     updateRecord = async () => {
-        if (this.player.getAssetUri()) {
-            if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
-                if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
-                    this.setState({ publishing: true});
-                    const title = this.titleIn.current.value;
-                    const user = this.props.isLoggedIn;
-                    let desc = "";
-                    if (this.descIn.current) {
-                        if (this.descIn.current.value.length > 0) {
-                            desc = this.descIn.current.value;
-                        }
+        if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
+            if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
+                this.setState({ publishing: true});
+                const title = this.titleIn.current.value;
+                const user = this.props.isLoggedIn;
+                let desc = "";
+                if (this.descIn.current) {
+                    if (this.descIn.current.value.length > 0) {
+                        desc = this.descIn.current.value;
                     }
-                    let tags = [];
+                }
+                let tags = [];
+                if (this.state.tags.length > 0) {
                     for (let tag of this.state.tags) {
                         tags.push(tag);
                     }
-                    let nudity = null;
-                    if (document.getElementById("nudity-no").checked) {
-                        nudity = false;
-                    } else if (document.getElementById("nudity-yes").checked) {
-                        nudity = true;
-                    }
-                    let mpd = "";
-                    if (this.props.uploading != null) {
-                        mpd = this.props.uploading;
-                    } else if (this.state.videoId.length > 0) {
-                        mpd = this.state.videoId;
-                    }
-                    let responseTo = "";
-                    let responseType = this.state.responseToType;
-                    if (this.state.responseToId) {
-                        responseTo = this.state.responseToId;
-                    } else if (this.state.responseToMpd) {
-                        responseTo = this.state.responseToMpd;
-                    }
-                    const options = {
-                        headers: {
-                            'content-type': 'multipart/form-data'
-                        },
-                        timeout: 1000000
-                    };
-                    let data = new FormData();
-                    data.append('title', this.titleIn.current.value);
-                    data.append('user', this.props.isLoggedIn);
-                    data.append('desc', desc);
-                    data.append('tags', tags);
-                    data.append('nudity', nudity);
-                    data.append('mpd', mpd);
-                    data.append('thumbnailLoaded', this.state.thumbnailLoaded);
-                    data.append('responseTo', responseTo);
-                    data.append('responseType', responseType);
-                    data.append('extension', 'jpeg');
-                    let thumbUrl = null;
-                    if (this.thumbnailpreview && this.state.thumbnailLoaded) {
-                        if (this.thumbnailpreview.current) {
-                            thumbUrl = this.thumbnailpreview.current.toDataURL('image/jpeg');
-                            if (thumbUrl) {
-                                let blob = dataURItoBlob(thumbUrl);
-                                data.append('image', blob);
-                            }
-                        }
-                    }
-                    try {
-                        axios.post(currentrooturl + 'm/publishvideo', data, options)
-                            .then((data) => {
-                                this.setState({ publishing: false });
-                                if (data.data.querystatus === "record published/updated") {
-                                    this.setState({ published: true, publishedMpd: data.data.mpd });
-                                }
-                                console.log(data);
-                            });
-                    } catch (err) { // axios request failed to publish video
-                        try {
-                            if (this) {
-                                if (this.state) {
-                                    this.setState({ currentErr: "video failed to publish "});
-                                }
-                            }
-                        } catch (err) {
-                            // component unmounted
-                        }
-                    }
-
                 }
+                let nudity = null;
+                if (document.getElementById("nudity-no").checked) {
+                    nudity = false;
+                } else if (document.getElementById("nudity-yes").checked) {
+                    nudity = true;
+                }
+                let mpd = "";
+                if (this.props.uploading != null) {
+                    mpd = this.props.uploading;
+                } else if (this.state.videoId.length > 0) {
+                    mpd = this.state.videoId;
+                }
+                let responseTo = "";
+                let responseType = this.state.responseToType;
+                if (this.state.responseToId) {
+                    responseTo = this.state.responseToId;
+                } else if (this.state.responseToMpd) {
+                    responseTo = this.state.responseToMpd;
+                }
+                const options = {
+                    headers: {
+                        'content-type': 'multipart/form-data'
+                    },
+                    timeout: 1000000
+                };
+                let data = new FormData();
+                data.append('title', this.titleIn.current.value);
+                data.append('user', this.props.isLoggedIn);
+                data.append('desc', desc);
+                data.append('tags', tags);
+                data.append('nudity', nudity);
+                data.append('mpd', mpd);
+                data.append('thumbnailLoaded', this.state.thumbnailLoaded);
+                data.append('responseTo', responseTo);
+                data.append('responseType', responseType);
+                data.append('extension', 'jpeg');
+                let thumbUrl = null;
+                if (this.thumbnailpreview && this.state.thumbnailLoaded) {
+                    if (this.thumbnailpreview.current) {
+                        thumbUrl = this.thumbnailpreview.current.toDataURL('image/jpeg');
+                        if (thumbUrl) {
+                            let blob = dataURItoBlob(thumbUrl);
+                            data.append('image', blob);
+                        }
+                    }
+                }
+                try {
+                    axios.post(currentrooturl + 'm/publishvideo', data, options)
+                        .then((data) => {
+                            this.setState({ publishing: false });
+                            if (data.data.querystatus === "record published/updated") {
+                                this.setState({ publishedMpd: data.data.mpd });
+                                console.log(this.player.getAssetUri);
+                                if (!this.player.getAssetUri) {
+                                    this.setState({ publishedAwait: true });
+                                } else {
+                                    this.setState({ publishedAwait: false });
+                                    this.setState({ published: true });
+                                }
+                            }
+                            console.log(data);
+                        });
+                } catch (err) { // axios request failed to publish video
+                    try {
+                        if (this) {
+                            if (this.state) {
+                                this.setState({ currentErr: "video failed to publish "});
+                            }
+                        }
+                    } catch (err) {
+                        // component unmounted
+                    }
+                }
+
             }
         }
     }
@@ -726,13 +748,13 @@ export default class Upload extends Component { // ulc upload component
                     this.thumbnailpreview.current.width = 320;
                     this.thumbnailpreview.current.height = 180;
                     let ctx = this.thumbnailpreview.current.getContext('2d');
-                    if (url) { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
+                    if (url && url != "undefined") { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
                         let img = new Image;
                         img.crossOrigin = 'anonymous';
                         let cloudUrl = this.props.cloud + "/" + url + ".jpeg";
                         img.src = cloudUrl;
                         img.onload = () => {
-                        ctx.drawImage(img, 0, 0, 320, 180);
+                            ctx.drawImage(img, 0, 0, 320, 180);
                         }
                     } else {
                         ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
@@ -793,12 +815,14 @@ export default class Upload extends Component { // ulc upload component
                         </div>
                         <div className="video-detail-separator">&nbsp;</div>
                         <label className={this.state.placeholderDesc == "" ? "upl-vid-desc-label upl-vid-desc-label-hidden" : "upl-vid-desc-label"}>{this.state.placeholderDesc}</label>
-                        <label className={this.state.tags.length == 0 ? "upl-vid-tags-label upl-vid-tags-label-hidden" : "upl-vid-tags-label"}>{
-                            this.state.tags.map((tag, index) => {
-                                return (
-                                    <span className="tag-label" key={index}>{tag}</span>
-                                )
-                            })
+                        <label className={this.state.tags ? this.state.tags.length > 0 ? "upl-vid-tags-label" : "upl-vid-tags-label upl-vid-tags-label-hidden" : "upl-vid-tags-label upl-vid-tags-label-hidden"}>{
+                            this.state.tags ?
+                                this.state.tags.map((tag, index) => {
+                                    return (
+                                        <span className="tag-label" key={index}>{tag}</span>
+                                    )
+                                })
+                            : null
                         }
                         </label>
                         <div className="video-preview-input-separator">&nbsp;</div>
@@ -811,13 +835,15 @@ export default class Upload extends Component { // ulc upload component
                         <textarea type='text' id="upl-vid-desc" className="fixfocuscolor" ref={this.descIn} onChange={(e) => {this.updateTitle(e, "desc")}} name="upl-vid-desc" placeholder="describe what your video is about" value={this.state.placeholderDesc}></textarea>
                         <div className="tags-input-container" data-name="tags-input" onClick={(e) => {this.tagInputFocus(e)}}>
                             {
-                                this.state.tags.map((tag, index) => {
-                                    return (
-                                        <span className="tag" key={index}>{tag}<span className="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
-                                    )
-                                })
+                                this.state.tags ?
+                                    this.state.tags.map((tag, index) => {
+                                        return (
+                                            <span className="tag" key={index}>{tag}<span className="tag-close" onClick={(e) => {this.deleteTag(e)}}></span></span>
+                                        )
+                                    })
+                                : null
                             }
-                            <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} placeholder={this.state.tags.length == 0 ? "tags" : ""}></input>
+                            <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} placeholder={this.state.tags ? this.state.tags.length > 0 ? "" : "" : "tags"}></input>
                         </div>
                         <div className="info-blurb tags-blurb">Tags help us in organizing content on minipost. Enter relevant tags to help users find your content easier</div>
                         <form className="nudity-radio">
@@ -833,7 +859,8 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                 </div>
                 <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
-                <div className={this.state.published === false ? "hidden" : "hidden hidden-visible prompt-basic"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.state.publishedMpd}`}}>here</Link></div>
+                <div className={this.state.published && !this.state.publishedAwait ? "hidden hidden-visible prompt-basic" : "hidden"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.state.publishedMpd}`}}>here</Link></div>
+                <div className={this.state.publishedAwait ? "hidden hidden-visible prompt-basic grey-out" : "hidden"}>Your video has been published but it has not finished uploading yet. You can continue to edit video details above</div>
                 <div className={this.props.isLoggedIn && !this.props.edit ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )

@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Social from './components/social.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -12,7 +12,7 @@ import {
 } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
-import logo from './static/minireel-dot-com-3.svg'; import mango from './static/minireel-mangologo.svg'; import heart from './static/heart.svg'; import whiteheart from './static/heart-white.svg'; import history from './static/history.svg'; import searchwhite from './static/search-white.svg'; import search from './static/search.svg'; import notifications from './static/notifications.svg'; import profile from './static/profile.svg'; import upload from './static/upload.svg'; import thumbsup from './static/thumbsup.svg'; import thumbsdown from './static/thumbsdown.svg'; import share from './static/share.svg'; import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import dummythumbnail from './static/warrenbuffetthumb.jpg'; import chatblack from './static/chat-black.svg'; import close from './static/close.svg'; import hamburger from './static/hamburger.svg'; import pointingfinger from './static/pointingfinger.svg'; import circlemenu from './static/circlemenu.svg'; import newspaperblack from './static/newspaper.svg'; import play from './static/play.svg'; import television from './static/tv.svg'; import sendarrow from './static/sendarrow.svg'; import subscribe from './static/subscribe.svg'; import friendswhite from './static/friendsWhite.svg'; import nonFriendsWhite from './static/nonFriendsWhite.svg'; import circlemenulight from './static/circlemenulight.svg'; import minimize from'./static/minimize.svg'; import maximize from './static/maximize.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg'; import settings from './static/settings.svg';
+import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import close from './static/close.svg';
 import './style/app.css';
 import './style/player.css';
 
@@ -45,237 +45,6 @@ const cookies = new Cookies();
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
-
-function Social(props) { // social prop sp1
-    let limit;
-    let setlimit = (e) => {
-        if (props.searchusers[0] && props.searchusers[1].moreusers) {
-            /* Runs search query to return current search user length plus 10 more users */
-            props.limitedsearch(props.username, props.searchusers[0].length+10); // Does limited search for more users in search bar
-        }
-    }
-
-    let pendingsetvalue = false;
-    if (props.pendinghidden == "hidden") {
-        pendingsetvalue = "show";
-    } else {
-        pendingsetvalue = "hidden";
-    }
-
-    let childCounter = 0;
-    return (
-        <div id="socialContainer">
-            <div className="userquickdash row">
-                <div className="friend-requests-view">
-                    <button className="following-view">following</button>
-                    <button className="requests-view" onClick={(e) => {props.getpendingrequests(pendingsetvalue, true, props.username)}}>requests</button>
-                </div>
-                <div>
-                    <img className="minimize-dash" src={angleDoubleLeft} alt="hamburger" onClick={props.toggleSideBar}></img>
-                </div>
-            </div>
-            <div className={props.pendinghidden == "hidden" ? 'friend-requests-list-hidden' : 'friend-requests-list'}>
-                <div>
-                    {props.pendingfriendrequests ?
-                        props.pendingfriendrequests.map ?
-                            props.pendingfriendrequests.map(function(request, index) {
-                            return (
-                                <Request
-                                userrequest={request.username}
-                                acceptfriendrequest={props.acceptfriendrequest}
-                                revokefriendrequest={props.revokefriendrequest}
-                                key={childCounter}
-                                index={childCounter++}
-                                />
-                            )
-                        })
-                    : <div></div> : <div></div>
-                    }
-                </div>
-            </div>
-            <div>
-                <form className="search-form-flex-users" onInput={props.debouncefetchusers} onChange={props.searchforminput} onSubmit={props.fetchuserpreventsubmit} noValidate='noValidate' autoComplete='off'>
-                    <span className="text-input-wrapper searchusers-text-input">
-                        <input className="user-search" id="usersearch" type="search" placeholder="Search users.." name="usersearch"></input>
-                        <span className="clear" onClick={props.searchformclear} title="Clear">&times;</span>
-                    </span>
-                </form>
-            </div>
-            <div className='search-users-results-container'>
-                <div>
-                    {
-                    props.searchusers ?
-                        props.searchusers[0] ?
-                            props.searchusers[0].map(function(searcheduser, index) {
-
-                                let alreadypending = function() {  // Determine if the user is on searched users pending list. Waiting for them to accept
-                                    for (var i = 0; i < searcheduser.friends[1].pending.length; i++) {
-                                        if (searcheduser.friends[1].pending[i]) {
-                                            if (searcheduser.friends[1].pending[i].username === props.username) {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                let requestwaiting = function() { // Determine if searched user is waiting for user to accept friend request.
-                                    for (var i = 0; i < props.searchusers[0].length; i++) { // Iterate through the searched users
-                                        if (props.searchusers[0] && props.pendingfriendrequests) {
-                                            for (let j = 0; j < props.pendingfriendrequests.length; j++) {
-                                                if (props.pendingfriendrequests[j].username === searcheduser.username) {
-                                                    return true;
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-
-                                let alreadyfriends = function() { // Determine if already friends with this searched user
-                                    for (var i = 0; i < props.friends.length; i++) {
-                                        if (props.friends[0]) {
-                                            if(props.friends[i].username === searcheduser.username) {
-                                                return true;
-                                            }
-                                        }
-                                    }
-                                }
-
-                                let yourself = function() { // Determine if searched user is self
-                                    if(props.username === searcheduser.username) {
-                                        return true;
-                                    }
-                                }
-
-                                return (
-                                    <SearchedUserResults searcheduser={searcheduser.username}
-                                    searchtotal={props.searchusers[0].length}
-                                    key={childCounter}
-                                    index={childCounter++}
-                                    sendfriendrequest={props.sendfriendrequest}
-                                    acceptfriendrequest={props.acceptfriendrequest}
-                                    revokefriendrequest={props.revokefriendrequest}
-                                    alreadypending={alreadypending}
-                                    requestwaiting={requestwaiting}
-                                    alreadyfriends={alreadyfriends}
-                                    yourself={yourself}
-                                    beginchat={props.beginchat}
-                                    />
-                                )
-
-                            })
-                        : <div></div>
-                    : <div></div>
-                    } 
-                <div className="load-more-users-wrapper"><button className="load-more-users" onClick={setlimit}>{ props.searchusers ? props.searchusers[1] ? props.searchusers[1].moreusers ? "load more users" : "no more users" : "load more users" : "load more users"}</button></div> {/* Loads more users if more users present */}
-                </div>
-            </div>
-            <div className="search-friend-border noselect" onClick={e => props.friendsSocialToggle("friend")}><img className="general-icon" src={friendswhite} alt="friends"></img><div className="friends-header">friends</div></div>
-            <div className={props.friendsopen ?
-                                "friendchatcontainer friendchatcontainer-open"
-                            : "friendchatcontainer friendchatcontainer-closed"
-                           } refs='friendchatcontainer'>
-
-                {/* Append friends from social bar state (props.friends). For each friend return appropriate object info to build Friends div using Friends(props) function above. */}
-                {
-                    props.friends && props.conversations ?
-                        props.friends.length === 0 ? <div className="nofriends">Right now you have no friends :( , but you can add one :) . Use the search bar above to send friend requests or ask friends to add you</div>
-                        :
-                        props.friends.map(function(friend, index) {
-                            let convo;
-                            for (let i = 0; i < props.conversations.length; i++) {
-                                if (props.conversations[i]) {
-                                    if (props.conversations[i].users) {
-                                        if (props.conversations[i].users.length == 2) {
-                                            for (let j = 0; j < props.conversations[i].users.length; j++) {
-                                                if (props.conversations[i].users[j] === friend.username) {
-                                                    convo = props.conversations[i];
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                            }
-                            let typing;
-                            if (convo) {
-                                for (let i = 0; i < props.typing.length; i++) {
-                                    if (props.typing[i].match(typingRegex)[3] == convo._id) {
-                                        typing = props.typing[i];
-                                    }
-                                }
-                            }
-
-                            return (
-                                <Friend username={props.username}
-                                friend={friend.username}
-                                friendstotal={props.friends.length}
-                                key={childCounter}
-                                index={childCounter++}
-                                conversation = {convo}
-                                beginchat={props.beginchat}
-                                revokefriendrequest={props.revokefriendrequest}
-                                friendchatopen={props.friendchatopen}
-                                updatefriendchatopen={props.updatefriendchatopen}
-                                typing={typing}
-                                bump={props.bump}
-                                />
-                            )
-                        })
-                    : <div></div>
-                }
-
-            </div>
-            <div className="search-nonfriend-border noselect" onClick={e => props.friendsSocialToggle("nonFriend")}><img className="general-icon" src={nonFriendsWhite} alt="friends"></img><div className="nonfriends-header">other conversations</div></div>
-            <div className={props.nonfriendsopen ? "nonfriendchatcontainer nonfriendchatcontainer-open" : "nonfriendchatcontainer nonfriendchatcontainer-closed"} refs='nonfriendchatcontainer'>
-                {props.conversations ?
-                    props.conversations.length > 0 ?
-                        props.conversations.map(function(conversation, index) {
-                            let person = "";
-                            let conversationOfFriends = function() { // determine if a conversation between friends
-                                for (let i = 0; i < props.friends.length; i++) { // iterate thr each friend
-                                    if (conversation) {
-                                        if (conversation.users.length == 2) { // valid 2 user chat
-                                            for (let k = 0; k < conversation.users.length; k++) { // iterate thr each user in conversation
-                                                if (props.friends[i].username == conversation.users[k]) { // if iterated friend == iterated user in chat
-                                                    return true; // Then this is a friend chat, return true to not show in extra chats
-                                                }
-                                            }
-                                        } else {
-                                            return true; // else invalid return true (Doesnt confirm that this is a conversation w a friend, but confirms it should not show in other chats)
-                                        }
-                                    } else {
-                                        return false;
-                                    }
-                                }
-                                return false;
-                            }
-
-                            if (!conversationOfFriends()) { // if this conversation has a user that is not listed in friends list
-                                 return (
-                                    <NonFriendConversation username={props.username}
-                                     otheruserchatopen={props.otheruserchatopen}
-                                     key={childCounter}
-                                     index={childCounter++}
-                                     conversation={conversation}
-                                     updateotheruserchatopen={props.updateotheruserchatopen}
-                                     beginchat={props.beginchat}
-                                     pendingfriendrequests={props.pendingfriendrequests}
-                                     acceptfriendrequest={props.acceptfriendrequest}
-                                     revokefriendrequest={props.revokefriendrequest}
-                                     fetchusers={props.fetchusers}
-                                     searchforminput={props.searchforminput}
-                                     />
-                                 )
-                            }
-                        }) : <div></div>
-                    :<div></div>
-                }
-            </div>
-            <Sidebarfooter username={props.username}
-            logout={props.fetchlogout}
-            />
-        </div>
-    )
-}
 
 // Side Social Bar
 class Socialbar extends Component { // Main social entry point sb1
@@ -1060,77 +829,86 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     friendsSocialToggle = (friend) => { // Minimizes and maximizes components visually
-        let query;
-        let friendsopen;
-        let nonfriendsopen;
-        if (friend == "friend") {
-            query = "friend";
-            this.state.friendsopen == false ? friendsopen = false : friendsopen = true;
-        } else {
-            query = "nonfriend";
-            this.state.nonfriendsopen == false ? nonfriendsopen = false : nonfriendsopen = true;
-        }
+        try {
+            let query;
+            let friendsopen;
+            let nonfriendsopen;
+            if (friend == "friend") {
+                query = "friend";
+                this.state.friendsopen == false ? friendsopen = false : friendsopen = true;
+            } else {
+                query = "nonfriend";
+                this.state.nonfriendsopen == false ? nonfriendsopen = false : nonfriendsopen = true;
+            }
 
-        if (document.getElementsByClassName(query + "chatcontainer")[0]) {
-            // Assign element and its height variables.
-            let element = document.getElementsByClassName(query + "chatcontainer")[0];
-            let sectionHeight = element.scrollHeight;
-            element.style.transition = "200ms";
-            element.style.height = sectionHeight-15 + "px"; // Set to section height by default
-            // If component is already open, sets to real current height as opposed to 'auto' to animate the transition to 0.
-            // Component must default back to auto on open as the component height may change due to children.
+            if (document.getElementsByClassName(query + "chatcontainer")[0]) {
+                // Assign element and its height variables.
+                let element = document.getElementsByClassName(query + "chatcontainer")[0];
+                let sectionHeight = element.scrollHeight;
+                element.style.transition = "200ms";
+                element.style.height = sectionHeight-15 + "px"; // Set to section height by default
+                // If component is already open, sets to real current height as opposed to 'auto' to animate the transition to 0.
+                // Component must default back to auto on open as the component height may change due to children.
 
-            // Choose appropriate query, if open state is false, then open, else close.
-            if (query == "friend" && friendsopen == false || query == "nonfriend" && nonfriendsopen == false) { // Open
-                element.classList.remove(query + "chatcontainer-closed"); // Add and remove appropriate css in DOM
-                element.classList.add(query + "chatcontainer-open");
-                setTimeout(() => { // Set element height to auto after 200ms animation is finished. Why? Because child components may change in height
-                    if (query == "friend") {
-                        if (this.state.friendsopen == true) {
-                            element.style.height = "auto";
+                // Choose appropriate query, if open state is false, then open, else close.
+                if (query == "friend" && friendsopen == false || query == "nonfriend" && nonfriendsopen == false) { // Open
+                    element.classList.remove(query + "chatcontainer-closed"); // Add and remove appropriate css in DOM
+                    element.classList.add(query + "chatcontainer-open");
+                    setTimeout(() => { // Set element height to auto after 200ms animation is finished. Why? Because child components may change in height
+                        if (query == "friend") {
+                            if (this.state.friendsopen == true) {
+                                element.style.height = "auto";
+                            }
+                        } else if (query == "nonfriend") {
+                            if (this.state.nonfriendsopen == true) {
+                                element.style.height = "auto";
+                            }
+                        }
+                    }, 200);
+                    if (query == "friend") { // If component open state is still false, set state to true (Fixes non responsiveness)
+                        if (this.state.friendsopen == false) {
+                            this.setState({friendsopen : true })
                         }
                     } else if (query == "nonfriend") {
-                        if (this.state.nonfriendsopen == true) {
-                            element.style.height = "auto";
+                        if (this.state.nonfriendsopen == false) {
+                            this.setState({nonfriendsopen : true })
                         }
                     }
-                }, 200);
-                if (query == "friend") { // If component open state is still false, set state to true (Fixes non responsiveness)
-                    if (this.state.friendsopen == false) {
-                        this.setState({friendsopen : true })
-                    }
-                } else if (query == "nonfriend") {
-                    if (this.state.nonfriendsopen == false) {
-                        this.setState({nonfriendsopen : true })
-                    }
-                }
-            } else if (query == "friend" || query == "nonfriend") { // Close
-                element.classList.remove(query + "chatcontainer-open");
-                element.classList.add(query + "chatcontainer-closed");
+                } else if (query == "friend" || query == "nonfriend") { // Close
+                    element.classList.remove(query + "chatcontainer-open");
+                    element.classList.add(query + "chatcontainer-closed");
 
-                element.style.height = element.scrollHeight + "px"; // Change height from auto to actual scroll height
-                element.style.height = 0 + "px"; // Animate height transition to 0
+                    element.style.height = element.scrollHeight + "px"; // Change height from auto to actual scroll height
+                    element.style.height = 0 + "px"; // Animate height transition to 0
 
-                if (query == "friend") {
-                    if (this.state.friendsopen == true && element.classList.contains("friendchatcontainer-closed")) {
-                        this.setState({friendsopen : false, friendchatopen: null });
-                    }
-                } else if (query == "nonfriend") {
-                    if (this.state.nonfriendsopen == true && element.classList.contains("nonfriendchatcontainer-closed")) {
-                        this.setState({nonfriendsopen : false, otheruserchatopen: null });
+                    if (query == "friend") {
+                        if (this.state.friendsopen == true && element.classList.contains("friendchatcontainer-closed")) {
+                            this.setState({friendsopen : false, friendchatopen: null });
+                        }
+                    } else if (query == "nonfriend") {
+                        if (this.state.nonfriendsopen == true && element.classList.contains("nonfriendchatcontainer-closed")) {
+                            this.setState({nonfriendsopen : false, otheruserchatopen: null });
+                        }
                     }
                 }
             }
+        } catch (err) {
+            console.log(err);
+            // Something went wrong
         }
     }
 
     bump = (e, too, room) => {
-        if (this.state.isLoggedIn && socket && too && room) {
-            if (too.length > 0 && room.length > 0 ) {
-                /* Format of socket message is: bump;from;too;room */
-                let data = "bump;" + this.state.isLoggedIn + ";" + too + ";" + room;
-                socket.emit('bump', data);
+        try {
+            if (this.state.isLoggedIn && socket && too && room) {
+                if (too.length > 0 && room.length > 0 ) {
+                    /* Format of socket message is: bump;from;too;room */
+                    let data = "bump;" + this.state.isLoggedIn + ";" + too + ";" + room;
+                    socket.emit('bump', data);
+                }
             }
+        } catch (err) {
+            // Something went wrong
         }
     }
 
@@ -1271,6 +1049,20 @@ class App extends Component {
         }
     }
 
+    /* Send request to socket to subscribe to channel. Format of data is: user;channel;subscribe? */
+    follow = (channel, subscribe = true) => {
+        try {
+            if (cookies.get('loggedIn') && socket && channel) {
+                const user = cookies.get('loggedIn');
+                if (user.length > 0 && channel.length > 0 && user !== channel) { // User and channel must be valid and user cannot follow themself
+                    socket.emit('follow', user + ";" + channel + ";" + subscribe);
+                }
+            }
+        } catch (err) {
+            // Something went wrong
+        }
+    }
+
     render() {                    
         return (
             <BrowserRouter>
@@ -1285,13 +1077,13 @@ class App extends Component {
                                 <Dash {...props} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} />
                             )}/>
                             <Route path='/read?a=:articleId' render={(props) => (
                                 <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
                             )}/>
                             <Route path='/watch' render={(props) => (
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} />
                             )}/>
                             <Route path='/read' render={(props) => (
                                 <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />

@@ -287,19 +287,16 @@ export default class writeArticle extends Component {
                                     editor.setData(this.state.existingBody);
                                 }
                                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
-                                //console.log( 'Editor is ready to use!', editor );
                             } }
                             onChange={ ( event, editor ) => {
                                 const data = editor.getData();
                                 // console.log( { event, editor, data } );
                             } }
                             onBlur={ ( event, editor ) => {
-                                    this.catchBlur(2);
-                                //console.log( 'Blur.', editor );
+                                this.catchBlur(2);
                             } }
                             onFocus={ ( event, editor ) => {
                                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "visible";
-                                //console.log( 'Focus.', editor );
                             } }
                         />
                         <div className={this.state.responseToTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link></div>

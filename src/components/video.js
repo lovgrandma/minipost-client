@@ -50,7 +50,7 @@ export default class Video extends Component {
                 this.player.removeEventListener('error');
             }
         }
-        this.endViewCountInterval();
+        this.endViewCountInterval;
     }
 
     loadPage = async (reload = false) => {
@@ -348,7 +348,9 @@ export default class Video extends Component {
         if (this.state.viewInterval) {
             clearInterval(this.state.viewInterval);
             this.setState({ viewInterval: "" });
+            return true;
         }
+        return false;
     }
 
     openDescription(e, boolean) {
@@ -361,6 +363,15 @@ export default class Video extends Component {
                 return true;
             } else {
                 return false;
+            }
+        }
+    }
+
+    // Prep to see if state is valid before attempting follow
+    followCheck() {
+        if (get(this, 'player.getAssetUri')) {
+            if (this.player.getAssetUri()) {
+                this.props.follow(this.state.author)
             }
         }
     }
@@ -430,7 +441,13 @@ export default class Video extends Component {
                                 <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
                                     <span className='publisher-userandjoindate'>
                                         <NavLink exact to={"/profile?p=" + this.state.author}><span className='publisher-username'>{this.state.author}</span></NavLink>
-                                        <span className='publisher-followbutton'>follow</span>
+                                        {
+                                            cookies.get('loggedIn') ?
+                                                cookies.get('loggedIn') != this.state.author ?
+                                                    <span className='publisher-followbutton' onClick={(e)=>{this.followCheck()}}>follow</span>
+                                                : null
+                                            : null
+                                        }
                                     </span>
                                     <div className='video-description-info'>{this.state.description}</div>
                                     <div className="video-tags-list">
