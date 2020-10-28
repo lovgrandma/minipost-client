@@ -3361,6 +3361,7 @@ If user only has one friend, styling wont apply */
     resize: none;
     max-height: 270px;
     transition: 200ms;
+    overflow: hidden;
 }
 
 #upl-article-title:focus {
@@ -3823,8 +3824,15 @@ textarea:focus {
     font-size: 36px;
 }
 
+.article-font-body,
+.ck-editor__editable {
+    font-family: georgia, serif;
+    font-size: 1.1em;
+    font-weight: 400;
+    line-height: 1.75;
+}
+
 .article-body-articlepage {
-    line-height: 24px;
     max-width: 100%;
 }
 

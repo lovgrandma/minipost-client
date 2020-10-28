@@ -148,7 +148,6 @@ export default class Video extends Component {
                 return response.json();
             })
             .then((result) => {
-                console.log(result);
                 /* Sets all video document related data */
                 for (const [key, value] of Object.entries(result.video)) {
                     if (this.state) {

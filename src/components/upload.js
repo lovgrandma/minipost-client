@@ -368,8 +368,10 @@ export default class Upload extends Component { // ulc upload component
                             this.setState({ placeholderDesc: data.description });
                         }
                         if (data.tags && data.tags != undefined) {
+                            console.log(data.tags);
                             if (data.tags.length > 0) {
                                 if (data.tags[0] != "") {
+                                    console.log(data.tags);
                                     this.setState({ tags: data.tags });
                                 }
                             }
@@ -630,12 +632,7 @@ export default class Upload extends Component { // ulc upload component
                         desc = this.descIn.current.value;
                     }
                 }
-                let tags = [];
-                if (this.state.tags.length > 0) {
-                    for (let tag of this.state.tags) {
-                        tags.push(tag);
-                    }
-                }
+                let tags = this.state.tags;
                 let nudity = null;
                 if (document.getElementById("nudity-no").checked) {
                     nudity = false;
@@ -785,7 +782,7 @@ export default class Upload extends Component { // ulc upload component
         return (
             <div className={!this.state.gettingUserVideos  && !this.props.edit || !this.state.published && !this.props.edit || this.props.edit ? "hidden hidden-visible" : "hidden"}>
                 <div className={cookies.get('loggedIn') ? "upload-video-text" : "upload-video-text bottom-50"}>{!this.props.edit ? "Upload video" : "Edit video"}</div>
-                {!this.props.isLoggedIn ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
+                { !cookies.get('loggedIn') ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
                     <div className="flex progress-update">

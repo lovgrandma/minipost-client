@@ -1,14 +1,12 @@
 import React, {Component} from 'react';
 import {
-    BrowserRouter,
-    Route,
     NavLink,
     Link
 } from 'react-router-dom';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import ArticlePreview from './articlepreview.js';
-import { convertDate, roundHour} from '../methods/utility.js';
+import { convertDate } from '../methods/utility.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit } from '@fortawesome/free-solid-svg-icons';
 

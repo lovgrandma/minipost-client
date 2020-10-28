@@ -13,6 +13,7 @@ import {
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
 import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import close from './static/close.svg';
+import { updateNotif } from './methods/history.js';
 import './style/app.css';
 import './style/player.css';
 
@@ -147,6 +148,10 @@ class Socialbar extends Component { // Main social entry point sb1
                 socket.on('uploadUpdate', data => {
                     this.props.updateUploadStatus(data);
                 });
+
+                socket.on('returnNotif', data => {
+                    updateNotif(data);
+                })
 
                 socket.on('uploadErr', data => {
                     console.log("upload err:" + data);

@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import { cookies, socket, bumpEvent, EventEmitter } from '../App.js';
+import { get } from '../methods/utility.js';
 
 import profile from '../static/profile.svg'; import chatblack from '../static/chat-black.svg'; import minimize from '../static/minimize.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import sendarrow from '../static/sendarrow.svg'; import circlemenulight from '../static/circlemenulight.svg';
 
@@ -378,11 +379,10 @@ export default class Friend extends Component { // friend component fc1
     }
 
     resetchat = (e) => {
-        try {
+        if (get(this, 'inputRef._ref.value')) {
             this.inputRef._ref.value = ""; // Clear chat message
-        } catch (err) {
-            // Component may have unmounted
         }
+
     }
 
     checkSocket = (e) => {

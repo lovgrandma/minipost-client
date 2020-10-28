@@ -167,7 +167,7 @@ export default class Article extends Component {
             <div className="article-container-articlepage">
                 <div className="article-title-articlepage">{this.state.title}</div>
                 <div className="article-author-articlepage prompt-basic-s grey-out">published by {this.state.author} at {roundTime(this.state.published)}</div>
-                <div className="article-body-articlepage">{parseBody(this.state.body)}</div>
+                <div className="article-body-articlepage article-font-body">{parseBody(this.state.body)}</div>
                 <div className="article-menu-flex">
                     <div className="article-stats-articlepage">
                         <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{this.state.reads}</span>

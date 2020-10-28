@@ -94,28 +94,30 @@ export default class writeArticle extends Component {
     }
 
     /** Experimental keeps bar open when user clicks bar or textfield. This is the only usage of jquery in the application. Checks if the target clicked is a descendant of the editor container */
-    handleClick(e) {
+    handleClick = (e) => {
         try {
-            if (!$.contains(document.getElementsByClassName('ck-editor')[0], e.target)) {
-                if (document.getElementsByClassName('ck-sticky-panel__content')[0]) {
-                    document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
-                }
-                if (document.getElementsByClassName('ck-editor__editable')[0]) {
-                    document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-focused');
-                    document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-blurred');
-                }
-            }
-            if ($.contains(document.getElementsByClassName('ck-sticky-panel__content')[0], e.target) || e.target.classList.contains('ck-toolbar__items')) {
-                setTimeout(() => {
-                    if (document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility == 'visible') {
-                        document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-blurred');
-                        document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-focused');
+            if (document.getElementsByClassName('ck-editor') && document.getElementsByClassName('ck-sticky-panel__content') && document.getElementsByClassName('ck-editor__editable')) {
+                if (!$.contains(document.getElementsByClassName('ck-editor')[0], e.target)) {
+                    if (document.getElementsByClassName('ck-sticky-panel__content')[0]) {
+                        document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
                     }
-                }, 2);
+                    if (document.getElementsByClassName('ck-editor__editable')[0]) {
+                        document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-focused');
+                        document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-blurred');
+                    }
+                }
+                if ($.contains(document.getElementsByClassName('ck-sticky-panel__content')[0], e.target) || e.target.classList.contains('ck-toolbar__items')) {
+                    setTimeout(() => {
+                        if (document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility == 'visible') {
+                            document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-blurred');
+                            document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-focused');
+                        }
+                    }, 2);
+                }
+                this.catchBlur(2);
             }
-            this.catchBlur(2);
         } catch (err) {
-            // A document element was not accessible
+            // Something went wrong
         }
     }
 
@@ -123,17 +125,19 @@ export default class writeArticle extends Component {
         setTimeout(() => {
             try {
                 // Circumvent blurring/focusing logic in core ckeditor. Blurs and focuses editor bar with editor textfield appropriately
-                if (document.getElementsByClassName('ck-sticky-panel__content')[0] && document.getElementsByClassName('ck-editor__editable')[0]) {
-                    if (document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility == "visible") {
-                        document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-blurred');
-                        document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-focused');
-                    } else {
-                        document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-focused');
-                        document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-blurred');
+                if (document.getElementsByClassName('ck-stsicky-panel__content') && document.getElementsByClassName('ck-editor__editable')) {
+                    if (document.getElementsByClassName('ck-sticky-panel__content')[0] && document.getElementsByClassName('ck-editor__editable')[0]) {
+                        if (document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility == "visible") {
+                            document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-blurred');
+                            document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-focused');
+                        } else {
+                            document.getElementsByClassName('ck-editor__editable')[0].classList.remove('ck-focused');
+                            document.getElementsByClassName('ck-editor__editable')[0].classList.add('ck-blurred');
+                        }
                     }
                 }
             } catch (err) {
-                // A document element was not accessible
+                // Component unmounted
             }
         }, timeout);
     }
@@ -228,23 +232,20 @@ export default class writeArticle extends Component {
     }
 
     reduceTitleSize(e) {
-        try {
-            if (this.titleIn.current) {
-                if (this.titleIn.current._ref.value.length > 200) {
-                    e.preventDefault();
-                    let temp = this.titleIn.current._ref.value
-                    temp = temp.slice(0, 200);
-                    $("#upl-article-title").val(temp);
-                }
+        if (get(this, 'titleIn.current._ref')) {
+            if (this.titleIn.current._ref.value.length > 200 && $("#upl-article-title")) {
+                e.preventDefault();
+                let temp = this.titleIn.current._ref.value;
+                temp = temp.slice(0, 200);
+                $("#upl-article-title").val(temp);
             }
-        } catch (err) {
-            console.log(err);
-            // Ref on document did not exist
         }
     }
 
     deleteErr(e) {
-        this.setState({ currentErr: "" });
+        if (this) {
+            this.setState({ currentErr: "" });
+        }
     }
 
     setResponseParentLink() {

@@ -23,8 +23,12 @@ export default class History extends Component {
 
     getHistory() {
         try {
-            if (cookies.get('mediahistory')) {
-                this.setState({ history: cookies.get('mediahistory')});
+            if (cookies.get('mediahistory') && cookies.get('loggedIn')) {
+                if (cookies.get('mediahistory').history && cookies.get('mediahistory').user) {
+                    if (cookies.get('mediahistory').user == cookies.get('loggedIn')) {
+                        this.setState({ history: cookies.get('mediahistory').history });
+                    }
+                }
             }
         } catch (err) {
             // Something went wrong

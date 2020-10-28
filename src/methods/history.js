@@ -15,27 +15,28 @@ export const updateHistory = function(type = "video") {
             if (window) {
                 if (window.location) {
                     if (window.location.search) {
+                        console.log(cookies.get('mediahistory'));
                         // Create first cookie history member if no history saved in cookies
                         if (!cookies.get('mediahistory') && window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)) {
-                            if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0]) {
-                                cookies.set('mediahistory', [ createMediaObject.call(this) ], { path: '/', sameSite: true, signed: true });
+                            if (cookies.get('loggedIn') && window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0]) {
+                                cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] }, { path: '/', sameSite: true, signed: true });
                             }
                         }
                         // Shorten history to 100 members max and loop through members to see if media already exists. Push to front of array
                         if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)) {
-                            if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0]) {
+                            if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0] && cookies.get('mediahistory').history) {
                                 let contentHistory = cookies.get('mediahistory');
-                                if (contentHistory.length > 100) {
-                                    contentHistory = contentHistory.slice(0, 100);
+                                if (contentHistory.history.length > 100) {
+                                    contentHistory = contentHistory.history.slice(0, 100);
                                 }
-                                for (let i = 0; i < contentHistory.length; i++) {
-                                    if (contentHistory[i].id.match(/([v|a=a-zA-Z0-9].{33})/)) {
-                                        if (contentHistory[i].id.match(/([v|a=a-zA-Z0-9].{33})/)[1] == window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0]) {
-                                            contentHistory.splice(i, 1); // Remove old duplicate
+                                for (let i = 0; i < contentHistory.history.length; i++) {
+                                    if (contentHistory.history[i].id.match(/([v|a=a-zA-Z0-9].{33})/)) {
+                                        if (contentHistory.history[i].id.match(/([v|a=a-zA-Z0-9].{33})/)[1] == window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0]) {
+                                            contentHistory.history.splice(i, 1); // Remove old duplicate
                                         }
                                     }
                                 }
-                                contentHistory.push(createMediaObject.call(this)); // Append duplicate as recently read or watched to front of array for cookies
+                                contentHistory.history.push(createMediaObject.call(this)); // Append duplicate as recently read or watched to front of array for cookies
                                 cookies.set('mediahistory', contentHistory, { path: '/', sameSite: true, signed: true });
                             }
                         }
@@ -54,6 +55,10 @@ export const updateHistory = function(type = "video") {
     } else {
         appendHistory();
     }
+}
+
+export const updateNotif = function(subscription) {
+    console.log(subscription);
 }
 
 // Will create a generic media object depending on type of media

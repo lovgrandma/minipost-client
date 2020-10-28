@@ -160,30 +160,25 @@ export default class Dash extends Component {
     }
 
     tempData() {
-        try {
-            let data = [];
-            for (let i = 0; i < 12; i++) {
-                data.push({
-                    _fields: [{
-                        properties: {
-                            articles: [],
-                            author: "",
-                            description: "",
-                            publishDate: "",
-                            views: "",
-                            tags: [],
-                            title: "",
-                            mpd: "",
-                            thumbnailUrl: ""
-                        }
-                    }]
-                });
-            }
-            return data;
-        } catch (err) {
-            // Component may have unmounted
+        let data = [];
+        for (let i = 0; i < 12; i++) {
+            data.push({
+                _fields: [{
+                    properties: {
+                        articles: [],
+                        author: "",
+                        description: "",
+                        publishDate: "",
+                        views: "",
+                        tags: [],
+                        title: "",
+                        mpd: "",
+                        thumbnailUrl: ""
+                    }
+                }]
+            });
         }
-        return [];
+        return data;
     }
 
     render() {
