@@ -26,7 +26,7 @@ export const updateHistory = function(type = "video") {
                         if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)) {
                             if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0] && cookies.get('mediahistory').history) {
                                 let contentHistory = cookies.get('mediahistory');
-                                if (contentHistory.history.length > 100) {
+                                if (contentHistory.history.length > 100) { // If length of history is over 100, remove oldest record
                                     contentHistory = contentHistory.history.slice(0, 100);
                                 }
                                 for (let i = 0; i < contentHistory.history.length; i++) {
@@ -59,6 +59,17 @@ export const updateHistory = function(type = "video") {
 
 export const updateNotif = function(subscription) {
     console.log(subscription);
+    if (cookies.get('loggedIn')) {
+        if (!cookies.get('mediahistory')) {
+            cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [], subscribed: subscription.subscribed },
+                        { path: '/', sameSite: true, signed: true });
+        } else {
+            let mediahistory = cookies.get('mediahistory');
+            console.log(cookies.get('mediahistory'));
+            mediahistory.subscribed = subscription.subscribed;
+            // Check if notification is in notifications
+        }
+    }
 }
 
 // Will create a generic media object depending on type of media

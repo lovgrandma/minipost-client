@@ -503,6 +503,10 @@ input[type="search"] {
     flex-wrap: nowrap;
 }
 
+.nowrapbuttons > a {
+    z-index: 2;
+}
+
 ul li {
     margin-right: 7px;
     margin-left: 7px;
