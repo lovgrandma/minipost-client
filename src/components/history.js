@@ -67,8 +67,12 @@ export default class History extends Component {
                                     <Link to={this.returnLink(media)}>
                                         <div className="videothumb-holder">
                                             {
-                                                media.thumbnail.length > 0 ?
-                                                    <img className="videothumb" src={this.props.cloud + "/" + media.thumbnail + ".jpeg"}></img>
+                                                media ?
+                                                    media.thumbnail ?
+                                                        media.thumbnail.length > 0 ?
+                                                            <img className="videothumb" src={this.props.cloud + "/" + media.thumbnail + ".jpeg"}></img>
+                                                        : <div className="videothumb"></div>
+                                                    : <div className="videothumb"></div>
                                                 : <div className="videothumb"></div>
                                             }
                                         </div>

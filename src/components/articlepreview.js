@@ -66,7 +66,7 @@ export default class articlepreview extends Component {
     render() {
         return (
             <div className={this.props.edit ? "col" : ""}>
-                <div className={!this.props.edit ? "article-container" : "article-container-edit"}>
+                <div className={!this.props.edit ? "article-container article-container-preview" : "article-container-edit"}>
                     <Link to={this.linkToArticle()}>
                         <div className="article-preview-title">{this.props.title}</div>
                     </Link>

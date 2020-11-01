@@ -274,46 +274,74 @@ button {
     margin-right: 10px;
 }
 
-.flex-history {
+.flex-history, .flex-notif {
     display: flex;
     margin-bottom: 2px;
 }
 
-.flex-history a .mainvideotitle {
+.flex-notif-meta {
+    font-size: 0.9em;
+    margin-bottom: 5px;
+}
+
+.flex-notif-author {
+    font-weight: 500;
+}
+
+.flex-notif-author:hover {
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.flex-history a .mainvideotitle,
+.flex-notif .flex-notif-data .maintitle {
     color: black;
 }
 
-.flex-history a,
-.flex-history a .video-description {
+.flex-history a, .flex-notif a,
+.flex-history a .video-description,
+.flex-notif a .notif-description {
     transition: 200ms;
     color: black;
     text-decoration: none;
 }
 
-.flex-history a .video-description {
+.flex-history a .video-description,
+.flex-notif a .notif-description {
     font-size: 14px;
 }
 
-.flex-history a .video-author {
+.flex-history a .video-author,
+.flex-notif a .notif-author {
     transition: 200ms;
     margin-bottom: 5px;
 }
 
-.flex-history a .mainvideotitle:hover {
+.flex-history a .mainvideotitle:hover,
+.flex-notif .flex-notif-data .maintitle:hover {
     text-decoration: underline;
 }
 
+.flex-main-title:hover {
+    cursor: pointer;
+}
 
-.flex-history .videothumb-holder {
+.flex-history .videothumb-holder,
+.flex-notif .notifthumb-holder {
     margin-right: 5px;
     height: 190px;
-    width: 320px;
     max-width: 50vw;
 }
 
-.flex-history .videothumb {
+.flex-history .videothumb,
+.flex-notif .notifthumb {
     background-color: #efefef;
     height: 100%;
+}
+
+.flex-notif-data {
+    display: flex;
+    flex-direction: column;
 }
 
 .profile-stats {
@@ -341,6 +369,15 @@ button {
 .navbar:hover {
     height: 40px;
     background-color: white;
+}
+
+.nav .hyperlink {
+    transition: 200ms;
+    color: grey;
+}
+
+.nav .hyperlink:hover {
+    color: black;
 }
 
 .nav .active:focus,
@@ -1108,6 +1145,7 @@ label {
     color: grey;
     transition: 200ms;
     width: fit-content;
+    user-select: none;
 }
 
 .videodash-recommended-header:hover {
@@ -1178,7 +1216,7 @@ label {
     text-decoration: none !important;
 }
 
-.mainvideotitle, .video-views, .video-author, .video-publish-date, .video-article-responses {
+.mainvideotitle, .flex-main-title, .video-views, .video-author, .video-publish-date, .video-article-responses {
     font-weight: 500;
     height: auto;
     margin-bottom: 4px;
@@ -1300,6 +1338,10 @@ label {
     border-radius: 5px;
 }
 
+.article-container-preview a {
+    color: black;
+}
+
 .article-container-edit a {
     color: black;
     text-decoration: none;
@@ -1404,7 +1446,8 @@ label {
     font-size: 1em;
 }
 
-.mainvideotitle {
+.mainvideotitle,
+.flex-main-title {
     font-size: 16px;
     max-height: 42px;
     overflow-y: hidden;
@@ -2233,6 +2276,36 @@ label {
     font-size: 12px !important;
 }
 
+.following-flex {
+    display: flex;
+    justify-content: space-between;
+    background-color: #ebebeb;
+    border-radius: 10px;
+    margin: 5px 0;
+    margin-left: 6px;
+    padding-right: 5px;
+}
+
+.small-following-unfollow-button {
+    background-color: rgb(221, 152, 187);
+    font-weight: 500;
+    color: white;
+    border-width: 0;
+    font-size: 0.8em;
+    line-height: 0.8;
+    border-radius: 10px;
+    font-family: 'Open Sans', sans-serif;
+    transition: 200ms;
+    padding: 3px 5px;
+    margin: 7px 0;
+    padding-left: 5px;
+}
+
+.small-following-unfollow-button:hover {
+    background-color: rgb(224, 126, 176);
+    cursor: pointer;
+}
+
 .following-view,
 .requests-view {
     width: 47%;
@@ -2346,6 +2419,28 @@ label {
     font-weight: 500;
     margin: 5px 0;
     margin-left: 6px;
+}
+
+.channel-following-container {
+    font-size: 0.85em;
+    font-weight: 500;
+    padding: 2px 5px;
+    border-radius: 10px;
+    margin: 5px 0;
+    margin-left: 5px;
+    padding-left: 1px;
+}
+
+.following-prefix {
+    font-size: 0.95em;
+    font-weight: 400;
+}
+
+.following-channel {
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 1.5px 5px;
+    margin-left: 2px;
 }
 
 .user-request-actions {
@@ -3224,6 +3319,7 @@ If user only has one friend, styling wont apply */
     margin-bottom: 5px;
     color:#5f5f5f;
     transition: 200ms;
+    user-select: none;
 }
 
 .upload-video-text:hover,
@@ -3659,6 +3755,7 @@ If user only has one friend, styling wont apply */
     margin-bottom: 50px;
     color:#5f5f5f;
     transition: 200ms;
+    user-select: none;
 }
 
 .write-an-article-prompt:hover {

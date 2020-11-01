@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import Request from './request.js'; import Friend from './friend.js'; import SearchedUserResults from './searcheduserresults.js'; import NonFriendConversation from './nonfriendconversation.js'; import Sidebarfooter from './sidebarfooter.js';
 import angleDoubleLeft from '../static/angle-double-left-solid.svg'; import friendswhite from '../static/friendsWhite.svg'; import nonFriendsWhite from '../static/nonFriendsWhite.svg';
+import { cookies } from '../App.js';
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 
@@ -20,12 +21,13 @@ export default function Social(props) { // social prop sp1
         pendingsetvalue = "hidden";
     }
 
+
     let childCounter = 0;
     return (
         <div id="socialContainer">
             <div className="userquickdash row">
                 <div className="friend-requests-view">
-                    <button className="following-view">following</button>
+                    <button className="following-view" onClick={(e) => {props.showfollowing(props.showingfollows)}}>following</button>
                     <button className="requests-view" onClick={(e) => {props.getpendingrequests(pendingsetvalue, true, props.username)}}>requests</button>
                 </div>
                 <div>
@@ -46,6 +48,22 @@ export default function Social(props) { // social prop sp1
                                 index={childCounter++}
                                 />
                             )
+                        })
+                    : <div></div> : <div></div>
+                    }
+                </div>
+            </div>
+            <div className={props.showingfollows == "hidden" ? 'friend-requests-list-hidden' : 'friend-requests-list'}>
+                <div>
+                    { props.following ?
+                        props.following.map ?
+                            props.following.map(function(subscribed, index) {
+                                return (
+                                    <div className="following-flex" key={index}>
+                                        <div className='channel-following-container'><span className="following-prefix">following</span> <span className="following-channel">{subscribed.channel}</span></div>
+                                        <div className='small-following-unfollow-button' onClick={(e) => {props.follow(subscribed.channel, false)}}>unfollow</div>
+                                    </div>
+                                )
                         })
                     : <div></div> : <div></div>
                     }

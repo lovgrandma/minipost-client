@@ -781,7 +781,7 @@ export default class Upload extends Component { // ulc upload component
     render() {
         return (
             <div className={!this.state.gettingUserVideos  && !this.props.edit || !this.state.published && !this.props.edit || this.props.edit ? "hidden hidden-visible" : "hidden"}>
-                <div className={cookies.get('loggedIn') ? "upload-video-text" : "upload-video-text bottom-50"}>{!this.props.edit ? "Upload video" : "Edit video"}</div>
+                <div className={ cookies.get('loggedIn') ? "upload-video-text" : "upload-video-text bottom-50"}>{!this.props.edit ? "Upload video" : "Edit video"}</div>
                 { !cookies.get('loggedIn') ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
@@ -791,7 +791,7 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
-                <div className={this.props.isLoggedIn ? "upload-button-container" : "hidden"}>
+                <div className={ cookies.get('loggedIn') ? "upload-button-container" : "hidden"}>
                     <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
                     <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
                 </div>

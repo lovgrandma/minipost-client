@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Social from './components/social.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js';
 import { Player } from 'video-react';
 import {
     BrowserRouter,
@@ -52,8 +52,8 @@ class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {
         super(props);
         this.state = { isLoggedIn: (cookies.get('loggedIn')), sidebarximgSrc: sidebarcloseimg, friends: [{}], users: {},
-                      conversations: [], convoIds: [], searchuserinput: '', searchusers: [],
-                      showingpendingrequests: "hidden", pendingfriendrequests: null,
+                      conversations: [], convoIds: [], searchuserinput: '', searchusers: [], showingfollows: "hidden",
+                      showingpendingrequests: "hidden", pendingfriendrequests: null, following: [],
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
                       friendsopen: true, nonfriendsopen: false,
@@ -150,7 +150,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 });
 
                 socket.on('returnNotif', data => {
-                    updateNotif(data);
+                    this.setState({ following: updateNotif(data.subscribed) });
                 })
 
                 socket.on('uploadErr', data => {
@@ -610,6 +610,14 @@ class Socialbar extends Component { // Main social entry point sb1
         })
     }
         
+    showfollowing = (show) => {
+        if (show == "hidden") {
+            this.setState({ showingfollows: "show"});
+        } else {
+            this.setState({ showingfollows: "hidden"});
+        }
+    }
+
     /* Get pending requests method that often runs in background to populate pending requests data, other methods
     rely on this data to get important information */
     getpendingrequests = (show, search, username) => {
@@ -709,6 +717,11 @@ class Socialbar extends Component { // Main social entry point sb1
             })
             .then((data) => {
                 console.log("Friends of", username, ":", data);
+                if (data.subscribed) {
+                    if (Array.isArray(data.subscribed)) {
+                        this.setState({ following: updateNotif(data.subscribed) });
+                    }
+                }
                 if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
                     this.setState({ friends: data.userfriendslist });
                 }
@@ -924,7 +937,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!isLoggedIn) {
             sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} registererror={this.state.registererror} />
         } else {
-            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests}fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen}
+            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen}
             typing = {this.state.typing} bump = {this.bump} />
         }
             
@@ -1072,7 +1085,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} follow={this.follow} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
@@ -1113,6 +1126,9 @@ class App extends Component {
                             )}/>
                             <Route path='/history' render={(props) => (
                                 <History {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                            )}/>
+                            <Route path='/notifications' render={(props) => (
+                                <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                         </div>
                     </div>

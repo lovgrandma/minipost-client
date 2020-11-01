@@ -35,9 +35,20 @@ export default class Profile extends Component {
     getPathnameMatch = async () => {
         try {
             if (this.props.location.search) {
-                if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)) {
-                    if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
-                        return await this.fetchProfileData(this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                if (this.props.location.search.length > 0) {
+                    if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
+                            return await this.fetchProfileData(this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                        }
+                    }
+                }
+            }
+            if (this.props.location.pathname) {
+                if (this.props.location.pathname.length > 0) {
+                    if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
+                            return await this.fetchProfileData(this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                        }
                     }
                 }
             }

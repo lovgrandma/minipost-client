@@ -3,10 +3,12 @@ import SearchForm from './searchform.js';
 import {
     BrowserRouter,
     Route,
-    NavLink
+    NavLink,
+    Link
 } from 'react-router-dom';
 import logo from '../static/minireel-dot-com-3.svg'; import heart from '../static/heart.svg'; import history from '../static/history.svg'; import notifications from '../static/notifications.svg'; import profile from '../static/profile.svg'; import upload from '../static/upload.svg';
 import { showMoreOptions, hideOptions, resetOpenMenus } from '../methods/context.js';
+import $ from 'jquery';
 
 // Nav bar with appropriate links to likes, history, minireel home, search film bar, notifications, friends & upload.
 export default class Navbar extends Component {
@@ -17,12 +19,41 @@ export default class Navbar extends Component {
         this.userOptions = React.createRef();
     }
 
-    ComponentDidMount() {
+    componentDidMount() {
+        this.checkSidebar();
+        document.addEventListener("click", (e) => {this.hideUploadMenu(e)} );
+
+    }
+
+    componentDidUpdate() {
         this.checkSidebar();
     }
 
-    ComponentDidUpdate() {
-        this.checkSidebar();
+    componentWillUnmount() {
+        document.removeEventListener("click", (e) => {this.hideUploadMenu(e)} );
+    }
+
+    hideUploadMenu(e) {
+        try {
+            if (document.querySelector(".btn-desc-upl")) {
+                if (e.target != document.getElementsByClassName('btn-desc-upl')[0] && document.querySelector(".btn-desc-upl").classList.contains('visible')) {
+                    if (e.target != document.getElementsByClassName('publish-button-open-menu')[0]) {
+                        this.hoverShow(e, "upload", "exit");
+                    }
+                }
+            }
+            if (document.querySelector(".btn-desc-conf-menu")) {
+                if (e.target != document.getElementsByClassName('btn-desc-conf')[0] && document.querySelector(".btn-desc-conf-menu").classList.contains('visible')) {
+                    if (e.target != document.getElementsByClassName('btn-desc-conf-menu')[0]) {
+                        if (e.target != document.getElementsByClassName('nav-loggedin-config')[0]) {
+                            this.hoverShow(e, "config-menu", "exit");
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            // Some element was unavailable
+        }
     }
 
     checkSidebar() {
@@ -40,6 +71,12 @@ export default class Navbar extends Component {
                 document.querySelector(".btn-desc-upl").classList.add("visible");
             } else if (enterexit == "exit") {
                 document.querySelector(".btn-desc-upl").classList.remove("visible");
+            }
+        } if (name == "upload-prompt") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-upload").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-upload").classList.remove("visible");
             }
         } else if (name == "profile") {
             if (enterexit == "enter") {
@@ -71,6 +108,12 @@ export default class Navbar extends Component {
             } else if (enterexit == "exit") {
                 document.querySelector(".btn-desc-conf").classList.remove("visible");
             }
+        } else if (name == "config-menu") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-conf-menu").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-conf-menu").classList.remove("visible");
+            }
         } else if (name == "home") {
             if (enterexit == "enter") {
                 document.querySelector(".btn-desc-home").classList.add("visible");
@@ -97,11 +140,16 @@ export default class Navbar extends Component {
                 </div>
                 {this.props.username ?
                     <ul className="nav flex-grow2 flex-end navbtnsright nowrapbuttons">
-                        <div className="nav-icon notifications material-icons" onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}}>notifications</div>
-                        <div className="btn-desc btn-desc-notif">notifications</div>
-                        <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>
+                        <div className="nav-icon notifications material-icons" onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}}>
+                            <NavLink exact to="/notifications" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>notifications</NavLink>
+                        </div>
+                        <div className="btn-desc btn-desc-notif">check your notifications</div>
+                        <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>
+                            <NavLink exact to="/profile" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>person</NavLink>
+                        </div>
                         <div className="btn-desc btn-desc-yourpro">your profile</div>
-                        <div className="nav-icon upload material-icons" onClick={(e)=>{showMoreOptions.call(this, e, "upload")}}>publish</div>
+                        <div className="nav-icon upload material-icons publish-button-open-menu" onClick={(e)=>{showMoreOptions.call(this, e, "upload")}} onMouseOver={(e) => {this.hoverShow(e, "upload-prompt", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload-prompt", "exit")}}>publish</div>
+                        <div className="btn-desc btn-desc-upload">upload content to minipost</div>
                         <div className="btn-desc btn-desc-upl" ref={tag => (this.uploadOptions = tag)}>
                             <NavLink exact to="/upload" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>upload videos</NavLink>
                             &nbsp;or&nbsp;

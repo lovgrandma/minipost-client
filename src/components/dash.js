@@ -133,9 +133,7 @@ export default class Dash extends Component {
                 })
                 .then((data) => {
                     console.log(data);
-                    if (data.querystatus) {
-                        console.log(data.querystatus);
-                    } else if (Array.isArray(data.main)) {
+                    if (!data.querystatus && Array.isArray(data.main)) {
                         if (data.main.length > 0 && !this.state.loaded) {
                             this.setState({ loaded: true });
                         }

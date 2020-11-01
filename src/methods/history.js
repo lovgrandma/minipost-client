@@ -11,6 +11,12 @@ import $ from 'jquery';
 // : "v/a=MEDIA0ID0000000000000000000000000;THUMBNAIL0URL000000000000000000;TITLE;BODY/DESCRIPTION;VIEWS/READS"
 export const updateHistory = function(type = "video") {
     const appendHistory = () => {
+        let cookieCheck = cookies.get('mediahistory');
+        if (cookieCheck && cookies.get('loggedIn')) {
+            if (cookieCheck.user != cookies.get('loggedIn')) {
+                cookies.remove('mediahistory');
+            }
+        }
         try {
             if (window) {
                 if (window.location) {
@@ -58,16 +64,66 @@ export const updateHistory = function(type = "video") {
 }
 
 export const updateNotif = function(subscription) {
-    console.log(subscription);
     if (cookies.get('loggedIn')) {
         if (!cookies.get('mediahistory')) {
-            cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [], subscribed: subscription.subscribed },
+            for (let i = 0; i < subscription.length; i++) {
+                for (let j = 0; j < subscription[i].notifications.length; j++) {
+                    subscription[i].notifications[j] = subscription[i].notifications[j] + ";u";
+                }
+            }
+            cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [], subscribed: subscription },
                         { path: '/', sameSite: true, signed: true });
+            return subscription;
+        } else if (cookies.get('mediahistory').subscribed.length == 0) {
+            let mediahistory = cookies.get('mediahistory');
+            for (let i = 0; i < subscription.length; i++) {
+                for (let j = 0; j < subscription[i].notifications.length; j++) {
+                    subscription[i].notifications[j] = subscription[i].notifications[j] + ";u";
+                }
+            }
+            mediahistory.subscribed = [...subscription];
+            cookies.set('mediahistory', mediahistory, { path: '/', sameSite: true, signed: true });
+            return mediahistory.subscribed;
         } else {
             let mediahistory = cookies.get('mediahistory');
-            console.log(cookies.get('mediahistory'));
-            mediahistory.subscribed = subscription.subscribed;
-            // Check if notification is in notifications
+            // Check to see if all users in received data are present in local. If not add data to local cookie, if present determine if all new
+            // content is accounted for
+            for (let i = 0; i < subscription.length; i++) { // Iterate on each subscription channel in received
+                let foundChannelMatch = false;
+                for (let j = 0; j < mediahistory.subscribed.length; j++) { // Iterate on each subscription channel in local
+                    if (subscription[i].channel == mediahistory.subscribed[j].channel) { // Channel was found in local cookies, check for content updates/inconsistency
+                        for (let k = 0; k < subscription[i].notifications.length; k++) {
+                            let foundContentMatch = false;
+                            for (let l = 0; l < mediahistory.subscribed[j].notifications.length; l++) {
+                                if (mediahistory.subscribed[j].notifications[l].match(/([A-Za-z0-9-].*);([a-z].*)/)) {
+                                    if (subscription[i].notifications[k] == mediahistory.subscribed[j].notifications[l].match(/([A-Za-z0-9-].*);([a-z].*)/)[1]) {
+                                        subscription[i].notifications[k] = mediahistory.subscribed[j].notifications[l];
+                                        foundContentMatch = true;
+                                    }
+                                }
+                            }
+                            if (!foundContentMatch) {
+                                subscription[i].notifications[k] = subscription[i].notifications[k] + ";u";
+                            }
+                        }
+                        foundChannelMatch = true;
+                        break;
+                    }
+                }
+                if (!foundChannelMatch) {
+                    console.log("no channel match, add 1");
+                    for (let k = 0; k < subscription[i].notifications.length; k++) {
+                        subscription[i].notifications[k] = subscription[i].notifications[k] + ";u";
+                    }
+                    mediahistory.subscribed.push(subscription[i]);
+                }
+            }
+            mediahistory.subscribed = [...subscription];
+            console.log(mediahistory);
+            if (mediahistory) {
+                cookies.set('mediahistory', mediahistory, { path: '/', sameSite: true, signed: true });
+            }
+            return mediahistory.subscribed;
         }
     }
 }

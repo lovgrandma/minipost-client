@@ -27,7 +27,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -176,6 +176,16 @@ export default class Video extends Component {
             if (videoData.video.mpd) {
                 this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
                 this.setState({ viewCounted: false });
+                // Determine if user is currently following
+                if (cookies.get('mediahistory')) {
+                    let subscriptions = cookies.get('mediahistory').subscribed;
+                    for (let i = 0; i < subscriptions.length; i++) {
+                        if (subscriptions[i].channel == this.state.author) {
+                            this.setState({ following: true });
+                            break;
+                        }
+                    }
+                }
                 return videoData.video.mpd;
             }
         } catch (err) {
@@ -370,9 +380,28 @@ export default class Video extends Component {
     followCheck() {
         if (get(this, 'player.getAssetUri')) {
             if (this.player.getAssetUri()) {
-                this.props.follow(this.state.author)
+                if (!this.state.following) {
+                    this.props.follow(this.state.author);
+                } else {
+                    this.props.follow(this.state.author, false);
+                }
             }
         }
+        setTimeout(() => {
+            if (cookies.get('mediahistory')) {
+                let matchFound = false;
+                for (let i = 0; i < cookies.get('mediahistory').subscribed.length; i++) {
+                    if (cookies.get('mediahistory').subscribed[i].channel == this.state.author) {
+                        matchFound = true;
+                        this.setState({ following: true });
+                        break;
+                    }
+                }
+                if (!matchFound) {
+                    this.setState({ following: false });
+                }
+            }
+        }, 500);
     }
 
     render() {
@@ -443,7 +472,7 @@ export default class Video extends Component {
                                         {
                                             cookies.get('loggedIn') ?
                                                 cookies.get('loggedIn') != this.state.author ?
-                                                    <span className='publisher-followbutton' onClick={(e)=>{this.followCheck()}}>follow</span>
+                                                    <span className='publisher-followbutton' onClick={(e)=>{this.followCheck()}}>{ this.state.following == false ? "follow" : "unfollow" }</span>
                                                 : null
                                             : null
                                         }
