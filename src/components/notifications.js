@@ -32,45 +32,49 @@ export default class Notifications extends Component {
     // The following method will take a list of notifications and make a request to database for relevant information.
     // This provides the user with an informative view about their new notifications
     buildCachedMediaData() {
-        if (this.state.notifications.length > 0) {
-            let data = [];
-            this.state.notifications.map( channel => {
-                channel.notifications.map( content => {
-                    if (content.match(/([A-Za-z0-9-].*);([a-z].*)/)) {
-                        data.push(content.match(/([A-Za-z0-9-].*);([a-z].*)/)[1]);
+        if (this.state) {
+            if (this.state.notifications) {
+                if (this.state.notifications.length > 0) {
+                    let data = [];
+                    this.state.notifications.map( channel => {
+                        channel.notifications.map( content => {
+                            if (content.match(/([A-Za-z0-9-].*);([a-z].*)/)) {
+                                data.push(content.match(/([A-Za-z0-9-].*);([a-z].*)/)[1]);
+                            }
+                        });
+                    });
+                    if (data.length > 0) {
+                        fetch(currentrooturl + 'm/fetchcontentdata', {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            mode: 'same-origin',
+                            credentials: 'include',
+                            body: JSON.stringify({
+                                data
+                            })
+                        })
+                            .then((response) => {
+                            return response.json(); // Parsed data
+                        })
+                            .then((data) => {
+                            if (data != false) {
+                                data = data.reverse();
+                                this.setState({ detailedNotifications: data });
+                            }
+                            console.log(data);
+                            return data;
+                        })
+                            .catch(error => {
+                            console.log(error);
+                        })
                     }
-                });
-            });
-            if (data.length > 0) {
-                fetch(currentrooturl + 'm/fetchcontentdata', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    mode: 'same-origin',
-                    credentials: 'include',
-                    body: JSON.stringify({
-                        data
-                    })
-                })
-                .then((response) => {
-                    return response.json(); // Parsed data
-                })
-                .then((data) => {
-                    if (data != false) {
-                        this.setState({ detailedNotifications: data });
-                    }
-                    console.log(data);
-                    return data;
-                })
-                .catch(error => {
-                    console.log(error);
-                })
+                }
             }
         }
     }
-
 
     returnLink(media) {
         try {
@@ -92,6 +96,38 @@ export default class Notifications extends Component {
         }
     }
 
+    markChecked(e, notif) {
+        e.preventDefault();
+        let id;
+        let mediaHistory;
+        if (notif.mpd) {
+            id = notif.mpd;
+        } else {
+            id = notif.id;
+        }
+        if (cookies.get('mediahistory') && id) {
+            mediaHistory = cookies.get('mediahistory');
+            if (mediaHistory.subscribed) {
+                for (let i = 0; i < mediaHistory.subscribed.length; i++) {
+                    for (let j = 0; j < mediaHistory.subscribed[i].notifications.length; j++) {
+                        if (mediaHistory.subscribed[i].notifications[j].match(/(a|v)-([A-Za-z0-9-].*);([a-z].*)/)) {
+                            if (mediaHistory.subscribed[i].notifications[j].match(/(a|v)-([A-Za-z0-9-].*);([a-z].*)/)[2] == id) {
+                                mediaHistory.subscribed[i].notifications[j] = mediaHistory.subscribed[i].notifications[j].match(/(a|v)-([A-Za-z0-9-].*);([a-z].*)/)[1] + "-" + mediaHistory.subscribed[i].notifications[j].match(/(a|v)-([A-Za-z0-9-].*);([a-z].*)/)[2] + ";c";
+                            }
+                        }
+                    }
+                }
+            }
+            cookies.set('mediahistory', mediaHistory, { path: '/', sameSite: true, signed: true });
+            if (notif.mpd) {
+                window.location.href = currentrooturl + "watch?v=" + id;
+            } else {
+                window.location.href = currentrooturl + "read?a=" + id;
+            }
+
+        }
+    }
+
     render() {
         return (
             <div>
@@ -99,9 +135,9 @@ export default class Notifications extends Component {
                 {
                     this.state.detailedNotifications ?
                         this.state.detailedNotifications.length > 0 ?
-                            this.state.detailedNotifications.reverse().map((notif, index) => (
-                                <div className="flex-notif">
-                                    <Link to={this.returnLink(notif)}>
+                            this.state.detailedNotifications.map((notif, index) => (
+                                <div className="flex-notif" key={index}>
+                                    <Link to={this.returnLink(notif)} onClick={(e)=>{this.markChecked(e, notif)}}>
                                         <div className="notifthumb-holder">
                                             {
                                                 notif ?

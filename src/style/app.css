@@ -279,9 +279,13 @@ button {
     margin-bottom: 2px;
 }
 
+.flex-notif {
+    margin-bottom: 10px;
+}
+
 .flex-notif-meta {
     font-size: 0.9em;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 
 .flex-notif-author {
@@ -331,6 +335,10 @@ button {
     margin-right: 5px;
     height: 190px;
     max-width: 50vw;
+}
+
+.flex-notif .notifthumb-holder {
+    height: 145px;
 }
 
 .flex-history .videothumb,

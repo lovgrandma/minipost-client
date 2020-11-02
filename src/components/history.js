@@ -26,7 +26,7 @@ export default class History extends Component {
             if (cookies.get('mediahistory') && cookies.get('loggedIn')) {
                 if (cookies.get('mediahistory').history && cookies.get('mediahistory').user) {
                     if (cookies.get('mediahistory').user == cookies.get('loggedIn')) {
-                        this.setState({ history: cookies.get('mediahistory').history });
+                        this.setState({ history: cookies.get('mediahistory').history.reverse() });
                     }
                 }
             }
@@ -62,7 +62,7 @@ export default class History extends Component {
                 {
                     this.state.history ?
                         this.state.history.length > 0 ?
-                            this.state.history.reverse().map((media, index) =>
+                            this.state.history.map((media, index) =>
                                 <div className="flex-history" key={index}>
                                     <Link to={this.returnLink(media)}>
                                         <div className="videothumb-holder">
