@@ -9,6 +9,7 @@ import {
 } from 'react-router-dom';
 import parseBody from '../methods/htmlparser.js';
 import greythumb from '../static/greythumb.jpg';
+import { convertDate } from '../methods/utility.js';
 
 export default class History extends Component {
     constructor(props) {
@@ -80,6 +81,7 @@ export default class History extends Component {
                                     <div className="history-media-info">
                                         <Link to={this.returnLink(media)}>
                                             <div className="mainvideotitle">{media.title}</div>
+                                            <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views : media.reads } • { convertDate(media.published) }</div>
                                         </Link>
                                         <Link to={this.returnProfile(media)}>
                                             <div className="video-author">{media.author}</div>

@@ -1092,7 +1092,7 @@ class App extends Component {
                             <Route exact path='/' render={(props) => (
                                 <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
-                            <Route path='/search?s=:value' render={(props) => (
+                            <Route path='/search' render={(props) => (
                                 <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (

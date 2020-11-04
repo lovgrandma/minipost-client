@@ -30,6 +30,15 @@ export const updateHistory = function(type = "video") {
                                 cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] }, { path: '/', sameSite: true, signed: true });
                             }
                         }
+                        if (cookies.get('mediahistory')) {
+                            if (!cookies.get('mediahistory').history) {
+                                cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] }, { path: '/', sameSite: true, signed: true });
+                            } else {
+                                if (!Array.isArray(cookies.get('mediahistory').history)) {
+                                    cookies.set('mediahistory', { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] }, { path: '/', sameSite: true, signed: true });
+                                }
+                            }
+                        }
                         // Shorten history to 100 members max and loop through members to see if media already exists. Push to front of array
                         if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)) {
                             if (window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0] && cookies.get('mediahistory').history) {
@@ -113,7 +122,6 @@ export const updateNotif = function(subscription) {
                     }
                 }
                 if (!foundChannelMatch) {
-                    console.log("no channel match, add 1");
                     for (let k = 0; k < subscription[i].notifications.length; k++) {
                         subscription[i].notifications[k] = subscription[i].notifications[k] + ";u";
                     }
@@ -121,7 +129,6 @@ export const updateNotif = function(subscription) {
                 }
             }
             mediahistory.subscribed = [...subscription];
-            console.log(mediahistory);
             if (mediahistory) {
                 cookies.set('mediahistory', mediahistory, { path: '/', sameSite: true, signed: true });
             }
@@ -158,7 +165,6 @@ const createMediaObject = function() {
         }
         return false;
     } catch (err) {
-        console.log(err);
         // something went wrong
         return false;
     }

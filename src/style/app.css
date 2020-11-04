@@ -4014,6 +4014,14 @@ textarea:focus {
     margin-bottom: 10px;
 }
 
+/* Results */
+
+.results-showing {
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    border-bottom: 1px solid #ebebeb;
+}
+
 /* Overwrite rules */
 
 .bottom-50 {
