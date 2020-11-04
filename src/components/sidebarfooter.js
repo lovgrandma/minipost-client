@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import minipostLogoNoText9a9a9a from '../static/minipostLogoNoText9a9a9a.svg';
+import minipostLogoNoText9a9a9a from '../static/minipostAppLogoNoText-Plain9a9a9a-thinBorder.svg';
 
 // Login & register if { user: logged out }
 export default class sidebarfooter extends Component {

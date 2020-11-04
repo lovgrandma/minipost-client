@@ -10,6 +10,7 @@ import {
 import parseBody from '../methods/htmlparser.js';
 import currentrooturl from '../url.js';
 import { convertDate } from '../methods/utility.js';
+import greythumb from '../static/greythumb.jpg';
 
 
 export default class Notifications extends Component {
@@ -142,11 +143,11 @@ export default class Notifications extends Component {
                                             {
                                                 notif ?
                                                     notif.thumbnailUrl ?
-                                                        notif.thumbnailUrl.length > 0 ?
+                                                        notif.thumbnailUrl.length > 0 && this.props.cloud ?
                                                             <img className="notifthumb" src={this.props.cloud + "/" + notif.thumbnailUrl + ".jpeg"}></img>
-                                                        : <div className="notifthumb"></div>
-                                                    : <div className="notifthumb"></div>
-                                                : <div className="notifthumb"></div>
+                                                        : <img className="notifthumb" src={greythumb}></img>
+                                                    : <img className="notifthumb" src={greythumb}></img>
+                                                : <img className="notifthumb" src={greythumb}></img>
                                             }
                                         </div>
                                     </Link>

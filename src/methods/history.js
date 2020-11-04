@@ -3,6 +3,8 @@ import { cookies } from '../App.js';
 import { get } from './utility';
 import parseBody from './htmlparser.js';
 import $ from 'jquery';
+import { createBrowserHistory } from 'history';
+export default createBrowserHistory();
 
 // This function cycles the history in a cookie called "mediahistory" access video history using cookies.get('mediahistory');
 // The function will determine if a mediahistory cookie exists and create it if necessary. Cycles through array cookie to see if media already exists, if so delete and push to front of array to cycle history. Will only save last 100 pieces of media. When media is cycled, thumbnail will be set again (fixes issue if publisher changes thumbnail)

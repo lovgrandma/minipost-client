@@ -8,7 +8,7 @@ import {
     Link
 } from 'react-router-dom';
 import parseBody from '../methods/htmlparser.js';
-
+import greythumb from '../static/greythumb.jpg';
 
 export default class History extends Component {
     constructor(props) {
@@ -69,11 +69,11 @@ export default class History extends Component {
                                             {
                                                 media ?
                                                     media.thumbnail ?
-                                                        media.thumbnail.length > 0 ?
+                                                        media.thumbnail.length > 0 && this.props.cloud ?
                                                             <img className="videothumb" src={this.props.cloud + "/" + media.thumbnail + ".jpeg"}></img>
-                                                        : <div className="videothumb"></div>
-                                                    : <div className="videothumb"></div>
-                                                : <div className="videothumb"></div>
+                                                        : <img className="videothumb" src={greythumb}></img>
+                                                    : <img className="videothumb" src={greythumb}></img>
+                                                : <img className="videothumb" src={greythumb}></img>
                                             }
                                         </div>
                                     </Link>

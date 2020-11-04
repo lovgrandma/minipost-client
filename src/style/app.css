@@ -972,6 +972,7 @@ ul li {
     justify-self: center;
     width:100%;
     display: block;
+    margin-bottom: 10px;
 }
 
 .minipost-footer-brand {
