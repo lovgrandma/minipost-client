@@ -24,10 +24,11 @@ export default class History extends Component {
 
     getHistory() {
         try {
-            if (cookies.get('mediahistory') && cookies.get('loggedIn')) {
-                if (cookies.get('mediahistory').history && cookies.get('mediahistory').user) {
-                    if (cookies.get('mediahistory').user == cookies.get('loggedIn')) {
-                        this.setState({ history: cookies.get('mediahistory').history.reverse() });
+            let temp = JSON.parse(window.localStorage.getItem('mediahistory'));
+            if (temp && cookies.get('loggedIn')) {
+                if (temp.history && temp.user) {
+                    if (temp.user == cookies.get('loggedIn')) {
+                        this.setState({ history: temp.history.reverse() });
                     }
                 }
             }
@@ -81,7 +82,7 @@ export default class History extends Component {
                                     <div className="history-media-info">
                                         <Link to={this.returnLink(media)}>
                                             <div className="mainvideotitle">{media.title}</div>
-                                            <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views : media.reads } • { convertDate(media.published) }</div>
+                                            <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views + " views" : media.reads + " reads" } • { convertDate(media.published) }</div>
                                         </Link>
                                         <Link to={this.returnProfile(media)}>
                                             <div className="video-author">{media.author}</div>

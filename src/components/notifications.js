@@ -22,11 +22,15 @@ export default class Notifications extends Component {
     }
 
     componentDidMount() {
-        let mediahistory = cookies.get('mediahistory');
+        let mediahistory = JSON.parse(window.localStorage.getItem('mediahistory'));
         if (mediahistory) {
-            this.setState({ notifications: mediahistory.subscribed }, () => {
-                this.buildCachedMediaData();
-            });
+            if (mediahistory.subscribed) {
+                if (Array.isArray(mediahistory.subscribed)) {
+                    this.setState({ notifications: mediahistory.subscribed.reverse() }, () => {
+                        this.buildCachedMediaData();
+                    });
+                }
+            }
         }
     }
 
@@ -106,8 +110,8 @@ export default class Notifications extends Component {
         } else {
             id = notif.id;
         }
-        if (cookies.get('mediahistory') && id) {
-            mediaHistory = cookies.get('mediahistory');
+        if (window.localStorage.getItem('mediahistory') && id) {
+            mediaHistory = JSON.parse(window.localStorage.getItem('mediahistory'));
             if (mediaHistory.subscribed) {
                 for (let i = 0; i < mediaHistory.subscribed.length; i++) {
                     for (let j = 0; j < mediaHistory.subscribed[i].notifications.length; j++) {
@@ -119,7 +123,7 @@ export default class Notifications extends Component {
                     }
                 }
             }
-            cookies.set('mediahistory', mediaHistory, { path: '/', sameSite: true, signed: true });
+            window.localStorage.setItem('mediahistory', JSON.stringify(mediaHistory));
             if (notif.mpd) {
                 window.location.href = currentrooturl + "watch?v=" + id;
             } else {

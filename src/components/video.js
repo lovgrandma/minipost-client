@@ -177,8 +177,8 @@ export default class Video extends Component {
                 this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
                 this.setState({ viewCounted: false });
                 // Determine if user is currently following
-                if (cookies.get('mediahistory')) {
-                    let subscriptions = cookies.get('mediahistory').subscribed;
+                if (window.localStorage.getItem('mediahistory')) {
+                    let subscriptions = JSON.parse(window.localStorage.getItem('mediahistory')).subscribed;
                     for (let i = 0; i < subscriptions.length; i++) {
                         if (subscriptions[i].channel == this.state.author) {
                             this.setState({ following: true });
@@ -388,10 +388,11 @@ export default class Video extends Component {
             }
         }
         setTimeout(() => {
-            if (cookies.get('mediahistory')) {
+            if (window.localStorage.getItem('mediahistory')) {
+                let temp = JSON.parse(window.localStorage.getItem('mediahistory'));
                 let matchFound = false;
-                for (let i = 0; i < cookies.get('mediahistory').subscribed.length; i++) {
-                    if (cookies.get('mediahistory').subscribed[i].channel == this.state.author) {
+                for (let i = 0; i < temp.subscribed.length; i++) {
+                    if (temp.subscribed[i].channel == this.state.author) {
                         matchFound = true;
                         this.setState({ following: true });
                         break;
