@@ -8,6 +8,7 @@ import dummyavatar from '../static/greyavatar.jpg';
 import currentrooturl from '../url';
 import ArticlePreview from './articlepreview.js';
 import { convertDate, get } from '../methods/utility.js';
+import { showContentMenu, promptDeleteContent, tryDeleteContent } from '../methods/context.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 
@@ -65,69 +66,6 @@ export default class Videos extends Component {
         }
     }
 
-    showContentMenu(e) {
-        if (this.state.contentMenu === false) {
-            this.setState({ contentMenu: true });
-            this.setState({ deleteErr: ""})
-            this.setState({ deleteContentPrompt: false });
-        } else {
-            this.setState({ deleteErr: ""})
-            this.setState({ contentMenu: false });
-        }
-    }
-
-    promptDeleteContent(e) {
-        if (this.state.deleteContentPrompt === false) {
-            this.setState({ deleteContentPrompt: true });
-            this.setState({ contentMenu: false });
-        } else {
-            this.setState({ deleteErr: ""})
-            this.setState({ deleteContentPrompt: false });
-        }
-    }
-
-    tryDeleteContent = async (e) => {
-        if (get(this, "titleDelete.current.value") && this.props.title) {
-            if (this.props.mpd || this.props.id) {
-                if (this.titleDelete.current.value == this.props.title) {
-                    let id = "";
-                    let type = "";
-                    if (this.props.mpd) {
-                        id = this.props.mpd;
-                        type = "video";
-                    } else if (this.props.id) {
-                        id = this.props.id;
-                        type = "article";
-                    }
-                    let confirm = this.titleDelete.current.value;
-                    if (id && type) {
-                        await fetch(currentrooturl + 'm/deleteOneContent', {
-                                method: "POST",
-                                headers: {
-                                    'Accept': 'application/json',
-                                    'Content-Type': 'application/json'
-                                },
-                                credentials: 'same-origin',
-                                body: JSON.stringify({
-                                    id, type
-                                })
-                            })
-                            .then(function(response) {
-                                return response.json();
-                            })
-                            .then((result) => {
-                                if (result == true) {
-                                    window.location.reload(false);
-                                }
-                            })
-                    }
-                } else {
-                    this.setState({ deleteErr: "the title you entered does not match the content's title"})
-                }
-            }
-        }
-    }
-
     showArticles = (e, show) => {
         if (this.articleContainer.current) {
             if (show) {
@@ -154,9 +92,9 @@ export default class Videos extends Component {
                             {
                                 this.state.deleteContentPrompt ?
                                     <div className="delete-prompt-box">
-                                        <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter the title below:</label><div className="clear-content-menu" onClick={(e) => {this.promptDeleteContent(e)}}>×</div></div>
+                                        <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter the title below:</label><div className="clear-content-menu" onClick={(e) => {promptDeleteContent.call(this, e)}}>×</div></div>
                                         <input type="text" id="titleDelete" name="titleDelete" className="title-delete-input" ref={this.titleDelete} />
-                                        <input type="submit" value="delete" className="title-delete-submit" onClick={(e) => {this.tryDeleteContent(e)}} />
+                                        <input type="submit" value="delete" className="title-delete-submit" onClick={(e) => {tryDeleteContent.call(this, e)}} />
                                         {
                                             this.state.deleteErr ?
                                                 <div className="delete-err">{this.state.deleteErr}</div>
@@ -179,11 +117,11 @@ export default class Videos extends Component {
                                     {
                                         this.props.edit ?
                                             <div>
-                                                <FontAwesomeIcon className="edit-interact menu-content-interact" onClick={(e) => {this.showContentMenu(e)}} icon={faEllipsisH} color={ '#919191' } alt="edit"/>
+                                                <FontAwesomeIcon className="edit-interact menu-content-interact" onClick={(e) => {showContentMenu.call(this, e)}} icon={faEllipsisH} color={ '#919191' } alt="edit"/>
                                                 {
                                                     this.state.contentMenu ?
                                                         <ul className="editor-menu-content-interact">
-                                                            <li onClick={(e) => {this.promptDeleteContent(e)}}>Delete video</li>
+                                                            <li onClick={(e) => {promptDeleteContent.call(this, e)}}>Delete video</li>
                                                         </ul>
                                                     : null
                                                 }

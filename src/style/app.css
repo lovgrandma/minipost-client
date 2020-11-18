@@ -1594,17 +1594,26 @@ label {
     font-size: 0.85em;
 }
 
+.delete-prompt-box-article {
+    z-index: 10;
+}
+
 .title-delete-input {
     width: 90%;
     margin-bottom: 5px;
 }
 
 .title-delete-submit {
+    transition: 200ms;
     margin-bottom: 5px;
+    padding: 3px 15px;
+    border-radius: 7px;
+    border: none;
 }
 
 .title-delete-submit:hover {
     cursor: pointer;
+    background-color: #d4d4d4;
 }
 
 .editor-menu-content-interact li:hover {

@@ -7,7 +7,8 @@ import {
     Link
 } from 'react-router-dom';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
-import { parseId } from '../methods/utility.js';
+import { parseId, get } from '../methods/utility.js';
+import { showContentMenu, promptDeleteContent, tryDeleteContent } from '../methods/context.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
@@ -16,8 +17,9 @@ export default class articlepreview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            body: ""
+            body: "", contentMenu: false, deleteContentPrompt: false, deleteErr: ""
         }
+        this.titleDelete = React.createRef();
     }
 
     componentDidMount() {
@@ -67,13 +69,34 @@ export default class articlepreview extends Component {
         return (
             <div className={this.props.edit  || this.props.viewProfile ? "col" : ""}>
                 <div className={this.props.edit || this.props.viewProfile ? "article-container-edit" : "article-container article-container-preview"}>
+                    {
+                        this.state.deleteContentPrompt ?
+                            <div className="delete-prompt-box delete-prompt-box-article">
+                                <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter the title below:</label><div className="clear-content-menu" onClick={(e) => {promptDeleteContent.call(this, e)}}>×</div></div>
+                                <input type="text" id="titleDelete" name="titleDelete" className="title-delete-input" ref={this.titleDelete} />
+                                <input type="submit" value="delete" className="title-delete-submit" onClick={(e) => {tryDeleteContent.call(this, e)}} />
+                                {
+                                    this.state.deleteErr ?
+                                        <div className="delete-err">{this.state.deleteErr}</div>
+                                    : null
+                                }
+                            </div>
+                        : null
+                    }
                     <Link to={this.linkToArticle()}>
                         <div className="article-preview-title">{this.props.title}</div>
                     </Link>
                     {
                         this.props.edit ?
                             <div>
-                                <FontAwesomeIcon className="edit-interact menu-content-interact" icon={faEllipsisH} color={ '#919191' } alt="edit"/>
+                                <FontAwesomeIcon className="edit-interact menu-content-interact" onClick={(e) => {showContentMenu.call(this, e)}} icon={faEllipsisH} color={ '#919191' } alt="edit"/>
+                                {
+                                    this.state.contentMenu ?
+                                        <ul className="editor-menu-content-interact">
+                                            <li onClick={(e) => {promptDeleteContent.call(this, e)}}>Delete article</li>
+                                        </ul>
+                                    : null
+                                }
                                 <Link to={this.articleEditLink()}><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit"/></Link>
                             </div>
                         : null

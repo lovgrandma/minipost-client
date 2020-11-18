@@ -314,6 +314,17 @@ const returnProfile = function(media) {
     }
 }
 
+const getNumber = function(data) {
+    if (data.hasOwnProperty("high") && data.hasOwnProperty("low")) {
+        if (data.high > data.low) {
+            return data.high;
+        } else {
+            return data.low;
+        }
+    }
+    return data;
+}
+
 module.exports = {
     debounce: debounce,
     deepEquals: deepEquals,
@@ -332,5 +343,6 @@ module.exports = {
     setData: setData,
     randomProperty: randomProperty,
     returnLink: returnLink,
-    returnProfile: returnProfile
+    returnProfile: returnProfile,
+    getNumber: getNumber
 }

@@ -194,7 +194,7 @@ export default class Dash extends Component {
                                     thumbnailUrl={utility.setData(video, "thumbnailUrl")}
                                     author={video._fields[0].properties.author.toString()}
                                     published={video._fields[0].properties.publishDate.toString()}
-                                    views={video._fields[0].properties.views}
+                                    views={utility.getNumber(video._fields[0].properties.views)}
                                     articles={video._fields[0].properties.articles}
                                     tags={video._fields[0].properties.tags}
                                     cloud={this.props.cloud}
