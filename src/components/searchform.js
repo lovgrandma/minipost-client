@@ -11,7 +11,6 @@ export default class SearchForm extends Component {
         this.searchTermRef = React.createRef();
     }
 
-
     hoverShow = (e, name, enterexit) => {
         if (name == "search") {
             if (enterexit == "enter") {
@@ -22,9 +21,16 @@ export default class SearchForm extends Component {
         }
     }
 
+    // This will eventually be used to stop the page from refreshing when search occurs
+    // Page will load new results without refreshing page
+    handleSearch = (e) => {
+//        e.preventDefault();
+//        history.push('/search?s=yup');
+    }
+
     render() {
         return (
-            <form className="search-form-flex" method="GET" action="/search">
+            <form className="search-form-flex" method="GET" action="/search" onSubmit={(e) => {this.handleSearch(e)}}>
                 <input className="search-field" id="search" type="search" ref={this.searchTermRef} placeholder="Search.." name="s"></input>
                 <button className="searchbox" type="submit" value="submit" onMouseOver={(e) => {this.hoverShow(e, "search", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "search", "exit")}}>
                     <i className="material-icons search material-icon-search">search</i>

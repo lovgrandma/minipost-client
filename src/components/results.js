@@ -10,7 +10,7 @@ import {
 import parseBody from '../methods/htmlparser.js';
 import currentrooturl from '../url.js';
 import history from '../methods/history.js';
-import { convertDate, get } from '../methods/utility.js';
+import { convertDate, get, returnLink, returnProfile } from '../methods/utility.js';
 import greythumb from '../static/greythumb.jpg';
 
 
@@ -92,11 +92,41 @@ export default class Results extends Component {
                     <div>
                         <div className="results-showing">Showing results for: {this.state.query}</div>
                         {
-                            this.state.content.length > 0 ?
-                                this.state.content.map((record, index) =>
-                                    <div key={index}>{record.title}</div>
-                                )
-                            : <div></div>
+                            this.state.content ?
+                                this.state.content.length > 0 ?
+                                    this.state.content.map((media, index) =>
+                                        <div className="flex-history" key={index}>
+                                            <Link to={returnLink(media, "results")}>
+                                                <div className="videothumb-holder">
+                                                    {
+                                                        media ?
+                                                            media.thumbnailUrl ?
+                                                                media.thumbnailUrl.length > 0 && cookies.get('contentDelivery') ?
+                                                                    <img className="videothumb" src={cookies.get('contentDelivery') + "/" + media.thumbnailUrl + ".jpeg"}></img>
+                                                                : <img className="videothumb" src={greythumb}></img>
+                                                            : <img className="videothumb" src={greythumb}></img>
+                                                        : <img className="videothumb" src={greythumb}></img>
+                                                    }
+                                                </div>
+                                            </Link>
+                                            <div className="history-media-info">
+                                                <Link to={returnLink(media, "results")}>
+                                                    <div className="mainvideotitle">{media.title}</div>
+                                                </Link>
+                                                <div className="flex flex-start">
+                                                    <Link to={returnProfile(media)}>
+                                                        <div className="video-author">{media.author} •&nbsp;</div>
+                                                    </Link>
+                                                    <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views + " views" : media.reads + " reads" } • { convertDate(media.publishDate) }</div>
+                                                </div>
+                                                <Link to={returnLink(media, "results")}>
+                                                    <div className="video-description">{ media.body ? "read here.." : media.description }</div>
+                                                </Link>
+                                            </div>
+                                        </div>
+                                    )
+                                : null
+                            : null
                         }
                     </div>
                 : <div></div>

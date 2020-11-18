@@ -1058,6 +1058,7 @@ class App extends Component {
 
     setCloud = (cloud) => {
         this.setState({ cloud: cloud });
+        cookies.set('contentDelivery', cloud, { path: '/', sameSite: true, signed: true });
     }
 
     setMoreOptionsVisible = () => {

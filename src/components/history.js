@@ -9,7 +9,7 @@ import {
 } from 'react-router-dom';
 import parseBody from '../methods/htmlparser.js';
 import greythumb from '../static/greythumb.jpg';
-import { convertDate } from '../methods/utility.js';
+import { convertDate, returnLink, returnProfile } from '../methods/utility.js';
 
 export default class History extends Component {
     constructor(props) {
@@ -37,26 +37,6 @@ export default class History extends Component {
         }
     }
 
-    returnLink(media) {
-        try {
-            if (media.id.charAt(0) == "a") {
-                return { pathname:`/read?${media.id}` };
-            } else {
-                return { pathname:`/watch?${media.id}` };
-            }
-        } catch (err) {
-            // Something went wrong
-        }
-    }
-
-    returnProfile(media) {
-        try {
-            return { pathname:`/profile?p=${media.author}` };
-        } catch (err) {
-            // Something went wrong
-        }
-    }
-
     render() {
         return (
             <div>
@@ -66,7 +46,7 @@ export default class History extends Component {
                         this.state.history.length > 0 ?
                             this.state.history.map((media, index) =>
                                 <div className="flex-history" key={index}>
-                                    <Link to={this.returnLink(media)}>
+                                    <Link to={returnLink(media)}>
                                         <div className="videothumb-holder">
                                             {
                                                 media ?
@@ -80,14 +60,16 @@ export default class History extends Component {
                                         </div>
                                     </Link>
                                     <div className="history-media-info">
-                                        <Link to={this.returnLink(media)}>
+                                        <Link to={returnLink(media)}>
                                             <div className="mainvideotitle">{media.title}</div>
+                                        </Link>
+                                        <div className="flex flex-start">
+                                            <Link to={returnProfile(media)}>
+                                                <div className="video-author">{media.author} •&nbsp;</div>
+                                            </Link>
                                             <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views + " views" : media.reads + " reads" } • { convertDate(media.published) }</div>
-                                        </Link>
-                                        <Link to={this.returnProfile(media)}>
-                                            <div className="video-author">{media.author}</div>
-                                        </Link>
-                                        <Link to={this.returnLink(media)}>
+                                        </div>
+                                        <Link to={returnLink(media)}>
                                             <div className="video-description">{ media.body ? "read here.." : media.description }</div>
                                         </Link>
                                     </div>

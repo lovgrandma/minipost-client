@@ -2,6 +2,9 @@ import React, { Component } from 'react';
 import Request from './request.js'; import Friend from './friend.js'; import SearchedUserResults from './searcheduserresults.js'; import NonFriendConversation from './nonfriendconversation.js'; import Sidebarfooter from './sidebarfooter.js';
 import angleDoubleLeft from '../static/angle-double-left-solid.svg'; import friendswhite from '../static/friendsWhite.svg'; import nonFriendsWhite from '../static/nonFriendsWhite.svg';
 import { cookies } from '../App.js';
+import {
+    Link
+} from 'react-router-dom';
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 
@@ -21,6 +24,16 @@ export default function Social(props) { // social prop sp1
         pendingsetvalue = "hidden";
     }
 
+    let returnLink = (author) => {
+        try {
+            if (author) {
+                return { pathname:`/profile?${"p=" + author}` };
+            }
+        } catch (err) {
+            return { pathname:`/profile` };
+            // Something went wrong
+        }
+    }
 
     let childCounter = 0;
     return (
@@ -60,7 +73,7 @@ export default function Social(props) { // social prop sp1
                             props.following.map(function(subscribed, index) {
                                 return (
                                     <div className="following-flex" key={index}>
-                                        <div className='channel-following-container'><span className="following-prefix">following</span> <span className="following-channel">{subscribed.channel}</span></div>
+                                        <div className='channel-following-container'><span className="following-prefix">following</span> <Link to={returnLink(subscribed.channel)} className="channel-author"><span className="following-channel">{subscribed.channel}</span></Link></div>
                                         <div className='small-following-unfollow-button' onClick={(e) => {props.follow(subscribed.channel, false)}}>unfollow</div>
                                     </div>
                                 )

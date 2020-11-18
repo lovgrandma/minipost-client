@@ -285,6 +285,35 @@ const randomProperty = function(obj) {
     }
 }
 
+const returnLink = function(media, page = "history") {
+    try {
+        if (page == "history") {
+            if (media.id.charAt(0) == "a") {
+                return { pathname:`/read?${media.id}` };
+            } else {
+                return { pathname:`/watch?${media.id}` };
+            }
+        } else if (page == "results") {
+            if (media.id) {
+                return { pathname:`/read?a=${media.id}` };
+            } else {
+                return { pathname:`/watch?v=${media.mpd}` };
+            }
+        }
+    } catch (err) {
+        console.log(err);
+        // Something went wrong
+    }
+}
+
+const returnProfile = function(media) {
+    try {
+        return { pathname:`/profile?p=${media.author}` };
+    } catch (err) {
+        // Something went wrong
+    }
+}
+
 module.exports = {
     debounce: debounce,
     deepEquals: deepEquals,
@@ -301,5 +330,7 @@ module.exports = {
     get: get,
     opposite: opposite,
     setData: setData,
-    randomProperty: randomProperty
+    randomProperty: randomProperty,
+    returnLink: returnLink,
+    returnProfile: returnProfile
 }

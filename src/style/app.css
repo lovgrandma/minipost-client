@@ -261,6 +261,10 @@ button {
     justify-content: space-between;
 }
 
+.flex-start {
+    justify-content: flex-start;
+}
+
 .flex-profile {
     display: flex;
 }
@@ -300,6 +304,7 @@ button {
 .flex-history a .mainvideotitle,
 .flex-notif .flex-notif-data .maintitle {
     color: black;
+    font-size: 1.01em;
 }
 
 .flex-history a, .flex-notif a,
@@ -312,13 +317,12 @@ button {
 
 .flex-history a .video-description,
 .flex-notif a .notif-description {
-    font-size: 14px;
+    font-size: 0.8em;
 }
 
 .flex-history a .video-author,
 .flex-notif a .notif-author {
     transition: 200ms;
-    margin-bottom: 5px;
 }
 
 .flex-history a .mainvideotitle:hover,
@@ -1225,6 +1229,11 @@ label {
     text-decoration: none !important;
 }
 
+.video-views-result {
+    font-size: 0.9em;
+    margin-bottom: 20px;
+}
+
 .mainvideotitle, .flex-main-title, .video-views, .video-author, .video-publish-date, .video-article-responses {
     font-weight: 500;
     height: auto;
@@ -1233,11 +1242,22 @@ label {
 }
 
 .video-details-title-edit .mainvideotitle {
-    max-width: 90%;
+    max-width: 80%;
 }
 
-.video-author {
+.video-author,
+.channel-author {
     text-decoration: none;
+}
+
+.channel-author {
+    color: black;
+    transition: 200ms;
+}
+
+.channel-author:hover {
+    text-decoration: none;
+    color: grey;
 }
 
 /* For dropdown article responses preview container */
@@ -1359,7 +1379,7 @@ label {
 .article-container-edit .edit-interact {
     position: absolute;
     top: 0;
-    right: 0;
+    right: 25px;
 }
 
 .article-container-edit a:hover {
@@ -1515,8 +1535,34 @@ label {
     transition: 200ms;
     position: absolute;
     top: 2px;
-    right: 5px;
+    right: 26px;
     height: 14px;
+}
+
+.delete-err {
+    color: red;
+    font-size: 0.8em;
+    margin-bottom: 5px;
+}
+
+.clear-content-menu {
+    padding-right: 3px;
+    font-size: 1.25em;
+    line-height: 1.1;
+}
+
+.clear-content-menu:hover {
+    cursor: pointer;
+}
+
+.video-details-title-edit .menu-content-interact,
+.article-container-edit .menu-content-interact {
+    right: 5px;
+}
+
+.video-details-title-edit .menu-content-interact:hover,
+.article-container-edit .menu-content-interact:hover {
+    cursor: pointer;
 }
 
 .article-container-edit .edit-interact {
@@ -1526,6 +1572,43 @@ label {
 .video-details-title-edit .edit-interact:hover,
 .article-container-edit .edit-interact:hover {
     color: #000000;
+}
+
+.editor-menu-content-interact {
+    position: absolute;
+    top: 20px;
+    font-size: 0.8em;
+    font-weight: 600;
+    right: 0;
+    color: #5f5f5f;
+    list-style: none;
+    background-color: #f0f0f0;
+    z-index: 10;
+}
+
+.delete-prompt-box {
+    width: 100%;
+    margin: 0 auto;
+    position: absolute;
+    background-color: white;
+    font-size: 0.85em;
+}
+
+.title-delete-input {
+    width: 90%;
+    margin-bottom: 5px;
+}
+
+.title-delete-submit {
+    margin-bottom: 5px;
+}
+
+.title-delete-submit:hover {
+    cursor: pointer;
+}
+
+.editor-menu-content-interact li:hover {
+    cursor: pointer;
 }
 
 .videothumb-holder >
@@ -3865,7 +3948,7 @@ textarea:focus {
 }
 
 .article-container-edit .article-preview-title {
-    max-width: 92%;
+    max-width: 84%;
 }
 
 .article-preview-title {
@@ -4017,6 +4100,7 @@ textarea:focus {
 /* Results */
 
 .results-showing {
+    font-size: 0.9em;
     padding-bottom: 5px;
     margin-bottom: 10px;
     border-bottom: 1px solid #ebebeb;

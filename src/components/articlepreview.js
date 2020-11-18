@@ -10,7 +10,7 @@ import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from
 import { parseId } from '../methods/utility.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faEdit } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 
 export default class articlepreview extends Component {
     constructor(props) {
@@ -65,17 +65,21 @@ export default class articlepreview extends Component {
 
     render() {
         return (
-            <div className={this.props.edit ? "col" : ""}>
-                <div className={!this.props.edit ? "article-container article-container-preview" : "article-container-edit"}>
+            <div className={this.props.edit  || this.props.viewProfile ? "col" : ""}>
+                <div className={this.props.edit || this.props.viewProfile ? "article-container-edit" : "article-container article-container-preview"}>
                     <Link to={this.linkToArticle()}>
                         <div className="article-preview-title">{this.props.title}</div>
                     </Link>
                     {
                         this.props.edit ?
-                            <Link to={this.articleEditLink()}><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit"/></Link> : null
+                            <div>
+                                <FontAwesomeIcon className="edit-interact menu-content-interact" icon={faEllipsisH} color={ '#919191' } alt="edit"/>
+                                <Link to={this.articleEditLink()}><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit"/></Link>
+                            </div>
+                        : null
                     }
                     <Link to={this.linkToArticle()}>
-                        <div className={!this.props.edit ? "article-preview-body" : "article-preview-body-edit"}>{this.state.body}</div>
+                        <div className={this.props.edit || this.props.viewProfile ? "article-preview-body-edit" : "article-preview-body"}>{this.state.body}</div>
                     </Link>
                 </div>
             </div>

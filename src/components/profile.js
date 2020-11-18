@@ -164,6 +164,7 @@ export default class Profile extends Component {
                                     published={record.publishDate}
                                     key={index}
                                     edit={this.editable()}
+                                    viewProfile={true}
                                 />
                             )
                         : null
