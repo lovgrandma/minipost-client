@@ -855,7 +855,7 @@ export default class Upload extends Component { // ulc upload component
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>{!this.props.edit ? "Publish" : "Update"}</Button>
                     </div>
                 </div>
-                <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
+                <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out responding-to" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
                 <div className={this.state.published && !this.state.publishedAwait ? "hidden hidden-visible prompt-basic" : "hidden"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.state.publishedMpd}`}}>here</Link></div>
                 <div className={this.state.publishedAwait ? "hidden hidden-visible prompt-basic grey-out" : "hidden"}>Your video has been published but it has not finished uploading yet. You can continue to edit video details above</div>
                 <div className={this.props.isLoggedIn && !this.props.edit ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>

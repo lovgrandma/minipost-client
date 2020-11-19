@@ -4106,6 +4106,10 @@ textarea:focus {
     margin-bottom: 10px;
 }
 
+.responding-to {
+    margin-bottom: 10px;
+}
+
 /* Results */
 
 .results-showing {

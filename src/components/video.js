@@ -27,7 +27,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: ""
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -40,6 +40,9 @@ export default class Video extends Component {
     componentDidMount = async () => {
         this.setUpState();
         this.loadPage();
+        if (cookies.get('contentDelivery')) {
+            this.setState({ cloud: cookies.get('contentDelivery')});
+        }
     }
 
     componentWillUnmount() {
@@ -571,7 +574,7 @@ export default class Video extends Component {
                                                         responseToType: "video"
                                                     }
                                                 }}>
-                                                    <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={dummythumbnail}></img>
+                                                    <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={video.thumbnailUrl ? this.state.cloud + "/" + video.thumbnailUrl + ".jpeg" : dummythumbnail}></img>
                                                     <div className="video-title-videopage mainvideotitle">{shortenTitle(video.title)}</div>
                                                     <div className="dash-video-bar-stats dash-video-bar-stats-videopage">
                                                         <div className='video-author-videopage'>{video.author}</div>&nbsp;•&nbsp;<div className="video-publish-date-videopage">{convertDate(video.publishDate)}</div>
