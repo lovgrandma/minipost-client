@@ -538,7 +538,7 @@ export default class Upload extends Component { // ulc upload component
             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
             data.append('extension', extension);
             data.append('video', file);
-            data.append('user', this.props.isLoggedIn);
+            data.append('user', cookies.get('loggedIn'));
             if (this.props.socket) {
                 data.append('socket', this.props.socket.id);
             } else if (this.state.socket) {

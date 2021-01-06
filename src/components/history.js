@@ -52,7 +52,7 @@ export default class History extends Component {
                                                 media ?
                                                     media.thumbnail ?
                                                         media.thumbnail.length > 0 && this.props.cloud ?
-                                                            <img className="videothumb" src={this.props.cloud + "/" + media.thumbnail + ".jpeg"}></img>
+                                                            <img className="videothumb" src={cookies.get('contentDelivery') + "/" + media.thumbnail + ".jpeg"}></img>
                                                         : <img className="videothumb" src={greythumb}></img>
                                                     : <img className="videothumb" src={greythumb}></img>
                                                 : <img className="videothumb" src={greythumb}></img>

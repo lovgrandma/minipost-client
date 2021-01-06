@@ -1520,6 +1520,8 @@ label {
     height: auto;
     object-fit: cover;
     z-index: 3;
+    border-radius: 0px;
+    transition: 200ms;
 }
 
 .videothumb-videopage {

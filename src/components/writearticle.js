@@ -1,9 +1,7 @@
 import React, {Component} from 'react';
 import currentrooturl from '../url';
 import CKEditor from '@ckeditor/ckeditor5-react';
-// import inlineEditor from '@ckeditor/ckeditor5-build-inline';
 import ckEditor from 'ckeditor5-custom-build';
-//import ckEditor from 'ckeditor4-react';
 import {
     Form,
     FormGroup,
@@ -34,7 +32,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: ""
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: "", editorDidNotLoad: false
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -54,6 +52,35 @@ export default class writeArticle extends Component {
                 }
             }
         }
+//        setInterval(() => {
+//            console.log(this.editor);
+//            if (this.editor.current == null) {
+//                this.setState({ editorDidNotLoad: true });
+//            }
+//        }, 2000);
+
+        let i = 0;
+        const editorLoaded = (i, time) => {
+            if (!this.editor.data) {
+                this.setState({ editorDidNotLoad: true });
+                if (i > 0) {
+                    i--;
+                }
+            } else {
+                this.setState({ editorDidNotLoad: false });
+                if (i < 10) {
+                    i++;
+                }
+            }
+            editorConfirmLoaded(i, time);
+        };
+
+        const editorConfirmLoaded = (i, time) => {
+            setTimeout(() => {
+                editorLoaded(i, time);
+            }, i*time);
+        }
+        editorConfirmLoaded(1, 1500);
         window.addEventListener("mousedown", this.handleClick);
     }
 
@@ -266,7 +293,6 @@ export default class writeArticle extends Component {
 
     render() {
         return (
-
             <div>
                 <div className="editor-container">
                     <div className="write-an-article-prompt">{ !this.props.edit ? "Write an article" : "Edit an article"}</div>
@@ -301,6 +327,11 @@ export default class writeArticle extends Component {
                             } }
                         />
                         <div className={this.state.responseToTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link></div>
+                        {
+                            this.state.editorDidNotLoad ?
+                                <div>It seems the editor did not load, this usually only occurs when loading for the first time, please refresh</div>
+                                : null
+                        }
                         <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"} onClick={(e) => {this.publishArticle(e)}}>Publish</Button>
                     </div>
                     <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden"}>Your article was published, view it <Link to={{ pathname:`/read?a=${this.state.id}`}}>here</Link></div>
