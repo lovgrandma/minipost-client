@@ -1114,6 +1114,12 @@ class App extends Component {
                             <Route path='/writearticle' render={(props) => (
                                 <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
                             )}/>
+                            <Route path='/upload?r=:replyId' render={(props) => (
+                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                            )}/>
+                            <Route path='/writearticle?r=:replyId' render={(props) => (
+                                <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
+                            )}/>
                             <Route path='/profile?p=:username' render={(props) => (
                                 <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
                             )}/>

@@ -288,7 +288,9 @@ const randomProperty = function(obj) {
 const returnLink = function(media, page = "history") {
     try {
         if (page == "history") {
-            if (media.id.charAt(0) == "a") {
+            if (!media) {
+                return { pathname:`/` };
+            } else if (media.id.charAt(0) == "a") {
                 return { pathname:`/read?${media.id}` };
             } else {
                 return { pathname:`/watch?${media.id}` };

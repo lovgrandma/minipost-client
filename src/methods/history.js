@@ -15,6 +15,8 @@ export const updateHistory = function(type = "video") {
     console.log(JSON.parse(window.localStorage.getItem('mediahistory')));
     const appendHistory = () => {
         let cookieCheck = JSON.parse(window.localStorage.getItem('mediahistory'));
+        cookieCheck.history = checkBadHistoryData(cookieCheck.history);
+        window.localStorage.setItem('mediahistory', JSON.stringify(cookieCheck));
         if (cookieCheck && cookies.get('loggedIn')) {
             if (cookieCheck.user != cookies.get('loggedIn')) {
                 window.localStorage.removeItem('mediahistory');
@@ -27,18 +29,18 @@ export const updateHistory = function(type = "video") {
                         // Create first cookie history member if no history saved in cookies
                         if (!window.localStorage.getItem('mediahistory') && window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)) {
                             if (window.localStorage.getItem('loggedIn') && window.location.search.match(/([v|a=a-zA-Z0-9].{33})/)[0]) {
-                                let mediaObject = { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] };
+                                let mediaObject = { user: cookies.get('loggedIn'), history: checkBadHistoryData([ createMediaObject.call(this)]), subscribed: [] };
                                 window.localStorage.setItem('mediahistory', JSON.stringify(mediaObject));
                             }
                         }
                         if (window.localStorage.getItem('loggedIn')) {
                             let temp = JSON.parse(window.localStorage.getItem('mediahistory'));
                             if (!temp.history) {
-                                let mediaObject = { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] };
+                                let mediaObject = { user: cookies.get('loggedIn'), history: checkBadHistoryData([ createMediaObject.call(this)]), subscribed: [] };
                                 window.localStorage.setItem('mediahistory', JSON.stringify(mediaObject));
                             } else {
                                 if (!Array.isArray(temp.history)) {
-                                    let mediaObject = { user: cookies.get('loggedIn'), history: [ createMediaObject.call(this)], subscribed: [] };
+                                    let mediaObject = { user: cookies.get('loggedIn'), history: checkBadHistoryData([ createMediaObject.call(this)]), subscribed: [] };
                                     window.localStorage.setItem('mediahistory', JSON.stringify(mediaObject));
                                 }
                             }
@@ -58,11 +60,14 @@ export const updateHistory = function(type = "video") {
                                     }
                                 }
                                 const doPush = async () => {
-                                    let contentLength = await temp.history.push(createMediaObject.call(this)); // Append duplicate as recently read or watched to front of array for cookies
-                                    if (contentLength) {
-                                        return temp;
-                                    } else {
-                                        return null;
+                                    let object = createMediaObject.call(this);
+                                    if (object) {
+                                        let contentLength = await temp.history.push(object); // Append duplicate as recently read or watched to front of array for cookies
+                                        if (contentLength) {
+                                            return temp;
+                                        } else {
+                                            return null;
+                                        }
                                     }
                                 }
                                 doPush().then(async (contentHistory) => {
@@ -184,6 +189,15 @@ const createMediaObject = function() {
         // something went wrong
         return false;
     }
+}
+
+const checkBadHistoryData = function(arr) {
+    for (let i = 0; i < arr.length; i++) {
+        if (!arr[i]) {
+            arr.splice(i, 1);
+        }
+    }
+    return arr;
 }
 
 // Checks to ensure that video playing is valid before putting path into history

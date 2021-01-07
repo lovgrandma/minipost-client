@@ -16,6 +16,7 @@ import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import { cookies } from '../App.js';
+import { setResponseUrl } from '../methods/responses.js';
 
 export default class Article extends Component {
     constructor(props) {
@@ -188,7 +189,7 @@ export default class Article extends Component {
                         <FontAwesomeIcon className="read-interact-s icon-hover" icon={faReply} color={ 'grey' } onClick={(e) => {showMoreOptions.call(this, e)}} alt="reply"/>
                         <ul className={this.props.moreOptionsVisible ? "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden hidden-visible" : "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden"} ref={this.moreOptions}>
                             <li><Link to={{
-                                pathname:`/writearticle`,
+                                pathname:`${setResponseUrl('article', this.state.id, 'article')}`,
                                 props:{
                                     responseToId: `${this.state.id}`,
                                     responseToTitle: `${this.state.title}`,
@@ -196,7 +197,7 @@ export default class Article extends Component {
                                 }
                             }}>Write article response</Link></li>
                             <li><Link to={{
-                                pathname:`/upload`,
+                                pathname:`${setResponseUrl('video', this.state.id, 'article')}`,
                                 props:{
                                     responseToId: `${this.state.id}`,
                                     responseToTitle: `${this.state.title}`,

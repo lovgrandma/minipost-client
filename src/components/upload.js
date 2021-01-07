@@ -19,6 +19,7 @@ import io from "socket.io-client";
 import {v4 as uuidv4 } from 'uuid';
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
+import { setReplyData } from '../methods/responses.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -104,6 +105,26 @@ export default class Upload extends Component { // ulc upload component
                         if (this.props.location.props.thumbnailUrl) {
                             this.setState({ thumbnailUrl: this.props.location.props.thumbnailUrl });
                         }
+                    }
+                }
+            }
+            
+            if (window.location.search) {
+                const urlParams = new URLSearchParams(window.location.search);
+                let response = urlParams.get('r');
+                let replyContent = '';
+                let type = '';
+                if (response) {
+                    if (response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)) {
+                        replyContent = response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)[2];
+                        if (response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)[1] == 'a') {
+                            type = 'a';
+                        } else if (response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)[1] == 'v') {
+                            type = 'v';
+                        }
+                    }
+                    if (type && replyContent) {
+                        setReplyData.call(this, response);
                     }
                 }
             }

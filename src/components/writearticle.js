@@ -18,6 +18,7 @@ import {
 import $ from 'jquery';
 import TextareaAutosize from 'react-textarea-autosize';
 import { get } from '../methods/utility.js';
+import { setReplyData } from '../methods/responses.js';
 
 import { cookies } from '../App.js';
 
@@ -52,12 +53,25 @@ export default class writeArticle extends Component {
                 }
             }
         }
-//        setInterval(() => {
-//            console.log(this.editor);
-//            if (this.editor.current == null) {
-//                this.setState({ editorDidNotLoad: true });
-//            }
-//        }, 2000);
+        if (window.location.search) {
+            const urlParams = new URLSearchParams(window.location.search);
+            let response = urlParams.get('r');
+            let replyContent = '';
+            let type = '';
+            if (response) {
+                if (response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)) {
+                    replyContent = response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)[2];
+                    if (response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)[1] == 'a') {
+                        type = 'a';
+                    } else if (response.match(/([a-zA-Z0-9].*)-([a-zA-Z0-9].*)/)[1] == 'v') {
+                        type = 'v';
+                    }
+                }
+                if (type && replyContent) {
+                    setReplyData.call(this, response);
+                }
+            }
+        }
 
         let i = 0;
         const editorLoaded = (i, time) => {

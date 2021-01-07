@@ -18,6 +18,7 @@ import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
+import { setResponseUrl } from '../methods/responses.js';
 
 import { cookies } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -300,6 +301,7 @@ export default class Video extends Component {
                     }
                 }
                 if (this.player) {
+                    console.log(player);
                     updateHistory.call(this);
                 }
             }).catch(this.onError);
@@ -444,7 +446,7 @@ export default class Video extends Component {
                             <div className='more-options-ellipsis' onClick={(e) => {showMoreOptions.call(this, e)}}>...</div>
                             <ul className={this.props.moreOptionsVisible ? "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden hidden-visible" : "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden"} ref={this.moreOptions}>
                                 <li><Link to={{
-                                    pathname:`/writearticle`,
+                                    pathname: `${setResponseUrl('article', this.state.mpd, 'video')}`,
                                     props:{
                                         responseToMpd: `${this.state.mpd}`,
                                         responseToTitle: `${this.state.title}`,
@@ -452,7 +454,7 @@ export default class Video extends Component {
                                     }
                                 }}>Write article response</Link></li>
                                 <li><Link to={{
-                                    pathname:`/upload`,
+                                    pathname:`${setResponseUrl('video', this.state.mpd, 'video')}`,
                                     props:{
                                         responseToMpd: `${this.state.mpd}`,
                                         responseToTitle: `${this.state.title}`,
