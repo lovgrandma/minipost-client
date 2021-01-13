@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import RelatedPanel from './relatedpanel.js';
 import Cookies from 'universal-cookie';
 import { Player } from 'video-react';
 import {
@@ -10,7 +11,7 @@ import {
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
-import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png';
+import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png'; import '../static/expand-video.png'; import '../static/minimize-video.png';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
@@ -23,6 +24,7 @@ import { setResponseUrl } from '../methods/responses.js';
 import { cookies } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
+const shakaAddonButtons = require('../addons/shaka/addonbuttons.js');
 
 export default class Video extends Component {
     constructor(props) {
@@ -152,7 +154,16 @@ export default class Video extends Component {
                 return response.json();
             })
             .then((result) => {
+                
+                console.log(result);
                 /* Sets all video document related data */
+                if (result.video.hasOwnProperty('viewable')) {
+                    if (result.video.viewable == false) {
+                        this.setState({viewable: false });
+                    } else {
+                        this.setState({viewable: true });
+                    }
+                }
                 for (const [key, value] of Object.entries(result.video)) {
                     if (this.state) {
                         if (key == "published") {
@@ -182,11 +193,16 @@ export default class Video extends Component {
                 this.setState({ viewCounted: false });
                 // Determine if user is currently following
                 if (window.localStorage.getItem('mediahistory')) {
-                    let subscriptions = JSON.parse(window.localStorage.getItem('mediahistory')).subscribed;
-                    for (let i = 0; i < subscriptions.length; i++) {
-                        if (subscriptions[i].channel == this.state.author) {
-                            this.setState({ following: true });
-                            break;
+                    let jsondata = JSON.parse(window.localStorage.getItem('mediahistory'));
+                    if (jsondata) {
+                        if (jsondata.subscribed) {
+                            let subscriptions = JSON.parse(window.localStorage.getItem('mediahistory')).subscribed;
+                            for (let i = 0; i < subscriptions.length; i++) {
+                                if (subscriptions[i].channel == this.state.author) {
+                                    this.setState({ following: true });
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
@@ -194,6 +210,7 @@ export default class Video extends Component {
             }
         } catch (err) {
             // Componenent unmounted during method
+            console.log(err);
             return false;
         }
         return false;
@@ -247,13 +264,14 @@ export default class Video extends Component {
             const video = this.videoComponent.current;
             const videoContainer = this.videoContainer.current;
 
+            shakaAddonButtons.nextSeries();
             // Initialize player
             let player = new shaka.Player(video);
             this.player = player;
 
             // UI custom json
             const uiConfig = {};
-            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'overflow_menu', 'fullscreen'];
+            uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'overflow_menu', 'theatreButton', 'fullscreen'];
 
             //Set up shaka player UI
             if (player && videoContainer && video) {
@@ -301,7 +319,6 @@ export default class Video extends Component {
                     }
                 }
                 if (this.player) {
-                    console.log(player);
                     updateHistory.call(this);
                 }
             }).catch(this.onError);
@@ -412,7 +429,8 @@ export default class Video extends Component {
 
     render() {
         return (
-            <div id='videocontainer'>
+            <div>
+            <div id='videocontainer' className='main-video-container'>
                 <div className="video-container" ref={this.videoContainer}>
                     <video className="shaka-video"
                     ref={this.videoComponent}
@@ -595,6 +613,11 @@ export default class Video extends Component {
                         }
                     </div>
                 </div>
+            </div>
+            <RelatedPanel content={this.state.mpd}
+                contentType='video'
+                title={this.state.title}
+                />
             </div>
         )
     }

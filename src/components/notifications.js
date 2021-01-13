@@ -48,6 +48,7 @@ export default class Notifications extends Component {
                             }
                         });
                     });
+                    console.log(data);
                     if (data.length > 0) {
                         fetch(currentrooturl + 'm/fetchcontentdata', {
                             method: "POST",
@@ -65,6 +66,7 @@ export default class Notifications extends Component {
                             return response.json(); // Parsed data
                         })
                             .then((data) => {
+                            console.log(data);
                             if (data != false) {
                                 data = data.reverse();
                                 this.setState({ detailedNotifications: data });

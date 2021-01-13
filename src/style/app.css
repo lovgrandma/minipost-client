@@ -1175,13 +1175,12 @@ label {
     padding-left: 340px;
 }
 
-
-#videocontainer {
+.main-video-container {
     max-width: 1340px;
 }
 
 @media(min-height:320px) {
-    #videocontainer {
+    .main-video-container {
         max-width:140vh;
     }
 }
