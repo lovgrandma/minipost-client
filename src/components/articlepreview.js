@@ -24,7 +24,7 @@ export default class articlepreview extends Component {
 
     componentDidMount() {
         let parseLength = 132;
-        if (this.props.edit) {
+        if (this.props.edit || this.props.viewProfile) {
             parseLength = 750;
         }
         if (this.props.body) {

@@ -549,7 +549,7 @@ export default class Upload extends Component { // ulc upload component
     uploadFileS3 = async (rerun) => {
         let userSocket = await this.getSocket(0, 2);
         this.props.updateErrStatus("");
-        if (this.upload.current.files[0] && this.state.beginUpload == false || this.upload.current.files[0] && rerun) {
+        if (this.upload.current.files[0] && this.state.beginUpload == false || this.upload.current.files[0] && rerun && cookies.get('loggedIn')) {
             this.setState({ beginUpload: true });
             let file = this.upload.current.files[0];
             let data = new FormData();
@@ -706,7 +706,6 @@ export default class Upload extends Component { // ulc upload component
                             this.setState({ publishing: false });
                             if (data.data.querystatus === "record published/updated") {
                                 this.setState({ publishedMpd: data.data.mpd });
-                                console.log(this.player.getAssetUri);
                                 if (!this.player.getAssetUri) {
                                     this.setState({ publishedAwait: true });
                                 } else {

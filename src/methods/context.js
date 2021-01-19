@@ -223,43 +223,41 @@ export const promptDeleteContent = function(e) {
 }
 
 export const tryDeleteContent = async function(e) {
-    if (get(this, "titleDelete.current.value") && this.props.title) {
-        if (this.props.mpd || this.props.id) {
-            if (this.titleDelete.current.value == this.props.title) {
-                let id = "";
-                let type = "";
-                if (this.props.mpd) {
-                    id = this.props.mpd;
-                    type = "video";
-                } else if (this.props.id) {
-                    id = this.props.id;
-                    type = "article";
-                }
-                let confirm = this.titleDelete.current.value;
-                if (id && type) {
-                    await fetch(currentrooturl + 'm/deleteOneContent', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({
-                            id, type
-                        })
+    let id = '';
+    let type = "";
+    if (this.props.mpd) {
+        id = this.props.mpd;
+        type = "video";
+    } else if (this.props.id) {
+        id = this.props.id;
+        type = "article";
+    }
+    if (get(this, "titleDelete.current.value") && id) {
+        if (this.titleDelete.current.value == "delete me") {
+            let confirm = this.titleDelete.current.value;
+            if (id && type) {
+                await fetch(currentrooturl + 'm/deleteOneContent', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        id, type
                     })
-                        .then(function(response) {
-                        return response.json();
-                    })
-                        .then((result) => {
-                        if (result == true) {
-                            window.location.reload(false);
-                        }
-                    })
-                }
-            } else {
-                this.setState({ deleteErr: "the title you entered does not match the content's title"})
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((result) => {
+                    if (result == true) {
+                        window.location.reload(false);
+                    }
+                })
             }
+        } else {
+            this.setState({ deleteErr: "the title you entered does not match the content's title"})
         }
     }
 }

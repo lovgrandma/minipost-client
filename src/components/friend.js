@@ -1,7 +1,14 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
+import {
+    BrowserRouter,
+    Route,
+    NavLink,
+    Link
+} from 'react-router-dom';
 import { cookies, socket, bumpEvent, EventEmitter } from '../App.js';
 import { get } from '../methods/utility.js';
+import dummyavatar from '../static/greyavatar.jpg';
 
 import profile from '../static/profile.svg'; import chatblack from '../static/chat-black.svg'; import minimize from '../static/minimize.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import sendarrow from '../static/sendarrow.svg'; import circlemenulight from '../static/circlemenulight.svg';
 
@@ -398,6 +405,15 @@ export default class Friend extends Component { // friend component fc1
             // Component may have unmounted
         }
     }
+    
+    returnAvatar = () => {
+        if (this.props.avatarurl && this.props.cloud) {
+            if (this.props.avatarurl.length > 0 && this.props.cloud.length > 0) {
+                return this.props.cloud + "/av/" + this.props.avatarurl;
+            }
+        }
+        return dummyavatar;
+    }
 
     render() {
         let conversationid;
@@ -410,7 +426,7 @@ export default class Friend extends Component { // friend component fc1
             <div className="friend-container" ref={this.shakeRef}>
                 <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={!this.state.chatinput ? (e) => {this.openchatinput(e)} : null }>
                     <div className='searched-user-username-container'>
-                        <img className="friendavatar" src={require("../static/bobby.jpg")}></img>
+                        <img className="friendavatar" src={this.returnAvatar()}></img>
                         <div className="friendname">{this.props.friend}</div>
                         <div className="min-menu">
                             <img className={this.state.chatinput ? "minimize-icon" : "minimize-icon invisible"} src={minimize} onClick={(e) => {this.openchatinput(e, true)}} alt="circlemenu"></img>
@@ -448,7 +464,7 @@ export default class Friend extends Component { // friend component fc1
                             <span></span>
                     }
                     <div className='request-and-block-container'>
-                        <span className='search-user-profile prevent-open-toggle'>profile<img className="searched-user-icon" src={profile} alt="profile"></img></span>
+                        <span className='search-user-profile prevent-open-toggle'><NavLink exact to={"/profile?p=" + this.props.friend} className="to-profile-link-btn">profile</NavLink><img className="searched-user-icon" src={profile} alt="profile"></img></span>
                         <span className='search-user-watch-friend'>watch<img className="searched-user-icon" src={play} alt="play"></img></span>
                         <span className={this.state.socketOn ? 'search-user-bump-friend prevent-open-toggle' : 'search-user-bump-friend prevent-open-toggle bump-btn-offline'} ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid ), this.checkSocket(e)}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>

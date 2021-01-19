@@ -8,6 +8,8 @@ import {
     Button,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
+import Videos from './videos.js';
+import ArticlePreview from './articlepreview.js';
 
 export default class RelatedPanel extends Component {
     constructor(props) {
@@ -87,8 +89,38 @@ export default class RelatedPanel extends Component {
     
     render() {
         return (
-            <div className='relatedpanel'>
-                
+            <div className={this.props.secondary ? 'relatedpanel relatedpanel-secondary' : 'relatedpanel relatedpanel-main'}>
+                {
+                    this.state.relatedContent.length > 0 ? this.state.relatedContent.map((content, index) =>
+                        content[0].properties.mpd ?
+                            <Videos mpd={content[0].properties.mpd.toString()}
+                            title={content[0].properties.title.toString()}
+                            description={content[0].properties.description}
+                            thumbnailUrl={content[0].properties.thumbnailUrl}
+                            author={content[0].properties.author.toString()}
+                            published={content[0].properties.publishDate.toString()}
+                            views={utility.getNumber(content[0].properties.views)}
+                            articles={content[0].properties.articles}
+                            tags={content[0].properties.tags}
+                            cloud={this.props.cloud}
+                            related={true}
+                            key={index}
+                            index={index}
+                            />
+                        : <ArticlePreview title={content.properties.title}
+                            author={content.properties.author}
+                            body={content.properties.body}
+                            id={content.properties.id}
+                            likes={content.properties.likes}
+                            dislikes={content.properties.dislikes}
+                            reads={content.properties.reads}
+                            published={content.properties.publishDate}
+                            key={index}
+                            related={true}
+                            />
+                         )
+                    : null
+                }
             </div>
         )
     }

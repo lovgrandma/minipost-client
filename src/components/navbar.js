@@ -159,7 +159,7 @@ export default class Navbar extends Component {
                         <div className="btn-desc btn-desc-conf" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>change various user settings and preferences</div>
                         <div className="btn-desc btn-desc-conf-menu" ref={tag => (this.userOptions = tag)}>
                             <NavLink exact to="/profile" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>profile</NavLink>
-                            <NavLink exact to="/profile" className="hyperlink">options</NavLink>
+                            <NavLink exact to="/options" className="hyperlink">options</NavLink>
                             <a href="/" onClick={(e)=> {resetOpenMenus.call(this); this.props.fetchlogout()}} className="hyperlink">logout</a>
                         </div>
                     </ul>

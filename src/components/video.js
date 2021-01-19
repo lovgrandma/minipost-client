@@ -154,8 +154,6 @@ export default class Video extends Component {
                 return response.json();
             })
             .then((result) => {
-                
-                console.log(result);
                 /* Sets all video document related data */
                 if (result.video.hasOwnProperty('viewable')) {
                     if (result.video.viewable == false) {
@@ -308,6 +306,12 @@ export default class Video extends Component {
                         }
                     }, 1000);
                 });
+                // Ensures that check counted interval is functioning 
+                video.addEventListener('playing', (event) => {
+                    if (this.videoComponent) {
+                        this.viewCountedInterval();    
+                    }
+                });
             }
 
             // Try to load a manifest Asynchronous
@@ -321,7 +325,9 @@ export default class Video extends Component {
                 if (this.player) {
                     updateHistory.call(this);
                 }
-            }).catch(this.onError);
+            }).catch((err) => {
+                console.log(err);    
+            });;
 
 
         } else {
@@ -360,6 +366,7 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
+                            console.log(totalTime, this.videoComponent.current.duration);
                             if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) { // Increment video view if user has watched more than 25% of the video or the totalTime watched is more than 45 seconds
                                 this.incrementView();
                                 this.endViewCountInterval();
@@ -427,197 +434,217 @@ export default class Video extends Component {
         }, 500);
     }
 
+    returnAvatar = () => {
+        if (this.state.avatarurl && this.state.cloud) {
+            if (this.state.avatarurl.length > 0 && this.state.cloud.length > 0) {
+                return this.state.cloud + "/av/" + this.state.avatarurl;
+            }
+        }
+        return dummyavatar;
+    }
+
     render() {
         return (
-            <div>
+            <div className="video-page-flex">
             <div id='videocontainer' className='main-video-container'>
                 <div className="video-container" ref={this.videoContainer}>
                     <video className="shaka-video"
                     ref={this.videoComponent}
                     poster={minipostpreviewbanner}
                     />
-              </div>
-                <h2 className='watchpage-title'>{this.state.title}</h2>
-                <div className="video-stats-bar">
-                    <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
-                    <div className='publisher-video-interact'>
-                        <div className="publisher-video-interact-block">
-                            <div className="favorite-click">
-                                <FontAwesomeIcon className="favorites-interact" icon={faHeart} color={ 'grey' } alt="favorite"/>
-                                <div>save</div>
-                            </div>
-                        </div>
-                        <div className='publisher-video-interact-block'>
-                            <div className="likes-click">
-                                <FontAwesomeIcon className={this.state.liked ? "thumbsup-interact active-black" : "thumbsup-interact"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
-                                <div className={this.state.liked ? "active-black" : ""}>{roundNumber(this.state.likes)}</div>
-                            </div>
-                        </div>
-                        <div className='publisher-video-interact-block'>
-                            <div className="dislikes-click">
-                                <FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact active-black" : "thumbsdown-interact"}icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
-                                <div className={this.state.disliked ? "active-black" : ""}>{roundNumber(this.state.dislikes)}</div>
-                            </div>
-                        </div>
-                        <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
-                        <div className="more-options-ellipsis-container">
-                            <div className='more-options-ellipsis' onClick={(e) => {showMoreOptions.call(this, e)}}>...</div>
-                            <ul className={this.props.moreOptionsVisible ? "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden hidden-visible" : "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden"} ref={this.moreOptions}>
-                                <li><Link to={{
-                                    pathname: `${setResponseUrl('article', this.state.mpd, 'video')}`,
-                                    props:{
-                                        responseToMpd: `${this.state.mpd}`,
-                                        responseToTitle: `${this.state.title}`,
-                                        responseToType: "video"
-                                    }
-                                }}>Write article response</Link></li>
-                                <li><Link to={{
-                                    pathname:`${setResponseUrl('video', this.state.mpd, 'video')}`,
-                                    props:{
-                                        responseToMpd: `${this.state.mpd}`,
-                                        responseToTitle: `${this.state.title}`,
-                                        responseToType: "video"
-                                    }
-                                }}>Publish video response</Link></li>
-                            </ul>
-                        </div>
-                    </div>
                 </div>
-                <div className='publisher-bar'>
-                    <div className='publisher-info'>
-                        <div className="avatar-author-desc-videopage">
-                            <div className="publisher-avatar-col">
-                                <img className="publisher-avatar" src={require("../static/spacexavatar.jpg")}></img>
-                            </div>
-                            <div className="video-desc-container">
-                                <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
-                                    <span className='publisher-userandjoindate'>
-                                        <NavLink exact to={"/profile?p=" + this.state.author}><span className='publisher-username'>{this.state.author}</span></NavLink>
-                                        {
-                                            cookies.get('loggedIn') ?
-                                                cookies.get('loggedIn') != this.state.author ?
-                                                    <span className='publisher-followbutton' onClick={(e)=>{this.followCheck()}}>{ this.state.following == false ? "follow" : "unfollow" }</span>
-                                                : null
+                <div className="video-stats-and-related-container">
+                    <div className="video-stats-container">
+                        <h2 className='watchpage-title'>{this.state.title}</h2>
+                        <div className="video-stats-bar">
+                            <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
+                            <div className='publisher-video-interact'>
+                                <div className="publisher-video-interact-block">
+                                    <div className="favorite-click">
+                                        <FontAwesomeIcon className="favorites-interact" icon={faHeart} color={ 'grey' } alt="favorite"/>
+                                        <div>save</div>
+                                    </div>
+                                </div>
+                                <div className='publisher-video-interact-block'>
+                                    <div className="likes-click">
+                                        <FontAwesomeIcon className={this.state.liked ? "thumbsup-interact active-black" : "thumbsup-interact"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
+                                        <div className={this.state.liked ? "active-black" : ""}>{roundNumber(this.state.likes)}</div>
+                                    </div>
+                                </div>
+                                <div className='publisher-video-interact-block'>
+                                    <div className="dislikes-click">
+                                        <FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact active-black" : "thumbsdown-interact"}icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
+                                        <div className={this.state.disliked ? "active-black" : ""}>{roundNumber(this.state.dislikes)}</div>
+                                    </div>
+                                </div>
+                                <FontAwesomeIcon className="share-interact" icon={faShare} color={ 'grey' } alt="share"/>
+                                <div className="more-options-ellipsis-container">
+                                    <div className='more-options-ellipsis' onClick={(e) => {showMoreOptions.call(this, e)}}>...</div>
+                                    <ul className={this.props.moreOptionsVisible ? "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden hidden-visible" : "more-options-ellipsis-dropdown prompt-basic dropdown-menu more-options-videopage-dropdown hidden"} ref={this.moreOptions}>
+                                        <li><Link to={{
+                                            pathname: `${setResponseUrl('article', this.state.mpd, 'video')}`,
+                                            props:{
+                                                responseToMpd: `${this.state.mpd}`,
+                                                responseToTitle: `${this.state.title}`,
+                                                responseToType: "video"
+                                            }
+                                        }}>Write article response</Link></li>
+                                        <li><Link to={{
+                                            pathname:`${setResponseUrl('video', this.state.mpd, 'video')}`,
+                                            props:{
+                                                responseToMpd: `${this.state.mpd}`,
+                                                responseToTitle: `${this.state.title}`,
+                                                responseToType: "video"
+                                            }
+                                        }}>Publish video response</Link></li>
+                                     </ul>
+                                 </div>
+                             </div>
+                         </div>
+                         <div className='publisher-bar'>
+                             <div className='publisher-info'>
+                                 <div className="avatar-author-desc-videopage">
+                                     <div className="publisher-avatar-col">
+                                        <img className="publisher-avatar" src={this.returnAvatar()}></img>
+                                    </div>
+                                    <div className="video-desc-container">
+                                        <div className={this.state.descriptionOpen ? "video-desc-col video-desc-col-open" : "video-desc-col"}>
+                                            <span className='publisher-userandjoindate'>
+                                                <NavLink exact to={"/profile?p=" + this.state.author}><span className='publisher-username'>{this.state.author}</span></NavLink>
+                                                {
+                                                    cookies.get('loggedIn') ?
+                                                        cookies.get('loggedIn') != this.state.author ?
+                                                            <span className='publisher-followbutton' onClick={(e)=>{this.followCheck()}}>{ this.state.following == false ? "follow" : "unfollow" }</span>
+                                                        : null
+                                                    : null
+                                                }
+                                            </span>
+                                            <div className='video-description-info'>{this.state.description}</div>
+                                            <div className="video-tags-list">
+                                                {this.state.tags ?
+                                                    this.state.tags.map((tag, index) => (
+                                                            <span className="video-tag-individual" key={index}>{tag}</span>
+                                                    )) : null
+                                                }
+                                            </div>
+                                        </div>
+                                        {this.tallDescription() ?
+                                            !this.state.descriptionOpen ?
+                                                <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, true)}}>expand</button>
+                                                : <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, false)}}>less</button>
                                             : null
-                                        }
-                                    </span>
-                                    <div className='video-description-info'>{this.state.description}</div>
-                                    <div className="video-tags-list">
-                                        {this.state.tags ?
-                                            this.state.tags.map((tag, index) => (
-                                                    <span className="video-tag-individual" key={index}>{tag}</span>
-                                            )) : null
                                         }
                                     </div>
                                 </div>
-                                {this.tallDescription() ?
-                                    !this.state.descriptionOpen ?
-                                        <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, true)}}>expand</button>
-                                        : <button className="video-desc-expand-button" onClick={(e) => {this.openDescription(e, false)}}>less</button>
-                                    : null
+                            </div>
+                            {this.state.responseTo ?
+                                this.state.responseTo.title ?
+                                    <div className="response-to-link prompt-basic grey-out">
+                                        response to <Link to={setResponseToParentPath.call(this)}>{this.state.responseTo.title}</Link>
+                                    </div>
+                                : null : null
+                            }
+                        </div>
+                        <div className='responses'>responses</div>
+                        <div className='articles-bar'>
+                            <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>
+                            <div className='article-responses-container'>
+                                {this.state.articleResponses ?
+                                    this.state.articleResponses.length > 0 ?
+                                        this.state.articleResponses.map((article, i) => {
+                                            return (
+                                                article.id && article ?
+                                                <div className="article-container-videopage" key={i}>
+                                                    <Link to={{
+                                                        pathname:`/read?a=${article.id}`,
+                                                        props:{
+                                                            author: `${article.author}`,
+                                                            body: `${article.body}`,
+                                                            title: `${article.title}`,
+                                                            id: `${article.id}`,
+                                                            published: `${article.publishDate}`,
+                                                            likes: `${article.likes}`,
+                                                            dislikes: `${article.dislikes}`,
+                                                            reads: `${article.reads}`,
+                                                            responseToMpd: `${this.state.mpd}`,
+                                                            responseToTitle: `${this.state.title}`,
+                                                            responseToType: "video"
+                                                        }
+                                                    }}>
+                                                        <div className="article-title-videopage">{shortenTitle(article.title)}</div>
+                                                        <div className="article-body-videopage">{parseBody(article.body, 600, true)}</div>
+                                                        <div className="article-stats-videopage">
+                                                            <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{article.reads}</span><span>&nbsp;•&nbsp;</span>
+                                                            <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{article.likes}</span><span>&nbsp;•&nbsp;</span>
+                                                            <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{article.dislikes}</span>
+                                                        </div>
+                                                    </Link>
+                                                </div>
+                                                : null
+                                            )
+                                        })
+                                    : null : null
                                 }
                             </div>
                         </div>
-                    </div>
-                    {this.state.responseTo ?
-                        this.state.responseTo.title ?
-                            <div className="response-to-link prompt-basic grey-out">
-                                response to <Link to={setResponseToParentPath.call(this)}>{this.state.responseTo.title}</Link>
+                        <div className='videos-bar'>
+                            <div className='video-container-header'>{this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos" : null : null}</div>
+                            <div className='video-responses-container flex-grid videogrid'>
+                                {this.state.videoResponses ?
+                                    this.state.videoResponses.length > 0 ?
+                                        this.state.videoResponses.map((video, i) => {
+                                            return (
+                                                video.mpd && video ?
+                                                    <div className="video-container-videopage videocontainer" key={i}>
+                                                        <Link to={{
+                                                            pathname:`/watch?v=${video.mpd}`,
+                                                            props:{
+                                                                author: `${video.author}`,
+                                                                body: `${video.body}`,
+                                                                title: `${video.title}`,
+                                                                id: `${video.id}`,
+                                                                published: `${video.publishDate}`,
+                                                                likes: `${video.likes}`,
+                                                                dislikes: `${video.dislikes}`,
+                                                                views: `${video.views}`,
+                                                                responseToMpd: `${this.state.mpd}`,
+                                                                responseToTitle: `${this.state.title}`,
+                                                                responseToType: "video"
+                                                            }
+                                                        }}>
+                                                            <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={video.thumbnailUrl ? this.state.cloud + "/" + video.thumbnailUrl + ".jpeg" : dummythumbnail}></img>
+                                                            <div className="video-title-videopage mainvideotitle">{shortenTitle(video.title)}</div>
+                                                            <div className="dash-video-bar-stats dash-video-bar-stats-videopage">
+                                                                <div className='video-author-videopage'>{video.author}</div>&nbsp;•&nbsp;<div className="video-publish-date-videopage">{convertDate(video.publishDate)}</div>
+                                                            </div>
+                                                            <div className="video-stats-videopage">
+                                                                <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faEye} color={ 'grey' } alt="views"/>{video.views}</span><span>&nbsp;•&nbsp;</span>
+                                                                <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{video.likes}</span><span>&nbsp;•&nbsp;</span>
+                                                                <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{video.dislikes}</span>
+                                                            </div>
+                                                        </Link>
+                                                    </div>
+                                                    : null
+                                                )
+                                            })
+                                        : null : null
+                                    }
+                                </div>
                             </div>
-                        : null : null
-                    }
-                </div>
-                <div className='responses'>responses</div>
-                <div className='articles-bar'>
-                    <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>
-                    <div className='article-responses-container'>
-                        {this.state.articleResponses ?
-                            this.state.articleResponses.length > 0 ?
-                                this.state.articleResponses.map((article, i) => {
-                                    return (
-                                        article.id && article ?
-                                        <div className="article-container-videopage" key={i}>
-                                            <Link to={{
-                                                pathname:`/read?a=${article.id}`,
-                                                props:{
-                                                    author: `${article.author}`,
-                                                    body: `${article.body}`,
-                                                    title: `${article.title}`,
-                                                    id: `${article.id}`,
-                                                    published: `${article.publishDate}`,
-                                                    likes: `${article.likes}`,
-                                                    dislikes: `${article.dislikes}`,
-                                                    reads: `${article.reads}`,
-                                                    responseToMpd: `${this.state.mpd}`,
-                                                    responseToTitle: `${this.state.title}`,
-                                                    responseToType: "video"
-                                                }
-                                            }}>
-                                                <div className="article-title-videopage">{shortenTitle(article.title)}</div>
-                                                <div className="article-body-videopage">{parseBody(article.body, 600, true)}</div>
-                                                <div className="article-stats-videopage">
-                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{article.reads}</span><span>&nbsp;•&nbsp;</span>
-                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{article.likes}</span><span>&nbsp;•&nbsp;</span>
-                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{article.dislikes}</span>
-                                                </div>
-                                            </Link>
-                                        </div>
-                                        : null
-                                    )
-                                })
-                            : null : null
-                        }
+                        </div>
+                        <RelatedPanel content={this.state.mpd}
+                            contentType='video'
+                            title={this.state.title}
+                            cloud={this.state.cloud}
+                            secondary={true}
+                            />
                     </div>
                 </div>
-                <div className='videos-bar'>
-                    <div className='video-container-header'>{this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos" : null : null}</div>
-                    <div className='video-responses-container flex-grid videogrid'>
-                        {this.state.videoResponses ?
-                            this.state.videoResponses.length > 0 ?
-                                this.state.videoResponses.map((video, i) => {
-                                    return (
-                                        video.mpd && video ?
-                                            <div className="video-container-videopage videocontainer" key={i}>
-                                                <Link to={{
-                                                    pathname:`/watch?v=${video.mpd}`,
-                                                    props:{
-                                                        author: `${video.author}`,
-                                                        body: `${video.body}`,
-                                                        title: `${video.title}`,
-                                                        id: `${video.id}`,
-                                                        published: `${video.publishDate}`,
-                                                        likes: `${video.likes}`,
-                                                        dislikes: `${video.dislikes}`,
-                                                        views: `${video.views}`,
-                                                        responseToMpd: `${this.state.mpd}`,
-                                                        responseToTitle: `${this.state.title}`,
-                                                        responseToType: "video"
-                                                    }
-                                                }}>
-                                                    <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={video.thumbnailUrl ? this.state.cloud + "/" + video.thumbnailUrl + ".jpeg" : dummythumbnail}></img>
-                                                    <div className="video-title-videopage mainvideotitle">{shortenTitle(video.title)}</div>
-                                                    <div className="dash-video-bar-stats dash-video-bar-stats-videopage">
-                                                        <div className='video-author-videopage'>{video.author}</div>&nbsp;•&nbsp;<div className="video-publish-date-videopage">{convertDate(video.publishDate)}</div>
-                                                    </div>
-                                                    <div className="video-stats-videopage">
-                                                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faEye} color={ 'grey' } alt="views"/>{video.views}</span><span>&nbsp;•&nbsp;</span>
-                                                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{video.likes}</span><span>&nbsp;•&nbsp;</span>
-                                                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{video.dislikes}</span>
-                                                    </div>
-                                                </Link>
-                                            </div>
-                                        : null
-                                    )
-                                })
-                            : null : null
-                        }
-                    </div>
-                </div>
-            </div>
-            <RelatedPanel content={this.state.mpd}
-                contentType='video'
-                title={this.state.title}
-                />
+                <RelatedPanel content={this.state.mpd}
+                    contentType='video'
+                    title={this.state.title}
+                    cloud={this.state.cloud}
+                    />
             </div>
         )
     }

@@ -197,6 +197,8 @@ export default function Social(props) { // social prop sp1
                                 <Friend username={props.username}
                                 friend={friend.username}
                                 friendstotal={props.friends.length}
+                                cloud={props.cloud}
+                                avatarurl = {friend.avatarurl}
                                 key={childCounter}
                                 index={childCounter++}
                                 conversation = {convo}

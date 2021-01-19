@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js';
 import { Player } from 'video-react';
 import { Switch } from 'react-router'
 import {
@@ -68,6 +68,7 @@ class Socialbar extends Component { // Main social entry point sb1
         this.limitedsearch = this.limitedsearch.bind(this);
         this.sidebar = React.createRef();
         this.sidebarx = React.createRef();
+        this.sidebarcontainer = React.createRef();
     }
     
     componentWillMount(e) {
@@ -85,6 +86,9 @@ class Socialbar extends Component { // Main social entry point sb1
 
         if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
             this.getfriends();
+        }
+        if (this.props.cloud) {
+            //this.props.setCloud();
         }
     };
         
@@ -420,6 +424,7 @@ class Socialbar extends Component { // Main social entry point sb1
     closeSideBar() {
         this.sidebar.current.classList.remove('sidebar-open');
         this.sidebarx.current.classList.remove('sidebarxopen');
+        this.sidebarcontainer.current.classList.remove('sidebar-isopen');
         document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
         document.getElementsByClassName('sidebarimg')[0].classList.remove('sidebarimg-open');
         this.setState({sidebarximgSrc: sidebaropenimg });
@@ -429,6 +434,7 @@ class Socialbar extends Component { // Main social entry point sb1
     openSideBar() {
         this.sidebar.current.classList.add('sidebar-open');
         this.sidebarx.current.classList.add('sidebarxopen');
+        this.sidebarcontainer.current.classList.add('sidebar-isopen');
         document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
         document.getElementsByClassName('sidebarimg')[0].classList.add('sidebarimg-open');
         this.setState({sidebarximgSrc: sidebarcloseimg });
@@ -938,12 +944,12 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!isLoggedIn) {
             sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} registererror={this.state.registererror} />
         } else {
-            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen}
+            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud}
             typing = {this.state.typing} bump = {this.bump} />
         }
             
         return (
-            <div>
+            <div ref={this.sidebarcontainer}>
                 <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} />
                 <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
                     <div className="sidebarcontainer">
@@ -1005,6 +1011,36 @@ class App extends Component {
                 console.log(error);
             });
         }
+        if (!this.state.cloud) {
+            this.fetchCloudUrl();
+        }
+    }
+    
+    fetchCloudUrl = () => {
+        fetch(currentrooturl + 'm/fetchcloudfronturl', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((data) => {
+                    if (data) {
+                        if (data.querystatus != 'err') {
+                            this.setState({ cloud: data.querystatus });
+                        }
+                    }
+                })
+                .catch((err) => {
+                    console.log(err);    
+                });
     }
 
     updateLogin = () => {
@@ -1087,7 +1123,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} follow={this.follow} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
@@ -1107,6 +1143,9 @@ class App extends Component {
                             )}/>
                             <Route path='/read' render={(props) => (
                                 <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
+                            )}/>
+                            <Route path='/options' render={(props) => (
+                                <Options {...props} key={getPath()} cloud={this.state.cloud}  />
                             )}/>
                             <Route path='/upload' render={(props) => (
                                 <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />

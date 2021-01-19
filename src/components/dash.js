@@ -14,6 +14,7 @@ import {
     Button,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
+import { cookies } from '../App.js';
 const EventEmitter = require('events');
 
 export default class Dash extends Component {
@@ -100,8 +101,8 @@ export default class Dash extends Component {
             }, 2000);
             this.setState({ fetchingTimeout: timeout });
             let user = null;
-            if (this.props.username) {
-                user = this.props.username;
+            if (cookies.get('loggedIn')) {
+                user = cookies.get('loggedIn');
             }
             let append = [];
             if (this.state) {
@@ -197,6 +198,7 @@ export default class Dash extends Component {
                                     views={utility.getNumber(video._fields[0].properties.views)}
                                     articles={video._fields[0].properties.articles}
                                     tags={video._fields[0].properties.tags}
+                                    avatarUrl={video._fields[3]}
                                     cloud={this.props.cloud}
                                     key={index}
                                     index={index}

@@ -21,7 +21,7 @@ import { get, setData } from '../methods/utility.js';
 export default class Profile extends Component {
     constructor() {
         super();
-        this.state = { username: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "" }
+        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "" }
     }
 
     componentDidMount = async () => {
@@ -61,6 +61,10 @@ export default class Profile extends Component {
     // Fetch profile data, always match by user name instead of id. Username more readily available
     fetchProfileData = async (user) => {
         try {
+            let self = false;
+            if (user == cookies.get('loggedIn')) {
+                self = true;
+            }
             if (user) {
                 return await fetch(currentrooturl + 'm/fetchprofilepagedata', {
                     method: "POST",
@@ -70,13 +74,13 @@ export default class Profile extends Component {
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify({
-                        user
+                        user, self
                     })
                 })
-                    .then((response) => {
+                .then((response) => {
                     return response.json();
                 })
-                    .then((result) => {
+                .then((result) => {
                     if (result.totalviews) {
                         this.setState({ totalVideoViews: result.totalviews });
                     }
@@ -88,6 +92,9 @@ export default class Profile extends Component {
                     }
                     if (get(result, "user.username")) {
                         this.setState({ username: result.user.username });
+                    }
+                    if (get(result, "user.avatarurl")) {
+                        this.setState({ avatarurl: result.user.avatarurl });
                     }
                     if (result.content) {
                         if (result.content.length > 0) {
@@ -120,7 +127,7 @@ export default class Profile extends Component {
         return (
             <div>
                 <div className="flex-profile main-profile-header">
-                    <img className="profileavatar" src={require("../static/bobby.jpg")}></img>
+                    <img className="profileavatar" src={this.props.cloud + "/av/" + this.state.avatarurl}></img>
                     <div>
                         <div className="flex-profile off-black align-center">
                             <div className="prompt-basic off-black weight500">{this.state.username}</div>
@@ -144,6 +151,7 @@ export default class Profile extends Component {
                                     title={record.title}
                                     description={record.description}
                                     thumbnailUrl={record.thumbnailUrl}
+                                    avatarUrl={this.state.avatarurl}
                                     author={record.author}
                                     published={record.publishDate}
                                     views={record.views}

@@ -81,10 +81,21 @@ export default class Videos extends Component {
     }
 
     getThumb = () => {
-        if (this.props.thumbnailUrl) {
-            return this.props.cloud + "/" + this.props.thumbnailUrl + ".jpeg";
+        if (this.props.thumbnailUrl && this.props.cloud) {
+            if (this.props.thumbnailUrl.length > 0) {
+                return this.props.cloud + "/" + this.props.thumbnailUrl + ".jpeg";
+            }
         }
         return dummythumbnail;
+    }
+    
+    getAvatar = () => {
+        if (this.props.avatarUrl && this.props.cloud) {
+            if (this.props.avatarUrl.length > 0) {
+                return this.props.cloud + "/av/" + this.props.avatarUrl;
+            }
+        }
+        return dummyavatar;
     }
 
     editReturn = () => {
@@ -107,11 +118,11 @@ export default class Videos extends Component {
         return (
             this.props.title && !this.props.edit || this.props.edit ?
                 <div className="col">
-                    <div className='videocontainer'>
+                    <div className={this.props.related ? 'videocontainer videocontainer-related' : 'videocontainer'}>
                         {
                             this.state.deleteContentPrompt ?
                                 <div className="delete-prompt-box">
-                                    <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter the title below:</label><div className="clear-content-menu" onClick={(e) => {promptDeleteContent.call(this, e)}}>×</div></div>
+                                    <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter "delete me" below:</label><div className="clear-content-menu" onClick={(e) => {promptDeleteContent.call(this, e)}}>×</div></div>
                                     <input type="text" id="titleDelete" name="titleDelete" className="title-delete-input" ref={this.titleDelete} />
                                     <input type="submit" value="delete" className="title-delete-submit" onClick={(e) => {tryDeleteContent.call(this, e)}} />
                                     {
@@ -128,8 +139,8 @@ export default class Videos extends Component {
                             </div>
                         </Link>
                         <div className="dash-video-details-container">
-                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'publisheravatar-dash' : 'publisheravatar-dash avatar-placeholder' : 'publisheravatar-dash avatar-placeholder'} src={dummyavatar}></img>
-                            <div className={this.props.edit ? "video-details-title-edit" : ""}>
+                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'publisheravatar-dash' : 'publisheravatar-dash avatar-placeholder' : 'publisheravatar-dash avatar-placeholder'} src={this.getAvatar()}></img>
+                            <div className={this.props.edit ? "video-details-title-edit" : "video-details"}>
                                 <Link to={this.editReturn()}>
                                     <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
                                 </Link>
