@@ -48,6 +48,7 @@ export default function Social(props) { // social prop sp1
                 </div>
             </div>
             <div className={props.pendinghidden == "hidden" ? 'friend-requests-list-hidden' : 'friend-requests-list'}>
+                <span className="friend-requests-bar"><br></br></span>
                 <div>
                     {props.pendingfriendrequests ?
                         props.pendingfriendrequests.map ?
@@ -66,7 +67,8 @@ export default function Social(props) { // social prop sp1
                     }
                 </div>
             </div>
-            <div className={props.showingfollows == "hidden" ? 'friend-requests-list-hidden' : 'friend-requests-list'}>
+            <div className={props.showingfollows == "hidden" ? 'following-accounts-list-hidden' : 'following-accounts-list'}>
+                <span className="following-accounts-bar"><br></br></span>
                 <div>
                     { props.following ?
                         props.following.map ?

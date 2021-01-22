@@ -31,4 +31,36 @@ const parseBody = function(body, length, removeLinks = false) {
     return body;
 }
 
+export const countBody = function(body) {
+    if (body) {
+        let i = 0;
+        function transform(node) {
+            let halve = false;
+            if (node.data) {
+                if (node.parent) {
+                    if (node.parent.name) {
+                        if (node.parent.name == 'code') {
+                            halve = true;
+                        }
+                    }
+                }
+                let data = node.data.split(" ");
+                if (halve) {
+                    i += data.length/2;
+                } else {
+                    i += data.length;
+                }
+            }
+        }
+        let options = { transform };
+        let html = ReactHtmlParser(body, options);
+        if (i > 200) {
+            return i;
+        } else {
+            return 200;
+        }
+    }
+    return 200;
+}
+
 export default parseBody;

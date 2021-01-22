@@ -1,5 +1,10 @@
 /* Shaka player styling */
 
+.shaka-video-container * {
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 400;
+}
+
 .shaka-play-button, .shaka-play-button[icon=play] {
     transition: 200ms;
     max-height: 20px;
@@ -145,4 +150,20 @@
 
 .shaka-generic-button:hover {
     color: #fff;
+}
+
+.shaka-settings-menu {
+    border-radius: 0px;
+}
+
+.shaka-displayed {
+    font-size: 18px !important;
+}
+
+.shaka-overflow-menu button {
+    padding: 5px 15px 5px 0;
+}
+
+.shaka-overflow-menu button:hover {
+    cursor: pointer;
 }

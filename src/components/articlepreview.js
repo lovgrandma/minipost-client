@@ -17,19 +17,36 @@ export default class articlepreview extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            body: "", contentMenu: false, deleteContentPrompt: false, deleteErr: ""
+            body: "", contentMenu: false, deleteContentPrompt: false, deleteErr: "", dash: true
         }
         this.titleDelete = React.createRef();
     }
 
     componentDidMount() {
-        let parseLength = 132;
-        if (this.props.edit || this.props.viewProfile) {
-            parseLength = 750;
+        let parseLength = this.setParseLength();
+        if (this.props.dash) {
+            this.setState({ dash: true });
         }
+        console.log(this.props.body);
         if (this.props.body) {
             this.setState({ body: parseBody(this.props.body, parseLength, true) });
         }
+    }
+    
+    componentDidUpdate(prevProps, prevState) {
+        let parseLength = this.setParseLength();
+        console.log(parseLength);
+        if (this.props.body != prevProps.body) {
+            this.setState({ body: parseBody(this.props.body, parseLength, true) });
+        }
+    }
+    
+    setParseLength = () => {
+        let parseLength = 182;
+        if (this.props.edit || this.props.viewProfile || this.props.dash || this.state.dash) {
+            parseLength = 750;
+        }
+        return parseLength;
     }
 
     articleEditLink() {
@@ -67,8 +84,8 @@ export default class articlepreview extends Component {
 
     render() {
         return (
-            <div className={this.props.edit  || this.props.viewProfile ? "col" : ""}>
-                <div className={this.props.edit || this.props.viewProfile ? "article-container-edit" : "article-container article-container-preview"}>
+            <div className={this.props.edit  || this.props.viewProfile || this.props.dash ? "col" : ""}>
+                <div className={this.props.edit || this.props.viewProfile ? "article-container-edit" : this.props.dash ? "article-container-dash" : "article-container article-container-preview"}>
                     {
                         this.state.deleteContentPrompt ?
                             <div className="delete-prompt-box delete-prompt-box-article">

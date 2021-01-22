@@ -13,6 +13,7 @@ import { roundTime, setStateDynamic, shortenTitle, convertDate, opposite } from 
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
+import { countBody } from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import { cookies } from '../App.js';
@@ -22,13 +23,24 @@ export default class Article extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            id: "", title: "", author: "", body: "", published: "", reads: "", responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0, thumbnail: ""
+            id: "", title: "", author: "", body: "", published: "", reads: 0, responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0, thumbnail: "", words: 200, sbri: '', readIncrementId: ''
         }
         this.moreOptions = React.createRef();
     }
 
     componentDidMount() {
         this.setUpState();
+    }
+    
+    componentWillUnmount() {
+        if (this) {
+            if (this.state) {
+                if (this.state.readIncrementId) {
+                    clearTimeout(this.state.readIncrementId);
+                    console.log(' cleared ' + this.state.readIncrementId);
+                }
+            }
+        }
     }
 
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
@@ -144,6 +156,9 @@ export default class Article extends Component {
                                 console.log(result);
                                 return result;
                             });
+                            let words = countBody(this.state.body);
+                            this.setState({ words: words });
+                            this.setTtr(words);
                             if (articleData.articleResponses) {
                                 this.setState({ articleResponses: articleData.articleResponses });
                             }
@@ -168,6 +183,64 @@ export default class Article extends Component {
             }
         } catch (err) {
             // Component likely unmounted
+        }
+    }
+    
+    // Sets time to read before sending increment read request
+    setTtr = (words) => {
+        try {
+            let ttr160 = words/160; // Get the time to read of the article if person was reading 160 words a minute (high)
+            let ttrDivided = ttr160/16; // Divide this by an eighth to accomodate fast reading/less stringent on reading time
+            let secondsBeforeReadIncrement = ttrDivided*60;
+            this.setState({ sbri: secondsBeforeReadIncrement });
+            this.setState({ readIncrementId: this.setReadIncrement(secondsBeforeReadIncrement, this.state.title)});
+            return secondsBeforeReadIncrement;
+        } catch (err) {
+            this.setState({ sbri: 45 });
+            this.setReadIncrement(45);
+            return 45;
+        }
+        this.setState({ sbri: 45 });
+        this.setReadIncrement(45);
+        return 45;
+    }
+    
+    setReadIncrement = (seconds, title) => {
+        return setTimeout(() => {
+            if (this.state.title && title) {
+                if (title == this.state.title) {
+                    console.log(seconds*1000);
+                    // make post request for read increment
+                    this.incrementRead();
+                }
+            }
+        }, seconds*1000);
+    }
+    
+    incrementRead = () => {
+        if (cookies.get('loggedIn') && this.state.id ) {
+            let user = cookies.get('loggedIn');
+            let id = this.state.id;
+            fetch(currentrooturl + 'm/incrementread', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    id, user
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                console.log(result);
+                if (result) {
+                    this.setState({ reads: this.state.reads + 1 });
+                }
+            });
         }
     }
 

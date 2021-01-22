@@ -46,6 +46,11 @@ export default class Video extends Component {
         if (cookies.get('contentDelivery')) {
             this.setState({ cloud: cookies.get('contentDelivery')});
         }
+        if (cookies.get('video-wide') == "true") {
+            if (document.getElementsByClassName('maindash')[0]) {
+                document.getElementsByClassName('maindash')[0].classList.add('maindash-video-wide');
+            }
+        }
     }
 
     componentWillUnmount() {
@@ -57,6 +62,12 @@ export default class Video extends Component {
             }
         }
         this.endViewCountInterval;
+        if (document.getElementsByClassName('maindash')[0]) {
+            let maindash = document.getElementsByClassName('maindash')[0];
+            if (maindash) {
+                maindash.classList.remove('maindash-video-wide');
+            }
+        }
     }
 
     loadPage = async (reload = false) => {
@@ -154,6 +165,7 @@ export default class Video extends Component {
                 return response.json();
             })
             .then((result) => {
+                console.log(result);
                 /* Sets all video document related data */
                 if (result.video.hasOwnProperty('viewable')) {
                     if (result.video.viewable == false) {
@@ -325,6 +337,17 @@ export default class Video extends Component {
                 if (this.player) {
                     updateHistory.call(this);
                 }
+                let cropBtn;
+                let mainvideocontainer;
+                if (document.getElementsByClassName('crop-btn')[0] && document.getElementsByClassName('main-video-container')[0]) {
+                    cropBtn = document.getElementsByClassName('crop-btn')[0];
+                    mainvideocontainer = document.getElementsByClassName('main-video-container')[0];
+                    if (cookies.get('video-wide') == "true") {
+                        cropBtn.classList.add('crop_square');
+                        cropBtn.innerHTML = 'crop_square';
+                        mainvideocontainer.classList.add('wide-screen');
+                    }
+                }
             }).catch((err) => {
                 console.log(err);    
             });;
@@ -366,7 +389,7 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
-                            console.log(totalTime, this.videoComponent.current.duration);
+                            // console.log(totalTime, this.videoComponent.current.duration);
                             if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) { // Increment video view if user has watched more than 25% of the video or the totalTime watched is more than 45 seconds
                                 this.incrementView();
                                 this.endViewCountInterval();
@@ -466,8 +489,8 @@ export default class Video extends Component {
                                     </div>
                                 </div>
                                 <div className='publisher-video-interact-block'>
-                                    <div className="likes-click">
-                                        <FontAwesomeIcon className={this.state.liked ? "thumbsup-interact active-black" : "thumbsup-interact"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
+                                    <div className="likes-click" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}>
+                                        <FontAwesomeIcon className={this.state.liked ? "thumbsup-interact active-black" : "thumbsup-interact"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" />
                                         <div className={this.state.liked ? "active-black" : ""}>{roundNumber(this.state.likes)}</div>
                                     </div>
                                 </div>
@@ -546,7 +569,7 @@ export default class Video extends Component {
                             }
                         </div>
                         <div className='responses'>responses</div>
-                        <div className='articles-bar'>
+                        <div className={this.state.articleResponses ? this.state.articleResponses.length > 0 ? "articles-bar" : "articles-bar hidden no-margin-no-padding" : "articles-bar hidden no-margin-no-padding"}>
                             <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>
                             <div className='article-responses-container'>
                                 {this.state.articleResponses ?
@@ -587,7 +610,7 @@ export default class Video extends Component {
                                 }
                             </div>
                         </div>
-                        <div className='videos-bar'>
+                        <div className={this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos-bar" : "videos-bar hidden no-margin-no-padding" : "videos-bar hidden no-margin-no-padding"}>
                             <div className='video-container-header'>{this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos" : null : null}</div>
                             <div className='video-responses-container flex-grid videogrid'>
                                 {this.state.videoResponses ?

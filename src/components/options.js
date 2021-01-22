@@ -125,7 +125,7 @@ export default class Options extends Component {
                     </div>
                     <input className="thumbnail-upload-choose-file" ref={this.upload} type="file" name="thumbnailToUpload" id="thumbnailToUpload" size="1" />
                     <div className={this.state.uploadavatarbusy ? "thumbnail-upload-container thumbnail-upload-busy" : "thumbnail-upload-container"}>
-                        <button className="btn upload-button thumbnail-upload-button" onClick={(e) => {this.uploadThumbnailS3(e)}}>Change thumbnail</button>
+                        <button className="btn upload-button thumbnail-upload-button" onClick={(e) => {this.uploadThumbnailS3(e)}}>Change Profile Picture</button>
                     </div>
                 </div>
             </div>

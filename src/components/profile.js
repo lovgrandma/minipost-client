@@ -123,6 +123,17 @@ export default class Profile extends Component {
         return false;
     }
 
+    canFollow() {
+        if (cookies.get('loggedIn')) {
+            if (this.editable() == true) {
+                return false;
+            } else {
+                return true;
+            }
+        } 
+        return false;
+    }
+
     render() {
         return (
             <div>
@@ -131,7 +142,7 @@ export default class Profile extends Component {
                     <div>
                         <div className="flex-profile off-black align-center">
                             <div className="prompt-basic off-black weight500">{this.state.username}</div>
-                            <Button className="prompt-basic off-black weight500">follow</Button>
+                            <Button className={this.canFollow() ? "prompt-basic off-black weight500" : "prompt-basic off-black weight500 hidden"}>{this.canFollow() ? "follow" : ""}</Button>
                             <div className="prompt-basic flex"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
                             <div className="prompt-basic flex"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
                         </div>

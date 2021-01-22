@@ -5,6 +5,7 @@ Appends videos to user dash */
 
 import React, { Component } from 'react';
 import Videos from './videos.js';
+import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url.js';
 import utility from '../methods/utility.js';
 import {
@@ -188,21 +189,34 @@ export default class Dash extends Component {
                     {
                         this.state.dashVideos ?
                             this.state.dashVideos.length > 0 ?
-                                this.state.dashVideos.map((video, index) =>
-                                    <Videos mpd={video._fields[0].properties.mpd.toString()}
-                                    title={video._fields[0].properties.title.toString()}
-                                    description={utility.setData(video, "description")}
-                                    thumbnailUrl={utility.setData(video, "thumbnailUrl")}
-                                    author={video._fields[0].properties.author.toString()}
-                                    published={video._fields[0].properties.publishDate.toString()}
-                                    views={utility.getNumber(video._fields[0].properties.views)}
-                                    articles={video._fields[0].properties.articles}
-                                    tags={video._fields[0].properties.tags}
-                                    avatarUrl={video._fields[3]}
-                                    cloud={this.props.cloud}
-                                    key={index}
-                                    index={index}
-                                    />
+                                this.state.dashVideos.map((content, index) =>
+                                    content._fields[0].properties.mpd ?
+                                        <Videos mpd={content._fields[0].properties.mpd.toString()}
+                                        title={content._fields[0].properties.title.toString()}
+                                        description={utility.setData(content, "description")}
+                                        thumbnailUrl={utility.setData(content, "thumbnailUrl")}
+                                        author={content._fields[0].properties.author.toString()}
+                                        published={content._fields[0].properties.publishDate.toString()}
+                                        views={utility.getNumber(content._fields[0].properties.views)}
+                                        articles={content._fields[0].properties.articles}
+                                        tags={content._fields[0].properties.tags}
+                                        avatarUrl={content._fields[3]}
+                                        cloud={this.props.cloud}
+                                        key={index}
+                                        index={index}
+                                        />
+                                    :   <ArticlePreview id={content._fields[0].properties.id}
+                                        title={content._fields[0].properties.title}
+                                        body={content._fields[0].properties.body}
+                                        likes={content._fields[0].properties.likes}
+                                        dislikes={content._fields[0].properties.dislikes}
+                                        reads={content._fields[0].properties.reads}
+                                        published={content._fields[0].properties.publishDate}
+                                        avatarUrl={content._fields[3]}
+                                        cloud={this.props.cloud}
+                                        dash={true}
+                                        key={index}
+                                        />
                                 )
                             : null
                         : null
