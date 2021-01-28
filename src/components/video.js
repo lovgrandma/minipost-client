@@ -186,6 +186,8 @@ export default class Video extends Component {
                                 this.setState({ disliked: true });
                                 this.setState({ liked: false });
                             }
+                        } else if (key == "description") {
+                            this.setState({ description: value })
                         } else if (value) {
                             this.setState(setStateDynamic(key, value));
                         } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {

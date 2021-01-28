@@ -5,6 +5,7 @@ import {
     NavLink,
     Link
 } from 'react-router-dom';
+import RelatedPanel from './relatedpanel.js';
 import currentrooturl from '../url';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -30,6 +31,9 @@ export default class Article extends Component {
 
     componentDidMount() {
         this.setUpState();
+        if (cookies.get('contentDelivery')) {
+            this.setState({ cloud: cookies.get('contentDelivery') });
+        }
     }
     
     componentWillUnmount() {
@@ -367,6 +371,11 @@ export default class Article extends Component {
                         }
                     </div>
                 </div>
+                <RelatedPanel content={this.state.id}
+                            contentType='article'
+                            title={this.state.title}
+                            cloud={this.state.cloud}
+                            />
             </div>
         )
     }

@@ -14,17 +14,21 @@ import ArticlePreview from './articlepreview.js';
 export default class RelatedPanel extends Component {
     constructor(props) {
         super(props);
-        this.state = { relatedContent: [] };
+        this.state = { relatedContent: [], loaded: false, fetching: false };
+        this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
     componentDidMount() {
         this.fetchRelated();
+        window.addEventListener('scroll', this.handleMouseDown, true);
     }
 
     componentDidUpdate(prevProps, prevState) {
         try {
             if (prevProps.content != this.props.content) {
-                this.fetchRelated();
+                if (this.props.content) {
+                    this.fetchRelated();
+                }
             }
         } catch (err) {
             // Component may have unmounted
@@ -38,52 +42,105 @@ export default class RelatedPanel extends Component {
     componentWillUnmount() {
         
     }
-
-    fetchRelated = () => {
+    
+    handleMouseDown() {
         try {
-            if (this.props.content && this.props.contentType) {
-                let id = this.props.content;
-                let type = this.props.contentType;
-                let paginate = 10;
-                let title = '';
-                if (this.props.title) {
-                    title = this.props.title;
-                }
-                if (this.state.relatedContent.length > 10) {
-                    paginate = this.state.relatedContent.length + 10;
-                }
-                if (id.match(/https:\/\/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
-                    id = id.match(/https:\/\/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2];
-                }
-                fetch(currentrooturl + 'm/getRelated', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: 'same-origin',
-                        body: JSON.stringify({
-                            id, type, paginate, title
-                        })
-                    })
-                    .then((response) => {
-                        return response.json();
-                    })
-                    .then((data) => {
-                        let related = [];
-                        if (utility.get(data, 'records')) {
-                            for (let i = 0; i < data.records.length; i++) {
-                                related.push(data.records[i]._fields);
+            if (this) {
+                if (this.state) {
+                    if (utility.checkAtBottom()) {
+                        if (!this.state.bottom) {
+                            this.setState({ bottom: true });
+                            if (this.state.relatedContent && !this.state.fetching) {
+                                this.fetchRelated();
                             }
                         }
-                        this.setState({ relatedContent: related });
-                    })
-                    .catch((err) => {
-                        // Error occured while making fetch request
-                    });
+                    } else {
+                        if (this.state.bottom) {
+                            this.setState({ bottom: false });
+                        }
+                    }
+                }
             }
         } catch (err) {
-            console.log(err);
+            // Component unmounted. No-op
+        }
+    }
+
+    fetchRelated = (paginate = 10) => {
+        if (!this.state.fetching) {
+            this.setState({ fetching: true });
+            try {
+                if (this.props.content && this.props.contentType) {
+                    let id = this.props.content;
+                    let type = this.props.contentType;
+                    let title = '';
+                    if (this.props.title) {
+                        title = this.props.title;
+                    }
+                    if (this.state.relatedContent.length > 10) {
+                        paginate = this.state.relatedContent.length + 10;
+                    }
+                    if (id.match(/https:\/\/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
+                        id = id.match(/https:\/\/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2];
+                    }
+                    fetch(currentrooturl + 'm/getRelated', {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: 'same-origin',
+                            body: JSON.stringify({
+                                id, type, paginate, title
+                            })
+                        })
+                        .then((response) => {
+                            return response.json();
+                        })
+                        .then((data) => {
+                            console.log(this.state.relatedContent);
+                            if (this.state.relatedContent) {
+                                if (this.state.relatedContent.length > 0) {
+                                    this.state.relatedContent.forEach((content) => {
+                                        for (let i = 0; i < data.records.length; i++) {
+                                            console.log(content, data.records[i])
+                                            if (content._fields && data.records[i]._fields) {
+                                                if (content._fields[0] && data.records[i]._fields[0]) {
+                                                    if (content._fields[0].properties && data.records[i]._fields[0].properties) {
+                                                        if (content._fields[0].properties.title == data.records[i]._fields[0].properties.title && content._fields[0].properties.author == data.records[i]._fields[0].properties.author) {
+                                                            console.log("found duplicate");
+                                                            console.log(i);
+                                                            data.records.splice(i, 1);
+                                                            break;
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    })
+                                }
+                            }
+                            data.records = utility.shuffleArray(data.records);
+                            if (this.state.relatedContent.length > 0 && data.records.length > 0) {
+                                this.setState({ relatedContent: this.state.relatedContent.concat(data.records)});
+                            } else if (this.state.relatedContent.length == 0) {
+                                this.setState({ relatedContent: data.records });
+                            }
+                            this.setState({ fetching: false });
+                            if (this.state.relatedContent.length > 0) {
+                                this.setState({ loaded: true });
+                            }
+                        })
+                        .catch((err) => {
+                            // Error occured while making fetch request
+                        });
+                } else {
+                    this.setState({ fetching: false });
+                }
+            } catch (err) {
+                console.log(err);
+                this.setState({ fetching: false });
+            }
         }
     }
     
@@ -92,33 +149,40 @@ export default class RelatedPanel extends Component {
             <div className={this.props.secondary ? 'relatedpanel relatedpanel-secondary' : 'relatedpanel relatedpanel-main'}>
                 {
                     this.state.relatedContent.length > 0 ? this.state.relatedContent.map((content, index) =>
-                        content[0].properties.mpd ?
-                            <Videos mpd={content[0].properties.mpd.toString()}
-                            title={content[0].properties.title.toString()}
-                            description={content[0].properties.description}
-                            thumbnailUrl={content[0].properties.thumbnailUrl}
-                            author={content[0].properties.author.toString()}
-                            published={content[0].properties.publishDate.toString()}
-                            views={utility.getNumber(content[0].properties.views)}
-                            articles={content[0].properties.articles}
-                            tags={content[0].properties.tags}
+                        content._fields[0].properties.mpd ?
+                            <Videos mpd={content._fields[0].properties.mpd.toString()}
+                            title={content._fields[0].properties.title}
+                            description={content._fields[0].properties.description}
+                            thumbnailUrl={content._fields[0].properties.thumbnailUrl}
+                            author={content._fields[0].properties.author.toString()}
+                            published={content._fields[0].properties.publishDate.toString()}
+                            views={utility.getNumber(content._fields[0].properties.views)}
+                            articles={content._fields[0].properties.articles}
+                            tags={content._fields[0].properties.tags}
                             cloud={this.props.cloud}
                             related={true}
                             key={index}
                             index={index}
                             />
-                        : <ArticlePreview title={content.properties.title}
-                            author={content.properties.author}
-                            body={content.properties.body}
-                            id={content.properties.id}
-                            likes={content.properties.likes}
-                            dislikes={content.properties.dislikes}
-                            reads={content.properties.reads}
-                            published={content.properties.publishDate}
+                        : <ArticlePreview title={content._fields[0].properties.title}
+                            author={content._fields[0].properties.author}
+                            body={content._fields[0].properties.body}
+                            id={content._fields[0].properties.id}
+                            reads={content._fields[0].properties.reads}
+                            published={content._fields[0].properties.publishDate}
                             key={index}
                             related={true}
                             />
                          )
+                    : null
+                }
+                {
+                    this.state.relatedContent.length > 0 ?
+                        this.state.loaded && !this.state.fetching ?
+                            <Button className="flex-button-center-btn" onClick={(e)=>{this.fetchRelated()}}>More videos</Button> : <div ref={this.spinnerRef} className="spinner-search-holder-visible spinner-video-dash"><div className="loadingio-spinner-dual-ball-m6fvn6j93c loadingio-spinner-dual-ball-m6fvn6j93c-dash"><div className="ldio-oo3b7d4nmnr ldio-oo3b7d4nmnr-dash">
+                            <div></div><div></div><div></div>
+                            </div></div>
+                        </div>
                     : null
                 }
             </div>

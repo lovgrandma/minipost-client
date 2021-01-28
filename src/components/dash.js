@@ -198,7 +198,7 @@ export default class Dash extends Component {
                                         author={content._fields[0].properties.author.toString()}
                                         published={content._fields[0].properties.publishDate.toString()}
                                         views={utility.getNumber(content._fields[0].properties.views)}
-                                        articles={content._fields[0].properties.articles}
+                                        responses={content._fields[0].properties.responses}
                                         tags={content._fields[0].properties.tags}
                                         avatarUrl={content._fields[3]}
                                         cloud={this.props.cloud}
@@ -207,11 +207,13 @@ export default class Dash extends Component {
                                         />
                                     :   <ArticlePreview id={content._fields[0].properties.id}
                                         title={content._fields[0].properties.title}
+                                        author={content._fields[0].properties.author.toString()}
                                         body={content._fields[0].properties.body}
                                         likes={content._fields[0].properties.likes}
                                         dislikes={content._fields[0].properties.dislikes}
                                         reads={content._fields[0].properties.reads}
                                         published={content._fields[0].properties.publishDate}
+                                        responses={content._fields[0].properties.responses}
                                         avatarUrl={content._fields[3]}
                                         cloud={this.props.cloud}
                                         dash={true}

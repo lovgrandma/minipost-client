@@ -7,18 +7,20 @@ import {
     Link
 } from 'react-router-dom';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
-import { parseId, get } from '../methods/utility.js';
-import { showContentMenu, promptDeleteContent, tryDeleteContent } from '../methods/context.js';
+import { convertDate, parseId, get } from '../methods/utility.js';
+import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import Videos from './videos.js';
 import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 
-export default class articlepreview extends Component {
+export default class ArticlePreview extends Component {
     constructor(props) {
         super(props)
         this.state = {
             body: "", contentMenu: false, deleteContentPrompt: false, deleteErr: "", dash: true
         }
+        this.articleContainer = React.createRef();
         this.titleDelete = React.createRef();
     }
 
@@ -27,7 +29,6 @@ export default class articlepreview extends Component {
         if (this.props.dash) {
             this.setState({ dash: true });
         }
-        console.log(this.props.body);
         if (this.props.body) {
             this.setState({ body: parseBody(this.props.body, parseLength, true) });
         }
@@ -35,7 +36,6 @@ export default class articlepreview extends Component {
     
     componentDidUpdate(prevProps, prevState) {
         let parseLength = this.setParseLength();
-        console.log(parseLength);
         if (this.props.body != prevProps.body) {
             this.setState({ body: parseBody(this.props.body, parseLength, true) });
         }
@@ -48,7 +48,16 @@ export default class articlepreview extends Component {
         }
         return parseLength;
     }
-
+    
+    showArticles = (e, show) => {
+        if (this.articleContainer.current) {
+            if (show) {
+                this.articleContainer.current.classList.add("hidden-visible");
+            } else {
+                this.articleContainer.current.classList.remove("hidden-visible");
+            }
+        }
+    }
     articleEditLink() {
         return {
             pathname:`/edit?a=${this.props.id}`,
@@ -84,8 +93,8 @@ export default class articlepreview extends Component {
 
     render() {
         return (
-            <div className={this.props.edit  || this.props.viewProfile || this.props.dash ? "col" : ""}>
-                <div className={this.props.edit || this.props.viewProfile ? "article-container-edit" : this.props.dash ? "article-container-dash" : "article-container article-container-preview"}>
+            <div className={this.props.edit  || this.props.viewProfile || this.props.dash || this.props.related ? "col" : ""}>
+                <div className={this.props.edit || this.props.viewProfile ? "article-container-edit" : this.props.dash ? "article-container-dash" : this.props.related ? "article-container article-container-preview article-container-related" : "article-container article-container-preview"}>
                     {
                         this.state.deleteContentPrompt ?
                             <div className="delete-prompt-box delete-prompt-box-article">
@@ -121,6 +130,51 @@ export default class articlepreview extends Component {
                     <Link to={this.linkToArticle()}>
                         <div className={this.props.edit || this.props.viewProfile ? "article-preview-body-edit" : "article-preview-body"}>{this.state.body}</div>
                     </Link>
+                    <span className="dash-video-bar">
+                        <NavLink exact to={"/profile?p=" + this.props.author}><p className='video-author'>{this.props.author}</p></NavLink>
+                        <div className="dash-video-bar-stats">
+                            <p className='video-views'>{this.props.reads} {this.props.title ? this.props.views == 1 ? "read" : "reads" : null}</p>
+                            <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>
+                            <div className="video-article-responses" onMouseOver={(e)=>{this.showArticles(e, true)}} onMouseOut={(e)=>{this.showArticles(e, false)}}>
+                                <div className="video-article-responses-length">{this.props.responses ? this.props.responses.length > 0 ? this.props.responses.length == 1 ? this.props.responses.length + " reply" : this.props.responses.length + " replies" : null : null}</div>
+                                <div className={this.props.responses ? this.props.responses.length > 1 ? "video-article-responses-preview-container dropdown-menu hidden-fast" : "video-article-responses-preview-container article-responses-preview-container-single dropdown-menu hidden-fast" : "video-article-responses-preview-container dropdown-menu hidden-fast"} ref={this.articleContainer}>{this.props.responses ? this.props.responses.length > 0 ? this.props.responses.map((content, index) =>
+                                    content.properties.id ? 
+                                        <ArticlePreview title={content.properties.title}
+                                        author={content.properties.author}
+                                        body={content.properties.body}
+                                        id={content.properties.id}
+                                        likes={content.properties.likes}
+                                        dislikes={content.properties.dislikes}
+                                        reads={content.properties.reads}
+                                        published={content.properties.publishDate}
+                                        responseToMpd={this.props.mpd}
+                                        responseToTitle={this.props.title}
+                                        responseToType="video"
+                                        key={index}
+                                        />
+                                    :   <Videos title={content.properties.title}
+                                        author={content.properties.author}
+                                        title={content.properties.title}
+                                        mpd={content.properties.mpd}
+                                        thumbnailUrl={content.properties.thumbnailUrl}
+                                        likes={content.properties.likes}
+                                        dislikes={content.properties.dislikes}
+                                        views={content.properties.views}
+                                        published={content.properties.publishDate}
+                                        responseToMpd={this.props.mpd}
+                                        dashReply={true}
+                                        responseToTitle={this.props.title}
+                                        responseToType="video"
+                                        cloud={this.props.cloud}
+                                        key={index}
+                                        />
+                                ) : null : null}
+                                </div>
+                            </div>
+                            <span>{this.props.responses ? this.props.responses.length > 0 ? "\u00A0•\u00A0" : null : null}</span>
+                            <p className="video-publish-date">{convertDate(this.props.published)}</p>
+                        </div>
+                    </span> 
                 </div>
             </div>
         )

@@ -261,3 +261,11 @@ export const tryDeleteContent = async function(e) {
         }
     }
 }
+
+export const resolveViews = function() {
+    if (!this.props.title) {
+        return ''
+    } else {
+        return this.props.views;
+    }
+}

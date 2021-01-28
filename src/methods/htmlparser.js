@@ -19,8 +19,10 @@ const parseBody = function(body, length, removeLinks = false) {
                 html = ReactHtmlParser(body, options);
             } else {
                 html = ReactHtmlParser(body.slice(0, length), options);
-                if (html[html.length-1].type != "figure") { // If last node type figure do not add ellipsis will produce undefined text
-                    html[html.length-1].props.children[0] += "..";
+                if (html[html.length-1].props) {
+                    if (html[html.length-1].type != "figure") { // If last node type figure do not add ellipsis will produce undefined text
+                        html[html.length-1].props.children[0] += "..";
+                    }
                 }
             }
         } else {

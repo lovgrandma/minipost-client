@@ -8,7 +8,7 @@ import dummyavatar from '../static/greyavatar.jpg';
 import currentrooturl from '../url';
 import ArticlePreview from './articlepreview.js';
 import { convertDate, get } from '../methods/utility.js';
-import { showContentMenu, promptDeleteContent, tryDeleteContent } from '../methods/context.js';
+import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
 
@@ -106,14 +106,6 @@ export default class Videos extends Component {
         }
     }
 
-    resolveViews = () => {
-        if (!this.props.title) {
-            return ''
-        } else {
-            return this.props.views;
-        }
-    }
-
     render () {
         return (
             this.props.title && !this.props.edit || this.props.edit ?
@@ -139,7 +131,11 @@ export default class Videos extends Component {
                             </div>
                         </Link>
                         <div className="dash-video-details-container">
-                            <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'publisheravatar-dash' : 'publisheravatar-dash avatar-placeholder' : 'publisheravatar-dash avatar-placeholder'} src={this.getAvatar()}></img>
+                            {
+                                this.props.dashReply ? 
+                                    null 
+                                    : <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'publisheravatar-dash' : 'publisheravatar-dash avatar-placeholder' : 'publisheravatar-dash avatar-placeholder'} src={this.getAvatar()}></img>
+                            }
                             <div className={this.props.edit ? "video-details-title-edit" : "video-details"}>
                                 <Link to={this.editReturn()}>
                                     <p className='mainvideotitle'>{this.cutTitle(this.props.title)}</p>
@@ -163,28 +159,45 @@ export default class Videos extends Component {
                                     <span className="dash-video-bar">
                                         <NavLink exact to={"/profile?p=" + this.props.author}><p className='video-author'>{this.props.author}</p></NavLink>
                                         <div className="dash-video-bar-stats">
-                                            <p className='video-views'>{this.resolveViews()} {this.props.title ? this.props.views == 1 ? "view" : "views" : null}</p>
+                                            <p className='video-views'>{resolveViews.call(this)} {this.props.title ? this.props.views == 1 ? "view" : "views" : null}</p>
                                             <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>
                                             <div className="video-article-responses" onMouseOver={(e)=>{this.showArticles(e, true)}} onMouseOut={(e)=>{this.showArticles(e, false)}}>
-                                                <div className="video-article-responses-length">{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.length == 1 ? this.props.articles.length + " article" : this.props.articles.length + " articles" : null : null}</div>
-                                                <div className={this.props.articles ? this.props.articles.length > 1 ? "video-article-responses-preview-container dropdown-menu hidden-fast" : "video-article-responses-preview-container article-responses-preview-container-single dropdown-menu hidden-fast" : "video-article-responses-preview-container dropdown-menu hidden-fast"} ref={this.articleContainer}>{this.props.articles ? this.props.articles.length > 0 ? this.props.articles.map((article, index) =>
-                                                    <ArticlePreview title={article.properties.title}
-                                                    author={article.properties.author}
-                                                    body={article.properties.body}
-                                                    id={article.properties.id}
-                                                    likes={article.properties.likes}
-                                                    dislikes={article.properties.dislikes}
-                                                    reads={article.properties.reads}
-                                                    published={article.properties.publishDate}
-                                                    responseToMpd={this.props.mpd}
-                                                    responseToTitle={this.props.title}
-                                                    responseToType="video"
-                                                    key={index}
-                                                    />
+                                                <div className="video-article-responses-length">{this.props.responses ? this.props.responses.length > 0 ? this.props.responses.length == 1 ? this.props.responses.length + " reply" : this.props.responses.length + " replies" : null : null}</div>
+                                                <div className={this.props.responses ? this.props.responses.length > 1 ? "video-article-responses-preview-container dropdown-menu hidden-fast" : "video-article-responses-preview-container article-responses-preview-container-single dropdown-menu hidden-fast" : "video-article-responses-preview-container dropdown-menu hidden-fast"} ref={this.articleContainer}>{this.props.responses ? this.props.responses.length > 0 ? this.props.responses.map((content, index) =>
+                                                    content.properties.id ? 
+                                                        <ArticlePreview title={content.properties.title}
+                                                        author={content.properties.author}
+                                                        body={content.properties.body}
+                                                        id={content.properties.id}
+                                                        likes={content.properties.likes}
+                                                        dislikes={content.properties.dislikes}
+                                                        reads={content.properties.reads}
+                                                        published={content.properties.publishDate}
+                                                        responseToMpd={this.props.mpd}
+                                                        responseToTitle={this.props.title}
+                                                        responseToType="video"
+                                                        key={index}
+                                                        />
+                                                    :   <Videos title={content.properties.title}
+                                                        author={content.properties.author}
+                                                        title={content.properties.title}
+                                                        mpd={content.properties.mpd}
+                                                        thumbnailUrl={content.properties.thumbnailUrl}
+                                                        likes={content.properties.likes}
+                                                        dislikes={content.properties.dislikes}
+                                                        views={content.properties.views}
+                                                        published={content.properties.publishDate}
+                                                        responseToMpd={this.props.mpd}
+                                                        dashReply={true}
+                                                        responseToTitle={this.props.title}
+                                                        responseToType="video"
+                                                        cloud={this.props.cloud}
+                                                        key={index}
+                                                        />
                                                 ) : null : null}
                                                 </div>
                                             </div>
-                                            <span>{this.props.articles ? this.props.articles.length > 0 ? "\u00A0•\u00A0" : null : null}</span>
+                                            <span>{this.props.responses ? this.props.responses.length > 0 ? "\u00A0•\u00A0" : null : null}</span>
                                             <p className="video-publish-date">{convertDate(this.props.published)}</p>
                                         </div>
                                     </span>
