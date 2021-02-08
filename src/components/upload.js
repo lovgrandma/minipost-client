@@ -30,7 +30,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -42,9 +42,15 @@ export default class Upload extends Component { // ulc upload component
         this.videoComponent = new React.createRef();
         this.player = new React.createRef();
         this.thumbnailpreview = new React.createRef();
+        this.advertisementSwitch = new React.createRef();
         this.onErrorEvent = this.onErrorEvent.bind(this);
 		this.onError = this.onError.bind(this);
         this.onKeyPress = this.onKeyPress.bind(this);
+        this.startDate = React.createRef();
+        this.endDate = React.createRef();
+        this.cost = React.createRef();
+        this.budgetTotal = React.createRef();
+        this.adUrl = React.createRef();
         this.uploadMessages = {
             takeAWhile: 'Depending on the size of your video, uploading can take a while',
             whileYoureGone: 'When your video is converting you can visit other pages and watch videos, we\'ll take care of this while you\'re gone',
@@ -86,6 +92,13 @@ export default class Upload extends Component { // ulc upload component
                         if (this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)) {
                             this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1] + "-mpd.mpd", true);
                             this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1], progress: 100, publishedAwait: false });
+                        } else if (this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)) {
+                            this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)[1] + "-mpd.mpd", true);
+                            this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)[1], progress: 100, publishedAwait: false });
+                            if (this.props.ad) {
+                                this.setState({ advertisement: true });
+                                this.retrieveSingleVideo("ad", this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)[1]);
+                            }
                         }
                     }
                     if (this.props.location.props) {
@@ -358,6 +371,43 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    retrieveSingleVideo = (type = "video", mpd) => {
+        if (type == "ad" && cookies.get('loggedIn') && mpd) {
+            const user = cookies.get('loggedIn');
+            fetch(currentrooturl + 'm/getSingleAd', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    mpd, user
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                console.log(data);
+                if (data.video) {
+                    if (get(data, 'video.startDate') && get(data, 'video.endDate') && get(data, 'video.dailyBudget') && get(data, 'video.adUrl')) {
+                        if (parseInt(data.video.startDate) && parseInt(data.video.endDate)) {
+                            if (new Date(parseInt(data.video.startDate)) && new Date(parseInt(data.video.endDate))) {
+                                this.startDate.current.valueAsDate = new Date(parseInt(data.video.startDate));
+                                this.endDate.current.valueAsDate = new Date(parseInt(data.video.endDate));
+                                this.setState({ dateEditable: false });
+                            }
+                        }
+                        this.cost.current.value = data.video.dailyBudget;
+                        this.adUrl.current.value = data.video.adUrl;
+                        this.setState({ costEditable: false });
+                    }
+                }
+            })
+        }
+    }
+    
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
     getUserVideos = () => {
         if (!this.state.gettingUserVideos) {
@@ -375,10 +425,17 @@ export default class Upload extends Component { // ulc upload component
                         username
                     })
                 })
-                    .then((response) => {
+                .then((response) => {
                     return response.json(); // Parsed data
                 })
-                    .then((data) => {
+                .then((data) => {
+                    console.log(data);
+                    if (data.advertiser) {
+                        this.setState({ advertiser: data.advertiser });
+                    }
+                    if (data.advertisement) {
+                        this.setState({ advertisement: data.advertisement });
+                    }
                     if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
                         if (data.title) {
                             if (data.title.length > 0) {
@@ -430,15 +487,15 @@ export default class Upload extends Component { // ulc upload component
                     } else if (data.querystatus.toString() == null) {
                         // no video processing found
                     }
-
+                    this.setState({ gettingUserVideos: false });
                     return data;
                 })
-                    .catch(error => {
+                .catch(error => {
+                    this.setState({ gettingUserVideos: false });
                     console.log(error);
                 })
             }
         }
-        this.setState({ gettingUserVideos: false });
     }
 
     getSocket = (i, interval) => { // Manually returns socket from main component to ensure socket communication during upload
@@ -547,6 +604,12 @@ export default class Upload extends Component { // ulc upload component
     }
 
     uploadFileS3 = async (rerun) => {
+        let advertisement = false;
+        if (get(this, "advertisementSwitch.current.checked")) {
+            if (this.advertisementSwitch.current.checked) {
+                advertisement = true;
+            }
+        }
         let userSocket = await this.getSocket(0, 2);
         this.props.updateErrStatus("");
         if (this.upload.current.files[0] && this.state.beginUpload == false || this.upload.current.files[0] && rerun && cookies.get('loggedIn')) {
@@ -560,6 +623,9 @@ export default class Upload extends Component { // ulc upload component
             data.append('extension', extension);
             data.append('video', file);
             data.append('user', cookies.get('loggedIn'));
+            if (advertisement) {
+                data.append('advertisement', true);
+            }
             if (this.props.socket) {
                 data.append('socket', this.props.socket.id);
             } else if (this.state.socket) {
@@ -607,6 +673,9 @@ export default class Upload extends Component { // ulc upload component
                             }
                         } else if (response.data.querystatus) {
                             if (response.data.querystatus.match(/processbegin/)[0]) {
+                                if (advertisement) {
+                                    this.setState({ advertisement: true });
+                                }
                                 let uplRoom = response.data.querystatus.match(/;([upla-z0-9].*)/)[1];
                                 cookies.set('uplsession', uplRoom, { path: '/', sameSite: true, signed: true, maxAge: 86400 }); // Max age for video upload session 24 hours.
                                 if (uplRoom.match(/upl-([a-z0-9].*)/)) {
@@ -639,9 +708,44 @@ export default class Upload extends Component { // ulc upload component
             }
         }
     }
+    
+    buildAdvertisingSchedule = () => {
+        try {
+            if (get(this, 'startDate.current.value') && get(this, 'endDate.current.value') && get(this, 'cost.current.value') && get(this, 'adUrl.current.value')) {
+                if (Date.parse(this.startDate.current.value) && Date.parse(this.endDate.current.value)) {
+                    if (Date.parse(this.startDate.current.value) < Date.parse(this.endDate.current.value)) {
+                        if (this.cost.current.value > 24.99) {
+                            return {
+                                startDate: Date.parse(this.startDate.current.value),
+                                endDate: Date.parse(this.endDate.current.value),
+                                dailyBudget: this.cost.current.value,
+                                adUrl: this.adUrl.current.value
+                            }
+                        } else {
+                            this.setState({ adErr: "Your daily budget cannot run less than $25 usd a day" });
+                            return null;
+                        }
+                    } else {
+                        this.setState({ adErr: "The start date cannot be later than the end date" });
+                        return null;
+                    }
+                }
+            }
+        } catch (err) {
+            this.setState({ adErr: err });
+            return null;
+        }
+    }
 
     /* Publish. Updates a single video record in the backend database on mongodb and graph database */
     updateRecord = async () => {
+        let adData;
+        if (this.state.advertisement || this.props.ad) {
+            adData = this.buildAdvertisingSchedule();
+            if (!adData) {
+                return; // Exit, advertising schedule did not compile properly
+            }
+        }
         if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
             if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
                 this.setState({ publishing: true});
@@ -690,6 +794,12 @@ export default class Upload extends Component { // ulc upload component
                 data.append('responseTo', responseTo);
                 data.append('responseType', responseType);
                 data.append('extension', 'jpeg');
+                if (adData) { // if user is creating an advertisement. Forward the appropriate data
+                    data.append('startDate', adData.startDate);
+                    data.append('endDate', adData.endDate);
+                    data.append('dailyBudget', adData.dailyBudget);
+                    data.append('adUrl', adData.adUrl);
+                }
                 let thumbUrl = null;
                 if (this.thumbnailpreview && this.state.thumbnailLoaded) {
                     if (this.thumbnailpreview.current) {
@@ -703,6 +813,7 @@ export default class Upload extends Component { // ulc upload component
                 try {
                     axios.post(currentrooturl + 'm/publishvideo', data, options)
                         .then((data) => {
+                        console.log(data);
                             this.setState({ publishing: false });
                             if (data.data.querystatus === "record published/updated") {
                                 this.setState({ publishedMpd: data.data.mpd });
@@ -797,6 +908,14 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    getWatchHere = () => {
+        if (this.state.publishedMpd) {
+            return this.state.publishedMpd;
+        } else {
+            return this.state.videoId;
+        }
+    }
+
     // Must add thumbnail option in input section
     render() {
         return (
@@ -811,9 +930,13 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
-                <div className={ cookies.get('loggedIn') ? "upload-button-container" : "hidden"}>
+                <div className={ cookies.get('loggedIn') && !this.state.gettingUserVideos ? "upload-button-container" : "hidden"}>
                     <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
                     <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
+                    <div className={ this.state.advertiser && this.props.uploadStatus != "video ready" && !this.state.beginUpload ? "hidden hidden-visible custom-control custom-switch margin-bottom-5 custom-switch-spacing-upload" : "hidden" }>
+                        <input type="checkbox" className="custom-control-input" id="customSwitch1" ref={this.advertisementSwitch}></input>
+                        <label className="custom-control-label info-blurb switch-line-height-text" for="customSwitch1">Upload as an advertisement and fill in advertisement contract details</label>
+                    </div>
                 </div>
                 <div className={this.state.progress >= 100 ? "upload-media-container video-preview" : "upload-media-container video-preview video-preview-hidden"}>
                     <div className="video-container video-container-preview" ref={this.videoContainer}>
@@ -863,6 +986,22 @@ export default class Upload extends Component { // ulc upload component
                             <input type='text' id="upl-vid-tags" name="upl-vid-tags-input" ref={this.tagsInput} onKeyDown={(e) => this.onKeyPress(e)} placeholder={this.state.tags ? this.state.tags.length > 0 ? "" : "" : "tags"}></input>
                         </div>
                         <div className="info-blurb tags-blurb">Tags help us in organizing content on minipost. Enter relevant tags to help users find your content easier</div>
+
+                        <div className={ this.state.advertisement || this.props.ad ? "hidden-visible advertisement-contract" : "hidden advertisement-contract" }>
+                            <h3 className="medium-data-text margin-bottom-5">Advertisement Contract</h3>
+                            <div className="info-blurb margin-bottom-5">Select a corresponding start and end date for your advertisement. The advertisement will run from the start date up until the end of the end date. Please be advised this data cannot be changed after you submit this contract.</div>
+                            <label className="medium-data-text" for="start">Start date:&nbsp;</label>
+                            <input className="border-radius-round-1 margin-bottom-5" type="date" id="start" name="ad-start" ref={this.startDate} disabled={this.state.dateEditable ? "" : "disabled"}></input><br></br>
+                            <label className="medium-data-text" for="end">End date:&nbsp;</label>
+                            <input className="border-radius-round-1 margin-bottom-5" type="date" id="end" name="ad-end" ref={this.endDate} disabled={this.state.dateEditable ? "" : "disabled"}></input><br></br>
+                            <div className="info-blurb margin-bottom-5">Specify a daily budget for your campaign. Your ad will only be ran up to the value that you choose. For example if you set a limit of $50, your ad will stop running for that day once it meets a certain amount of clicks and impressions that match that daily budget</div>
+                            <label className="medium-data-text margin-bottom-5" for="cost">Max daily budget (usd):&nbsp;</label>
+                            <input className="border-radius-round-1" type='text' id="upl-ad-cost" name="upl-ad-cost-input" ref={this.cost} placeholder="" disabled={this.state.costEditable ? "" : "disabled"}></input><br></br>
+                            <div className="info-blurb margin-bottom-5">Specify the endpoint that you&rsquo;d like your advertisement to point to. This can lead to your website, your miniprofile or any other url that your ad is for</div>
+                            <label className="medium-data-text margin-bottom-5" for="cost">Ad Url:&nbsp;</label>
+                            <input className="border-radius-round-1 border-radius-round-1-long" type='text' id="upl-ad-input" name="upl-ad-url-input" ref={this.adUrl} placeholder=""></input>
+                            <label className="medium-data-text margin-bottom-5" for="budgetTotal" ref={this.budgetTotal}>{this.state.budgetTotal}</label>
+                        </div>
                         <form className="nudity-radio">
                             <div className="nudity-question">Is there any nudity in your video?</div>
                             <input type="radio" id="nudity-yes" name="nudity" value="yes"/>
@@ -876,7 +1015,7 @@ export default class Upload extends Component { // ulc upload component
                     </div>
                 </div>
                 <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out responding-to" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
-                <div className={this.state.published && !this.state.publishedAwait ? "hidden hidden-visible prompt-basic" : "hidden"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.state.publishedMpd}`}}>here</Link></div>
+                <div className={this.state.published && !this.state.publishedAwait ? "hidden hidden-visible prompt-basic" : "hidden"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.getWatchHere()}`}}>here</Link></div>
                 <div className={this.state.publishedAwait ? "hidden hidden-visible prompt-basic grey-out" : "hidden"}>Your video has been published but it has not finished uploading yet. You can continue to edit video details above</div>
                 <div className={this.props.isLoggedIn && !this.props.edit ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>

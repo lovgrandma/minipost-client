@@ -82,6 +82,11 @@ export default class Video extends Component {
                             this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd");
                             this.setState({ mpd: this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]});
                         }
+                    } else if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]) {
+                            this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + "-mpd.mpd");
+                            this.setState({ mpd: this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]});
+                        }
                     }
                 }
             } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
@@ -89,6 +94,11 @@ export default class Video extends Component {
                     if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) {
                         this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd");
                         this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
+                    }
+                } else if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)) {
+                    if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]) {
+                        this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + "-mpd.mpd");
+                        this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]});
                     }
                 }
             }
@@ -144,7 +154,7 @@ export default class Video extends Component {
     }
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
-    fetchVideoPageData = async (rawMpd) => {
+    fetchVideoPageData = async (rawMpd, ad = false) => {
         let user = "";
         if (cookies.get('loggedIn')) {
             user = cookies.get('loggedIn');
@@ -158,7 +168,7 @@ export default class Video extends Component {
                 },
                 credentials: 'same-origin',
                 body: JSON.stringify({
-                    rawMpd, user
+                    rawMpd, user, ad
                 })
             })
             .then((response) => {
@@ -235,6 +245,18 @@ export default class Video extends Component {
             if (cookies.get('loggedIn')) {
                 user = cookies.get('loggedIn');
             }
+            let ad = false;
+            if (this.props.ad) {
+                ad = true;
+            } else if (this.props.location.search) {
+                if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
+                    ad = true;
+                }
+            } else if (this.props.location.pathname) {
+                if (this.props.location.pathname.match(/\?va=([a-zA-Z0-9].*)/)) {
+                    ad = true;
+                }
+            }
             let mpd = this.state.mpd;
             await fetch(currentrooturl + 'm/incrementview', {
                     method: "POST",
@@ -244,7 +266,7 @@ export default class Video extends Component {
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify({
-                        mpd, user
+                        mpd, user, ad
                     })
                 })
                 .then(function(response) {
@@ -272,6 +294,16 @@ export default class Video extends Component {
                 manifest = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
             }
             let manifestUri = manifest;
+            
+            // Before a video plays, you must check if an advertisement must run or not, whether or not (how much) ads must run within the video or at the end after completing. Check in playlist class
+            
+            // Return array of times to play ad on this video. store 
+            
+            // Run function to get ad, play ad as manifest and then return back to normal video playthrough on skip or finish. Run in playlist class, save video timestamp and manifest
+            
+            // During playback, at x time, send request to server set watched, at start set impression to server, on click send to server
+            
+            // After ad has played (start of video, defer) in video, dont defer, end of video (defer) (two different defers? one at end one at start?). Set defers and if more ads will play
 
             const video = this.videoComponent.current;
             const videoContainer = this.videoContainer.current;
@@ -280,7 +312,8 @@ export default class Video extends Component {
             // Initialize player
             let player = new shaka.Player(video);
             this.player = player;
-
+            
+            console.log(shaka.text.SimpleTextDisplayer(video));
             // UI custom json
             const uiConfig = {};
             uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'overflow_menu', 'theatreButton', 'fullscreen'];
@@ -391,7 +424,7 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
-                            // console.log(totalTime, this.videoComponent.current.duration);
+                            console.log(totalTime, this.videoComponent.current.duration);
                             if (totalTime / this.videoComponent.current.duration > 0.25 || totalTime > 45) { // Increment video view if user has watched more than 25% of the video or the totalTime watched is more than 45 seconds
                                 this.incrementView();
                                 this.endViewCountInterval();
@@ -473,6 +506,7 @@ export default class Video extends Component {
             <div className="video-page-flex">
             <div id='videocontainer' className='main-video-container'>
                 <div className="video-container" ref={this.videoContainer}>
+                    <div className="video-over-player-details"><div className="video-over-player-title">{this.state.title}</div><div className="video-over-player-author">{this.state.author}</div></div>
                     <video className="shaka-video"
                     ref={this.videoComponent}
                     poster={minipostpreviewbanner}

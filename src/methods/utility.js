@@ -107,6 +107,10 @@ let parseId = function(encode, id) {
 
 /* Simplifies time format 00/00/0000, 0:00:00 AM to 00/00/00, 0:00 am */
 let roundTime = function(time) {
+    if (time.low) {
+        time = time.low;
+    }
+    time = new Date(time).toLocaleString();
     if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)) {
         if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] && time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2]) {
             return time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] + " " + time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2].toLowerCase();
@@ -135,8 +139,15 @@ const shortenTitle = function (title, length = 70) {
 
 /* Converts static document date into relevant publish time from now */
 const convertDate = function (date) {
+    if (parseInt(date) != 1 && parseInt(date) != 2) { // prevent strange errors parsing old epoch date format
+        date = new Date(parseInt(date)).toLocaleString();
+    }
+    if (date == "Invalid Date") {
+        return null;
+    }
     if (date) {
         let timeFromNow = (Date.now() - new Date(date).getTime())/1000;
+        let days = (new Date(Date.now()) - new Date(date))/(1000*60*60*24);
         if (timeFromNow <= 60) {
             return "1 minute ago";
         } else if (timeFromNow <= 120) {
@@ -159,9 +170,21 @@ const convertDate = function (date) {
             return roundHour(timeFromNow); // Rounds hour for hours uploaded from now
         } else if (new Date(Date.now()).getDate() - new Date(date).getDate() == 1) {
             return "yesterday";
+        } else if (days > 1 && days < 7) {
+            if (Math.round(days) == 1) {
+                return "yesterday";
+            } else {
+                return Math.round(days) + " days ago";
+            }
+        } else if (days > 6 && days < 13) {
+            return "a week ago";
+        } else if (new Date(date).getDate() - new Date(Date.now()).getDate() > 12 && new Date(date).getDate() - new Date(Date.now()).getDate() < 17) {
+            return "two weeks ago";
         } else {
-            if (date.match(/([a-zA-Z0-9].*),/)) {
-                return date.match(/([a-zA-Z0-9].*),/)[1];
+            if (date) {
+                if (date.match(/([a-zA-Z0-9].*),/)) {
+                    return date.match(/([a-zA-Z0-9].*),/)[1];
+                }
             } else {
                 date = date.split(' ')[0];
                 return date.substring(0, date.length -1);

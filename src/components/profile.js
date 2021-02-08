@@ -81,6 +81,7 @@ export default class Profile extends Component {
                     return response.json();
                 })
                 .then((result) => {
+                    console.log(result);
                     if (result.totalviews) {
                         this.setState({ totalVideoViews: result.totalviews });
                     }
@@ -134,6 +135,14 @@ export default class Profile extends Component {
         return false;
     }
 
+    isAd(record) {
+        if (record.dailyBudget && record.mpd || record.hasOwnProperty('clicks')) {
+            return "AdVideo";
+        } else {
+            return false;
+        }
+    }
+
     render() {
         return (
             <div>
@@ -172,6 +181,7 @@ export default class Profile extends Component {
                                     key={index}
                                     index={index}
                                     edit={this.editable()}
+                                    ad={this.isAd(record)}
                                     />
                                 : <ArticlePreview title={record.title}
                                     author={record.author}

@@ -611,6 +611,15 @@ ul li {
     line-height: 0.7;
 }
 
+@media(max-width: 720px) {
+    .notifications, .profile, .upload, .history {
+        transition: 200ms;
+        color: grey;
+        margin: 0 4px;
+        line-height: 0.7;
+    }
+}
+
 .notifications:hover, .profile:hover, .upload:hover, .history:hover, .favorites:hover {
     color: black;
 }
@@ -1179,9 +1188,10 @@ label {
 }
 
 .maindash {
-    margin: 45px auto;
+    margin: 40px auto;
     padding-left: 50px;
     transition: 200ms;
+    background-color: #fcfcfc;
 }
 
 .maindash-video-wide {
@@ -1856,7 +1866,7 @@ label {
     width: 100%;
 }
 .navbar .nowrap {
-    width: 100vw;
+    width: 100%;
 }
 
 .videodesc {
@@ -3186,6 +3196,10 @@ Other solutions would cause dropdown to show when component was hidden or not sh
     cursor: pointer;
 }
 
+.medium-data-text {
+    font-size: 0.9em;
+}
+
 .prompt-spacing {
     padding: 2px 2px;
 }
@@ -3580,7 +3594,7 @@ If user only has one friend, styling wont apply */
 }
 
 .info-blurb:hover {
-    color: #4e4e4e;
+    color: #464646;
 }
 
 .upload-video-text,
@@ -4160,7 +4174,7 @@ textarea:focus {
 }
 
 .article-preview-body {
-    max-height: 135px;
+    max-height: 115px;
     overflow: hidden;
 }
 
@@ -4471,7 +4485,7 @@ a code:hover {
 }
 
 .videocontainer-related .dash-video-bar-stats {
-    font-size: 0.84em;
+    font-size: 0.9em;
     line-height: 12px;
 }
 
@@ -4737,7 +4751,7 @@ a code:hover {
 }
 
 .nowrap {
-    flex-flow: wrap;
+    /* flex-flow: wrap; */
 }
 
 .options-avatar-container {
@@ -4829,6 +4843,11 @@ a code:hover {
 
 .video-article-responses .col:last-child {
 /*    padding-right: 7.5px;*/
+    overflow: hidden;
+}
+
+.video-article-responses-preview-container .article-container {
+    max-height: 195px;
     overflow: hidden;
 }
 
@@ -4974,6 +4993,14 @@ a code:hover {
     }
 }
 
+/*
+@media (min-width: 600px) and (max-width: 1300px) {
+    .sidebar-isopen .navbtnsright {
+        justify-content: flex-start
+    }
+}
+*/
+
 .sidebar-isopen + .maindashcontainer .article-container-articlepage .relatedpanel-main {
     display: flex;
 }
@@ -5053,7 +5080,7 @@ a code:hover {
     }
     
     .sidebar-isopen + .maindashcontainer .portal-open {
-        height: 300px;
+        height: 340px;
     }
 }
 
@@ -5068,10 +5095,35 @@ a code:hover {
     }
     
     .maindashcontainer .portal-open {
-        height: 300px;
+        height: 340px;
     }
 }
 
+@media (max-width: 825px) {
+    .sidebar-isopen .navbar .navbtnsleft {
+        max-width: 75px;
+    }
+    
+    .sidebar-isopen .navbar .minireel-nav {
+        display: none !important;
+    }
+    
+    .sidebar-isopen .navbar .minireel-nav-small {
+        display: inline;
+    }
+    
+    .sidebar-isopen .brand {
+        max-width: 100%;
+    }
+    
+    .sidebar-isopen .nowrap {
+        flex-flow: nowrap;
+    }
+    
+    .sidebar-isopen + .maindashcontainer {
+        overflow: hidden;
+    }
+}
 
 /* Payment */
 
@@ -5084,4 +5136,49 @@ a code:hover {
 
 .input-form-cc .save-data-button {
     margin-left: auto;
+}
+
+.current-cc {
+    transition: 200ms;
+    height: 0px;
+    overflow: hidden;
+}
+
+.current-cc-show {
+    height: 20px;
+    margin-bottom: 2.5px;
+}
+
+.save-data-button {
+    height: 25px;
+    transition: 200ms;
+}
+
+.save-data-button-hidden {
+    height: 0px;
+}
+
+.switch-line-height-text {
+    line-height: 1.9;
+}
+
+.custom-switch-spacing-upload {
+    margin-top: 20px;
+}
+
+.border-radius-round-1 {
+    border-radius: 15px;
+    border: 1px solid grey;
+}
+
+.border-radius-round-1-long {
+    width: 100%;
+    max-width: 400px;
+}
+
+.advertisement-contract {
+    background-color: #f5f5f5;
+    padding: 5px;
+    border-radius: 5px;
+    margin-bottom: 5px;
 }

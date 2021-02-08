@@ -232,6 +232,10 @@ export const tryDeleteContent = async function(e) {
         id = this.props.id;
         type = "article";
     }
+    let ad = null;
+    if (this.props.ad) {
+        ad = this.props.ad;
+    }
     if (get(this, "titleDelete.current.value") && id) {
         if (this.titleDelete.current.value == "delete me") {
             let confirm = this.titleDelete.current.value;
@@ -244,7 +248,7 @@ export const tryDeleteContent = async function(e) {
                     },
                     credentials: 'same-origin',
                     body: JSON.stringify({
-                        id, type
+                        id, type, ad
                     })
                 })
                 .then(function(response) {

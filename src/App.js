@@ -34,8 +34,9 @@ import { hideOptions } from './methods/context.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
+import { Playlist } from './class/playlist.js';
 
-import { debounce, deepEquals, getPath } from './methods/utility.js';
+import { debounce, deepEquals, getPath, get } from './methods/utility.js';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -974,12 +975,12 @@ class Socialbar extends Component { // Main social entry point sb1
 class App extends Component {
     constructor(props) {
         super(props); 
-
         this.state = { 
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
                         moreOptionsVisible: false
                      };
+        this.playlist = null;
     }
     
 
@@ -987,7 +988,7 @@ class App extends Component {
         if (!cookies.get('Minireel')) {
             cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
         }
-
+        this.playlist = new Playlist(cookies.get('loggedIn'));
         if (!cookies.get('CloudFrontCookiesSet')) {
             let username = this.state.isLoggedIn;
             fetch(currentrooturl + 'm/setCloudCookies', {
@@ -1014,6 +1015,12 @@ class App extends Component {
         if (!this.state.cloud) {
             this.fetchCloudUrl();
         }
+        this.buildPlaylist();
+    }
+    
+    // Will make a request to playlist to ensure that a valid playlist has been provided and is updated
+    buildPlaylist = () => {
+        this.playlist.buildPlaylist();
     }
     
     fetchCloudUrl = () => {
@@ -1123,7 +1130,7 @@ class App extends Component {
         return (
             <BrowserRouter>
                 <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} />
+                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} />
                     <div className='maindashcontainer'>
                         <div className='main maindash'>
                             <Route exact path='/' render={(props) => (
@@ -1133,13 +1140,16 @@ class App extends Component {
                                 <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
                             )}/>
                             <Route path='/watch?v=:videoId' render={(props) => (
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} />
+                            )}/>
+                            <Route path='/watch?va=:videoId' render={(props) => (
+                                <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} />
                             )}/>
                             <Route path='/read?a=:articleId' render={(props) => (
                                 <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
                             )}/>
                             <Route path='/watch' render={(props) => (
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} />
                             )}/>
                             <Route path='/read' render={(props) => (
                                 <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
@@ -1167,6 +1177,9 @@ class App extends Component {
                             )}/>
                             <Route path='/edit?v=:videoId' render={(props) => (
                                 <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
+                            )}/>
+                            <Route path='/edit?va=:videoId' render={(props) => (
+                                <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} ad={true} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
                             )}/>
                             <Route path='/edit?a=:articleId' render={(props) => (
                                 <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} />

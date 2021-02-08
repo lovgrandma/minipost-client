@@ -14,7 +14,7 @@ import ArticlePreview from './articlepreview.js';
 export default class RelatedPanel extends Component {
     constructor(props) {
         super(props);
-        this.state = { relatedContent: [], loaded: false, fetching: false };
+        this.state = { relatedContent: [], loaded: false, fetching: false, bottom: false };
         this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
@@ -26,7 +26,7 @@ export default class RelatedPanel extends Component {
     componentDidUpdate(prevProps, prevState) {
         try {
             if (prevProps.content != this.props.content) {
-                if (this.props.content) {
+                if (this.props.content && !this.fetching) {
                     this.fetchRelated();
                 }
             }
@@ -103,7 +103,6 @@ export default class RelatedPanel extends Component {
                                 if (this.state.relatedContent.length > 0) {
                                     this.state.relatedContent.forEach((content) => {
                                         for (let i = 0; i < data.records.length; i++) {
-                                            console.log(content, data.records[i])
                                             if (content._fields && data.records[i]._fields) {
                                                 if (content._fields[0] && data.records[i]._fields[0]) {
                                                     if (content._fields[0].properties && data.records[i]._fields[0].properties) {
@@ -126,10 +125,10 @@ export default class RelatedPanel extends Component {
                             } else if (this.state.relatedContent.length == 0) {
                                 this.setState({ relatedContent: data.records });
                             }
-                            this.setState({ fetching: false });
                             if (this.state.relatedContent.length > 0) {
                                 this.setState({ loaded: true });
                             }
+                            this.setState({ fetching: false });
                         })
                         .catch((err) => {
                             // Error occured while making fetch request

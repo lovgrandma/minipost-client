@@ -196,7 +196,7 @@ export default class Dash extends Component {
                                         description={utility.setData(content, "description")}
                                         thumbnailUrl={utility.setData(content, "thumbnailUrl")}
                                         author={content._fields[0].properties.author.toString()}
-                                        published={content._fields[0].properties.publishDate.toString()}
+                                        published={content._fields[0].properties.publishDate}
                                         views={utility.getNumber(content._fields[0].properties.views)}
                                         responses={content._fields[0].properties.responses}
                                         tags={content._fields[0].properties.tags}

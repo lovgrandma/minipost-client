@@ -5,6 +5,11 @@
     font-weight: 400;
 }
 
+.shaka-video-container .shaka-current-time {
+    font-size: 1.2em;
+    font-weight: 500;
+}
+
 .shaka-play-button, .shaka-play-button[icon=play] {
     transition: 200ms;
     max-height: 20px;
@@ -29,7 +34,7 @@
 }
 
 .shaka-video {
-    max-height: 80vh;
+/*    max-height: 80vh;*/
     width: 100%;
 }
 
@@ -167,4 +172,32 @@
 
 .shaka-overflow-menu button:hover {
     cursor: pointer;
+}
+
+.video-over-player-title {
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.25em;
+    font-weight: 600;
+    color: white;
+}
+
+.video-over-player-author {
+    padding-top: 2px;
+    font-size: 0.9em;
+    font-weight: 500;
+    color: grey;
+}
+
+.video-over-player-details {
+    padding: 2.5% 3%;
+    transition: 400ms;
+    position: absolute;
+}
+
+.video-container .video-over-player-details {
+    opacity: 100%;
+}
+
+.video-container[style="cursor: none;"] .video-over-player-details {
+    opacity: 0%;
 }

@@ -42,8 +42,12 @@ export default class Videos extends Component {
 
     /** Stores data for video link props */
     videoObjectLink() {
+        let pathname = `/watch?v=${this.props.mpd}`;
+        if (this.props.ad) {
+            pathname = `/watch?va=${this.props.mpd}`;
+        }
         return {
-            pathname:`/watch?v=${this.props.mpd}`,
+            pathname: pathname,
             props:{
                 title: `${this.props.title}`,
                 author: `${this.props.author}`,
@@ -56,8 +60,12 @@ export default class Videos extends Component {
     }
 
     videoEditLink() {
+        let pathname = `/edit?v=${this.props.mpd}`;
+        if (this.props.ad) {
+            pathname = `/edit?va=${this.props.mpd}`
+        }
         return {
-            pathname:`/edit?v=${this.props.mpd}`,
+            pathname: pathname,
             props:{
                 title: `${this.props.title}`,
                 author: `${this.props.author}`,
