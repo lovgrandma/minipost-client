@@ -10,6 +10,7 @@ import {
 } from 'react-bootstrap';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
+import { resolveString } from '../methods/utility.js';
 
 export default class RelatedPanel extends Component {
     constructor(props) {
@@ -67,7 +68,14 @@ export default class RelatedPanel extends Component {
     }
 
     fetchRelated = (paginate = 10) => {
-        if (!this.state.fetching) {
+        let lastFetch = this.state.lastFetch;
+        let run = true;
+        if (lastFetch) {
+            if (lastFetch > new Date().getTime() - 1000*1.5) { // Only allow fetch 1.5 seconds apart
+                run = false;
+            }
+        }
+        if (!this.state.fetching && run) {
             this.setState({ fetching: true });
             try {
                 if (this.props.content && this.props.contentType) {
@@ -107,8 +115,8 @@ export default class RelatedPanel extends Component {
                                                 if (content._fields[0] && data.records[i]._fields[0]) {
                                                     if (content._fields[0].properties && data.records[i]._fields[0].properties) {
                                                         if (content._fields[0].properties.title == data.records[i]._fields[0].properties.title && content._fields[0].properties.author == data.records[i]._fields[0].properties.author) {
-                                                            console.log("found duplicate");
-                                                            console.log(i);
+                                                            // console.log("found duplicate");
+                                                            // console.log(i);
                                                             data.records.splice(i, 1);
                                                             break;
                                                         }
@@ -128,6 +136,7 @@ export default class RelatedPanel extends Component {
                             if (this.state.relatedContent.length > 0) {
                                 this.setState({ loaded: true });
                             }
+                            this.setState({ lastFetch: new Date().getTime() });
                             this.setState({ fetching: false });
                         })
                         .catch((err) => {
@@ -153,8 +162,8 @@ export default class RelatedPanel extends Component {
                             title={content._fields[0].properties.title}
                             description={content._fields[0].properties.description}
                             thumbnailUrl={content._fields[0].properties.thumbnailUrl}
-                            author={content._fields[0].properties.author.toString()}
-                            published={content._fields[0].properties.publishDate.toString()}
+                            author={resolveString(content._fields[0].properties.author)}
+                            published={resolveString(content._fields[0].properties.publishDate)}
                             views={utility.getNumber(content._fields[0].properties.views)}
                             articles={content._fields[0].properties.articles}
                             tags={content._fields[0].properties.tags}

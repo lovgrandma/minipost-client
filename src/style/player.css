@@ -186,6 +186,7 @@
     font-size: 0.9em;
     font-weight: 500;
     color: grey;
+    mix-blend-mode: difference;
 }
 
 .video-over-player-details {
@@ -200,4 +201,69 @@
 
 .video-container[style="cursor: none;"] .video-over-player-details {
     opacity: 0%;
+}
+
+.cover > video {
+    object-fit: cover;
+}
+
+.cover .cover-btn {
+    color: #dbdbdb;
+}
+
+.ad-playing .shaka-seek-bar-container {
+    background: orange !important;
+}
+
+.ad-playing .shaka-range-element {
+    color: #fff038;
+    outline: #fff038;
+}
+.video-page-flex .hide-seek {
+    position: absolute;
+    display: none;
+}
+
+.ad-playing .video-over-player-ad-link {
+    mix-blend-mode: difference;
+    color: white;
+    font-weight: 600;
+    padding: 2px;
+    margin-top: 10px;
+    width: fit-content;
+    font-size: 0.9em;
+}
+
+.ad-playing .hide-seek {
+    width: 100%;
+    position: absolute;
+    bottom: 0;
+}
+
+.ad-playing .video-over-player-details {
+    z-index: 3;
+}
+
+.video-over-player-title, .video-over-player-author {
+    user-select: none;
+    width: fit-content;
+}
+
+.skip-ad-button {
+    position: absolute;
+    z-index: 4;
+    bottom: 75px;
+    right: 0;
+    border: 0;
+    border-radius: 2px 0 0 2px;
+    width: 100px;
+    padding: 5px;
+    background-color: grey;
+    color: #ffffff;
+    font-weight: 600;
+    transition: 100ms;
+}
+
+.skip-ad-button:hover {
+    background-color: #b7b7b7;
 }

@@ -207,6 +207,9 @@ const roundHour = function (hour) {
 
 /* Dynamically sets state when given the key/value location and the name of the key name to be used */
 const setStateDynamic = (key, value) => {
+   if (value == "Invalid Date") {
+       return { [key]: "No Date"};
+   }
     return { [key]: value };
 }
 
@@ -350,6 +353,16 @@ const getNumber = function(data) {
     return data;
 }
 
+// Sometimes records just dont have all the appropriate data. It happens. Don't panick. Resolve it
+const resolveString = function(variable) {
+    if (variable) {
+        if (variable.toString) {
+            return variable.toString();
+        }
+    }
+    return variable;
+}
+
 module.exports = {
     debounce: debounce,
     deepEquals: deepEquals,
@@ -369,5 +382,6 @@ module.exports = {
     randomProperty: randomProperty,
     returnLink: returnLink,
     returnProfile: returnProfile,
-    getNumber: getNumber
+    getNumber: getNumber,
+    resolveString: resolveString
 }

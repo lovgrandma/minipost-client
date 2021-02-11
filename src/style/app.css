@@ -288,7 +288,7 @@ button {
 }
 
 .flex-notif {
-    margin-bottom: 10px;
+    margin-bottom: 2px;
 }
 
 .flex-notif-meta {
@@ -1278,7 +1278,7 @@ label {
 }
 
 .mainvideotitle, .flex-main-title, .video-views, .video-author, .video-publish-date, .video-article-responses {
-    font-weight: 500;
+    font-weight: 600;
     height: auto;
     margin-bottom: 4px;
     padding: 0 0px;
@@ -1520,7 +1520,7 @@ label {
 }
 
 .video-author, .video-author-videopage {
-    font-weight: 500 !important;
+    font-weight: 600 !important;
     padding-left: 0 !important;
     font-size: 0.9em;
     margin-bottom: 0px;
@@ -1937,8 +1937,12 @@ label {
     color: grey;
 }
 
-.video-stats-main-stats {
-    color: #3c3c3c;
+.video-stats-main-stats, .publisher-video-interact {
+    color: #5f5f5f;
+}
+
+.video-stats-main-stats:hover, .publisher-video-interact:hover {
+    color: #2e2e2e;
 }
 
 @media (max-width: 420px) {
@@ -2040,8 +2044,9 @@ label {
     width: 15px !important;
 }
 
-.publisher-video-interact {
+.publisher-video-interact svg {
     font-size: 18px;
+    width: 20px !important;
 }
 
 .publisher-video-interact,
@@ -4086,7 +4091,7 @@ If user only has one friend, styling wont apply */
 .responses {
     font-size: 0.9em;
     color: #484848;
-    font-weight: 500;
+    font-weight: 600;
     transition: 200ms;
     margin-bottom: 6px;
 }
@@ -4741,6 +4746,10 @@ a code:hover {
     }
 }
 
+.video-stats-bar {
+    font-weight: 600;
+}
+
 .video-stats-and-related-container {
     display: flex;
 }
@@ -5181,4 +5190,17 @@ a code:hover {
     padding: 5px;
     border-radius: 5px;
     margin-bottom: 5px;
+}
+
+.ad-overlay-profile {
+    position: absolute;
+    z-index: 4;
+    color: #fff038;
+    font-weight: 500;
+    padding: 5px;
+    font-size: 0.9em;
+}
+
+.no-display {
+    display: none;
 }

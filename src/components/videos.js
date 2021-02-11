@@ -135,6 +135,7 @@ export default class Videos extends Component {
                         }
                         <Link to={this.editReturn()}>
                             <div className="videothumb-holder">
+                                <div className="ad-overlay-profile">{this.props.ad ? "Ad" : ""}</div>
                                 <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()}></img>
                             </div>
                         </Link>

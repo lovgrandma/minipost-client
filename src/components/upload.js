@@ -391,7 +391,7 @@ export default class Upload extends Component { // ulc upload component
             .then((data) => {
                 console.log(data);
                 if (data.video) {
-                    if (get(data, 'video.startDate') && get(data, 'video.endDate') && get(data, 'video.dailyBudget') && get(data, 'video.adUrl')) {
+                    if (get(data, 'video.startDate') && get(data, 'video.endDate') && get(data, 'video.dailyBudget')) {
                         if (parseInt(data.video.startDate) && parseInt(data.video.endDate)) {
                             if (new Date(parseInt(data.video.startDate)) && new Date(parseInt(data.video.endDate))) {
                                 this.startDate.current.valueAsDate = new Date(parseInt(data.video.startDate));

@@ -46,10 +46,52 @@ export const nextSeries = function() {
             });
         }
     }
+    shaka.ui.coverButton = class extends shaka.ui.Element {
+        constructor(parent, controls) {
+            super(parent, controls);
+            this.button_ = document.createElement('button');
+            this.button_.classList.add('crop', 'material-icons', 'shaka-generic-button', 'cover-btn');
+            this.button_.textContent = 'crop';
+            this.parent.appendChild(this.button_);
+            if (!cookies.get('video-cover')) {
+                cookies.set('video-cover', false);
+            }
+            if (get(this, 'parent.parentElement.parentElement.parentElement')) {
+                let container = this.parent.parentElement.parentElement.parentElement;
+                if (cookies.get('video-cover') == "false") {
+                    container.classList.remove('cover');
+                } else {
+                    container.classList.add('cover');
+                }
+            }
+            this.eventManager.listen(this.button_, 'click', () => {
+                try {
+                    if (get(this, 'parent.parentElement.parentElement.parentElement')) {
+                        let container = this.parent.parentElement.parentElement.parentElement;
+                        if (cookies.get('video-cover') == "false") {
+                            container.classList.add('cover');
+                            cookies.set('video-cover', true);
+                        } else {
+                            container.classList.remove('cover');
+                            cookies.set('video-cover', false);
+                        }
+                    }
+                } catch (err) {
+                    console.log(err);        
+                }
+            })
+        }
+    }
     shaka.ui.theatreButton.Factory = class {
         create(rootElement, controls) {
             return new shaka.ui.theatreButton(rootElement, controls);
         }
     };
+    shaka.ui.coverButton.Factory = class {
+        create(rootElement, controls) {
+            return new shaka.ui.coverButton(rootElement, controls);
+        }
+    }
     shaka.ui.Controls.registerElement('theatreButton', new shaka.ui.theatreButton.Factory());
+    shaka.ui.Controls.registerElement('coverButton', new shaka.ui.coverButton.Factory());
 }
