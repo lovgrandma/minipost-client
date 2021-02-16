@@ -30,7 +30,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 1
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -51,6 +51,7 @@ export default class Video extends Component {
                 document.getElementsByClassName('maindash')[0].classList.add('maindash-video-wide');
             }
         }
+        this.maintainAspectRatio();
     }
 
     componentWillUnmount() {
@@ -75,7 +76,10 @@ export default class Video extends Component {
             this.initPlayer(await this.fetchVideoPageData(reload) + "-mpd.mpd");
             this.setState({ mpd: reload});
         } else {
-            if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
+            if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
+                this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
+                this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
+            } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
                 if (this.props.location.search) {
                     if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)) {
                         if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) {
@@ -309,6 +313,11 @@ export default class Video extends Component {
                                     this.setState({ views: this.state.views+1 });
                                 }
                             }
+                            if (result.hasOwnProperty('playlist')) {
+                                if (result.playlist === false) {
+                                    this.props.playlist.buildPlaylist(true);
+                                }
+                            }
                         }
                     })
             }
@@ -378,6 +387,11 @@ export default class Video extends Component {
                                     this.setState({ clickCounted: true });
                                 }
                             }
+                            if (result.hasOwnProperty('playlist')) {
+                                if (result.playlist === false) {
+                                    this.props.playlist.buildPlaylist(true);
+                                }
+                            }
                         }
                     })
             }
@@ -388,7 +402,7 @@ export default class Video extends Component {
     initPlayer = async(manifest, playEndAd = false) => {
         try {
             this.setState({ mpdCloudAddress: manifest });
-            this.setState({ skipTime: 1 });
+            this.setState({ skipTime: 5 });
             // Install polyfills to patch browser incompatibilies
             shaka.polyfill.installAll();
             encryptionSchemePolyfills.install();
@@ -450,7 +464,7 @@ export default class Video extends Component {
 
                 const video = this.videoComponent.current;
                 const videoContainer = this.videoContainer.current;
-
+                
                 shakaAddonButtons.nextSeries();
                 // Initialize player
                 let player = new shaka.Player(video);
@@ -504,6 +518,7 @@ export default class Video extends Component {
                     video.addEventListener('ended', this.endOfVideoPlay);
                 }
                 if (adUri && adData && this.state.adStart && adsAvailable || adUri && adData && playEndAd && adsAvailable ) { // there is an ad to be played at the start. Load ad first
+                    // this.props.sendWatch(id, nextad, time, playad);
                     player.load(adUri).then(() => {
                         this.setState({ viewInterval: "" });
                         this.setState({ viewCounted: false });
@@ -517,6 +532,7 @@ export default class Video extends Component {
                         if (this.videoComponent) {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
+                                video.style="";
                                 this.viewCountedInterval(adUriRaw); // set custom viewcountedinterval for ad
                             }
                             this.setUpCropButton();
@@ -526,6 +542,7 @@ export default class Video extends Component {
                     })
                 } else {
                     // Try to load a manifest Asynchronous
+                    this.setupSendWatch(manifestUri, 0, false);
                     player.load(manifestUri).then(() => {
                         this.setState({ viewInterval: "" });
                         this.setState({ viewCounted: false });
@@ -540,6 +557,7 @@ export default class Video extends Component {
                         if (this.videoComponent) {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
+                                video.style="";
                                 this.viewCountedInterval(this.state.mpd);
                             }
                         }
@@ -557,6 +575,26 @@ export default class Video extends Component {
             }
         } catch (err) {
             console.log(err);
+        }
+    }
+    
+    setupSendWatch = (uri, time, playad = false) => {
+        if (uri && this.props.togetherToken && cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata'))) {
+            if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/) && this.props.togetherToken.host == cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata')).ads) {
+                if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2] && JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]) {
+                    let ad;
+                    if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields) {
+                        if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0]) {
+                            if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0].properties) {
+                                if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0].properties.mpd) {
+                                    ad = JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0].properties.mpd;
+                                }
+                            }
+                        }
+                    }
+                    this.props.sendWatch(uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2], ad, time, playad);
+                }
+            }
         }
     }
     
@@ -688,10 +726,10 @@ export default class Video extends Component {
                                     totalTime += (this.videoComponent.current.played.end(i) - this.videoComponent.current.played.start(i));
                                 }
                             }
-                            if (this.state.adPlaying && this.state.skipTime < 6) {
-                                this.setState({ skipTime: Math.floor(totalTime) + 1 });
+                            if (this.state.adPlaying && this.state.skipTime < 6 && this.state.skipTime > 0) {
+                                this.setState({ skipTime: 5 - Math.floor(totalTime) });
                             }
-                            console.log(totalTime, this.videoComponent.current.duration);
+                            // console.log(totalTime, this.videoComponent.current.duration);
                             let watchedTimeInc = 45;
                             let percentageInc = 0.25;
                             // Users must watch either x seconds of an ad or x percentage for it to constitute a "view". This is sensitive as this determines what advertisers pay to minipost and also how authors are compensated as a result.
@@ -780,9 +818,40 @@ export default class Video extends Component {
     }
     
     skipAd = (e) => {
-        if (this.state.skipTime > 5) {
+        if (this.state.skipTime < 1) {
             this.endOfVideoPlay();
         }
+    }
+    
+    maintainAspectRatio = () => {
+        let currVidAspRatio;
+        try {
+            let aspectInterval = setInterval(() => {
+                try {
+                currVidAspRatio = cookies.get('currentVideoAspectRatio');
+                    if (get(this, 'videoComponent.current.clientHeight')) {
+                        if (!currVidAspRatio || currVidAspRatio!== this.videoComponent.current.clientHeight) {
+                            cookies.set('currentVideoAspectRatio', this.videoComponent.current.clientHeight);
+                            this.setState({ curVidAspRatio: this.videoComponent.current.clientHeight });
+                        }
+                    }
+                } catch (err) {
+                    // Throw peaceful error
+                }
+            }, 100);
+        } catch (err) {
+            console.log(err);
+        }
+    }
+    
+    resolvePlaceholderHeight() {
+        if (cookies.get('currentVideoAspectRatio')) {
+            let currVidAspRatio = cookies.get('currentVideoAspectRatio');
+            if (currVidAspRatio && !this.videoComponent.current) { // Only force height if video component is null. Prevents some janky movements of video component when loading from placeholder image
+                return cookies.get('currentVideoAspectRatio');
+            }
+        }
+        return "";
     }
 
     render() {
@@ -799,20 +868,21 @@ export default class Video extends Component {
                     </div>
                     {
                         this.state.adPlaying ?
-                            <button className="skip-ad-button" onClick={(e) => {this.skipAd(e)}}>{this.state.skipTime < 6 ? this.state.skipTime : "Skip"}</button>
+                            <button className="skip-ad-button" onClick={(e) => {this.skipAd(e)}}>{this.state.skipTime < 6 && this.state.skipTime > 0 ? this.state.skipTime : "Skip"}</button>
                             : null
                     }
                     <div className="hide-seek">&nbsp;</div>
                     <video className="shaka-video"
                     ref={this.videoComponent}
                     poster={minipostpreviewbanner}
+                    style={{height: this.resolvePlaceholderHeight() + 'px'}}
                     />
                 </div>
                 <div className="video-stats-and-related-container">
                     <div className="video-stats-container">
                         <h2 className='watchpage-title'>{this.state.title}</h2>
                         <div className={this.state.adPlaying ? "video-stats-bar no-display" : "video-stats-bar"}>
-                            <div className="video-stats-main-stats">{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}{this.state.published != "" ? " • " + this.state.published : null}</div>
+                            <div className="video-stats-main-stats"><span>{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}</span><span className="video-stats-main-dot">&nbsp;•&nbsp;</span><span>{this.state.published != "" ? this.state.published : null}</span></div>
                             <div className="publisher-video-interact">
                                 <div className="publisher-video-interact-block">
                                     <div className="favorite-click">

@@ -120,6 +120,12 @@ export default class Navbar extends Component {
             } else if (enterexit == "exit") {
                 document.querySelector(".btn-desc-home").classList.remove("visible");
             }
+        } else if (name == "close-session-prompt") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-close-session").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-close-session").classList.remove("visible");
+            }
         }
     }
 
@@ -155,6 +161,10 @@ export default class Navbar extends Component {
                             &nbsp;or&nbsp;
                             <NavLink exact to="/writearticle" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>write an article</NavLink>
                         </div>
+                        <div className={this.props.togetherToken ? 'close-together-session' : 'close-together-session hidden'} onClick={(e)=> {this.props.sendCloseTogetherSession()}} onMouseOver={(e) => {this.hoverShow(e, "close-session-prompt", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "close-session-prompt", "exit")}}>
+                            <div className='close-together-session-dot'></div>
+                        </div>
+                        <div className='btn-desc btn-desc-close-session'>click to close together session</div>
                         <div className="nav-loggedin-config nav-icon" onClick={(e)=>{showMoreOptions.call(this, e, "profile")}} onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
                         <div className="btn-desc btn-desc-conf" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>change various user settings and preferences</div>
                         <div className="btn-desc btn-desc-conf-menu" ref={tag => (this.userOptions = tag)}>

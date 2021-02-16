@@ -878,7 +878,7 @@ export default class Upload extends Component { // ulc upload component
                     let ctx = this.thumbnailpreview.current.getContext('2d');
                     if (url && url != "undefined") { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
                         let img = new Image;
-                        img.crossOrigin = 'anonymous';
+                        img.crossOrigin = "Use-Credentials";
                         let cloudUrl = this.props.cloud + "/" + url + ".jpeg";
                         img.src = cloudUrl;
                         img.onload = () => {

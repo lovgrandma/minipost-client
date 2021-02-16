@@ -91,6 +91,7 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
             return response.json();
         })
         .then((result) => {
+            console.log(result);
             if (result) {
                 let likes = this.state.likes;
                 let dislikes = this.state.dislikes;

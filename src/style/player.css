@@ -34,8 +34,15 @@
 }
 
 .shaka-video {
-/*    max-height: 80vh;*/
+    max-height: 80vh;
     width: 100%;
+    transition: 50ms;
+}
+
+@media all and (display-mode: fullscreen) {
+    .shaka-video {
+        max-height: 100vh;
+    }
 }
 
 .video-container {
@@ -195,7 +202,8 @@
     position: absolute;
 }
 
-.video-container .video-over-player-details {
+.video-container .video-over-player-details,
+.video-container.skip-ad-button {
     opacity: 100%;
 }
 
@@ -261,7 +269,7 @@
     background-color: grey;
     color: #ffffff;
     font-weight: 600;
-    transition: 100ms;
+    transition: 400ms;
 }
 
 .skip-ad-button:hover {

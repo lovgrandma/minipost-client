@@ -34,6 +34,8 @@ export default class Videos extends Component {
             if (title.length > 80) {
                 return title.slice(0, 80) + "...";
             }
+        } else if (this.props.placeholder) {
+            return "";
         } else {
             return '*unpublished video*'
         }
@@ -113,10 +115,16 @@ export default class Videos extends Component {
             return this.videoObjectLink();
         }
     }
+    
+    checkPlaceholderClick = (e) => {
+        if (this.props.placeholder) {
+            e.preventDefault();
+        }
+    }
 
     render () {
         return (
-            this.props.title && !this.props.edit || this.props.edit ?
+            this.props.title && !this.props.edit || this.props.edit || this.props.placeholder ?
                 <div className="col">
                     <div className={this.props.related ? 'videocontainer videocontainer-related' : 'videocontainer'}>
                         {
@@ -133,7 +141,7 @@ export default class Videos extends Component {
                                 </div>
                             : null
                         }
-                        <Link to={this.editReturn()}>
+                        <Link to={this.editReturn()} onClick={(e)=>{this.checkPlaceholderClick(e)}}>
                             <div className="videothumb-holder">
                                 <div className="ad-overlay-profile">{this.props.ad ? "Ad" : ""}</div>
                                 <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()}></img>

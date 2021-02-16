@@ -202,6 +202,7 @@ export default class Dash extends Component {
                                         tags={content._fields[0].properties.tags}
                                         avatarUrl={content._fields[3]}
                                         cloud={this.props.cloud}
+                                        sendWatch={this.props.sendWatch}
                                         key={index}
                                         index={index}
                                         />

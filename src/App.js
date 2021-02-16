@@ -35,6 +35,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 import { Playlist } from './class/playlist.js';
+import { Together } from './class/together.js';
 
 import { debounce, deepEquals, getPath, get } from './methods/utility.js';
 
@@ -158,6 +159,57 @@ class Socialbar extends Component { // Main social entry point sb1
                 socket.on('returnNotif', data => {
                     this.setState({ following: updateNotif(data.subscribed) });
                 })
+                
+                socket.on('promptTogether', data => { // received prompt to watch together, append prompt on respective friends chat bubble. 
+                    // The data received here will look like { room: room, friend: this is yourself the new host, user: your friend who asked to watch together }
+                    // User can recieve several prompts so its important to keep track of all
+                    if (cookies.get('loggedIn')) {
+                        this.props.appendWaitingSession(data.user);
+                        console.log('prompTogether', data);
+                    }
+                })
+                
+                socket.on('confirmTogether', data => { // The friend has agreed to host a together session. props.BeginTogetherSession(room, friend, host(boolean))
+                    if (cookies.get('loggedIn')) {
+                        if (data.host != cookies.get('loggedIn')) { // Only run confirmTogether if you are not the host, but a participant
+                            console.log('confirmTogether', data);
+                            this.props.beginTogetherSession(data);
+                        }
+                    }
+                })
+                
+                socket.on('marco', data => { // Send a response 'polo' if there is a valid togetherToken in props
+                    if (data.from != cookies.get('loggedIn') && this.props.togetherToken) {
+                        if (data.from == this.props.togetherToken.host || this.props.togetherToken.participants.indexOf(data.from) >= 0) {
+                            socket.emit('poloCheck', data);
+                        }
+                    }
+                });
+                
+                socket.on('polo', data => {
+                    if (cookies.get('loggedIn')) {
+                        if (data.from == cookies.get('loggedIn')) { // from should be yourself since this client originally sent the request to check live status
+                            this.props.updateLastPing(data);
+                        }
+                    }
+                })
+                
+                socket.on('receiveCloseTogetherSession', data => {
+                    console.log(data);
+                    if (cookies.get('loggedIn')) {
+                        if (data.from != cookies.get('loggedIn') && this.props.togetherToken) {
+                            this.props.sendCloseTogetherSession(true);
+                        }
+                    }
+                })
+                
+                socket.on('receiveWatch', data => {
+                    if (cookies.get('loggedIn')) {
+                        if (data.host != cookies.get('loggedIn')) {
+                            this.props.doWatch(data);
+                        }
+                    }
+                })
 
                 socket.on('uploadErr', data => {
                     console.log("upload err:" + data);
@@ -228,7 +280,7 @@ class Socialbar extends Component { // Main social entry point sb1
 
     initializeLiveChat = (delay = 500) => { // Sends request to server to join user to room
         if (socket) {
-            if (this.state.conversations && this.state.isLoggedIn) {
+            if (this.state.convoIds && this.state.isLoggedIn) {
                 let obj = {
                     "ids": this.state.convoIds,
                     "user": this.state.isLoggedIn
@@ -778,44 +830,47 @@ class Socialbar extends Component { // Main social entry point sb1
                 }
             }
         }
-        if (socket && convoId) { // If socket is online, use socket to redis first functionality
-            if (message.length > 0) {
-                let chatObj = {
-                    "user": username,
-                    "id": convoId,
-                    "message": message,
-                    "chatwith": chatwith
+        if (socket) {
+            if (convoId) { // if there is a convo id found for a conversation between these two users, append via socket
+                if (message.length > 0) { // Message must be valid
+                    let chatObj = {
+                        "user": username,
+                        "id": convoId,
+                        "message": message,
+                        "chatwith": chatwith
+                    }
+                    socket.emit('sendChat', chatObj);
                 }
-                socket.emit('sendChat', chatObj);
-            }
-        } else { // If socket untrue or fromSearch true, defaults to fetch request
-            if (message.length > 0) {
-                fetch(currentrooturl + 'm/beginchat', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: 'same-origin',
-                    body: JSON.stringify({
-                        username, chatwith, message
+            } else { // If fromSearch true or no conversation between both users, will use fetch request defaults to fetch request. This will not create a mongo log convo, just a record that the chat exists. Will still force conversation to occur via socket after call
+                if (message.length > 0) { // Message must be valid
+                    fetch(currentrooturl + 'm/beginchat', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: 'same-origin',
+                        body: JSON.stringify({
+                            username, chatwith, message
+                        })
                     })
-                })
-                .then(function(response) {
-                    return response.json();
-                })
-                .then((data) => {
-                    console.log(data);
-                    this.getFriendConversations();
-                    return data;
-                })
-                .then((data) => {
-                    setTimeout(() => {
-                        this.initializeLiveChat();
-                    }, 500);
-                })
-                .catch(error => { console.log(error);
-                })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then((data) => {
+                        console.log(data);
+                        this.getFriendConversations();
+                        return data;
+                    })
+                    .then((data) => {
+                        setTimeout(() => {
+                            this.initializeLiveChat();
+                        }, 500);
+                    })
+                    .catch(error => { 
+                        console.log(error);
+                    })
+                }
             }
         }
         
@@ -945,13 +1000,12 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!isLoggedIn) {
             sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} registererror={this.state.registererror} />
         } else {
-            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud}
-            typing = {this.state.typing} bump = {this.bump} />
+            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump = {this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />
         }
             
         return (
             <div ref={this.sidebarcontainer}>
-                <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} />
+                <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} togetherToken={this.props.togetherToken} sendCloseTogetherSession={this.props.sendCloseTogetherSession} />
                 <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
                     <div className="sidebarcontainer">
                         {sidebar}
@@ -978,12 +1032,12 @@ class App extends Component {
         this.state = { 
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
-                        moreOptionsVisible: false
+                        moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null
                      };
         this.playlist = null;
+        this.together = null;
     }
     
-
     componentDidMount() {
         if (!cookies.get('Minireel')) {
             cookies.set('Minireel', 'minireel_session', { path: '/', sameSite: true, signed: true });
@@ -1016,6 +1070,7 @@ class App extends Component {
             this.fetchCloudUrl();
         }
         this.buildPlaylist();
+        this.createTogetherPingInterval();
     }
     
     // Will make a request to playlist to ensure that a valid playlist has been provided and is updated
@@ -1111,6 +1166,202 @@ class App extends Component {
             this.setState({ moreOptionsVisible: false });
         }
     }
+    
+    // Will make a request to the friend to begin a watch together session with them. Friend will be the host
+    requestTogetherSession = (room, friend) => {
+        if (cookies.get('loggedIn') && !this.state.togetherToken) {
+            let data = {
+                room: room,
+                friend: friend, // Will be made host
+                user: cookies.get('loggedIn')
+            }
+            if (socket && !this.state.waitingTogetherConfirm) {
+                socket.emit('requestTogetherSession', data); // Send a request via socket
+                this.setState({ waitingTogetherConfirm: friend }); // Set outboundTogetherRequest state
+                setTimeout(() => { // If no response in 50 seconds, ignore socket response to start together session
+                    if (this.state.waitingTogetherConfirm == friend) {
+                        this.setState({ waitingTogetherConfirm: "" }); // Timeout after x time.
+                    }
+                }, 35000, friend);
+            }
+        }
+    }
+    
+    appendWaitingSession = (friend, remove = false) => {
+        if (!remove) {
+            let sessions = this.state.waitingSessions;
+            if (sessions.indexOf(friend) < 0 && friend != cookies.get('loggedIn')) {
+                sessions.push(friend);
+                this.setState({ waitingSessions: sessions });
+                setTimeout(() => {
+                    if (this.state.waitingSessions) {
+                        if (this.state.waitingSessions.indexOf(friend) >= 0) {
+                            let newsessions = this.state.waitingSessions;
+                            newsessions.splice(newsessions.indexOf(friend), 1);
+                            this.setState({ waitingSessions: newsessions });
+                        }
+                    }
+                }, 30000, friend);
+            }
+        } else {
+            let sessions = this.state.waitingSessions;
+            if (sessions.indexOf(friend) >= 0 && friend != cookies.get('loggedIn')) {
+                sessions.splice(sessions.indexOf(friend), 1);
+                this.setState({ waitingSessions: sessions });
+            }
+        }
+    }
+    
+    acceptTogetherSession = (room, friend) => { // Accept means to accept request as host and start an exclusive together session
+        if (cookies.get('loggedIn') && !this.togetherToken) {
+            console.log("Accept together session", room, friend);
+            let togetherData = {
+                host: cookies.get('loggedIn'),
+                participants: [ friend ],
+                room: room,
+                lastping: new Date().getTime()
+            }
+            this.appendWaitingSession(friend, true);
+            this.setState({ waitingTogetherConfirm: '' });
+            this.setState({ togetherToken: togetherData });
+            // Build playlist here and send as together data
+            let together = new Together(cookies.get('loggedIn'), [ friend ], room);
+            together.buildPlaylist();
+            this.setState({ together: together });
+            cookies.set('togetherToken', togetherData, { path: '/', sameSite: true, signed: true }); 
+            this.createTogetherPingInterval(together);
+            socket.emit('sendConfirmTogether', togetherData);
+        }
+    }
+    
+    // Will start an exclusive together session with the friend as host
+    beginTogetherSession = (data) => {
+        if (this.state.waitingTogetherConfirm == data.host) { // Only begin a session if you were waiting for this person to accept
+            this.setState({ waitingTogetherConfirm: '' });
+            this.setState({ togetherToken: data });
+            cookies.set('togetherToken', data, { path: '/', sameSite: true, signed: true }); 
+            this.createTogetherPingInterval(data);
+            // set recieved together data as together data
+        }
+        // Either begin this as host and advise other user to begin or recieve update from host and begin as guest
+    }
+    
+    // Will recover together session from refresh and create ping interval check
+    createTogetherPingInterval = (togetherToken = null) => {
+        if (cookies.get('loggedIn')) {
+            if (cookies.get('togetherToken') || togetherToken) {
+                if (cookies.get('togetherToken')) {
+                    togetherToken = cookies.get('togetherToken');
+                }
+                this.setState({ togetherToken: togetherToken });
+                let intervalTogetherToken = togetherToken;
+                if (togetherToken.lastping > new Date().getTime() - 1000*60 ) {
+                    let interval = setInterval(() => {
+                        if (this.state.togetherToken.lastping) {
+                            if (this.state.togetherToken.lastping > new Date().getTime() - 1000*60) {
+                                intervalTogetherToken.from = cookies.get('loggedIn');
+                                socket.emit('marcoCheck', intervalTogetherToken);
+                            } else {
+                                cookies.remove('togetherToken');
+                                if (this.state.togetherInterval) {
+                                    clearInterval(this.state.togetherInterval);
+                                }
+                                this.setState({ togetherToken: null });
+                            }
+                        } else {
+                            cookies.remove('togetherToken');
+                            if (this.state.togetherInterval) {
+                                clearInterval(this.state.togetherInterval);
+                            }
+                            this.setState({ togetherToken: null });
+                        }
+                    }, 10000, intervalTogetherToken, socket);
+                    this.setState({ togetherInterval: interval });
+                } else {
+                    cookies.remove('togetherToken');
+                    if (this.state.togetherInterval) {
+                        clearInterval(this.state.togetherInterval);
+                    }
+                    this.setState({ togetherToken: null });
+                }
+            }
+        }
+    }
+    
+    updateLastPing = (data) => {
+        if (this.state.togetherToken) {
+            let togetherToken = this.state.togetherToken;
+            if (data.room == togetherToken.room) {
+                togetherToken.lastping = new Date().getTime();
+                this.setState({ togetherToken: togetherToken });
+                cookies.set('togetherToken', togetherToken);
+            }
+        }
+        console.log('updateLastPing', data);
+    }
+    
+    // Justclose argument will simply close session and not send request to close to socket. 
+    sendCloseTogetherSession = (justClose = false) => {
+        let togetherToken;
+        if (justClose) {
+            this.setState({ togetherToken: null });
+            cookies.remove('togetherToken');
+            if (this.state.togetherInterval) {
+                clearInterval(this.state.togetherInterval);
+            }
+            this.setState({ togetherInterval: null });
+            window.localStorage.removeItem('togetherdata');
+        } else {
+            if (this.state.togetherToken) {
+                togetherToken = this.state.togetherToken;
+            }
+            if (cookies.get('togetherToken')) {
+                togetherToken = cookies.get('togetherToken');
+            }
+            if (togetherToken) {                
+                if (cookies.get('loggedIn')) {
+                    togetherToken.from = cookies.get('loggedIn');
+                    socket.emit('sendCloseTogetherSession', togetherToken);
+                }
+                this.setState({ togetherToken: null });
+                if (this.state.togetherInterval) {
+                    clearInterval(this.state.togetherInterval);
+                }
+                this.setState({ togetherInterval: null });
+                cookies.remove('togetherToken');
+                window.localStorage.removeItem('togetherdata');
+            }
+        }
+    }
+    
+    // Sends id, nextad, time of content if video and if user should be playing ad
+    // The user must load a video page first and then play ad if playad is true. This is why nextad is always passed to participant
+    sendWatch = (id, nextad, time, playad = false) => {
+        if (this.state.togetherToken && cookies.get('loggedIn') && socket) {
+            if (this.state.togetherToken.host == cookies.get('loggedIn')) {
+                let data = {
+                    id: id,
+                    nextad: nextad,
+                    time: time,
+                    playad: playad,
+                    room: this.state.togetherToken.room
+                }
+                console.log(id, nextad, time, playad, socket);
+                socket.emit('sendWatch', data);
+            }
+        }
+    }
+    
+    doWatch = (data) => {
+        if (this.state.togetherToken && cookies.get('loggedIn')) {
+            if (this.state.togetherToken.participants.indexOf(cookies.get('loggedIn') >= 0)) {
+                if (!window.location.href.includes(data.id)) {
+                    this.props.history.push({ pathname: '/watch', search: '?v=' + data.id});
+                }
+            }
+        }
+        console.log(data);
+    }
 
     /* Send request to socket to subscribe to channel. Format of data is: user;channel;subscribe? */
     follow = (channel, subscribe = true) => {
@@ -1128,72 +1379,70 @@ class App extends Component {
 
     render() {                    
         return (
-            <BrowserRouter>
-                <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                    <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} />
-                    <div className='maindashcontainer'>
-                        <div className='main maindash'>
-                            <Route exact path='/' render={(props) => (
-                                <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
-                            )}/>
-                            <Route path='/search' render={(props) => (
-                                <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} />
-                            )}/>
-                            <Route path='/watch?v=:videoId' render={(props) => (
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} />
-                            )}/>
-                            <Route path='/watch?va=:videoId' render={(props) => (
-                                <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} />
-                            )}/>
-                            <Route path='/read?a=:articleId' render={(props) => (
-                                <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
-                            )}/>
-                            <Route path='/watch' render={(props) => (
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} />
-                            )}/>
-                            <Route path='/read' render={(props) => (
-                                <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} />
-                            )}/>
-                            <Route path='/options' render={(props) => (
-                                <Options {...props} key={getPath()} cloud={this.state.cloud}  />
-                            )}/>
-                            <Route path='/upload' render={(props) => (
-                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
-                            )}/>
-                            <Route path='/writearticle' render={(props) => (
-                                <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
-                            )}/>
-                            <Route path='/upload?r=:replyId' render={(props) => (
-                                <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
-                            )}/>
-                            <Route path='/writearticle?r=:replyId' render={(props) => (
-                                <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
-                            )}/>
-                            <Route path='/profile?p=:username' render={(props) => (
-                                <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
-                            )}/>
-                            <Route path='/profile' render={(props) => (
-                                <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
-                            )}/>
-                            <Route path='/edit?v=:videoId' render={(props) => (
-                                <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
-                            )}/>
-                            <Route path='/edit?va=:videoId' render={(props) => (
-                                <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} ad={true} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
-                            )}/>
-                            <Route path='/edit?a=:articleId' render={(props) => (
-                                <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} />
-                            )}/>
-                            <Route path='/history' render={(props) => (
-                                <History {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
-                            )}/>
-                            <Route path='/notifications' render={(props) => (
-                                <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
-                            )}/>
-                        </div>
+            <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} />
+                <div className='maindashcontainer'>
+                    <div className='main maindash'>
+                        <Route exact path='/' render={(props) => (
+                            <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                        )}/>
+                        <Route path='/search' render={(props) => (
+                            <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                        )}/>
+                        <Route path='/watch?v=:videoId' render={(props) => (
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                        )}/>
+                        <Route path='/watch?va=:videoId' render={(props) => (
+                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                        )}/>
+                        <Route path='/read?a=:articleId' render={(props) => (
+                            <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} />
+                        )}/>
+                        <Route path='/watch' render={(props) => (
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                        )}/>
+                        <Route path='/read' render={(props) => (
+                            <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} />
+                        )}/>
+                        <Route path='/options' render={(props) => (
+                            <Options {...props} key={getPath()} cloud={this.state.cloud}  />
+                        )}/>
+                        <Route path='/upload' render={(props) => (
+                            <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                        )}/>
+                        <Route path='/writearticle' render={(props) => (
+                            <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
+                        )}/>
+                        <Route path='/upload?r=:replyId' render={(props) => (
+                            <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                        )}/>
+                        <Route path='/writearticle?r=:replyId' render={(props) => (
+                            <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
+                        )}/>
+                        <Route path='/profile?p=:username' render={(props) => (
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
+                        )}/>
+                        <Route path='/profile' render={(props) => (
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
+                        )}/>
+                        <Route path='/edit?v=:videoId' render={(props) => (
+                            <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
+                        )}/>
+                        <Route path='/edit?va=:videoId' render={(props) => (
+                            <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} ad={true} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
+                        )}/>
+                        <Route path='/edit?a=:articleId' render={(props) => (
+                            <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} />
+                        )}/>
+                        <Route path='/history' render={(props) => (
+                            <History {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                        )}/>
+                        <Route path='/notifications' render={(props) => (
+                            <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                        )}/>
                     </div>
                 </div>
-            </BrowserRouter>
+            </div>
         );
     }
 }

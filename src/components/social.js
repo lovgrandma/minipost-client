@@ -210,6 +210,11 @@ export default function Social(props) { // social prop sp1
                                 updatefriendchatopen={props.updatefriendchatopen}
                                 typing={typing}
                                 bump={props.bump}
+                                requestTogetherSession={props.requestTogetherSession}
+                                waitingTogetherConfirm={props.waitingTogetherConfirm}
+                                waitingSessions={props.waitingSessions}
+                                acceptTogetherSession={props.acceptTogetherSession}
+                                togetherToken={props.togetherToken}
                                 />
                             )
                         })

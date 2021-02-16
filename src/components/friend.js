@@ -30,6 +30,7 @@ export default class Friend extends Component { // friend component fc1
             this.typingRef = React.createRef();
             this.shakeRef = React.createRef();
             this.bumpBtnRef = React.createRef();
+            this.watchBtnRef = React.createRef();
             this.handleChange = this.handleChange.bind(this);
             this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
                 chatlength: 0, typingOld: null, morechats: false, chatlimit: 100, socketOn: true }
@@ -414,6 +415,25 @@ export default class Friend extends Component { // friend component fc1
         }
         return dummyavatar;
     }
+    
+    resolveWatchRequest = (e) => {
+        if (this.props.waitingSessions.indexOf(this.props.friend) < 0) {
+            this.props.requestTogetherSession(this.props.conversation._id, this.props.friend);
+        } else {
+            this.props.acceptTogetherSession(this.props.conversation._id, this.props.friend);
+        }
+    }
+    
+    checkTogetherToken = () => {
+        if (this.props.togetherToken && this.props.conversation) {
+            if (this.props.conversation._id) {
+                if (this.props.togetherToken.room == this.props.conversation._id) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
 
     render() {
         let conversationid;
@@ -425,8 +445,10 @@ export default class Friend extends Component { // friend component fc1
         return (
             <div className="friend-container" ref={this.shakeRef}>
                 <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={!this.state.chatinput ? (e) => {this.openchatinput(e)} : null }>
-                    <div className='searched-user-username-container'>
-                        <img className="friendavatar" src={this.returnAvatar()}></img>
+                    <div className={this.props.friendchatopen === this.props.friend ? 'searched-user-username-container username-container-open' : 'searched-user-username-container'}>
+                        <NavLink exact to={"/profile?p=" + this.props.friend} className="to-profile-link-btn">
+                            <img className="friendavatar" src={this.returnAvatar()}></img>
+                        </NavLink>
                         <div className="friendname">{this.props.friend}</div>
                         <div className="min-menu">
                             <img className={this.state.chatinput ? "minimize-icon" : "minimize-icon invisible"} src={minimize} onClick={(e) => {this.openchatinput(e, true)}} alt="circlemenu"></img>
@@ -464,8 +486,10 @@ export default class Friend extends Component { // friend component fc1
                             <span></span>
                     }
                     <div className='request-and-block-container'>
-                        <span className='search-user-profile prevent-open-toggle'><NavLink exact to={"/profile?p=" + this.props.friend} className="to-profile-link-btn">profile</NavLink><img className="searched-user-icon" src={profile} alt="profile"></img></span>
-                        <span className='search-user-watch-friend'>watch<img className="searched-user-icon" src={play} alt="play"></img></span>
+                        <span className='search-user-profile prevent-open-toggle'>
+                            <NavLink exact to={"/profile?p=" + this.props.friend} className="to-profile-link-btn">profile</NavLink><img className="searched-user-icon" src={profile} alt="profile"></img>
+                        </span>
+                        <span className={this.checkTogetherToken() ? 'search-user-watch-friend prevent-open-toggle live-session-friend' : 'search-user-watch-friend prevent-open-toggle'} ref={this.watchBtnRef} onClick={(e) => {this.resolveWatchRequest(e)}}>{this.checkTogetherToken() ? "live" : this.props.waitingSessions.indexOf(this.props.friend) >= 0 ? "accept" : this.props.waitingTogetherConfirm && this.props.waitingTogetherConfirm == this.props.friend ? "wait.." : "watch"}<img className="searched-user-icon" src={play} alt="play"></img></span>
                         <span className={this.state.socketOn ? 'search-user-bump-friend prevent-open-toggle' : 'search-user-bump-friend prevent-open-toggle bump-btn-offline'} ref={this.bumpBtnRef} onClick={(e) => {this.props.bump(e, this.props.friend, conversationid ), this.checkSocket(e)}}>bump<img className="searched-user-icon bump-icon" src={pointingfinger} alt="pointingfinger"></img></span>
                         <div className='searched-user-message' onClick={(e) => {this.openchatinput(e)}}>message<img className="searched-user-icon" src={chatblack} alt="chat"></img></div>
                     </div>

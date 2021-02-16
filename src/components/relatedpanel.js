@@ -11,6 +11,7 @@ import {
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
 import { resolveString } from '../methods/utility.js';
+import placeholderRelated from '../placeholder/relatedobjects.js';
 
 export default class RelatedPanel extends Component {
     constructor(props) {
@@ -21,7 +22,7 @@ export default class RelatedPanel extends Component {
 
     componentDidMount() {
         this.fetchRelated();
-        window.addEventListener('scroll', this.handleMouseDown, true);
+        window.addEventListener('scroll', this.handleMouseDown);
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -52,7 +53,9 @@ export default class RelatedPanel extends Component {
                         if (!this.state.bottom) {
                             this.setState({ bottom: true });
                             if (this.state.relatedContent && !this.state.fetching) {
-                                this.fetchRelated();
+                                if (window.location.href.includes("watch")) {
+                                    this.fetchRelated();
+                                }
                             }
                         }
                     } else {
@@ -177,12 +180,21 @@ export default class RelatedPanel extends Component {
                             body={content._fields[0].properties.body}
                             id={content._fields[0].properties.id}
                             reads={content._fields[0].properties.reads}
-                            published={content._fields[0].properties.publishDate}
+                            published={resolveString(content._fields[0].properties.publishDate)}
                             key={index}
                             related={true}
                             />
                          )
-                    : null
+                    : placeholderRelated.map((content, index) => 
+                        <Videos title={content.title}
+                        author={content.author}
+                        views={content.views}
+                        published={content.published}
+                        placeholder={true}
+                        related={true}
+                        key={index}
+                        />
+                    )
                 }
                 {
                     this.state.relatedContent.length > 0 ?
