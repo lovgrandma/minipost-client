@@ -12,6 +12,7 @@ import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
 import { resolveString } from '../methods/utility.js';
 import placeholderRelated from '../placeholder/relatedobjects.js';
+import $ from 'jquery';
 
 export default class RelatedPanel extends Component {
     constructor(props) {
@@ -54,7 +55,11 @@ export default class RelatedPanel extends Component {
                             this.setState({ bottom: true });
                             if (this.state.relatedContent && !this.state.fetching) {
                                 if (window.location.href.includes("watch")) {
-                                    this.fetchRelated();
+                                    if (this.props.secondary && $('.relatedpanel-secondary').is(':visible')) {
+                                        this.fetchRelated();
+                                    } else if (!this.props.secondary && $('.relatedpanel-main').is(':visible')) {
+                                        this.fetchRelated();
+                                    }
                                 }
                             }
                         }
@@ -71,17 +76,18 @@ export default class RelatedPanel extends Component {
     }
 
     fetchRelated = (paginate = 10) => {
+        document.getElementsByClassName
         let lastFetch = this.state.lastFetch;
         let run = true;
         if (lastFetch) {
-            if (lastFetch > new Date().getTime() - 1000*1.5) { // Only allow fetch 1.5 seconds apart
+            if (lastFetch > new Date().getTime() - 1000*0.75) { // Only allow fetch 0.75 seconds apart
                 run = false;
             }
         }
         if (!this.state.fetching && run) {
-            this.setState({ fetching: true });
             try {
-                if (this.props.content && this.props.contentType) {
+                // Dont allow appending more videos over 50
+                if (this.props.content && this.props.contentType && this.state.relatedContent.length < 50) {
                     let id = this.props.content;
                     let type = this.props.contentType;
                     let title = '';
@@ -94,6 +100,8 @@ export default class RelatedPanel extends Component {
                     if (id.match(/https:\/\/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
                         id = id.match(/https:\/\/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2];
                     }
+                    this.setState({ lastFetch: new Date().getTime() });
+                    this.setState({ fetching: true });
                     fetch(currentrooturl + 'm/getRelated', {
                             method: "POST",
                             headers: {
@@ -109,7 +117,6 @@ export default class RelatedPanel extends Component {
                             return response.json();
                         })
                         .then((data) => {
-                            console.log(this.state.relatedContent);
                             if (this.state.relatedContent) {
                                 if (this.state.relatedContent.length > 0) {
                                     this.state.relatedContent.forEach((content) => {
@@ -139,7 +146,6 @@ export default class RelatedPanel extends Component {
                             if (this.state.relatedContent.length > 0) {
                                 this.setState({ loaded: true });
                             }
-                            this.setState({ lastFetch: new Date().getTime() });
                             this.setState({ fetching: false });
                         })
                         .catch((err) => {

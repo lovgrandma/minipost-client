@@ -4,8 +4,7 @@ import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
 import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js';
-import { Player } from 'video-react';
-import { Switch } from 'react-router'
+import { Switch } from 'react-router';
 import {
     BrowserRouter,
     Route,
@@ -37,7 +36,7 @@ import currentrooturl from './url.js';
 import { Playlist } from './class/playlist.js';
 import { Together } from './class/together.js';
 
-import { debounce, deepEquals, getPath, get } from './methods/utility.js';
+import { debounce, deepEquals, arraysEqual, getPath, get } from './methods/utility.js';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
@@ -104,6 +103,23 @@ class Socialbar extends Component { // Main social entry point sb1
             if (prevState.isloggedIn != cookies.get('loggedIn')) {
                 if (this.state.isloggedIn != cookies.get('loggedIn')) {
                     this.setState({ isloggedIn: cookies.get('loggedIn')});
+                }
+            }
+        }
+        if (this.props.togetherToken && this.state.conversations) {
+            for (let i = 0; i < this.state.conversations.length; i++) {
+                if (this.state.conversations[i]) {
+                    if (this.state.conversations[i]._id == this.props.togetherToken.room) {
+                        if (!this.props.friendConvoMirror) {
+                            this.props.updateFriendConvoMirror(this.state.conversations[i]);
+                        } else {
+                            if (this.props.friendConvoMirror._id && this.props.friendConvoMirror.log && this.state.conversations[i].log) {
+                                if (this.props.friendConvoMirror.log.length != this.state.conversations[i].log.length) {
+                                    this.props.updateFriendConvoMirror(this.state.conversations[i]);
+                                }
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -242,12 +258,14 @@ class Socialbar extends Component { // Main social entry point sb1
                         if (this.state.typing[i].match(typingRegex)[2] != content) {
                             temp.splice(i, 1, data); // replace typing data with new one
                             this.setState({ typing: temp });
+                            this.props.updateTypingMirror(temp); // Updates typing mirror for full screen video chat
                         }
                     }
                 }
                 if (!inArr) { // if this chat is not present in typing state array, simply just add it.
                     temp.push(data);
                     this.setState({ typing: temp });
+                    this.props.updateTypingMirror(temp);
                 }
             }
         } else {
@@ -255,6 +273,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 let temp = this.state.typing;
                 temp.push(data);
                 this.setState({ typing: temp });
+                this.props.updateTypingMirror(temp);
             }
         }
     }
@@ -873,7 +892,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 }
             }
         }
-        
         e.preventDefault();
     }
     
@@ -1025,6 +1043,8 @@ class Socialbar extends Component { // Main social entry point sb1
 // me.emitting, me.chats, me.chats.host.video, me.chats.host.user (user can contain 2 or more. Up to 16 for now.) me.chats.log
 // Database tidbit. The chat is represented by an id. The host belongs to the chat id. The users involved belong to the host which sets up their privileges. The log belongs to chat id. When the host clicks a video & is emitting he changes the video, other users follow along if they are IN the chat currently watching the same video. You can be in the chat in social bar but you can JOIN the video emitting session aswell which changes the currently watched video.
 // API request relevant videos using video.title & me.history
+        
+// friendConvoMirror stores one live friend chat to be displayed in fullscreen video
 
 class App extends Component {
     constructor(props) {
@@ -1032,7 +1052,7 @@ class App extends Component {
         this.state = { 
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
-                        moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null
+                        moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null, friendConvoMirror: null, typingMirror: []
                      };
         this.playlist = null;
         this.together = null;
@@ -1167,6 +1187,14 @@ class App extends Component {
         }
     }
     
+    updateFriendConvoMirror = (data) => {
+        this.setState({ friendConvoMirror: data });
+    }
+    
+    updateTypingMirror = (data) => {
+        this.setState({ typingMirror: data });
+    }
+    
     // Will make a request to the friend to begin a watch together session with them. Friend will be the host
     requestTogetherSession = (room, friend) => {
         if (cookies.get('loggedIn') && !this.state.togetherToken) {
@@ -1297,7 +1325,6 @@ class App extends Component {
                 cookies.set('togetherToken', togetherToken);
             }
         }
-        console.log('updateLastPing', data);
     }
     
     // Justclose argument will simply close session and not send request to close to socket. 
@@ -1344,7 +1371,8 @@ class App extends Component {
                     nextad: nextad,
                     time: time,
                     playad: playad,
-                    room: this.state.togetherToken.room
+                    room: this.state.togetherToken.room,
+                    host: cookies.get('loggedIn')
                 }
                 console.log(id, nextad, time, playad, socket);
                 socket.emit('sendWatch', data);
@@ -1355,7 +1383,9 @@ class App extends Component {
     doWatch = (data) => {
         if (this.state.togetherToken && cookies.get('loggedIn')) {
             if (this.state.togetherToken.participants.indexOf(cookies.get('loggedIn') >= 0)) {
-                if (!window.location.href.includes(data.id)) {
+                if (data.playad && data.nextad) {
+                    this.props.history.push({ pathname: '/watch', search: '?v=' + data.id + "&watch?va=" + data.nextad });
+                } else {
                     this.props.history.push({ pathname: '/watch', search: '?v=' + data.id});
                 }
             }
@@ -1376,11 +1406,18 @@ class App extends Component {
             // Something went wrong
         }
     }
+    
+    sendImpression = (data) => {
+        console.log(cookies.get('loggedIn'), data);
+        if (socket) {
+            socket.emit('sendImpression', data);
+        }
+    }
 
-    render() {                    
+    render() {     
         return (
             <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} />
                 <div className='maindashcontainer'>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
@@ -1390,16 +1427,16 @@ class App extends Component {
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
                         )}/>
                         <Route path='/watch?v=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} />
                         )}/>
                         <Route path='/watch?va=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} />
                         )}/>
                         <Route path='/read?a=:articleId' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} />
                         )}/>
                         <Route path='/watch' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} />
                         )}/>
                         <Route path='/read' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} />

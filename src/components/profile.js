@@ -81,7 +81,6 @@ export default class Profile extends Component {
                     return response.json();
                 })
                 .then((result) => {
-                    console.log(result);
                     if (result.totalviews) {
                         this.setState({ totalVideoViews: result.totalviews });
                     }

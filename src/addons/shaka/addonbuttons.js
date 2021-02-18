@@ -82,6 +82,42 @@ export const nextSeries = function() {
             })
         }
     }
+    shaka.ui.chatButton = class extends shaka.ui.Element {
+        constructor(parent, controls) {
+            super(parent, controls);
+            this.button_ = document.createElement('button');
+            this.button_.classList.add('chat', 'material-icons', 'shaka-generic-button', 'chat-btn');
+            this.button_.textContent = 'chat';
+            this.parent.appendChild(this.button_);
+            if (!cookies.get('chat-fullscreen')) {
+                cookies.set('chat-fullscreen', false);
+            }
+            if (get(this, 'parent.parentElement.parentElement.parentElement')) {
+                let container = this.parent.parentElement.parentElement.parentElement;
+                if (cookies.get('chat-fullscreen') == "false") {
+                    container.classList.remove('chat-fullscreen-open');
+                } else {
+                    container.classList.add('chat-fullscreen-open');
+                }
+            }
+            this.eventManager.listen(this.button_, 'click', () => {
+                try {
+                    if (get(this, 'parent.parentElement.parentElement.parentElement')) {
+                        let container = this.parent.parentElement.parentElement.parentElement;
+                        if (cookies.get('chat-fullscreen') == "false") {
+                            container.classList.add('chat-fullscreen-open');
+                            cookies.set('chat-fullscreen', true);
+                        } else {
+                            container.classList.remove('chat-fullscreen-open');
+                            cookies.set('chat-fullscreen', false);
+                        }
+                    }
+                } catch (err) {
+                    console.log(err);        
+                }
+            })
+        }
+    }
     shaka.ui.theatreButton.Factory = class {
         create(rootElement, controls) {
             return new shaka.ui.theatreButton(rootElement, controls);
@@ -92,6 +128,12 @@ export const nextSeries = function() {
             return new shaka.ui.coverButton(rootElement, controls);
         }
     }
+    shaka.ui.chatButton.Factory = class {
+        create(rootElement, controls) {
+            return new shaka.ui.chatButton(rootElement, controls);
+        }
+    }
     shaka.ui.Controls.registerElement('theatreButton', new shaka.ui.theatreButton.Factory());
     shaka.ui.Controls.registerElement('coverButton', new shaka.ui.coverButton.Factory());
+    shaka.ui.Controls.registerElement('chatButton', new shaka.ui.chatButton.Factory());
 }

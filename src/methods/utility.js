@@ -383,5 +383,6 @@ module.exports = {
     returnLink: returnLink,
     returnProfile: returnProfile,
     getNumber: getNumber,
-    resolveString: resolveString
+    resolveString: resolveString,
+    arraysEqual: arraysEqual
 }

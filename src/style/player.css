@@ -39,9 +39,17 @@
     transition: 50ms;
 }
 
+.chat-btn {
+    display: none;
+}
+
 @media all and (display-mode: fullscreen) {
     .shaka-video {
         max-height: 100vh;
+    }
+    
+    .chat-btn {
+        display: inline-block;
     }
 }
 
@@ -246,6 +254,14 @@
     width: 100%;
     position: absolute;
     bottom: 0;
+    display: block;
+    height: 35px;
+    z-index: 4;
+}
+
+.shaka-show-controls-on-mouse-over,
+.shaka-show-controls-on-mouse-over > button {
+    z-index: 7;
 }
 
 .ad-playing .video-over-player-details {
@@ -274,4 +290,77 @@
 
 .skip-ad-button:hover {
     background-color: #b7b7b7;
+}
+
+/* Test chat over video */
+
+.fullscreen-video-chat-container {
+    position: absolute;
+    width: 340px;
+    z-index: 10;
+    overflow: hidden;
+    height: fit-content;
+    left: 7.5%;
+    transition: 150ms;
+    top: 200%;
+    background-color: white;
+    border-radius: 5px;
+    padding-top: 5px;
+    opacity: 0;
+}
+
+.fullscreen-video-chats {
+    overflow-y: scroll;
+    overflow-x: hidden;
+    overflow-wrap: anywhere;
+    padding-left: 5px;
+    padding-right: 5px;
+    max-height: 55vh;
+}
+
+.fullscreen-video-chat-container .friend-chat-form {
+    padding-left: 5px;
+}
+
+@media all and (display-mode: fullscreen) {
+    
+    .fullscreen-video-chat-container {
+        opacity: 0.75;
+    }
+    
+    .fullscreen-video-chat-container:hover {
+        opacity: 1;
+    }
+    
+    .chat-fullscreen-open .fullscreen-video-chat-container {
+        top: 20%;
+    }
+}
+
+.fullscreen-video-chats::-webkit-scrollbar {
+    width: 1em;
+}
+
+.fullscreen-video-chats::-webkit-scrollbar-track {
+    background-color: #f6f6f6;
+    border-radius: 0 5px 5px 0;
+}
+
+.fullscreen-video-chats::-webkit-scrollbar-thumb {
+    background-color: #bababa;
+    outline: 1px solid slategrey;
+    border-radius: 0 5px 5px 0;
+    outline: none;
+}
+
+.fullscreen-video-chats::-webkit-scrollbar-thumb:active {
+    outline: none;
+}
+
+.siderbar::-webkit-scrollbar-thumb:hover {
+    background-color: #939393;
+}
+
+.siderbar::-webkit-scrollbar-button:vertical:hover {
+  color: rgb(155, 155, 155);
 }

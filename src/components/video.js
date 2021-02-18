@@ -1,7 +1,6 @@
 import React, { Component } from 'react';
 import RelatedPanel from './relatedpanel.js';
 import Cookies from 'universal-cookie';
-import { Player } from 'video-react';
 import {
     BrowserRouter,
     Route,
@@ -11,7 +10,7 @@ import {
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
-import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png'; import '../static/expand-video.png'; import '../static/minimize-video.png';
+import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
@@ -20,27 +19,34 @@ import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import { setResponseUrl } from '../methods/responses.js';
+import lzw from '../compression/lzw.js';
+import TextareaAutosize from 'react-textarea-autosize';
 
-import { cookies } from '../App.js';
+import { cookies, socket } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 const shakaAddonButtons = require('../addons/shaka/addonbuttons.js');
+const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
+const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
 export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
         this.player = new React.createRef();
         this.controls = new React.createRef();
         this.moreOptions = new React.createRef();
+        this.inputRef = new React.createRef();
+        this.scrollRef = new React.createRef();
         this.progress = new EventEmitter();
+        window.addEventListener('keydown', this.interceptEnter);
     }
 
-    componentDidMount = async () => {
+    componentDidMount() {
         this.setUpState();
         this.loadPage();
         if (cookies.get('contentDelivery')) {
@@ -52,6 +58,25 @@ export default class Video extends Component {
             }
         }
         this.maintainAspectRatio();
+        document.addEventListener('fullscreenchange', (event) => {
+            if (document.fullscreenElement) {
+                this.setState({ fullscreen: true });
+                if (this.scrollRef) {
+                    if (this.scrollRef.current) {
+                        this.scrollRef.current.scrollBy({
+                            top: 10000,
+                            behavior: "smooth"
+                        });
+                    }
+                }
+            } else {
+                this.setState({ fullscreen: false });
+            }
+        });
+        document.onmousedown = () => { this.setState({ mousedown: true })};
+        document.onmouseup = () => { this.setState({ mousedown: false })};
+        let scrollInterval = setInterval(this.quickScroll, 1000);
+        this.setState({ scrollInterval: scrollInterval });
     }
 
     componentWillUnmount() {
@@ -69,6 +94,124 @@ export default class Video extends Component {
                 maindash.classList.remove('maindash-video-wide');
             }
         }
+        if (this.state.scrollInterval) {
+            clearInterval(this.state.scrollInterval);
+        }
+    }
+
+    ComponentWillUpdate() {
+        
+    }
+
+    ComponentDidUpdate(prevProps, prevState) {
+        
+    }
+    
+    quickScroll = () => {
+        if (this.scrollRef && !this.state.mousedown) {
+            if (this.scrollRef.current) {
+                this.scrollRef.current.scrollBy({
+                    top: 10000,
+                    behavior: "smooth"
+                });
+            }
+        }
+    }
+
+    resolveFriend = () => {
+        if (this.props.friendConvoMirror) {
+            for (let i = 0; i < this.props.friendConvoMirror.users.length; i++) {
+                if (this.props.friendConvoMirror.users[i] != this.props.username) {
+                    this.setState({ chatFriend: this.props.friendConvoMirror.users[i] });
+                }
+            }
+        }
+    }
+    
+    interceptClick = (e) => {
+        e.preventDefault(e);
+        if (document.fullscreenElement != null && this.props.history.location.pathname.includes('watch')) { // Prevent exit by pressing enter on fullscreen. Used for sending chats in fullscreen mode instead
+            e.preventDefault();
+            this.handleKeyPress(e);
+        }
+    }
+
+    interceptEnter = (e) => {
+        try {
+            if (e.key) {
+                if (e.key == "Enter" && document.fullscreenElement != null && this.props.history.location.pathname.includes('watch')) { // Prevent exit by pressing enter on fullscreen. Used for sending chats in fullscreen mode instead
+                    e.preventDefault();
+                    this.handleKeyPress(e);
+                }
+
+            }
+        } catch (err) {
+            // Component may have unmounted
+        }
+    }
+    
+    handleKeyPress = (e) => { // Emit cleared message when message is sent
+        try {
+            this.resolveFriend();
+            if (this.inputRef._ref.value.length > 0) { // Message must be valid
+                let chatObj = {
+                    "user": this.props.username,
+                    "id": this.props.friendConvoMirror._id,
+                    "message": this.inputRef._ref.value,
+                    "chatwith": this.state.chatFriend
+                }
+                socket.emit('sendChat', chatObj);
+                this.resetchat(e);
+            }
+            let pullToBottom = (i) => {
+                setTimeout(() => {
+                    if (this.scrollRef) {
+                        if (this.scrollRef.current) {
+                            this.scrollRef.current.scrollBy({
+                                top: 10000,
+                                behavior: "smooth"
+                            });
+                        }
+                    }
+                    i--;
+                    if (i > 0) {
+                        pullToBottom(i);
+                    }
+                }, 25);
+            }
+            if (socket) {
+                let roomId = this.props.friendConvoMirror ? this.props.friendConvoMirror._id : null;
+                let leanString = this.props.username + ";" + "" + ";" + roomId;
+                let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                setTimeout(() => {
+                    pullToBottom(3);
+                    socket.emit('typing', ba);
+                }, 30);
+            }
+            
+        } catch (err) {
+            // Componenet may have unmounted
+        }
+    }
+
+    handleChange = (e) => { // Emit typing to users in chat via socket
+        try {
+            if (socket) {
+                if (this.props.friendConvoMirror) {
+                    let leanString = this.props.username + ";" + this.inputRef._ref.value + ";" + this.props.friendConvoMirror._id;
+                    let ba = lzw.compress(leanString); // compress data as binary array before sending to socket
+                    socket.emit('typing', ba);
+                }
+            }
+        } catch (err) {
+            // Component may have unmounted
+        }
+    }
+
+    resetchat = (e) => {
+        if (get(this, 'inputRef._ref.value')) {
+            this.inputRef._ref.value = ""; // Clear chat message
+        }
     }
 
     loadPage = async (reload = false, playEndAd = false) => {
@@ -76,7 +219,10 @@ export default class Video extends Component {
             this.initPlayer(await this.fetchVideoPageData(reload) + "-mpd.mpd");
             this.setState({ mpd: reload});
         } else {
-            if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
+            if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) {
+                this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + "-mpd.mpd");
+                this.setState({ mpd: window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]});
+            } else if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
                 this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
                 this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
             } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
@@ -88,7 +234,7 @@ export default class Video extends Component {
                         }
                     } else if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
                         if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]) {
-                            this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + "-mpd.mpd");
+                            this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + "-mpd.mpd", playEndAd);
                             this.setState({ mpd: this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]});
                         }
                     }
@@ -101,7 +247,7 @@ export default class Video extends Component {
                     }
                 } else if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)) {
                     if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]) {
-                        this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + "-mpd.mpd");
+                        this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + "-mpd.mpd", playEndAd);
                         this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]});
                     }
                 }
@@ -206,10 +352,27 @@ export default class Video extends Component {
                             }
                         } else if (key == "description") {
                             this.setState({ description: value })
+                        } else if (key == "adUrl") {
+                            this.setState({ adLink: result.video.adUrl });
+                        } else if (key == "dailyBudget") {
+                            this.setState({ adBudget: result.video.dailyBudget })
                         } else if (value) {
                             this.setState(setStateDynamic(key, value));
                         } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
                             this.setState(setStateDynamic(key, value));
+                        }
+                    }
+                }
+                if (ad) {
+                    if (result.video.title) {
+                        this.setState({ adTitle: result.video.title });
+                    }
+                    if (result.video.author) {
+                        this.setState({ adAuthor: result.video.author });
+                    }
+                    if (result.video.mpd) {
+                        if (result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
+                            this.setState({ adUriRaw: result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2] });
                         }
                     }
                 }
@@ -398,8 +561,25 @@ export default class Video extends Component {
         }
     }
 
+    checkTogetherHost = () => {
+        if (this) {
+            if (this.props) {
+                if (this.props.togetherToken) {
+                    if (this.props.togetherToken.host && cookies.get('loggedIn')) {
+                        if (this.props.togetherToken.host == cookies.get('loggedIn')) {
+                            return true; // Will play ad if host is choosing video
+                        }
+                    }
+                } else {
+                    return true; // Will play ad if no togetherToken
+                }
+            }
+        }
+        return false; 
+    }
+    
     /* Initialize player and player error handlers */
-    initPlayer = async(manifest, playEndAd = false) => {
+    initPlayer = async(manifest, playEndAd = false, serveAd = null) => {
         try {
             this.setState({ mpdCloudAddress: manifest });
             this.setState({ skipTime: 5 });
@@ -415,7 +595,7 @@ export default class Video extends Component {
 
                 // Before a video plays, you must check if an advertisement must run or not, whether or not (how much) ads must run within the video or at the end after completing. Ad played 10 minutes ago or user watched 5 videos since?
                 let adRun = await this.props.playlist.checkAdSetup();
-                let xMinutesAgo = new Date().getTime() - 1000*60*7; // 7 minutes ago
+                let xMinutesAgo = new Date().getTime() - 1000*60*14; // 14 minutes ago
                 let vidsWatched = this.props.playlist.playlistVidsWatched;
                 if (adRun.hasOwnProperty('start')) {
                     if (adRun.start == 0 || adRun.start < xMinutesAgo || vidsWatched > 6) { // null adStart, over 7 min ago or user watched 7 videos? Run ad
@@ -428,7 +608,6 @@ export default class Video extends Component {
                         this.setState({ adEnd: true });
                     }
                 }
-                console.log(adRun);
                 // Return array of times to play ad on this video. store. This will be retrieved from server from original fetch video data request
 
                 // Run function to get ad, play ad as manifest and then return back to normal video playthrough on skip or finish. Run in playlist class, save video timestamp and manifest // Always play the very next ad. Advertisements can be ordered chronologically from server side
@@ -440,7 +619,7 @@ export default class Video extends Component {
                     if (this.state.adStart || playEndAd) { // Only set ad data if adStart is true. Else play normal video
                         if (this.props.playlist._playlist.ads[0]) { // We can only play ads if there are ads to play in the playlist class
                             adsAvailable = true;
-                            if (this.props.playlist._playlist.ads[0]._fields) {
+                            if (this.props.playlist._playlist.ads[0]._fields && this.checkTogetherHost()) {
                                 if (this.props.playlist._playlist.ads[0]._fields[0]) {
                                     if (this.props.playlist._playlist.ads[0]._fields[0].properties) {
                                         if (this.props.playlist._playlist.ads[0]._fields[0].properties.mpd) {
@@ -456,7 +635,7 @@ export default class Video extends Component {
                         }
                     }
                 }
-                console.log(adUri, adData, playEndAd, adsAvailable);
+                console.log(adUri, adData, this.state.adStart, playEndAd, adsAvailable);
 
                 // During playback, at x time, send request to server set watched, at start set impression to server, on click send to server
 
@@ -472,7 +651,7 @@ export default class Video extends Component {
 
                 // UI custom json
                 const uiConfig = {};
-                uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'spacer', 'mute', 'volume', 'overflow_menu', 'coverButton', 'theatreButton', 'fullscreen'];
+                uiConfig['controlPanelElements'] = ['play_pause', 'time_and_duration', 'chatButton', 'spacer', 'mute', 'volume', 'overflow_menu', 'coverButton', 'theatreButton', 'fullscreen'];
 
                 //Set up shaka player UI
                 if (player && videoContainer && video) {
@@ -514,21 +693,45 @@ export default class Video extends Component {
                         if (this.videoComponent) {
                             this.viewCountedInterval();    
                         }
+                        if (!this.state.impressionCounted && this.state.adPlaying && this.state.adUriRaw && this.state.adBudget && this.state.startDate && this.state.endDate) { // Only count impression if impression not counted yet and type ad
+                            if (this.state.adAuthor != cookies.get('loggedIn')) {
+                                let data = {
+                                    id: this.state.adUriRaw,
+                                    type: "impression",
+                                    adBudget: this.state.adBudget,
+                                    startDate: this.state.startDate,
+                                    endDate: this.state.endDate
+                                }
+                                this.props.sendImpression(data);
+                                this.setState({ impressionCounted: true });
+                            }
+                        }
                     });
                     video.addEventListener('ended', this.endOfVideoPlay);
                 }
-                if (adUri && adData && this.state.adStart && adsAvailable || adUri && adData && playEndAd && adsAvailable ) { // there is an ad to be played at the start. Load ad first
-                    // this.props.sendWatch(id, nextad, time, playad);
+                if (serveAd) {
+                    adUri = serveAd;
+                }
+                
+                if (adUri && adData && this.state.adStart && adsAvailable && this.checkTogetherHost() || adUri && adData && playEndAd && adsAvailable && this.checkTogetherHost() || serveAd) { // there is an ad to be played at the start. Load ad first
+                    this.setupSendWatch(manifestUri, 0, true, adUriRaw);
                     player.load(adUri).then(() => {
                         this.setState({ viewInterval: "" });
                         this.setState({ viewCounted: false });
-                        this.setState({ adBudget: this.props.playlist._playlist.ads[0]._fields[0].properties.dailyBudget });
-                        this.setState({ startDate: this.props.playlist._playlist.ads[0]._fields[0].properties.startDate });
-                        this.setState({ endDate: this.props.playlist._playlist.ads[0]._fields[0].properties.endDate });
-                        this.setState({ adLink: this.props.playlist._playlist.ads[0]._fields[0].properties.adUrl });
-                        this.props.playlist.incToNextAd(); // Once an ad has started playing, you should cycle the playlist in the background so next ad played is not the same
+                        if (this.checkTogetherHost()) {
+                            this.setState({ adBudget: this.props.playlist._playlist.ads[0]._fields[0].properties.dailyBudget });
+                            this.setState({ startDate: this.props.playlist._playlist.ads[0]._fields[0].properties.startDate });
+                            this.setState({ endDate: this.props.playlist._playlist.ads[0]._fields[0].properties.endDate });
+                            this.setState({ adLink: this.props.playlist._playlist.ads[0]._fields[0].properties.adUrl });
+                        }
+                        if (this.checkTogetherHost()) {
+                            this.props.playlist.incToNextAd(); // Once an ad has started playing, you should cycle the playlist in the background so next ad played is not the same
+                            // this.props.playlist.incrementVidsWatched(); 
+                        }
                         this.setState({ adPlaying: true });
-                        this.setState({ adUriRaw: adUriRaw });
+                        if (adUriRaw) {
+                            this.setState({ adUriRaw: adUriRaw });
+                        }
                         if (this.videoComponent) {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
@@ -542,7 +745,7 @@ export default class Video extends Component {
                     })
                 } else {
                     // Try to load a manifest Asynchronous
-                    this.setupSendWatch(manifestUri, 0, false);
+                    this.setupSendWatch(manifestUri, 0, false, adUri);
                     player.load(manifestUri).then(() => {
                         this.setState({ viewInterval: "" });
                         this.setState({ viewCounted: false });
@@ -578,20 +781,10 @@ export default class Video extends Component {
         }
     }
     
-    setupSendWatch = (uri, time, playad = false) => {
+    setupSendWatch = (uri, time, playad = false, ad) => {
         if (uri && this.props.togetherToken && cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata'))) {
-            if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/) && this.props.togetherToken.host == cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata')).ads) {
+            if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/) && this.props.togetherToken.host == cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata')).ads) { // You're only able to send a video to be watched if you are the host of the session
                 if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2] && JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]) {
-                    let ad;
-                    if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields) {
-                        if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0]) {
-                            if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0].properties) {
-                                if (JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0].properties.mpd) {
-                                    ad = JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]._fields[0].properties.mpd;
-                                }
-                            }
-                        }
-                    }
                     this.props.sendWatch(uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2], ad, time, playad);
                 }
             }
@@ -613,19 +806,78 @@ export default class Video extends Component {
     }
 
     endOfVideoPlay = async() => {
+        if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/) && this.props.togetherToken) {
+            if (this.props.togetherToken.host != cookies.get('loggedIn')) {
+                window.history.replaceState(null, "", "/watch?" + window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[1] + "=" + window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]);
+            }
+        }
         this.endViewCountInterval();
         console.log("ended", this.state);
-        if (this.state.adPlaying && this.state.adStart) { // Ad was playing, we've reached the end of the ad. Neither of these will be true if playing during a normal video. Play normal video
-            this.setState({ adStart: false });
-            let updateAdStart = new Promise((resolve, reject) => {
-                try {
-                    resolve(this.props.playlist.setAdStart());
-                } catch (err) {
-                    reject(err);
-                }
-            })
-            updateAdStart.then(async (result) => {
-                console.log(result);
+        this.setState({ impressionCounted: false });
+        if (this.checkTogetherHost()) {
+            if (this.state.adPlaying && this.state.adStart) { // Ad was playing, we've reached the end of the ad. Neither of these will be true if playing during a normal video. Play normal video
+                this.props.playlist.setVidsWatchedZero();
+                this.setState({ adStart: false });
+                let updateAdStart = new Promise((resolve, reject) => {
+                    try {
+                        resolve(this.props.playlist.setAdStart());
+                    } catch (err) {
+                        reject(err);
+                    }
+                })
+                updateAdStart.then(async (result) => {
+                    console.log(result);
+                    let detached = await this.player.detach();
+                    this.player.destroy();
+                    if (document.getElementsByClassName('shaka-controls-container')) {
+                        if (document.getElementsByClassName('shaka-controls-container')[0]) {
+                            document.getElementsByClassName('shaka-controls-container')[0].remove();
+                        }
+                    }
+                    if (document.getElementsByClassName('shaka-spinner-container')) {
+                        if (document.getElementsByClassName('shaka-spinner-container')[0]) {
+                            document.getElementsByClassName('shaka-spinner-container')[0].remove();
+                        }
+                    }
+                    this.setState({ adAuthor: "" });
+                    this.setState({ adUri: "" });
+                    this.setState({ adLink: "" });
+                    this.setState({ clickCounted: false });
+                    this.setState({ adPlaying: false });
+                    this.endViewCountInterval();
+                    this.loadPage();
+                })
+            } else if (this.state.adPlaying && this.state.adEnd) { // end ad was playing, set new data
+                this.setState({ adEnd: false });
+                let updateAdEnd = new Promise((resolve, reject) => {
+                    try {
+                        resolve(this.props.playlist.setAdEnd());
+                    } catch (err) {
+                        reject(err);
+                    }
+                })
+                updateAdEnd.then(async (result) => {
+                    let detached = await this.player.detach();
+                    this.player.destroy();
+                    if (document.getElementsByClassName('shaka-controls-container')) {
+                        if (document.getElementsByClassName('shaka-controls-container')[0]) {
+                            document.getElementsByClassName('shaka-controls-container')[0].remove();
+                        }
+                    }
+                    if (document.getElementsByClassName('shaka-spinner-container')) {
+                        if (document.getElementsByClassName('shaka-spinner-container')[0]) {
+                            document.getElementsByClassName('shaka-spinner-container')[0].remove();
+                        }
+                    }
+                    this.setState({ adAuthor: "" });
+                    this.setState({ adUri: "" });
+                    this.setState({ adLink: "" });
+                    this.setState({ clickCounted: false });
+                    this.setState({ adPlaying: false });
+                    this.endViewCountInterval();
+                    this.loadPage();
+                });
+            } else if (this.state.adEnd) { // normal video was playing, play end ad
                 let detached = await this.player.detach();
                 this.player.destroy();
                 if (document.getElementsByClassName('shaka-controls-container')) {
@@ -638,58 +890,8 @@ export default class Video extends Component {
                         document.getElementsByClassName('shaka-spinner-container')[0].remove();
                     }
                 }
-                this.setState({ adAuthor: "" });
-                this.setState({ adUri: "" });
-                this.setState({ adLink: "" });
-                this.setState({ clickCounted: false });
-                this.setState({ adPlaying: false });
-                this.endViewCountInterval();
-                this.loadPage();
-            })
-        } else if (this.state.adPlaying && this.state.adEnd) { // end ad was playing, set new data
-            this.setState({ adEnd: false });
-            let updateAdEnd = new Promise((resolve, reject) => {
-                try {
-                    resolve(this.props.playlist.setAdEnd());
-                } catch (err) {
-                    reject(err);
-                }
-            })
-            updateAdEnd.then(async (result) => {
-                let detached = await this.player.detach();
-                this.player.destroy();
-                if (document.getElementsByClassName('shaka-controls-container')) {
-                    if (document.getElementsByClassName('shaka-controls-container')[0]) {
-                        document.getElementsByClassName('shaka-controls-container')[0].remove();
-                    }
-                }
-                if (document.getElementsByClassName('shaka-spinner-container')) {
-                    if (document.getElementsByClassName('shaka-spinner-container')[0]) {
-                        document.getElementsByClassName('shaka-spinner-container')[0].remove();
-                    }
-                }
-                this.setState({ adAuthor: "" });
-                this.setState({ adUri: "" });
-                this.setState({ adLink: "" });
-                this.setState({ clickCounted: false });
-                this.setState({ adPlaying: false });
-                this.endViewCountInterval();
-                this.loadPage();
-            });
-        } else if (this.state.adEnd) { // normal video was playing, play end ad
-            let detached = await this.player.detach();
-            this.player.destroy();
-            if (document.getElementsByClassName('shaka-controls-container')) {
-                if (document.getElementsByClassName('shaka-controls-container')[0]) {
-                    document.getElementsByClassName('shaka-controls-container')[0].remove();
-                }
+                this.loadPage(false, true);
             }
-            if (document.getElementsByClassName('shaka-spinner-container')) {
-                if (document.getElementsByClassName('shaka-spinner-container')[0]) {
-                    document.getElementsByClassName('shaka-spinner-container')[0].remove();
-                }
-            }
-            this.loadPage(false, true);
         }
     }
 
@@ -854,23 +1056,88 @@ export default class Video extends Component {
         return "";
     }
 
+    resolveRelevantTyping = (typing) => {
+        try {
+            if (this.props.togetherToken) {
+                for (let i = 0; i < typing.length; i++) {
+                    if (typing[i].match(typingRegex)[1] == this.props.togetherToken.host || this.props.togetherToken.participants.indexOf(typing[i].match(typingRegex)[1]) >= 0) {
+                        if (this.state.relevantTyping != typing[i]) {
+                            this.setState({ relevantTyping: typing[i] });
+                        }
+                        return typing[i];
+                    }
+                }
+            } else {
+                return false;
+            }
+        } catch (err) {
+            console.log(err);
+        }
+    }
+
     render() {
         return (
             <div className="video-page-flex">
             <div id='videocontainer' className='main-video-container'>
                 <div className={this.state.adPlaying ? "video-container shaka-video-container ad-playing" : "video-container shaka-video-container"} ref={this.videoContainer}>
-                    <div className="video-over-player-details"><div className="video-over-player-title">{this.state.adPlaying ? this.state.adTitle : this.state.title }</div><div className="video-over-player-author">{this.state.adPlaying ? this.state.adAuthor : this.state.author}</div>
-                    { 
-                        this.state.adLink ? 
-                            <a href={"https://" + this.state.adLink} target="_blank" onClick={(e) => {this.serveAdLink(e)}}><div className="video-over-player-ad-link">{this.state.adLink ? this.state.adLink : null }</div></a>
-                        : null
-                    }
+                    <div className="video-over-player-details">
+                        <div className="video-over-player-title">{this.state.adPlaying ? this.state.adTitle : this.state.title }</div>
+                        <div className="video-over-player-author">{this.state.adPlaying ? this.state.adAuthor : this.state.author}</div>
+                        { 
+                            this.state.adLink ? 
+                                <a href={"https://" + this.state.adLink} target="_blank" onClick={(e) => {this.serveAdLink(e)}}><div className="video-over-player-ad-link">{this.state.adLink ? this.state.adLink : null }</div></a>
+                            : null
+                        }
                     </div>
                     {
                         this.state.adPlaying ?
                             <button className="skip-ad-button" onClick={(e) => {this.skipAd(e)}}>{this.state.skipTime < 6 && this.state.skipTime > 0 ? this.state.skipTime : "Skip"}</button>
                             : null
                     }
+                    <div className="fullscreen-video-chat-container friendchat-chat-container-open">
+                        <div className="fullscreen-video-chats" ref={this.scrollRef}>
+                            {
+                                this.props.friendConvoMirror ?
+                                    this.props.friendConvoMirror.log ?
+                                        this.props.friendConvoMirror.log.map((log, index) => {
+                                            if (index > this.props.friendConvoMirror.log.length - 100) {
+                                                if (log.author == this.props.username) {
+                                                    return (
+                                                        <div className='chat-log chat-log-user chat-log-open' key={index}>
+                                                            <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                                <div>{log.content}</div></div>
+                                                        </div>
+                                                    )
+                                                } else {
+                                                    return (
+                                                        <div className='chat-log chat-log-other chat-log-open' key={index}>
+                                                            <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                        </div>
+
+                                                    )
+                                                }
+                                            }
+                                        })
+                                    : null
+                                : null
+                            }
+                            <div className={this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2].length > 0 ? "chat-log chat-log-other typing-cell typing-cell-visible" : "chat-log chat-log-other typing-cell typing-cell" : "chat-log chat-log-other typing-cell"}
+                        ref={tag => (this.typingRef = tag)}>
+                            <div className='author-of-chat author-of-chat-other'>{ this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[1] : null }</div>
+                            <div className={ this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2].length < 35 ? 'content-of-chat' : 'content-of-chat typing-content-of-chat-long' : 'content-of-chat' }><div>{this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2] : null}</div></div>
+                        </div>
+                        </div>
+                        <form className="friend-chat-form friend-chat-form-closed friend-chat-form-open" onSubmit={this.interceptEnter}>
+                            <span>
+                            <TextareaAutosize className ="textarea-chat-autosize fixfocuscolor"
+                            ref={tag => (this.inputRef = tag)} onKeyPress={this.interceptEnter} onChange={this.handleChange} />
+                            <button className="friend-chat-submit friend-chat-submit-open prevent-open-toggle"
+                            onClick={(e) => {this.interceptClick(e)}} type='submit' value='submit'><img className="sendarrow-icon" src={sendarrow} alt="sendarrow"></img></button>
+                            </span>
+                        </form>
+                    </div>
                     <div className="hide-seek">&nbsp;</div>
                     <video className="shaka-video"
                     ref={this.videoComponent}
@@ -882,7 +1149,7 @@ export default class Video extends Component {
                     <div className="video-stats-container">
                         <h2 className='watchpage-title'>{this.state.title}</h2>
                         <div className={this.state.adPlaying ? "video-stats-bar no-display" : "video-stats-bar"}>
-                            <div className="video-stats-main-stats"><span>{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}</span><span className="video-stats-main-dot">&nbsp;•&nbsp;</span><span>{this.state.published != "" ? this.state.published : null}</span></div>
+                            <div className="video-stats-main-stats"><span>{this.state.views.length != "" ? this.state.views + (this.state.views == "1" ? " view" : " views") : null}</span><span className={this.state.title ? "video-stats-main-dot" : "hidden"}>&nbsp;•&nbsp;</span><span>{this.state.published != "" ? this.state.published : null}</span></div>
                             <div className="publisher-video-interact">
                                 <div className="publisher-video-interact-block">
                                     <div className="favorite-click">

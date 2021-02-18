@@ -46,7 +46,6 @@ export class Playlist {
         if (!skipDefer) {
             defer = this.buildPlaylistLocalStorage();
         }
-        console.log(defer, skipDefer);
         if (!defer || skipDefer) {
             console.log("Running build playlist");
             let user = this.user;
@@ -129,9 +128,13 @@ export class Playlist {
         if (!localPlaylistData) {
             this.buildPlaylist();
         } else {
-            this._playlist.adTimes.vids = 0;
-            localPlaylistData.adTimes.vids = 0;
-            window.localStorage.setItem('playlistdata', JSON.stringify(localPlaylistData));
+            if (this._playlist.adTimes.vids > 6 || this._playlist.adTimes.start == 0) {
+                this._playlist.adTimes.start = new Date().getTime();
+                this._playlist.adTimes.vids = 0;
+                localPlaylistData.adTimes.vids = 0;
+                localPlaylistData.adTimes.start = this._playlist.adTimes.start;
+                window.localStorage.setItem('playlistdata', JSON.stringify(localPlaylistData));
+            }
         }
     }
     

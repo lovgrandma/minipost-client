@@ -390,7 +390,6 @@ export default class Friend extends Component { // friend component fc1
         if (get(this, 'inputRef._ref.value')) {
             this.inputRef._ref.value = ""; // Clear chat message
         }
-
     }
 
     checkSocket = (e) => {
@@ -417,10 +416,12 @@ export default class Friend extends Component { // friend component fc1
     }
     
     resolveWatchRequest = (e) => {
-        if (this.props.waitingSessions.indexOf(this.props.friend) < 0) {
-            this.props.requestTogetherSession(this.props.conversation._id, this.props.friend);
-        } else {
-            this.props.acceptTogetherSession(this.props.conversation._id, this.props.friend);
+        if (this.props.conversation) {
+            if (this.props.waitingSessions.indexOf(this.props.friend) < 0) {
+                this.props.requestTogetherSession(this.props.conversation._id, this.props.friend);
+            } else {
+                this.props.acceptTogetherSession(this.props.conversation._id, this.props.friend);
+            }
         }
     }
     
@@ -437,9 +438,13 @@ export default class Friend extends Component { // friend component fc1
 
     render() {
         let conversationid;
-        if (this.props.conversation) {
-            if (this.props.conversation._id) {
-                conversationid = this.props.conversation._id;
+        if (this) {
+            if (this.props) {
+                if (this.props.conversation) {
+                    if (this.props.conversation._id) {
+                        conversationid = this.props.conversation._id;
+                    }
+                }
             }
         }
         return (
