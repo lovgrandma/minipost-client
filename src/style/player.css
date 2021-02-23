@@ -34,7 +34,7 @@
 }
 
 .shaka-video {
-    max-height: 80vh;
+    max-height: 82.5vh;
     width: 100%;
     transition: 50ms;
 }
@@ -357,10 +357,10 @@
     outline: none;
 }
 
-.siderbar::-webkit-scrollbar-thumb:hover {
+.fullscreen-video-chats::-webkit-scrollbar-thumb:hover {
     background-color: #939393;
 }
 
-.siderbar::-webkit-scrollbar-button:vertical:hover {
+.fullscreen-video-chats::-webkit-scrollbar-button:vertical:hover {
   color: rgb(155, 155, 155);
 }

@@ -56,9 +56,9 @@ export default class RelatedPanel extends Component {
                             if (this.state.relatedContent && !this.state.fetching) {
                                 if (window.location.href.includes("watch")) {
                                     if (this.props.secondary && $('.relatedpanel-secondary').is(':visible')) {
-                                        this.fetchRelated();
+                                        this.fetchRelated(); console.log($('.relatedpanel-secondary').is(':visible'));
                                     } else if (!this.props.secondary && $('.relatedpanel-main').is(':visible')) {
-                                        this.fetchRelated();
+                                        this.fetchRelated(); console.log($('.relatedpanel-main').is(':visible'));
                                     }
                                 }
                             }
@@ -76,7 +76,6 @@ export default class RelatedPanel extends Component {
     }
 
     fetchRelated = (paginate = 10) => {
-        document.getElementsByClassName
         let lastFetch = this.state.lastFetch;
         let run = true;
         if (lastFetch) {

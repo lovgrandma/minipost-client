@@ -10,7 +10,7 @@ import {
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
-import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblack.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
+import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblacksmaller5.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
@@ -75,8 +75,14 @@ export default class Video extends Component {
         });
         document.onmousedown = () => { this.setState({ mousedown: true })};
         document.onmouseup = () => { this.setState({ mousedown: false })};
-        let scrollInterval = setInterval(this.quickScroll, 1000);
-        this.setState({ scrollInterval: scrollInterval });
+        if (setInterval) {
+            try {
+                let scrollInterval = setInterval(this.quickScroll, 1000);
+                this.setState({ scrollInterval: scrollInterval });
+            } catch (err) {
+                // setInterval is not a function for some reason
+            }
+        }
     }
 
     componentWillUnmount() {
@@ -215,43 +221,47 @@ export default class Video extends Component {
     }
 
     loadPage = async (reload = false, playEndAd = false) => {
-        if (reload) {
-            this.initPlayer(await this.fetchVideoPageData(reload) + "-mpd.mpd");
-            this.setState({ mpd: reload});
-        } else {
-            if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) {
-                this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + "-mpd.mpd");
-                this.setState({ mpd: window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]});
-            } else if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
-                this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
-                this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
-            } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
-                if (this.props.location.search) {
-                    if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)) {
-                        if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) {
-                            this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
-                            this.setState({ mpd: this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]});
-                        }
-                    } else if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
-                        if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]) {
-                            this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + "-mpd.mpd", playEndAd);
-                            this.setState({ mpd: this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]});
+        try {
+            if (reload) {
+                this.initPlayer(await this.fetchVideoPageData(reload) + "-mpd.mpd");
+                this.setState({ mpd: reload});
+            } else {
+                if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) {
+                    this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + "-mpd.mpd");
+                    this.setState({ mpd: window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]});
+                } else if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
+                    this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
+                    this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
+                } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
+                    if (this.props.location.search) {
+                        if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)) {
+                            if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) {
+                                this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
+                                this.setState({ mpd: this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]});
+                            }
+                        } else if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
+                            if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]) {
+                                this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + "-mpd.mpd", playEndAd);
+                                this.setState({ mpd: this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]});
+                            }
                         }
                     }
-                }
-            } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
-                if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)) {
-                    if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) {
-                        this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", playEndAd);
-                        this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
-                    }
-                } else if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)) {
-                    if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]) {
-                        this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + "-mpd.mpd", playEndAd);
-                        this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]});
+                } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
+                    if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) {
+                            this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", playEndAd);
+                            this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
+                        }
+                    } else if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)) {
+                        if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]) {
+                            this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + "-mpd.mpd", playEndAd);
+                            this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]});
+                        }
                     }
                 }
             }
+        } catch (err) {
+            // There was a problem retrieving url data
         }
     }
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
@@ -735,7 +745,8 @@ export default class Video extends Component {
                         if (this.videoComponent) {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
-                                video.style="";
+                                video.style.height = this.resolvePlaceholderHeight() + "px";
+                                console.log(video.style.height);
                                 this.viewCountedInterval(adUriRaw); // set custom viewcountedinterval for ad
                             }
                             this.setUpCropButton();
@@ -760,7 +771,8 @@ export default class Video extends Component {
                         if (this.videoComponent) {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
-                                video.style="";
+                                video.style.height="";
+                                console.log(video.style.height);
                                 this.viewCountedInterval(this.state.mpd);
                             }
                         }
@@ -949,6 +961,9 @@ export default class Video extends Component {
                 this.setState({ viewInterval: viewInterval });
             }
         } catch (err) {
+            if (err) {
+                this.setState({ skipTime: 0 });
+            }
             // Set interval may not have ran due to window not being available. User left page
         }
     }
@@ -1031,10 +1046,12 @@ export default class Video extends Component {
             let aspectInterval = setInterval(() => {
                 try {
                 currVidAspRatio = cookies.get('currentVideoAspectRatio');
-                    if (get(this, 'videoComponent.current.clientHeight')) {
-                        if (!currVidAspRatio || currVidAspRatio!== this.videoComponent.current.clientHeight) {
-                            cookies.set('currentVideoAspectRatio', this.videoComponent.current.clientHeight);
-                            this.setState({ curVidAspRatio: this.videoComponent.current.clientHeight });
+                    if (this.state) {
+                        if (get(this, 'videoComponent.current.clientHeight') && !this.state.adPlaying) {
+                            if (!currVidAspRatio || currVidAspRatio!== this.videoComponent.current.clientHeight) {
+                                cookies.set('currentVideoAspectRatio', this.videoComponent.current.clientHeight);
+                                this.setState({ curVidAspRatio: this.videoComponent.current.clientHeight });
+                            }
                         }
                     }
                 } catch (err) {
@@ -1076,6 +1093,11 @@ export default class Video extends Component {
     }
 
     render() {
+        let styles = {
+            height: { height: this.resolvePlaceholderHeight() + "px"},
+            maxheight: {maxHeight: '100%' },
+            minHeight: {minHeight: '100%' }
+        };
         return (
             <div className="video-page-flex">
             <div id='videocontainer' className='main-video-container'>
@@ -1142,7 +1164,7 @@ export default class Video extends Component {
                     <video className="shaka-video"
                     ref={this.videoComponent}
                     poster={minipostpreviewbanner}
-                    style={{height: this.resolvePlaceholderHeight() + 'px'}}
+                    style={Object.assign(styles.height, styles.maxheight)}
                     />
                 </div>
                 <div className="video-stats-and-related-container">

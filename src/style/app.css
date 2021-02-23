@@ -733,10 +733,15 @@ ul li {
 .main {
     padding: 10px 30px;
     transition: 200ms;
+    padding-top: 5px;
 }
 
 .main-with-sidebar {
     margin-left: 250px;
+}
+
+.videodash, .upload-video-text, .flex-profile { 
+    padding-top: 2.5px;
 }
 
 /* footer */
@@ -4135,7 +4140,7 @@ If user only has one friend, styling wont apply */
 }
 
 .video-container {
-    max-height: 80vh;
+    max-height: 82.5vh;
 }
 
 .responses {
