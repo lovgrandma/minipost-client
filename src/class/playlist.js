@@ -65,6 +65,7 @@ export class Playlist {
                 return response.json();
             })
             .then((data) => {
+                console.log(data);
                 let date = new Date().getTime() + 1000*60*60*3; // Get current time plus 3. Don't ask server again for new playlist data until 3 hours have passed
                 data.defer = date;
                 data.adTimes = {

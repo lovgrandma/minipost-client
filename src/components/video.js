@@ -794,10 +794,15 @@ export default class Video extends Component {
     }
     
     setupSendWatch = (uri, time, playad = false, ad) => {
+        console.log(uri, cookies.get('loggedIn'), playad, ad, JSON.parse(window.localStorage.getItem('togetherdata')));
         if (uri && this.props.togetherToken && cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata'))) {
+            console.log("send watch1", uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/), JSON.parse(window.localStorage.getItem('togetherdata')).ads, this.props.togetherToken.host == cookies.get('loggedIn'))
             if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/) && this.props.togetherToken.host == cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata')).ads) { // You're only able to send a video to be watched if you are the host of the session
+                console.log("send watch2")
                 if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2] && JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]) {
                     this.props.sendWatch(uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2], ad, time, playad);
+                } else { // Its possible that the user has no ads in their playlist. Revert to playing video
+                    this.props.sendWatch(uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2], null, time, false);
                 }
             }
         }

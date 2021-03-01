@@ -1286,9 +1286,13 @@ class App extends Component {
                 if (togetherToken.lastping > new Date().getTime() - 1000*60 ) {
                     let interval = setInterval(() => {
                         if (this.state.togetherToken.lastping) {
-                            if (this.state.togetherToken.lastping > new Date().getTime() - 1000*60) {
+                            if (this.state.togetherToken.lastping > new Date().getTime() - 1000*60 && socket) {
                                 intervalTogetherToken.from = cookies.get('loggedIn');
-                                socket.emit('marcoCheck', intervalTogetherToken);
+                                try {
+                                    socket.emit('marcoCheck', intervalTogetherToken);
+                                } catch (err) {
+                                    // Socket was undefined
+                                }
                             } else {
                                 cookies.remove('togetherToken');
                                 if (this.state.togetherInterval) {
