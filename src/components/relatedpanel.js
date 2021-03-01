@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import currentrooturl from '../url.js';
-import utility from '../methods/utility.js';
 import {
     Form,
     FormGroup,
@@ -10,7 +9,7 @@ import {
 } from 'react-bootstrap';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
-import { resolveString } from '../methods/utility.js';
+import { resolveString, checkAtBottom, shuffleArray, getNumber } from '../methods/utility.js';
 import placeholderRelated from '../placeholder/relatedobjects.js';
 import $ from 'jquery';
 
@@ -50,7 +49,7 @@ export default class RelatedPanel extends Component {
         try {
             if (this) {
                 if (this.state) {
-                    if (utility.checkAtBottom()) {
+                    if (checkAtBottom()) {
                         if (!this.state.bottom) {
                             this.setState({ bottom: true });
                             if (this.state.relatedContent && !this.state.fetching) {
@@ -136,7 +135,7 @@ export default class RelatedPanel extends Component {
                                     })
                                 }
                             }
-                            data.records = utility.shuffleArray(data.records);
+                            data.records = shuffleArray(data.records);
                             if (this.state.relatedContent.length > 0 && data.records.length > 0) {
                                 this.setState({ relatedContent: this.state.relatedContent.concat(data.records)});
                             } else if (this.state.relatedContent.length == 0) {
@@ -172,7 +171,7 @@ export default class RelatedPanel extends Component {
                             thumbnailUrl={content._fields[0].properties.thumbnailUrl}
                             author={resolveString(content._fields[0].properties.author)}
                             published={resolveString(content._fields[0].properties.publishDate)}
-                            views={utility.getNumber(content._fields[0].properties.views)}
+                            views={getNumber(content._fields[0].properties.views)}
                             articles={content._fields[0].properties.articles}
                             tags={content._fields[0].properties.tags}
                             cloud={this.props.cloud}

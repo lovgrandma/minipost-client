@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url.js';
-import utility from '../methods/utility.js';
+import { checkAtBottom, setData, getNumber } from '../methods/utility.js';
 import {
     Form,
     FormGroup,
@@ -65,7 +65,7 @@ export default class Dash extends Component {
         try {
             if (this) {
                 if (this.state) {
-                    if (utility.checkAtBottom()) {
+                    if (checkAtBottom()) {
                         if (!this.state.bottom) {
                             this.setState({ bottom: true });
                             if (this.state.dashVideos && !this.state.fetching) {
@@ -193,11 +193,11 @@ export default class Dash extends Component {
                                     content._fields[0].properties.mpd ?
                                         <Videos mpd={content._fields[0].properties.mpd.toString()}
                                         title={content._fields[0].properties.title.toString()}
-                                        description={utility.setData(content, "description")}
-                                        thumbnailUrl={utility.setData(content, "thumbnailUrl")}
+                                        description={setData(content, "description")}
+                                        thumbnailUrl={setData(content, "thumbnailUrl")}
                                         author={content._fields[0].properties.author.toString()}
                                         published={content._fields[0].properties.publishDate}
-                                        views={utility.getNumber(content._fields[0].properties.views)}
+                                        views={getNumber(content._fields[0].properties.views)}
                                         responses={content._fields[0].properties.responses}
                                         tags={content._fields[0].properties.tags}
                                         avatarUrl={content._fields[3]}
