@@ -6,11 +6,11 @@ Includes helper utility functions that abstract more complicated functionality f
 Original code for deepEquals, arraysEqual, objectsEqual, mapsEqual typedArraysEqual from stackoverflow user @ninjagecko
 https://stackoverflow.com/questions/3115982/how-to-check-if-two-arrays-are-equal-with-javascript */
 
-let debounce = function(a, b, c) {
+export let debounce = function(a, b, c) {
     var d,e;return function(){function h(){d=null,c||(e=a.apply(f,g))}var f=this,g=arguments;return clearTimeout(d),d=setTimeout(h,b),c&&!d&&(e=a.apply(f,g)),e}
 };
 
-function deepEquals(a,b) {
+export function deepEquals(a,b) {
     if (a instanceof Array && b instanceof Array)
         return arraysEqual(a,b);
     if (Object.getPrototypeOf(a)===Object.prototype && Object.getPrototypeOf(b)===Object.prototype)
@@ -25,7 +25,7 @@ function deepEquals(a,b) {
     return a==b;  // see note[1] -- IMPORTANT
 }
 
-function arraysEqual(a,b) {
+export function arraysEqual(a,b) {
     if (a.length!=b.length)
         return false;
     for(var i=0; i<a.length; i++)
@@ -34,7 +34,7 @@ function arraysEqual(a,b) {
     return true;
 }
 
-function objectsEqual(a,b) {
+export function objectsEqual(a,b) {
     var aKeys = Object.getOwnPropertyNames(a);
     var bKeys = Object.getOwnPropertyNames(b);
     if (aKeys.length!=bKeys.length)
@@ -47,7 +47,7 @@ function objectsEqual(a,b) {
     return deepEquals(aKeys.map(k=>a[k]), aKeys.map(k=>b[k]));
 }
 
-function mapsEqual(a,b) {
+export function mapsEqual(a,b) {
     if (a.size!=b.size)
         return false;
     var aPairs = Array.from(a);
@@ -60,7 +60,7 @@ function mapsEqual(a,b) {
     return true;
 }
 
-function typedArraysEqual(a,b) {
+export function typedArraysEqual(a,b) {
     a = new Uint8Array(a);
     b = new Uint8Array(b);
     if (a.length != b.length)
@@ -72,7 +72,7 @@ function typedArraysEqual(a,b) {
 }
 
 /** Fisher-Yates shuffle https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array */
-let shuffleArray = function(array) {
+export let shuffleArray = function(array) {
   var currentIndex = array.length, temporaryValue, randomIndex;
 
   // While there remain elements to shuffle...
@@ -92,7 +92,7 @@ let shuffleArray = function(array) {
 }
 
 // Parses article id and any other uuid with 8, 4, 4, 4, 12 pattern: 0f64db58-1451-4931-bb55-434013efd774
-let parseId = function(encode, id) {
+export let parseId = function(encode, id) {
     if (encode) {
         id = id.replace(/[-]/g, '');
     } else {
@@ -106,7 +106,7 @@ let parseId = function(encode, id) {
 }
 
 /* Simplifies time format 00/00/0000, 0:00:00 AM to 00/00/00, 0:00 am */
-let roundTime = function(time) {
+export let roundTime = function(time) {
     if (time.low) {
         time = time.low;
     }
@@ -123,11 +123,11 @@ let roundTime = function(time) {
     return time;
 }
 
-const roundNumber = function(number) {
+export const roundNumber = function(number) {
     return number;
 }
 
-const shortenTitle = function (title, length = 70) {
+export const shortenTitle = function (title, length = 70) {
     if (title) {
         if (title.length > length) {
             return title.slice(0, length) + "..";
@@ -138,7 +138,7 @@ const shortenTitle = function (title, length = 70) {
 }
 
 /* Converts static document date into relevant publish time from now */
-const convertDate = function (date) {
+export const convertDate = function (date) {
     if (parseInt(date) != 1 && parseInt(date) != 2) { // prevent strange errors parsing old epoch date format
         date = new Date(parseInt(date)).toLocaleString();
     }
@@ -196,7 +196,7 @@ const convertDate = function (date) {
     return null;
 }
 
-const roundHour = function (hour) {
+export const roundHour = function (hour) {
     if (Math.round(hour/3600) == 1) {
         return "1 hour ago";
     } else {
@@ -206,14 +206,14 @@ const roundHour = function (hour) {
 }
 
 /* Dynamically sets state when given the key/value location and the name of the key name to be used */
-const setStateDynamic = (key, value) => {
+export const setStateDynamic = (key, value) => {
    if (value == "Invalid Date") {
        return { [key]: "No Date"};
    }
     return { [key]: value };
 }
 
-const dataURItoBlob = (dataURI) => {
+export const dataURItoBlob = (dataURI) => {
     // convert base64/URLEncoded data component to raw binary data held in a string
     var byteString;
     if (dataURI.split(',')[0].indexOf('base64') >= 0)
@@ -235,7 +235,7 @@ const dataURItoBlob = (dataURI) => {
 /* Returns correct location pathname. Application sometimes interprets query params under window.location.search or the whole path under pathname.
     Without this method, when traversing back through history, appropriate content may not update
     */
-const getPath = () => {
+export const getPath = () => {
     if (window) {
         if (window.location) {
             if (window.location.search) {
@@ -251,7 +251,7 @@ const getPath = () => {
 
 // author: enqtran/[ReactJS] Detect Scrolls To Bottom
 // https://gist.github.com/enqtran/25c6b222a73dc497cc3a64c090fb6700
-const checkAtBottom = () => {
+export const checkAtBottom = () => {
     try {
         if (window && document) {
             if (document.documentElement) {
@@ -271,7 +271,7 @@ const checkAtBottom = () => {
     }
 }
 
-const get = function(obj, key) {
+export const get = function(obj, key) {
     try {
         return key.split(".").reduce(function(o, x) {
             return (typeof o == "undefined" || o === null) ? o : o[x];
@@ -283,14 +283,14 @@ const get = function(obj, key) {
 
 // Returns opposite value, useful for determining whether to allow user to like, dislike something
 // User has not liked yet? Pass true to like
-const opposite = function(value) {
+export const opposite = function(value) {
     if (value) {
         return false;
     }
     return true;
 }
 
-const setData = function(video, type) {
+export const setData = function(video, type) {
     try {
         if (!video._fields[0].properties[type] || video._fields[0].properties[type].length == 0 || video._fields[0].properties[type] == undefined) {
             return video._fields[0].properties[type] = "";
@@ -302,7 +302,7 @@ const setData = function(video, type) {
     }
 }
 
-const randomProperty = function(obj) {
+export const randomProperty = function(obj) {
     if (obj) {
         let keys = Object.keys(obj);
         return obj[ keys[ keys.length * Math.random() << 0]];
@@ -311,7 +311,7 @@ const randomProperty = function(obj) {
     }
 }
 
-const returnLink = function(media, page = "history") {
+export const returnLink = function(media, page = "history") {
     try {
         if (page == "history") {
             if (!media) {
@@ -334,7 +334,7 @@ const returnLink = function(media, page = "history") {
     }
 }
 
-const returnProfile = function(media) {
+export const returnProfile = function(media) {
     try {
         return { pathname:`/profile?p=${media.author}` };
     } catch (err) {
@@ -342,7 +342,7 @@ const returnProfile = function(media) {
     }
 }
 
-const getNumber = function(data) {
+export const getNumber = function(data) {
     if (data.hasOwnProperty("high") && data.hasOwnProperty("low")) {
         if (data.high > data.low) {
             return data.high;
@@ -354,7 +354,7 @@ const getNumber = function(data) {
 }
 
 // Sometimes records just dont have all the appropriate data. It happens. Don't panick. Resolve it
-const resolveString = function(variable) {
+export const resolveString = function(variable) {
     if (variable) {
         if (variable.toString) {
             return variable.toString();
@@ -363,26 +363,26 @@ const resolveString = function(variable) {
     return variable;
 }
 
-module.exports = {
-    debounce: debounce,
-    deepEquals: deepEquals,
-    shuffleArray: shuffleArray,
-    parseId: parseId,
-    roundTime: roundTime,
-    shortenTitle: shortenTitle,
-    roundNumber: roundNumber,
-    setStateDynamic: setStateDynamic,
-    convertDate: convertDate,
-    dataURItoBlob: dataURItoBlob,
-    getPath: getPath,
-    checkAtBottom: checkAtBottom,
-    get: get,
-    opposite: opposite,
-    setData: setData,
-    randomProperty: randomProperty,
-    returnLink: returnLink,
-    returnProfile: returnProfile,
-    getNumber: getNumber,
-    resolveString: resolveString,
-    arraysEqual: arraysEqual
-}
+//module.exports = {
+//    debounce: debounce,
+//    deepEquals: deepEquals,
+//    shuffleArray: shuffleArray,
+//    parseId: parseId,
+//    roundTime: roundTime,
+//    shortenTitle: shortenTitle,
+//    roundNumber: roundNumber,
+//    setStateDynamic: setStateDynamic,
+//    convertDate: convertDate,
+//    dataURItoBlob: dataURItoBlob,
+//    getPath: getPath,
+//    checkAtBottom: checkAtBottom,
+//    get: get,
+//    opposite: opposite,
+//    setData: setData,
+//    randomProperty: randomProperty,
+//    returnLink: returnLink,
+//    returnProfile: returnProfile,
+//    getNumber: getNumber,
+//    resolveString: resolveString,
+//    arraysEqual: arraysEqual
+//}
