@@ -2,7 +2,7 @@ Minireel frontend application
 --------------------------------------
 Watch film with friends
 =======
-0. bash npm install in express and react folders, install mongodb
+0. Copy dummy files (stripecreddummy, make stripecred.js. urldummy make url.js) bash npm install in express and react folders, install mongodb
 1. Run mongod in bash
 2. Run mongo in bash
 3. Run nodemon in express folder bash
