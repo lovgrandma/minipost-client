@@ -4,6 +4,6 @@ These are local variables that determine how the front end interacts with the ba
 
 const devurl = 'http://localhost:' + (process.env.PORT || 3000) + "/"; // 3000 for local. 3001 for docker container
 const productionurl = 'https://www.minipost.app/'; // This is the production url. This can just be for reference
-const currentrooturl =  devurl;
+const currentrooturl =  devurl; // Current url being used in app
 
 export default currentrooturl;
