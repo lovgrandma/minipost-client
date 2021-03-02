@@ -33,6 +33,7 @@ import { hideOptions } from './methods/context.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
+import proxyurl from './proxy.js';
 import { Playlist } from './class/playlist.js';
 import { Together } from './class/together.js';
 
@@ -59,7 +60,7 @@ class Socialbar extends Component { // Main social entry point sb1
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null,
                       friendsopen: true, nonfriendsopen: false,
-                      response: false, endpoint: "http://127.0.0.1:5000",
+                      response: false, endpoint: proxyurl,
                       typing: [], darkmode: false
                      }
         

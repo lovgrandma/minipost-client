@@ -24,4 +24,5 @@ yarn-error.log*
 /debug.log
 src/keys/stripecred.js
 src/url.js
+src/proxy.js
 buildscript
