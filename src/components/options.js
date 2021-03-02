@@ -24,7 +24,7 @@ import amex from '../static/cc/amex.svg'; import mastercard from '../static/cc/m
 
 import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-const stripePromise = loadStripe(keys.testkey);
+const stripePromise = loadStripe(keys.livekey);
 
 export default class Options extends Component {
     constructor() {
