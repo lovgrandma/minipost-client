@@ -414,8 +414,9 @@ class Socialbar extends Component { // Main social entry point sb1
             this.setState({ registererror: null });
             this.setState({ loginerror: null });
             console.log(cookies.get('loggedIn'));
-            if (data.querystatus== "loggedin") {
+            if (data.querystatus== "loggedin" && data.username) {
                 this.props.updateLogin();
+                cookies.set('loggedIn', data.username);
                 if (cookies.get('loggedIn')) {
                     this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
                 }
@@ -456,6 +457,7 @@ class Socialbar extends Component { // Main social entry point sb1
         })
         .then((data) => {
             if (data.querystatus== "loggedin" && data.user ) {
+                cookies.set('loggedIn', data.user);
                 this.setState({ isLoggedIn: data.user });
                 this.getfriends();
             }
