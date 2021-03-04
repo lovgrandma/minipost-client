@@ -647,8 +647,10 @@ export default class Upload extends Component { // ulc upload component
                     }
                 },
                 headers: {
-                    'content-type': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data',
+                    'Accept': 'multipart/form-data'
                 },
+                withCredentials: true,
                 timeout: 1000000
             };
             // Use axios to make post request and update user on gradual progress of upload. Only upload if videoPreview == null. If videoPreview is true, then there is a video currently being processed
