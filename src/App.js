@@ -34,6 +34,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 import proxyurl from './proxy.js';
+import corsdefault from './cors.js';
 import { Playlist } from './class/playlist.js';
 import { Together } from './class/together.js';
 
@@ -345,7 +346,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     username
                 })
@@ -400,7 +401,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            mode: 'same-origin',
+            mode: corsdefault,
             credentials: 'include',
             body: JSON.stringify({
                 email, password
@@ -445,7 +446,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
+            credentials: corsdefault,
             body: JSON.stringify({
                 username, regemail, regpassword, confirmPassword
             })
@@ -478,7 +479,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin'
+                credentials: corsdefault
             })
             .then(function(response) {
                 return response.json(); // You parse the data into a useable format using `.json()`
@@ -537,7 +538,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     searchusers, username, limit
                 })
@@ -566,7 +567,7 @@ class Socialbar extends Component { // Main social entry point sb1
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin',
+                    credentials: corsdefault,
                     body: JSON.stringify({
                         searchusers, username
                     })
@@ -614,7 +615,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
+            credentials: corsdefault,
             body: JSON.stringify({
                 thetitleofsomeonewewanttobecloseto, username
             })
@@ -648,7 +649,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
+            credentials: corsdefault,
             body: JSON.stringify({
                 thetitleofsomeoneiusedtowanttobecloseto, username, pending, refuse, block
             })
@@ -717,7 +718,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     username
                 })
@@ -754,7 +755,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            credentials: 'same-origin',
+            credentials: corsdefault,
             body: JSON.stringify({
                 newfriend, username
             })
@@ -787,7 +788,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     username
                 })
@@ -869,7 +870,7 @@ class Socialbar extends Component { // Main social entry point sb1
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'same-origin',
+                        credentials: corsdefault,
                         body: JSON.stringify({
                             username, chatwith, message
                         })
@@ -1106,7 +1107,7 @@ class App extends Component {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin',
+                    credentials: corsdefault,
                     body: JSON.stringify({
                         
                     })
