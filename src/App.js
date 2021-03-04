@@ -401,8 +401,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
-            mode: corsdefault,
-            credentials: 'include',
+            credentials: corsdefault,
             body: JSON.stringify({
                 email, password
             })
