@@ -51,6 +51,9 @@ const cookies = new Cookies();
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
+
+// Main Application file
+
 // Side Social Bar
 class Socialbar extends Component { // Main social entry point sb1
     constructor(props) {

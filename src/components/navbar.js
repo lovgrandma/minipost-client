@@ -175,7 +175,7 @@ export default class Navbar extends Component {
                     </ul>
                     :<ul className="nav flex-grow2 flex-end nowrapbuttons offline-nav">
                         <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>person</div>
-                        <div className="btn-desc btn-desc-yourpro">learn more about what it's like to be a user on minireel</div>
+                        <div className="btn-desc btn-desc-yourpro">learn more about what it's like to be a user on minipost</div>
                     </ul>
                 }
                 </row>

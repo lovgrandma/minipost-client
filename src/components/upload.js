@@ -647,8 +647,7 @@ export default class Upload extends Component { // ulc upload component
                     }
                 },
                 headers: {
-                    'Content-Type': 'multipart/form-data',
-                    'Accept': 'multipart/form-data'
+                    'Content-Type': 'multipart/form-data'
                 },
                 withCredentials: true,
                 timeout: 1000000
