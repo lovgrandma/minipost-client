@@ -98,7 +98,7 @@ export default class ArticlePreview extends Component {
                     {
                         this.state.deleteContentPrompt ?
                             <div className="delete-prompt-box delete-prompt-box-article">
-                                <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter the title below:</label><div className="clear-content-menu" onClick={(e) => {promptDeleteContent.call(this, e)}}>×</div></div>
+                                <div className="flex"><label htmlFor="titleDelete">Delete "{this.props.title}" ? Please enter "delete me" below:</label><div className="clear-content-menu" onClick={(e) => {promptDeleteContent.call(this, e)}}>×</div></div>
                                 <input type="text" id="titleDelete" name="titleDelete" className="title-delete-input" ref={this.titleDelete} />
                                 <input type="submit" value="delete" className="title-delete-submit" onClick={(e) => {tryDeleteContent.call(this, e)}} />
                                 {

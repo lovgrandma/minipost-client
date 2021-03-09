@@ -242,7 +242,7 @@ button {
 }
 
 .hidden-visible {
-    opacity: 100;
+    opacity: 1;
     display: block;
     visibility: visible;
 }
@@ -1757,8 +1757,8 @@ label {
     background-color: SlateGray;
     position:relative;
     opacity: 0.20;
-    -moz-opacity: 20%;
-    -webkit-opacity: 20%;
+    -moz-opacity: 0.2;
+    -webkit-opacity: 0.2;
     z-index: 2;
 }
 
@@ -3689,7 +3689,7 @@ If user only has one friend, styling wont apply */
 .publish-video {
     transition: 200ms;
     margin-bottom: 20px;
-    opacity: 100%;
+    opacity: 1;
     height: 27px;
     visibility: visible;
 }
@@ -3712,7 +3712,7 @@ If user only has one friend, styling wont apply */
 }
 
 .publish-video-hidden {
-    opacity: 0%;
+    opacity: 0;
     height: 0px !important;
     margin: 0 !important;
     padding: 0 !important;
@@ -3971,7 +3971,7 @@ If user only has one friend, styling wont apply */
     font-size: 14px;
     line-height: 1.4;
     transition: 300ms;
-    opacity: 100;
+    opacity: 1;
     word-wrap: break-word;
     white-space: pre-line;
 }
@@ -3992,7 +3992,7 @@ If user only has one friend, styling wont apply */
     margin-top: 10px;
     padding: 0 5px 0 10px;
     font-size: 0.8em;
-    opacity: 100;
+    opacity: 1;
     transition: 300ms;
     margin-bottom: 10px;
     line-height: 1.9;
@@ -4029,7 +4029,7 @@ If user only has one friend, styling wont apply */
     height: 25px;
     overflow: hidden;
     transition: 300ms;
-    opacity: 100;
+    opacity: 1;
 }
 
 .video-detail-container-hidden {
@@ -4200,11 +4200,11 @@ textarea:focus {
 
 .publish-confirmed {
     transition: 400ms;
-    opacity: 100%;
+    opacity: 1;
 }
 
 .publish-confirmed-hidden {
-    opacity: 0%;
+    opacity: 0;
 }
 
 @media (max-width: 640px) {

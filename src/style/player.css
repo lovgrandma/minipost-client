@@ -20,7 +20,7 @@
 }
 
 .shaka-play-button[icon=play] {
-    opacity: 0.0;
+    opacity: 0;
 }
 
 .shaka-play-button[icon=play]:hover {
@@ -212,11 +212,11 @@
 
 .video-container .video-over-player-details,
 .video-container.skip-ad-button {
-    opacity: 100%;
+    opacity: 1;
 }
 
 .video-container[style="cursor: none;"] .video-over-player-details {
-    opacity: 0%;
+    opacity: 0;
 }
 
 .cover > video {

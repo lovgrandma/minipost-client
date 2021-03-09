@@ -228,10 +228,12 @@ export default class writeArticle extends Component {
                         }
                         if (data.querystatus == "article posted") {
                             this.setState({ published: true });
+                            this.setState({ currentErr: "" });
                         } else if (data.querystatus == "you have already posted an article with this title") {
                             this.setState({ currentErr: "You have already posted an article with this title" });
                         } else if (data.querystatus == "article updated") {
                             this.setState({ published: true });
+                            this.setState({ currentErr: "" });
                         }
                         console.log(data);
                     })
