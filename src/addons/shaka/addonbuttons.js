@@ -1,6 +1,5 @@
 import { get } from '../../methods/utility.js';
 import { cookies } from '../../App.js';
-import "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp";
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 
