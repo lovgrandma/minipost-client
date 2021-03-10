@@ -10,6 +10,10 @@
     font-weight: 500;
 }
 
+.material-icons {
+    font-family: 'Material Icons' !important;
+}
+
 .shaka-play-button, .shaka-play-button[icon=play] {
     transition: 200ms;
     max-height: 20px;
