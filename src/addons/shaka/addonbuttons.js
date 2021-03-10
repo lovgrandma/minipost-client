@@ -1,6 +1,6 @@
 import { get } from '../../methods/utility.js';
 import { cookies } from '../../App.js';
-import Icon from '@material-ui/core/Icon';
+import Icon from '@material-ui/icons';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 
