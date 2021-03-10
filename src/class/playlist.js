@@ -110,6 +110,13 @@ export class Playlist {
     }
 
     get playlistVidsWatched() {
+        if (this._playlist) {
+            if (this._playlist.adTimes) {
+                return this._playlist.adTimes.vids;
+            } else {
+                return 1;
+            }
+        }
         return this._playlist.adTimes.vids;
     }
 
