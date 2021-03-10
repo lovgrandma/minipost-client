@@ -1,6 +1,6 @@
 import { get } from '../../methods/utility.js';
 import { cookies } from '../../App.js';
-import icon from '@material-ui/core/Icon';
+import "https://fonts.googleapis.com/css?family=Material+Icons|Material+Icons+Outlined|Material+Icons+Two+Tone|Material+Icons+Round|Material+Icons+Sharp";
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 
@@ -8,7 +8,7 @@ export const nextSeries = function() {
     shaka.ui.theatreButton = class extends shaka.ui.Element {
         constructor(parent, controls) {
             super(parent, controls);
-            this.button_ = document.createElement('icon');
+            this.button_ = document.createElement('button');
             this.button_.classList.add('crop_7_5', 'material-icons', 'shaka-generic-button', 'crop-btn');
             this.button_.textContent = 'crop_7_5';
             this.parent.appendChild(this.button_);
@@ -50,7 +50,7 @@ export const nextSeries = function() {
     shaka.ui.coverButton = class extends shaka.ui.Element {
         constructor(parent, controls) {
             super(parent, controls);
-            this.button_ = document.createElement('icon');
+            this.button_ = document.createElement('button');
             this.button_.classList.add('crop', 'material-icons', 'shaka-generic-button', 'cover-btn');
             this.button_.textContent = 'crop';
             this.parent.appendChild(this.button_);

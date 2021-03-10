@@ -21,7 +21,6 @@ import dummyavatar from '../static/greyavatar.jpg';
 import { setResponseUrl } from '../methods/responses.js';
 import lzw from '../compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
-import icon from '@material-ui/core/Icon';
 
 import { cookies, socket } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
