@@ -412,8 +412,8 @@ export default class Upload extends Component { // ulc upload component
     getUserVideos = () => {
         if (!this.state.gettingUserVideos) {
             this.setState({ gettingUserVideos: true });
-            if (this.props.isLoggedIn) {
-                let username = this.props.isLoggedIn;
+            if (cookies.get('loggedIn')) {
+                let username = cookies.get('loggedIn');
                 fetch(currentrooturl + 'm/getuservideos', {
                     method: "POST",
                     headers: {
@@ -494,6 +494,8 @@ export default class Upload extends Component { // ulc upload component
                     this.setState({ gettingUserVideos: false });
                     console.log(error);
                 })
+            } else {
+                this.setState({ gettingUserVideos: false });
             }
         }
     }
