@@ -5279,6 +5279,32 @@ a code:hover {
     font-size: 0.9em;
 }
 
+.arrow-back-login {
+    font-size: 1.1em !important;
+    color: grey;
+    padding-right: 10px;
+}
+
+.social-portal-login-prompt {
+    margin-bottom: 5px;
+    vertical-align: middle;
+    line-height: normal;
+}
+
+.social-portal-times {
+    padding-left: 5px;
+    line-height: 1;
+}
+
+.social-portal-times:hover {
+    cursor: pointer;
+}
+
+.social-portal-login-prompt > .info-blurb,
+.social-portal-login-prompt > .arrow-back-login {
+    user-select: none;
+}
+
 .no-display {
     display: none;
 }

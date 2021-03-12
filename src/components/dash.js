@@ -21,7 +21,7 @@ const EventEmitter = require('events');
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, fetchingTimeout: "", loaded: false };
+        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, fetchingTimeout: "", loaded: false, closeSocialPrompt: false };
         this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
@@ -181,9 +181,17 @@ export default class Dash extends Component {
         return data;
     }
 
+    setCloseSocialPrompt(e) {
+        this.setState({ closeSocialPrompt: true });
+    }
+
     render() {
         return (
             <div className='videodash'>
+                {
+                    !cookies.get('loggedIn') && !this.state.closeSocialPrompt ? <div className="flex flex-start social-portal-login-prompt"><div className="material-icons arrow-back-login">arrow_back</div><div className="info-blurb">You're not logged in, to log in click on the bar on the left to open the social portal</div><div className="social-portal-times" onClick={(e)=>{this.setCloseSocialPrompt(e)}}>&times;</div></div>
+                    : null
+                }
                 <h5 className="videodash-recommended-header">Recommended</h5>
                 <div className='flex-grid videogrid'>
                     {

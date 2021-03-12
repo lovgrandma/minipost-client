@@ -607,15 +607,17 @@ export default class Video extends Component {
                 let adRun = await this.props.playlist.checkAdSetup();
                 let xMinutesAgo = new Date().getTime() - 1000*60*14; // 14 minutes ago
                 let vidsWatched = this.props.playlist.playlistVidsWatched;
-                if (adRun.hasOwnProperty('start')) {
-                    if (adRun.start == 0 || adRun.start < xMinutesAgo || vidsWatched > 6) { // null adStart, over 7 min ago or user watched 7 videos? Run ad
-                        this.setState({ adStart: true });
-                        this.props.playlist.setVidsWatchedZero(); // If ad is running, always set vids watched to 0 to reset counter
+                if (adRun) {
+                    if (adRun.hasOwnProperty('start')) {
+                        if (adRun.start == 0 || adRun.start < xMinutesAgo || vidsWatched > 6) { // null adStart, over 7 min ago or user watched 7 videos? Run ad
+                            this.setState({ adStart: true });
+                            this.props.playlist.setVidsWatchedZero(); // If ad is running, always set vids watched to 0 to reset counter
+                        }
                     }
-                }
-                if (adRun.hasOwnProperty('end')) {
-                    if (adRun.end == 0 || adRun.end < xMinutesAgo) {
-                        this.setState({ adEnd: true });
+                    if (adRun.hasOwnProperty('end')) {
+                        if (adRun.end == 0 || adRun.end < xMinutesAgo) {
+                            this.setState({ adEnd: true });
+                        }
                     }
                 }
                 // Return array of times to play ad on this video. store. This will be retrieved from server from original fetch video data request
@@ -755,7 +757,7 @@ export default class Video extends Component {
                         console.log(err);
                     })
                 } else {
-                    // Try to load a manifest Asynchronous
+                    // Try to load a manifest Asynchronous // The goal is that this should always load even if playlistData is corrupt
                     this.setupSendWatch(manifestUri, 0, false, adUri);
                     player.load(manifestUri).then(() => {
                         this.setState({ viewInterval: "" });
@@ -796,9 +798,8 @@ export default class Video extends Component {
     setupSendWatch = (uri, time, playad = false, ad) => {
         console.log(uri, cookies.get('loggedIn'), playad, ad, JSON.parse(window.localStorage.getItem('togetherdata')));
         if (uri && this.props.togetherToken && cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata'))) {
-            console.log("send watch1", uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/), JSON.parse(window.localStorage.getItem('togetherdata')).ads, this.props.togetherToken.host == cookies.get('loggedIn'))
+            console.log(JSON.parse(window.localStorage.getItem('togetherdata')).ads);
             if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/) && this.props.togetherToken.host == cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata')).ads) { // You're only able to send a video to be watched if you are the host of the session
-                console.log("send watch2")
                 if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2] && JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]) {
                     this.props.sendWatch(uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2], ad, time, playad);
                 } else { // Its possible that the user has no ads in their playlist. Revert to playing video

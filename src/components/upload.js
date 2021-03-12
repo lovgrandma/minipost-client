@@ -749,11 +749,11 @@ export default class Upload extends Component { // ulc upload component
                 return; // Exit, advertising schedule did not compile properly
             }
         }
-        if (this.state.publishing == false && this.titleIn.current && this.props.isLoggedIn) {
+        if (this.state.publishing == false && this.titleIn.current && cookies.get('loggedIn')) {
             if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
                 this.setState({ publishing: true});
                 const title = this.titleIn.current.value;
-                const user = this.props.isLoggedIn;
+                const user = cookies.get('loggedIn');
                 let desc = "";
                 if (this.descIn.current) {
                     if (this.descIn.current.value.length > 0) {
@@ -788,7 +788,7 @@ export default class Upload extends Component { // ulc upload component
                 };
                 let data = new FormData();
                 data.append('title', this.titleIn.current.value);
-                data.append('user', this.props.isLoggedIn);
+                data.append('user', user);
                 data.append('desc', desc);
                 data.append('tags', tags);
                 data.append('nudity', nudity);

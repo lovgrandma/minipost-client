@@ -131,11 +131,37 @@ export class Playlist {
         if (!localPlaylistData) {
             this.buildPlaylist();
         } else {
-            if (this.playlist) {
-                this._playlist.adTimes.vids = this._playlist.adTimes.vids + 1;
-                localPlaylistData.adTimes.vids = localPlaylistData.adTimes.vids + 1;
+            if (this._playlist) {
+                if (this._playlist.adTimes) {
+                    this._playlist.adTimes.vids = this._playlist.adTimes.vids + 1;
+                    localPlaylistData.adTimes.vids = localPlaylistData.adTimes.vids + 1;
+                    window.localStorage.setItem('playlistdata', JSON.stringify(localPlaylistData));
+                } else {
+                    this.buildAdTimes();
+                }
+            }
+        }
+    }
+
+    /**
+    * Builds ad times if application did not build adTimes variables yet.
+    *
+    * @return none
+    */
+    buildAdTimes() {
+        try {
+            let localPlaylistData = JSON.parse(window.localStorage.getItem('playlistdata'));
+            if (localPlaylistData) {
+                localPlaylistData.adTimes = {
+                    start: 0, // Will be last time ad was played at start of video, set null at start
+                    end: 0, // Will be last time ad was played at end of video, set null at start
+                    vids: 0
+                }
+                this._playlist.adTimes = localPlaylistData.adTimes;
                 window.localStorage.setItem('playlistdata', JSON.stringify(localPlaylistData));
             }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -145,12 +171,14 @@ export class Playlist {
             this.buildPlaylist();
         } else {
             if (this._playlist) {
-                if (this._playlist.adTimes.vids > 6 || this._playlist.adTimes.start == 0) {
-                    this._playlist.adTimes.start = new Date().getTime();
-                    this._playlist.adTimes.vids = 0;
-                    localPlaylistData.adTimes.vids = 0;
-                    localPlaylistData.adTimes.start = this._playlist.adTimes.start;
-                    window.localStorage.setItem('playlistdata', JSON.stringify(localPlaylistData));
+                if (this._playlist.adTimes) {
+                    if (this._playlist.adTimes.vids > 6 || this._playlist.adTimes.start == 0) {
+                        this._playlist.adTimes.start = new Date().getTime();
+                        this._playlist.adTimes.vids = 0;
+                        localPlaylistData.adTimes.vids = 0;
+                        localPlaylistData.adTimes.start = this._playlist.adTimes.start;
+                        window.localStorage.setItem('playlistdata', JSON.stringify(localPlaylistData));
+                    }
                 }
             }
         }
