@@ -787,10 +787,10 @@ class Socialbar extends Component { // Main social entry point sb1
     // Fetches both user friends and userconversations from server. Avoids running two fetch requests. Costly
     getfriends = () => {
         if (!this.state.isLoggedIn) {
-            this.setState({ isLoggedIn: cookies.get('isLoggedIn')});
+            this.setState({ isLoggedIn: cookies.get('loggedIn')});
         }
-        if (this.state.isLoggedIn) {
-            let username = this.state.isLoggedIn;
+        if (this.state.isLoggedIn || cookies.get('loggedIn')) {
+            let username = this.state.isLoggedIn || cookies.get('loggedIn');
             fetch(currentrooturl + 'm/getfriends', {
                 method: "POST",
                 headers: {
