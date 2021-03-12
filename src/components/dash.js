@@ -32,6 +32,7 @@ export default class Dash extends Component {
         } catch (err) {
             // Component may have unmounted
         }
+        this.setState({ loggedIn: cookies.get('loggedIn') });
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -39,6 +40,9 @@ export default class Dash extends Component {
             if (prevProps && this.props.username) {
                 if ((prevProps.username !== this.props.username) || (!prevProps.username && this.props.username)) {
                     this.fetchRecommendations();
+                }
+                if (prevState.loggedIn != cookies.get('loggedIn')) {
+                    this.setState({ loggedIn: cookies.get('loggedIn') });
                 }
             }
         } catch (err) {
@@ -189,7 +193,7 @@ export default class Dash extends Component {
         return (
             <div className='videodash'>
                 {
-                    !cookies.get('loggedIn') && !this.state.closeSocialPrompt ? <div className="flex flex-start social-portal-login-prompt"><div className="material-icons arrow-back-login">arrow_back</div><div className="info-blurb">You're not logged in, to log in click on the bar on the left to open the social portal</div><div className="social-portal-times" onClick={(e)=>{this.setCloseSocialPrompt(e)}}>&times;</div></div>
+                    !this.state.loggedIn && !this.state.closeSocialPrompt ? <div className="flex flex-start social-portal-login-prompt"><div className="material-icons arrow-back-login">arrow_back</div><div className="info-blurb">You're not logged in, to log in click on the bar on the left to open the social portal</div><div className="social-portal-times" onClick={(e)=>{this.setCloseSocialPrompt(e)}}>&times;</div></div>
                     : null
                 }
                 <h5 className="videodash-recommended-header">Recommended</h5>
