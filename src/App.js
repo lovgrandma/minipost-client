@@ -418,12 +418,7 @@ class Socialbar extends Component { // Main social entry point sb1
             this.setState({ loginerror: null });
             console.log(cookies.get('loggedIn'));
             if (data.querystatus== "loggedin" && data.username) {
-                this.props.updateLogin();
                 cookies.set('loggedIn', data.username);
-                if (cookies.get('loggedIn')) {
-                    this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
-                    this.props.updateUsername(cookies.get('loggedIn'));
-                }
                 this.getfriends();
             }
             if (data.error) {
@@ -432,6 +427,14 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.setState({ loginerror: {error: data.error, type: data.type }});
             }
             return data;
+        })
+        .then((data) => {
+            if (cookies.get('loggedIn')) {
+                this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+            }
+            if (data.querystatus == "loggedin") {
+                this.props.updateLogin(data.username);
+            }
         })
         .catch(error => { console.log(error);
         })
@@ -1133,8 +1136,12 @@ class App extends Component {
                 });
     }
 
-    updateLogin = () => {
-        if (this.state.isLoggedIn != cookies.get('loggedIn')) {
+    updateLogin = (username) => {
+        if (username) {
+            if (this.state.isLoggedIn != username) {
+                this.setState({ isLoggedIn: username });
+            }
+        } else if (this.state.isLoggedIn != cookies.get('loggedIn')) {
             this.setState({ isLoggedIn: cookies.get('loggedIn')});
         }
     };
@@ -1425,17 +1432,11 @@ class App extends Component {
             socket.emit('sendImpression', data);
         }
     }
-    
-    updateUsername(username) {
-        if (username) {
-            this.setState({ isLoggedIn: username });
-        }
-    }
 
     render() {     
         return (
             <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} updateUsername={this.updateUsername} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} />
                 <div className='maindashcontainer'>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
