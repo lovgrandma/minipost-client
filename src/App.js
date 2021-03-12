@@ -416,9 +416,9 @@ class Socialbar extends Component { // Main social entry point sb1
         .then((data) => {
             this.setState({ registererror: null });
             this.setState({ loginerror: null });
-            console.log(cookies.get('loggedIn'));
             if (data.querystatus== "loggedin" && data.username) {
                 cookies.set('loggedIn', data.username);
+                this.setState({ isLoggedIn: data.user });
                 this.getfriends();
             }
             if (data.error) {
