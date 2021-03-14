@@ -1,5 +1,8 @@
 import React, { Component } from 'react';
 import minipostLogoNoText9a9a9a from '../static/minipostAppLogoNoText-Plain9a9a9a-thinBorder.svg';
+import {
+    Link
+} from 'react-router-dom';
 
 // Login & register if { user: logged out }
 export default class sidebarfooter extends Component {
@@ -20,7 +23,7 @@ export default class sidebarfooter extends Component {
         return (
                 <div className={this.props.username ? "sidebarfooter-loggedin" : "sidebarfooter"}>
                     <div className="sidebarfooter-list">
-                        <div className="footeritem sidebarfooter"><a href="#">About</a></div>
+                        <div className="footeritem sidebarfooter"><Link to={{ pathname: `about`}}>About</Link></div>
                         <div className="footeritem sidebarfooter-advertise"><a href="#">Advertise</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Copyright</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Privacy</a></div>

@@ -169,7 +169,7 @@ export default function Social(props) { // social prop sp1
                 {/* Append friends from social bar state (props.friends). For each friend return appropriate object info to build Friends div using Friends(props) function above. */}
                 {
                     props.friends && props.conversations ?
-                        props.friends.length === 0 ? <div className="nofriends">Right now you have no friends :( , but you can add one :) . Use the search bar above to send friend requests or ask friends to add you</div>
+                        props.friends.length === 0 ? <div className="nofriends">Right now you have no friends :( but you can add one :) Use the search bar above to send friend requests or ask friends to add you</div>
                         :
                         props.friends.map(function(friend, index) {
                             let convo;

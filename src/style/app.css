@@ -937,6 +937,8 @@ ul li {
     text-align: center;
     font-size: 12px;
     color: #848484;
+    font-weight: 600;
+    padding: 5px;
 }
 
 .friend:hover,
@@ -1062,12 +1064,20 @@ ul li {
 }
 
 .registerform,
-.loginform {
+.loginform,
+.verifyform {
     font-family: 'Open Sans', sans-serif;
     text-align: center;
     font-size:14px;
     padding: 0;
     margin: 20px 15px;
+}
+
+.verifyform {
+    background-color: #e0e0e0;
+    padding: 5px;
+    border-radius: 10px;
+    font-weight: 600;
 }
 
 .form-control {
@@ -1077,7 +1087,8 @@ ul li {
 }
 
 .registerform input,
-.loginform input {
+.loginform input,
+.verifyform input {
     padding-left: 8px;
 }
 
@@ -3646,15 +3657,43 @@ If user only has one friend, styling wont apply */
     margin-bottom: 10px;
 }
 
-.info-blurb {
+.info-blurb, .info-blurb-2 {
     font-size: 0.75em;
     transition: 200ms;
     color: grey;
     max-width: 700px;
 }
 
-.info-blurb:hover {
+.info-blurb-2 {
+    font-size: 0.8em;
+    color: black;
+}
+
+.info-blurb-3 {
+    font-size: 0.9em;
+    font-weight: 600;
+    padding: 10px;
+    border-radius: 10px;
+    user-select: none;
+}
+
+.info-blurb:hover, .info-blurb-2:hover {
     color: #464646;
+}
+
+.select:hover {
+    cursor: pointer;
+}
+
+.verification-height {
+    height: 250px;
+    transition: 200ms;
+    overflow: hidden;
+}
+
+.verification-height-zero {
+    height: 0px;
+    
 }
 
 .upload-video-text,

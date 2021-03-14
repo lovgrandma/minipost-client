@@ -12,8 +12,11 @@ const cookies = new Cookies();
 export default class Login extends Component {
     constructor(props) {
         super(props);
-        this.state = { welcome: 'Welcome to minireel', message: "Watch videos with friends Speak your mind Enjoy original content",
-                     username: "", password: "" }
+        this.state = { welcome: 'Welcome to minireel', message: "Watch videos with friends Speak your mind Enjoy original content", username: "", password: "", verificationIn: false }
+        this.phone = React.createRef();
+        this.verify = React.createRef();
+        this.phoneVerify = React.createRef();
+        this.emailVerify = React.createRef();
     }
 
     componentDidMount() {
@@ -121,6 +124,17 @@ export default class Login extends Component {
             }
             return passwordequality;
         }
+        
+        const phoneconfirm = () => {
+            if (this.phone) {
+                if (this.phone.current) {
+                    if (this.phone.current.value) {
+                        return true;
+                    }
+                }
+            }
+            return false;
+        }
 
         let username = this.refs.username.value;
         let email = this.refs.regemail.value;
@@ -130,6 +144,7 @@ export default class Login extends Component {
         let goodemail = emailvalidation(email);
         let goodpassreg = passwordvalidation(password);
         let goodpassconfirm = passwordconfirm(password, confirmpassword);
+        let goodphone = phoneconfirm();
 
         if (!gooduser) {
             e.preventDefault();
@@ -157,6 +172,70 @@ export default class Login extends Component {
             (document.getElementsByClassName('faulty-confirmpass-register')[0]).style.display = 'block';
         } else {
             (document.getElementsByClassName('faulty-confirmpass-register')[0]).style.display = 'none';
+        }
+        
+        if (!goodphone) {
+            e.preventDefault();
+            (document.getElementsByClassName('faulty-phone-register')[0]).style.display = 'block';
+        } else {
+            (document.getElementsByClassName('faulty-phone-register')[0]).style.display = 'none';
+        }
+    }
+    
+    openVerification = (e) => {
+        if (!this.state.verificationIn) {
+            this.setState({ verificationIn: true });
+        } else {
+            this.setState({ verificationIn: false });
+        }
+    }
+    
+    submitVerify = (e) => {
+        let goodVerify = false;
+        let goodPhoneVerify = false;
+        let goodEmailVerify = false;
+        if (this.verify) {
+            if (this.verify.current) {
+                if (this.verify.current.value) {
+                    goodVerify = true;
+                }
+            }
+        }
+        if (this.phoneVerify) {
+            if (this.phoneVerify.current) {
+                if (this.phoneVerify.current.value) {
+                    goodPhoneVerify = true;
+                }
+            }
+        }
+        
+        if (this.emailVerify) {
+            if (this.emailVerify.current) {
+                if (this.emailVerify.current.value) {
+                    goodEmailVerify = true;
+                }
+            }
+        }
+        
+        if (!goodEmailVerify) {
+            e.preventDefault();
+            document.getElementsByClassName('faulty-email-verification')[0].style.display = 'block';
+        } else {
+            document.getElementsByClassName('faulty-email-verification')[0].style.display = 'none';
+        }
+        
+        if (!goodPhoneVerify) {
+            e.preventDefault();
+            document.getElementsByClassName('faulty-phone-verification')[0].style.display = 'block';
+        } else {
+            document.getElementsByClassName('faulty-phone-verification')[0].style.display = 'none';
+        }
+        
+        if (!goodVerify) {
+            e.preventDefault();
+            document.getElementsByClassName('faulty-verification')[0].style.display = 'block';
+        } else {
+            document.getElementsByClassName('faulty-verification')[0].style.display = 'none';
         }
     }
 
@@ -194,18 +273,49 @@ export default class Login extends Component {
                         <div id='registeremailerrorcontainer'><div className='form-error faulty-email-register' style={{display: 'none'}}>please enter a valid email</div></div>
                     </div>
                     <div className="form-group">
+                        <input className="form-control" ref={this.phone} id="phonein" name="phonein" placeholder="phone #"></input>
+                        <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-phone-register' style={{display: 'none'}}>registration requires a phone number</div></div>
+                    </div>
+                    <div className="form-group">
                         <input className="form-control" ref='regpw' id="regpw" type="password" name="regpassword" placeholder="password"></input>
                         <div id='registerpwerrorcontainer'><div className='form-error faulty-pass-register' style={{display: 'none'}}>password must be between 8-56 characters, have 1 uppercase, 1 lowercase and a number</div></div>
                     </div>
                     <div className="form-group">
-                        <input className="form-control" ref='regpw2' id="regpw2" type="password" name="confirmPassword" placeholder="password"></input>
+                        <input className="form-control" ref='regpw2' id="regpw2" type="password" name="confirmPassword" placeholder="confirm password"></input>
                         <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-confirmpass-register' style={{display: 'none'}}>passwords are not the same</div></div>
                     </div>
                     <button className="btn btn-primary registerbtn" type="submit" onClick={this.submitRegister}>sign up</button>
-                    { this.props.registererror ?
-                        this.props.registererror.type == "register error" ? <div className="loginerror">{this.props.registererror.error}</div>
+                    { 
+                        this.props.registererror ?
+                            this.props.registererror.type == "register error" ? 
+                                <div className="loginerror">{this.props.registererror.error}</div>
+                            : <div></div>
                         : <div></div>
-                    : <div></div>
+                    }
+                    {
+                        this.props.verifyinfo ? 
+                            <div className="info-blurb-3">{this.props.verifyinfo}</div> : null
+                    }
+                </form>
+                <div className="info-blurb-2 verifyform select" onClick={(e) => {this.openVerification(e)}}>I already registered. I need to verify my account</div>
+                <form className={this.state.verificationIn ? "registerform verification-height" : "registerform verification-height verification-height-zero"} onSubmit={(e) => {this.props.fetchVerify(e, this.verify, this.phoneVerify, this.emailVerify)}} noValidate="novalidate">
+                    <div className="form-group">
+                        <input className="form-control" ref={this.emailVerify} id="emailverify" type="text" name="emailverify" placeholder="email"></input>
+                        <div id='registerusernameerrorcontainer'><div className='form-error faulty-email-verification' style={{display: 'none'}}>you must enter your email. We do this so that even if someone maliciously uses your phone number you can still activate your account with your email</div></div>
+                    </div>
+                    <div className="form-group">
+                        <input className="form-control" ref={this.phoneVerify} id="phoneverify" type="text" name="phoneverify" placeholder="phone #"></input>
+                        <div id='registerusernameerrorcontainer'><div className='form-error faulty-phone-verification' style={{display: 'none'}}>you need to input your phone number</div></div>
+                    </div>
+                    <div className="form-group">
+                        <input className="form-control" ref={this.verify} id="verify" type="text" name="verify" placeholder="verification #"></input>
+                        <div id='registerusernameerrorcontainer'><div className='form-error faulty-verification' style={{display: 'none'}}>you need to input a verification code</div></div>
+                    </div>
+                    <button className="btn btn-primary registerbtn" type="submit" onClick={this.submitVerify}>verify</button>
+                    { 
+                        this.props.verifyerror ?
+                            <div className="loginerror">{this.props.verifyerror.error}</div>
+                        : <div></div>
                     }
                 </form>
                 <Sidebarfooter />

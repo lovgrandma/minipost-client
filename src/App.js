@@ -3,7 +3,7 @@ import ReactDOM from 'react-dom';
 import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js';
 import { Switch } from 'react-router';
 import {
     BrowserRouter,
@@ -62,10 +62,10 @@ class Socialbar extends Component { // Main social entry point sb1
                       conversations: [], convoIds: [], searchuserinput: '', searchusers: [], showingfollows: "hidden",
                       showingpendingrequests: "hidden", pendingfriendrequests: null, following: [],
                       friendchatopen: null, otheruserchatopen: null,
-                      loginerror: null, registererror: null,
+                      loginerror: null, registererror: null, verifyerror: null,
                       friendsopen: true, nonfriendsopen: false,
                       response: false, endpoint: proxyurl,
-                      typing: [], darkmode: false
+                      typing: [], darkmode: false, verifyinfo: ""
                      }
         
        // this.getpendingrequests = this.getpendingrequests.bind(this);
@@ -446,6 +446,7 @@ class Socialbar extends Component { // Main social entry point sb1
         this.setState({ loginerror: null });
         let username = document.getElementById("username").value;
         let regemail = document.getElementById("regemail").value;
+        let phone = document.getElementById("phonein").value;
         let regpassword = document.getElementById("regpw").value;
         let confirmPassword = document.getElementById("regpw2").value;
         fetch(currentrooturl + 'm/register', {
@@ -456,17 +457,20 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                username, regemail, regpassword, confirmPassword
+                username, regemail, regpassword, confirmPassword, phone
             })
         })
         .then((response) => {
                 return response.json(); // Parsed data
         })
         .then((data) => {
-            if (data.querystatus== "loggedin" && data.user ) {
-                cookies.set('loggedIn', data.user);
-                this.setState({ isLoggedIn: data.user });
-                this.getfriends();
+            if (data.querystatus== "registered" && data.user ) {
+                console.log(data);
+                // cookies.set('loggedIn', data.user);
+                // this.setState({ isLoggedIn: data.user });
+                // this.getfriends();
+                // advise user to check phone to activate
+                this.setState({ verifyinfo: "You signed up! You must verify your account to login. Click the button below when you get your verification code"})
             }
             if (data.error) {
                 this.setState({ registererror: {error: data.error, type: data.type }});
@@ -475,6 +479,54 @@ class Socialbar extends Component { // Main social entry point sb1
         })
         .catch(error => { console.log(error);
         })
+    }
+    
+    fetchVerify = (e, verif, phone, email) => {
+        e.preventDefault(e);
+        if (verif && phone && email) {
+            if (verif.current && phone.current && email.current) {
+                if (verif.current.value && phone.current.value && email.current.value) {
+                    const verification = verif.current.value;
+                    const phoneVal = phone.current.value;
+                    const emailVal = email.current.value;
+                    fetch(currentrooturl + 'm/verify', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: corsdefault,
+                        body: JSON.stringify({
+                            verification, phoneVal, emailVal
+                        })
+                    })
+                    .then((response) => {
+                        return response.json(); // Parsed data
+                    })
+                    .then((data) => {
+                        console.log(data);
+                        if (data.querystatus== "loggedin" && data.username ) {
+                            cookies.set('loggedIn', data.username);
+                            this.setState({ isLoggedIn: data.user });
+                            this.setState({ verifyerror: null });
+                        }
+                        if (data.error) {
+                            this.setState({ verifyerror: {error: data.error, type: data.type }});
+                        }
+                        return data;
+                    })
+                    .then((data) => {
+                        if (cookies.get('loggedIn') && data.querystatus) {
+                            this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+                            this.props.updateLogin(data.username);
+                        }
+                        this.getfriends();
+                        return data;
+                    })
+                    .catch(error => { console.log(error); })
+                }
+            }
+        }
     }
 
     fetchlogout(e) {
@@ -1027,7 +1079,7 @@ class Socialbar extends Component { // Main social entry point sb1
         
         const isLoggedIn = this.state.isLoggedIn;
         if (!isLoggedIn) {
-            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} registererror={this.state.registererror} />
+            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} />
         } else {
             sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump = {this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />
         }
@@ -1495,6 +1547,9 @@ class App extends Component {
                         )}/>
                         <Route path='/notifications' render={(props) => (
                             <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                        )}/>
+                        <Route path='/about' render={(props) => (
+                          <InfoTemplate {...props} />
                         )}/>
                     </div>
                 </div>
