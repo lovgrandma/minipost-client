@@ -1,5 +1,6 @@
 import React, { Component } from 'react';
 import RelatedPanel from './relatedpanel.js';
+import SocialVideoMeta from './socialvideometa.js';
 import Cookies from 'universal-cookie';
 import {
     BrowserRouter,
@@ -392,7 +393,7 @@ export default class Video extends Component {
                 return false;
             });
             if (videoData.video.mpd) {
-                this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses });
+                this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses, friendsWatched: videoData.friendsWatched });
                 this.setState({ viewCounted: false });
                 // Determine if user is currently following
                 if (window.localStorage.getItem('mediahistory')) {
@@ -1265,6 +1266,7 @@ export default class Video extends Component {
                                 : null : null
                             }
                         </div>
+                        <SocialVideoMeta friendsWatched={this.state.friendsWatched} cloud={this.state.cloud} />
                         <div className='responses'>responses</div>
                         <div className={this.state.articleResponses ? this.state.articleResponses.length > 0 ? "articles-bar" : "articles-bar hidden no-margin-no-padding" : "articles-bar hidden no-margin-no-padding"}>
                             <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>

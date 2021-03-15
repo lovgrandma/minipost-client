@@ -949,13 +949,18 @@ ul li {
 }
 
 .friendavatar,
-.otheruseravatar {
+.otheruseravatar,
+.friendavatar-meta {
     width: 25px;
     height: 25px;
     object-fit: cover;
     border-radius: 7px;
     margin-right: 10px;
     transition: 100ms;
+}
+
+.friendavatar-meta {
+    margin-right: 5px;
 }
 
 .username-container-open .friendavatar {
@@ -5342,6 +5347,25 @@ a code:hover {
 .social-portal-login-prompt > .info-blurb,
 .social-portal-login-prompt > .arrow-back-login {
     user-select: none;
+}
+
+.friends-engage-video-meta-container {
+    margin-bottom: 5px;
+}
+
+.friends-engage-video-meta {
+    font-weight: 600;
+    font-size: 0.82em;
+    margin-bottom: 5px;
+}
+
+.friends-engage-video-meta span {
+    vertical-align: middle;
+    color: #4d4d4d;
+}
+
+.friends-watched-meta-engage-set {
+    margin-bottom: 5px;
 }
 
 .no-display {

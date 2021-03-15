@@ -55,9 +55,9 @@ export default class RelatedPanel extends Component {
                             if (this.state.relatedContent && !this.state.fetching) {
                                 if (window.location.href.includes("watch")) {
                                     if (this.props.secondary && $('.relatedpanel-secondary').is(':visible')) {
-                                        this.fetchRelated(); console.log($('.relatedpanel-secondary').is(':visible'));
+                                        this.fetchRelated(); 
                                     } else if (!this.props.secondary && $('.relatedpanel-main').is(':visible')) {
-                                        this.fetchRelated(); console.log($('.relatedpanel-main').is(':visible'));
+                                        this.fetchRelated(); 
                                     }
                                 }
                             }

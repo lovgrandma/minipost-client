@@ -58,7 +58,6 @@ export class Playlist {
                         }
                     }
                 }
-                console.log(user, append);
                 return await fetch(currentrooturl + 'm/buildplaylist', {
                     method: "POST",
                     headers: {

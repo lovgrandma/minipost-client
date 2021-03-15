@@ -719,8 +719,9 @@ class Socialbar extends Component { // Main social entry point sb1
             return response.json();
         })
         .then((data) => {
+            console.log(data);
             if (data.querystatus) {
-                console.log('bad query');
+                console.log("Bad revoke friend query: " + data.querystatus);
                 if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
                     this.getfriends();
                 } else if (data.querymsg) {
