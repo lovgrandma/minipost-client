@@ -42,47 +42,59 @@ export class Playlist {
     }
     // Make a call to server to retrieve a list of mpd's for the playlist. The server must handle organizing of the playlist. For example, it must determine the order of videos and ads. The client side can defer ads inbetween videos to later by altering the playlist but the server is responsible for setting the original order. Playlist is stored in class for reference but is primarily backed up in local storage
     buildPlaylist = async (skipDefer = false) => {
-        let defer = true;
-        if (!skipDefer) {
-            defer = this.buildPlaylistLocalStorage();
-        }
-        if (!defer || skipDefer) {
-            console.log("Running build playlist");
-            let user = this.user;
-            let append = this.playlist.videos.length; // Will send the length of the playlist to the server
-            return await fetch(currentrooturl + 'm/buildplaylist', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: 'same-origin',
-                body: JSON.stringify({
-                    user, append
-                })
-            })
-            .then((response) => {
-                return response.json();
-            })
-            .then((data) => {
-                console.log(data);
-                let date = new Date().getTime() + 1000*60*60*3; // Get current time plus 3. Don't ask server again for new playlist data until 3 hours have passed
-                data.defer = date;
-                data.adTimes = {
-                    start: 0, // Will be last time ad was played at start of video, set null at start
-                    end: 0, // Will be last time ad was played at end of video, set null at start
-                    vids: 0
+        try {
+            let defer = true;
+            if (!skipDefer) {
+                defer = this.buildPlaylistLocalStorage();
+            }
+            if (!defer || skipDefer) {
+                console.log("Running build playlist");
+                let user = this.user;
+                let append = 0;
+                if (this) {
+                    if (this.playlist) {
+                        if (this.playlist.videos) {
+                            append = this.playlist.videos.length; // Will send the length of the playlist to the server
+                        }
+                    }
                 }
-                this.playlist = data;
-                window.localStorage.setItem('playlistdata', JSON.stringify(this.playlist));
-                return this.playlist;
-            })
-            .catch((err) => {
-                console.log(err); 
-                return null;
-            });
-        } else {
-            this.playlist = JSON.parse(window.localStorage.getItem('playlistdata'));
+                console.log(user, append);
+                return await fetch(currentrooturl + 'm/buildplaylist', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        user, append
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log(data);
+                    let date = new Date().getTime() + 1000*60*60*3; // Get current time plus 3. Don't ask server again for new playlist data until 3 hours have passed
+                    data.defer = date;
+                    data.adTimes = {
+                        start: 0, // Will be last time ad was played at start of video, set null at start
+                        end: 0, // Will be last time ad was played at end of video, set null at start
+                        vids: 0
+                    }
+                    this.playlist = data;
+                    window.localStorage.setItem('playlistdata', JSON.stringify(this.playlist));
+                    return this.playlist;
+                })
+                .catch((err) => {
+                    console.log(err); 
+                    return null;
+                });
+            } else {
+                this.playlist = JSON.parse(window.localStorage.getItem('playlistdata'));
+            }
+        } catch (err) {
+            return null;
         }
     }
     
