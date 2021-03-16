@@ -22,6 +22,7 @@ import dummyavatar from '../static/greyavatar.jpg';
 import { setResponseUrl } from '../methods/responses.js';
 import lzw from '../compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
+import corsdefault from '../cors.js';
 
 import { cookies, socket } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -331,7 +332,7 @@ export default class Video extends Component {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     rawMpd, user, ad
                 })
@@ -470,7 +471,7 @@ export default class Video extends Component {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'same-origin',
+                        credentials: corsdefault,
                         body: JSON.stringify({
                             mpd, user, ad, adBudget, startDate, endDate
                         })
@@ -546,7 +547,7 @@ export default class Video extends Component {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'same-origin',
+                        credentials: corsdefault,
                         body: JSON.stringify({
                             mpd, user, ad, adBudget, startDate, endDate
                         })

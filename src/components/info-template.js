@@ -15,6 +15,7 @@ import {
 } from 'react-bootstrap';
 import parseBody from '../methods/htmlparser.js';
 import { cookies } from '../App.js';
+import corsdefault from '../cors.js';
 
 export default class InfoTemplate extends Component {
     constructor(props) {
@@ -50,7 +51,7 @@ export default class InfoTemplate extends Component {
                                     'Accept': 'application/json',
                                     'Content-Type': 'application/json'
                                 },
-                                credentials: 'same-origin',
+                                credentials: corsdefault,
                                 body: JSON.stringify({
                                     path
                                 })

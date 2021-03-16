@@ -17,6 +17,7 @@ import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
 import { get, setData } from '../methods/utility.js';
+import corsdefault from '../cors.js';
 
 export default class Profile extends Component {
     constructor() {
@@ -72,7 +73,7 @@ export default class Profile extends Component {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin',
+                    credentials: corsdefault,
                     body: JSON.stringify({
                         user, self
                     })

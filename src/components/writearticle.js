@@ -19,6 +19,7 @@ import $ from 'jquery';
 import TextareaAutosize from 'react-textarea-autosize';
 import { get } from '../methods/utility.js';
 import { setReplyData } from '../methods/responses.js';
+import corsdefault from '../cors.js';
 
 import { cookies } from '../App.js';
 
@@ -214,7 +215,7 @@ export default class writeArticle extends Component {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'same-origin',
+                        credentials: corsdefault,
                         body: JSON.stringify({
                             author, title, body, responseTo, responseType, edit, id
                         })

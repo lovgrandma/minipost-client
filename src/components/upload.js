@@ -20,6 +20,7 @@ import {v4 as uuidv4 } from 'uuid';
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
 import { setReplyData } from '../methods/responses.js';
+import corsdefault from '../cors.js';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -380,7 +381,7 @@ export default class Upload extends Component { // ulc upload component
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     mpd, user
                 })
@@ -420,7 +421,7 @@ export default class Upload extends Component { // ulc upload component
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin',
+                    credentials: corsdefault,
                     body: JSON.stringify({
                         username
                     })

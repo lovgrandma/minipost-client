@@ -16,6 +16,7 @@ import {
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
 import { cookies } from '../App.js';
+import corsdefault from '../cors.js';
 const EventEmitter = require('events');
 
 export default class Dash extends Component {
@@ -125,7 +126,7 @@ export default class Dash extends Component {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin',
+                    credentials: corsdefault,
                     body: JSON.stringify({
                         user, append
                     })

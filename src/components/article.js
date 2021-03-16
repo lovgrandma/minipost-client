@@ -19,6 +19,7 @@ import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import { cookies } from '../App.js';
 import { setResponseUrl } from '../methods/responses.js';
+import corsdefault from '../cors.js';
 
 export default class Article extends Component {
     constructor(props) {
@@ -134,7 +135,7 @@ export default class Article extends Component {
                                     'Accept': 'application/json',
                                     'Content-Type': 'application/json'
                                 },
-                                credentials: 'same-origin',
+                                credentials: corsdefault,
                                 body: JSON.stringify({
                                     id, user
                                 })
@@ -230,7 +231,7 @@ export default class Article extends Component {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
                 },
-                credentials: 'same-origin',
+                credentials: corsdefault,
                 body: JSON.stringify({
                     id, user
                 })

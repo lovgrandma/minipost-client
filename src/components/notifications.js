@@ -11,6 +11,7 @@ import parseBody from '../methods/htmlparser.js';
 import currentrooturl from '../url.js';
 import { convertDate } from '../methods/utility.js';
 import greythumb from '../static/greythumb.jpg';
+import corsdefault from '../cors.js';
 
 
 export default class Notifications extends Component {
@@ -56,8 +57,7 @@ export default class Notifications extends Component {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json'
                             },
-                            mode: 'same-origin',
-                            credentials: 'include',
+                            credentials: corsdefault,
                             body: JSON.stringify({
                                 data
                             })

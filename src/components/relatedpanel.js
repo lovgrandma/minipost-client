@@ -12,6 +12,7 @@ import ArticlePreview from './articlepreview.js';
 import { resolveString, checkAtBottom, shuffleArray, getNumber } from '../methods/utility.js';
 import placeholderRelated from '../placeholder/relatedobjects.js';
 import $ from 'jquery';
+import corsdefault from '../cors.js';
 
 export default class RelatedPanel extends Component {
     constructor(props) {
@@ -106,7 +107,7 @@ export default class RelatedPanel extends Component {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json'
                             },
-                            credentials: 'same-origin',
+                            credentials: corsdefault,
                             body: JSON.stringify({
                                 id, type, paginate, title
                             })

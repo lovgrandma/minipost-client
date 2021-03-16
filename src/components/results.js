@@ -12,7 +12,7 @@ import currentrooturl from '../url.js';
 import history from '../methods/history.js';
 import { convertDate, get, returnLink, returnProfile } from '../methods/utility.js';
 import greythumb from '../static/greythumb.jpg';
-
+import corsdefault from '../cors.js';
 
 export default class Results extends Component {
     constructor(props) {
@@ -62,8 +62,7 @@ export default class Results extends Component {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    mode: 'same-origin',
-                    credentials: 'include'
+                    credentials: corsdefault
                 })
                 .then((response) => {
                     return response.json(); // Parsed data

@@ -21,6 +21,7 @@ import { cookies } from '../App.js';
 import { get, setData } from '../methods/utility.js';
 import keys from '../keys/stripecred.js';
 import amex from '../static/cc/amex.svg'; import mastercard from '../static/cc/mastercard.svg'; import visa from '../static/cc/visa.svg'; 
+import corsdefault from '../cors.js';
 
 import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -54,7 +55,7 @@ export default class Options extends Component {
                         'Accept': 'application/json',
                         'Content-Type': 'application/json'
                     },
-                    credentials: 'same-origin',
+                    credentials: corsdefault,
                     body: JSON.stringify({
                         user
                     })
@@ -91,7 +92,7 @@ export default class Options extends Component {
                             'Accept': 'application/json',
                             'Content-Type': 'application/json'
                         },
-                        credentials: 'same-origin',
+                        credentials: corsdefault,
                         body: JSON.stringify({
                             user
                         })
@@ -147,7 +148,8 @@ export default class Options extends Component {
                             formData.append('user', user);
                             return await fetch(currentrooturl + 'm/uploadthumbnail', {
                                 method: "POST",
-                                body: formData                        
+                                credentials: corsdefault,
+                                body: formData
                             })
                             .then((response) => {
                                 return response.json();
@@ -222,7 +224,7 @@ export default class Options extends Component {
                                 'Accept': 'application/json',
                                 'Content-Type': 'application/json'
                             },
-                            credentials: 'same-origin',
+                            credentials: corsdefault,
                             body: JSON.stringify({
                                 payment_id, cus_id
                             })                        
