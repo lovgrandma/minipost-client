@@ -44,7 +44,7 @@ export default class InfoTemplate extends Component {
                 if (this.props.location) {
                     if (this.props.location.pathname) {
                         let path = this.props.location.pathname;
-                        fetch(currentrooturl + '/m/fetchinfopagecontent', {
+                        fetch(currentrooturl + 'm/fetchinfopagecontent', {
                                 method: "POST",
                                 headers: {
                                     'Accept': 'application/json',
