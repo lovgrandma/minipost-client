@@ -213,7 +213,6 @@ export default class Article extends Component {
         return setTimeout(() => {
             if (this.state.title && title) {
                 if (title == this.state.title) {
-                    console.log(seconds*1000);
                     // make post request for read increment
                     this.incrementRead();
                 }
@@ -252,7 +251,7 @@ export default class Article extends Component {
         return (
             <div className="article-container-articlepage">
                 <div className="article-title-articlepage">{this.state.title}</div>
-                <div className="article-author-articlepage prompt-basic-s grey-out">published by {this.state.author} at {roundTime(this.state.published)}</div>
+                <div className="article-author-articlepage prompt-basic-s grey-out">published by <NavLink exact to={"/profile?p=" + this.state.author} className="to-profile-link-btn">{this.state.author}</NavLink> at {roundTime(this.state.published)}</div>
                 <div className="article-body-articlepage article-font-body">{parseBody(this.state.body)}</div>
                 <div className="article-menu-flex">
                     <div className="article-stats-articlepage">
@@ -285,7 +284,7 @@ export default class Article extends Component {
                     </div>
                 </div>
                 <div className="prompt-basic grey-out response-to">{this.state.responseTo ? this.state.responseTo.title ? "Response to " : "" : ""}<span className="grey-out">{this.state.responseTo && this.state.responseTo.title ? this.state.responseTo.title.length > 0 ? <Link to={setResponseToParentPath.call(this)}>{this.state.responseTo.title}</Link> : "" : ""}</span></div>
-                <div className='responses'>responses</div>
+                <div className='responses'>{this.state.articleResponses && this.state.videoResponses ? this.state.articleResponses.length > 0 && this.state.videoResponses.length > 0 ? "Responses" : "" : ""}</div>
                 <div className='articles-bar'>
                     <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>
                     <div className='article-responses-container'>
@@ -371,6 +370,7 @@ export default class Article extends Component {
                         }
                     </div>
                 </div>
+                <div className="responses">Related</div>
                 <RelatedPanel content={this.state.id}
                             contentType='article'
                             title={this.state.title}

@@ -11,7 +11,7 @@ export default class SocialVideoMeta extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            times: ["just watched this video", "watched this not too long ago", "watched this a few days ago", "watched this some days ago", "watched this some time ago"]
+            times: ["just watched this", "watched this not too long ago", "watched this a few days ago", "watched this some days ago", "watched this some time ago"]
         }
     }   
        
@@ -27,7 +27,7 @@ export default class SocialVideoMeta extends Component {
             } else if (time < now - 1000*60*60*1.5) {
                 return "watched this not too long ago";
             } else {
-                return "just watched this video"
+                return "just watched this";
             }
             return "watched this some days ago";
         } catch (err) {
