@@ -3,6 +3,9 @@ import Cookies from 'universal-cookie';
 import Sidebarfooter from './sidebarfooter.js';
 import minipostLogo from '../static/minipostLogoText.svg'; import minipostLogoNoText from '../static/minipostLogoNoText.svg';
 import minipostAppLogoNoText from '../static/minipostAppLogo2NoText.svg';
+import IntlTelInput from 'react-intl-tel-input';
+import 'react-intl-tel-input/dist/main.css';
+
 const reEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const rePass = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*]{8,56}$/; // More accepting 0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*
 // Old pass regex /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,56}$/;
@@ -17,6 +20,7 @@ export default class Login extends Component {
         this.verify = React.createRef();
         this.phoneVerify = React.createRef();
         this.emailVerify = React.createRef();
+        this.countryCodePrompt = React.createRef();
     }
 
     componentDidMount() {
@@ -126,11 +130,13 @@ export default class Login extends Component {
         }
         
         const phoneconfirm = () => {
-            if (this.phone) {
-                if (this.phone.current) {
-                    if (this.phone.current.value) {
-                        return true;
+            if (this.phone && document.getElementById('phonein')) {
+                if (this.phone.current && document.getElementById('phonein').value) {
+                    let number = this.phone.current.getNumber(document.getElementById('phonein').value,intlTelInputUtils.numberFormat.E164);
+                    if (number.charAt(0) != '+') {
+                        return false;
                     }
+                    return true;
                 }
             }
             return false;
@@ -201,6 +207,16 @@ export default class Login extends Component {
                 }
             }
         }
+        
+        if (this.phoneVerify && document.getElementById('phoneverify')) {
+            if (this.phoneVerify.current && document.getElementById('phoneverify').value) {
+                let number = this.phoneVerify.current.getNumber(document.getElementById('phoneverify').value,intlTelInputUtils.numberFormat.E164);
+                if (number.charAt(0) != '+') {
+                    return false;
+                }
+                return true;
+            }
+        }
         if (this.phoneVerify) {
             if (this.phoneVerify.current) {
                 if (this.phoneVerify.current.value) {
@@ -238,7 +254,7 @@ export default class Login extends Component {
             document.getElementsByClassName('faulty-verification')[0].style.display = 'none';
         }
     }
-
+   
     render() {
         return (
             <div>
@@ -263,7 +279,7 @@ export default class Login extends Component {
                     : <div></div>
                     }
                 </form>
-                <form className="registerform" onSubmit={this.props.fetchregister} noValidate="novalidate">
+                <form className="registerform" onSubmit={(e) => {this.props.fetchregister(e, this.phone)}} noValidate="novalidate">
                     <div className="form-group">
                         <input className="form-control" ref='username' id="username" type="text" name="username" placeholder="username"></input>
                         <div id='registerusernameerrorcontainer'><div className='form-error faulty-username' style={{display: 'none'}}>username must be between 5 and 22 characters. may contain periods</div></div>
@@ -273,8 +289,13 @@ export default class Login extends Component {
                         <div id='registeremailerrorcontainer'><div className='form-error faulty-email-register' style={{display: 'none'}}>please enter a valid email</div></div>
                     </div>
                     <div className="form-group">
-                        <input className="form-control" ref={this.phone} id="phonein" name="phonein" placeholder="phone #"></input>
-                        <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-phone-register' style={{display: 'none'}}>registration requires a phone number</div></div>
+                        <IntlTelInput
+                        containerClassName="intl-tel-input"
+                        inputClassName="form-control"
+                        fieldName="intl-input"
+                        ref={this.phone} fieldId="phonein" name="phonein" placeholder="phone #"
+                        />
+                        <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-phone-register' style={{display: 'none'}}>registration requires a valid phone number. Please make sure to select your country</div></div>
                     </div>
                     <div className="form-group">
                         <input className="form-control" ref='regpw' id="regpw" type="password" name="regpassword" placeholder="password"></input>
@@ -304,12 +325,21 @@ export default class Login extends Component {
                         <div id='registerusernameerrorcontainer'><div className='form-error faulty-email-verification' style={{display: 'none'}}>you must enter your email. We do this so that even if someone maliciously uses your phone number you can still activate your account with your email</div></div>
                     </div>
                     <div className="form-group">
-                        <input className="form-control" ref={this.phoneVerify} id="phoneverify" type="text" name="phoneverify" placeholder="phone #"></input>
-                        <div id='registerusernameerrorcontainer'><div className='form-error faulty-phone-verification' style={{display: 'none'}}>you need to input your phone number</div></div>
+                        <IntlTelInput
+                        containerClassName="intl-tel-input"
+                        inputClassName="form-control"
+                        fieldName="intl-input-verify"
+                        ref={this.phoneVerify} fieldId="phoneverify" name="phoneinverify" placeholder="phone #"
+                        />
+                        <div id='registerusernameerrorcontainer'>
+                            <div className='form-error faulty-phone-verification' style={{display: 'none'}}>you need to input your phone number</div>
+                        </div>
                     </div>
                     <div className="form-group">
                         <input className="form-control" ref={this.verify} id="verify" type="text" name="verify" placeholder="verification #"></input>
-                        <div id='registerusernameerrorcontainer'><div className='form-error faulty-verification' style={{display: 'none'}}>you need to input a verification code</div></div>
+                        <div id='registerusernameerrorcontainer'>
+                            <div className='form-error faulty-verification' style={{display: 'none'}}>you need to input a verification code</div>
+                        </div>
                     </div>
                     <button className="btn btn-primary registerbtn" type="submit" onClick={this.submitVerify}>verify</button>
                     { 

@@ -5368,6 +5368,11 @@ a code:hover {
     margin-bottom: 5px;
 }
 
+.intl-tel-input {
+    padding-right: 0;
+    width: 100%;
+}
+
 .no-display {
     display: none;
 }

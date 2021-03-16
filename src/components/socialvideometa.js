@@ -24,7 +24,7 @@ export default class SocialVideoMeta extends Component {
                 return "watched this some days ago";
             } else if (time < now - 1000*60*60*24*2) {
                 return "watched this a few days ago";
-            } else if (time < now - 1000*60*60*4) {
+            } else if (time < now - 1000*60*60*1.5) {
                 return "watched this not too long ago";
             } else {
                 return "just watched this video"
@@ -66,7 +66,7 @@ export default class SocialVideoMeta extends Component {
                                                     <span>and </span><NavLink exact to={"/profile?p=" + acc.username} className="to-profile-link-btn"><img className="friendavatar-meta" src={acc.avatarUrl ? this.props.cloud + "/av/" + acc.avatarUrl : dummyavatar}></img><span>{acc.username}</span></NavLink><span>&nbsp;{this.resolveRelativeTime(acc.time)}</span>
                                                 </span> 
                                                 : <span key={index2}>
-                                                    <NavLink exact to={"/profile?p=" + acc.username} className="to-profile-link-btn"><img className="friendavatar-meta" src={acc.avatarUrl ? this.props.cloud + "/av/" + acc.avatarUrl : dummyavatar}></img><span>{acc.username}{index2 != arrSpec.length -2 ? "," : ""} </span></NavLink>
+                                                    <NavLink exact to={"/profile?p=" + acc.username} className="to-profile-link-btn"><img className="friendavatar-meta" src={acc.avatarUrl ? this.props.cloud + "/av/" + acc.avatarUrl : dummyavatar}></img><span>{acc.username} </span></NavLink>
                                                 </span>
                                     )
                                 }</div>

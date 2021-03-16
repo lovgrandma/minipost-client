@@ -440,54 +440,64 @@ class Socialbar extends Component { // Main social entry point sb1
         })
     }
 
-    fetchregister = (e) => {
+    fetchregister = (e, phone) => {
         e.preventDefault();
-        this.setState({ registererror: null });
-        this.setState({ loginerror: null });
-        let username = document.getElementById("username").value;
-        let regemail = document.getElementById("regemail").value;
-        let phone = document.getElementById("phonein").value;
-        let regpassword = document.getElementById("regpw").value;
-        let confirmPassword = document.getElementById("regpw2").value;
-        fetch(currentrooturl + 'm/register', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: corsdefault,
-            body: JSON.stringify({
-                username, regemail, regpassword, confirmPassword, phone
-            })
-        })
-        .then((response) => {
-                return response.json(); // Parsed data
-        })
-        .then((data) => {
-            if (data.querystatus== "registered" && data.user ) {
-                console.log(data);
-                // cookies.set('loggedIn', data.user);
-                // this.setState({ isLoggedIn: data.user });
-                // this.getfriends();
-                // advise user to check phone to activate
-                this.setState({ verifyinfo: "You signed up! You must verify your account to login. Click the button below when you get your verification code"})
+        try {
+            if (phone) {
+                if (phone.current) {
+                    this.setState({ registererror: null });
+                    this.setState({ loginerror: null });
+                    let username = document.getElementById("username").value;
+                    let regemail = document.getElementById("regemail").value;
+                    phone = phone.current.getNumber(document.getElementById('phonein').value,intlTelInputUtils.numberFormat.E164);
+                    let regpassword = document.getElementById("regpw").value;
+                    let confirmPassword = document.getElementById("regpw2").value;
+                    fetch(currentrooturl + 'm/register', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: corsdefault,
+                        body: JSON.stringify({
+                            username, regemail, regpassword, confirmPassword, phone
+                        })
+                    })
+                    .then((response) => {
+                            return response.json(); // Parsed data
+                    })
+                    .then((data) => {
+                        if (data.querystatus== "registered" && data.user ) {
+                            console.log(data);
+                            // cookies.set('loggedIn', data.user);
+                            // this.setState({ isLoggedIn: data.user });
+                            // this.getfriends();
+                            // advise user to check phone to activate
+                            this.setState({ verifyinfo: "You signed up! You must verify your account to login. Click the button below when you get your verification code"})
+                        }
+                        if (data.error) {
+                            this.setState({ registererror: {error: data.error, type: data.type }});
+                        }
+                        return data;
+                    })
+                    .catch(error => { console.log(error);
+                    })
+                }
             }
-            if (data.error) {
-                this.setState({ registererror: {error: data.error, type: data.type }});
-            }
-            return data;
-        })
-        .catch(error => { console.log(error);
-        })
+        } catch (err) {
+            // Fail silently 
+        }
     }
     
     fetchVerify = (e, verif, phone, email) => {
+        console.log(phone.current);
         e.preventDefault(e);
         if (verif && phone && email) {
             if (verif.current && phone.current && email.current) {
-                if (verif.current.value && phone.current.value && email.current.value) {
+                if (verif.current.value && email.current.value) {
                     const verification = verif.current.value;
-                    const phoneVal = phone.current.value;
+                    const phoneVal = phone.current.getNumber(document.getElementById('phoneverify').value,intlTelInputUtils.numberFormat.E164);
+                    console.log(phoneVal);
                     const emailVal = email.current.value;
                     fetch(currentrooturl + 'm/verify', {
                         method: "POST",
