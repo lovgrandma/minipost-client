@@ -221,43 +221,63 @@ export default class Video extends Component {
             this.inputRef._ref.value = ""; // Clear chat message
         }
     }
-
+    
+    /**
+     * Determines whether to use Hls or Mpd
+     *
+     * @param none
+     * @return {String} "-hls.m3u8" or "-mpd.mpd"
+     */
+    checkPlaybackSupportType = async () => {
+        const support = await shaka.Player.probeSupport();
+        console.log(support.manifest);
+        if (support.manifest.mpd) {
+            return "-mpd.mpd";
+        } else {
+            return "-hls.m3u8";
+        }
+        return "-mpd.mpd";
+    }
+    
     loadPage = async (reload = false, playEndAd = false) => {
         try {
-            if (reload) {
-                this.initPlayer(await this.fetchVideoPageData(reload) + "-mpd.mpd");
-                this.setState({ mpd: reload});
-            } else {
-                if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) {
-                    this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + "-mpd.mpd");
-                    this.setState({ mpd: window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]});
-                } else if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
-                    this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
-                    this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
-                } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
-                    if (this.props.location.search) {
-                        if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)) {
-                            if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) {
-                                this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) + "-mpd.mpd", playEndAd);
-                                this.setState({ mpd: this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]});
-                            }
-                        } else if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
-                            if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]) {
-                                this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + "-mpd.mpd", playEndAd);
-                                this.setState({ mpd: this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]});
+            let playbackFormat = await this.checkPlaybackSupportType();
+            if (playbackFormat) {
+                if (reload) {
+                    this.initPlayer(await this.fetchVideoPageData(reload) + playbackFormat);
+                    this.setState({ mpd: reload});
+                } else {
+                    if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) {
+                        this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + playbackFormat, false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + playbackFormat);
+                        this.setState({ mpd: window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]});
+                    } else if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
+                        this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + playbackFormat, playEndAd);
+                        this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
+                    } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
+                        if (this.props.location.search) {
+                            if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)) {
+                                if (this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) {
+                                    this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]) + playbackFormat, playEndAd);
+                                    this.setState({ mpd: this.props.location.search.match(/\?v=([a-zA-Z0-9].*)/)[1]});
+                                }
+                            } else if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)) {
+                                if (this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]) {
+                                    this.initPlayer(await this.fetchVideoPageData(this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1], true) + playbackFormat, playEndAd);
+                                    this.setState({ mpd: this.props.location.search.match(/\?va=([a-zA-Z0-9].*)/)[1]});
+                                }
                             }
                         }
-                    }
-                } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
-                    if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)) {
-                        if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) {
-                            this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + "-mpd.mpd", playEndAd);
-                            this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
-                        }
-                    } else if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)) {
-                        if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]) {
-                            this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + "-mpd.mpd", playEndAd);
-                            this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]});
+                    } else if (this.props.location.pathname) { // Runs if visitor loads from clicking video on website
+                        if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)) {
+                            if (this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) {
+                                this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]) + playbackFormat, playEndAd);
+                                this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?v=)([a-zA-Z0-9].*)/)[2]});
+                            }
+                        } else if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)) {
+                            if (this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]) {
+                                this.initPlayer(await this.fetchVideoPageData(this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2], true) + playbackFormat, playEndAd);
+                                this.setState({ mpd: this.props.location.pathname.match(/(\/watch\?va=)([a-zA-Z0-9].*)/)[2]});
+                            }
                         }
                     }
                 }
@@ -599,7 +619,8 @@ export default class Video extends Component {
             shaka.polyfill.installAll();
             encryptionSchemePolyfills.install();
             // Check browser support
-            if (shaka.Player.isBrowserSupported()) {
+            let playbackFormat = await this.checkPlaybackSupportType();
+            if (shaka.Player.isBrowserSupported() && playbackFormat) {
                 if (!manifest) {
                     manifest = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
                 }
@@ -638,7 +659,7 @@ export default class Video extends Component {
                                     if (this.props.playlist._playlist.ads[0]._fields[0].properties) {
                                         if (this.props.playlist._playlist.ads[0]._fields[0].properties.mpd) {
                                             adUriRaw = this.props.playlist._playlist.ads[0]._fields[0].properties.mpd;
-                                            adUri = this.state.cloud + "/" + this.props.playlist._playlist.ads[0]._fields[0].properties.mpd + "-mpd.mpd";
+                                            adUri = this.state.cloud + "/" + this.props.playlist._playlist.ads[0]._fields[0].properties.mpd + playbackFormat;
                                         }
                                         adData = this.props.playlist._playlist.ads[0]._fields[0].properties; 
                                         this.setState({ adTitle: adData.title });

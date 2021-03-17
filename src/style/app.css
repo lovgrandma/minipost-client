@@ -2352,6 +2352,7 @@ label {
 
 .chat-log .content-of-chat div {
     width: fit-content;
+    width: -moz-fit-content;
     border-radius: 7px;
 }
 

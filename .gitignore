@@ -27,3 +27,4 @@ src/url.js
 src/proxy.js
 buildscript
 /src/cors.js
+/dist

@@ -330,10 +330,15 @@
     
     .fullscreen-video-chat-container {
         opacity: 0.75;
+        height: 60vh !important;
     }
     
     .fullscreen-video-chat-container:hover {
         opacity: 1;
+    }
+    
+    .fullscreen-video-chats {
+        height: 95%;
     }
     
     .chat-fullscreen-open .fullscreen-video-chat-container {

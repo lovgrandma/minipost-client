@@ -1,6 +1,5 @@
 import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
-import 'shaka-player/dist/controls.css';
 import axios from 'axios';
 import csshake from 'csshake';
 import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js';
@@ -14,8 +13,8 @@ import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
 import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import close from './static/close.svg';
 import { updateNotif } from './methods/history.js';
-import './style/app.css';
-import './style/player.css';
+import './videoplayer.css';
+import 'shaka-player/dist/controls.css';
 
 import {
     Form,
@@ -24,7 +23,6 @@ import {
     Button,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
-import './videoplayer.css';
 import $ from 'jquery';
 import lzw from './compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
