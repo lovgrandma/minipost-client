@@ -59,7 +59,7 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    componentDidMount() {
+    componentDidMount = async() => {
         try {
             if (!this.props.edit) {
                 this.setUpState();
@@ -91,10 +91,10 @@ export default class Upload extends Component { // ulc upload component
                 if (this.props.location) {
                     if (get(this, "props.location.pathname")) {
                         if (this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)) {
-                            this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1] + "-mpd.mpd", true);
+                            this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1] + await this.checkPlaybackSupportType(), true);
                             this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]v=([a-zA-Z0-9].*)/)[1], progress: 100, publishedAwait: false });
                         } else if (this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)) {
-                            this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)[1] + "-mpd.mpd", true);
+                            this.initPlayer(this.props.cloud + "/" + this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)[1] + await this.checkPlaybackSupportType(), true);
                             this.setState({ videoId: this.props.location.pathname.match(/\/edit[?]va=([a-zA-Z0-9].*)/)[1], progress: 100, publishedAwait: false });
                             if (this.props.ad) {
                                 this.setState({ advertisement: true });
@@ -148,12 +148,12 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    componentDidUpdate(prevProps, prevState) {
+    componentDidUpdate = async (prevProps, prevState) => {
         try {
             if (this.state) {
                 if (prevProps.mpd == "") {
                     if (this.props.mpd.length > 0 && !this.props.edit) {
-                        this.initPlayer(this.props.mpd);
+                        this.initPlayer(await this.convertMpdToM3u8(this.props.mpd));
                     }
                 }
                 if (prevProps.errStatus != this.props.errStatus && this.props.errStatus.length > 0) { // Reset page after receiving an error
@@ -409,8 +409,32 @@ export default class Upload extends Component { // ulc upload component
         }
     }
     
+    // Use this when the server has an ID but hasnt appended mpd or hls yet
+    checkPlaybackSupportType = async () => {
+        const support = await shaka.Player.probeSupport();
+        console.log(support.manifest);
+        if (support.manifest.mpd) {
+            return "-mpd.mpd";
+        } else {
+            return "-hls.m3u8";
+        }
+        return "-mpd.mpd";
+    }
+    
+    // Use this when the server has already returned an mpd.
+    convertMpdToM3u8 = async (value) => {
+        if (await this.checkPlaybackSupportType() == "-hls.m3u8") {
+            if (value.match(/([a-zA-Z0-9.\/\\:].*)-([a-zA-Z0-9].*)/)) {
+                if (value.match(/([a-zA-Z0-9.\/\\:].*)-([a-zA-Z0-9].*)/)[1]) {
+                    return value.match(/([a-zA-Z0-9.\/\\:].*)-([a-zA-Z0-9].*)/)[1] + "-hls.m3u8";
+                }
+            }
+        }
+        return value;
+    }
+    
     /* Gets videos on page load to ensure that videos are handled when they are currently being processed or missing info. User must add info to video if none or will have to wait until video is done processing */
-    getUserVideos = () => {
+    getUserVideos = async() => {
         if (!this.state.gettingUserVideos) {
             this.setState({ gettingUserVideos: true });
             if (cookies.get('loggedIn')) {
@@ -429,7 +453,7 @@ export default class Upload extends Component { // ulc upload component
                 .then((response) => {
                     return response.json(); // Parsed data
                 })
-                .then((data) => {
+                .then(async(data) => {
                     console.log(data);
                     if (data.advertiser) {
                         this.setState({ advertiser: data.advertiser });
@@ -479,7 +503,7 @@ export default class Upload extends Component { // ulc upload component
                         }
                         this.progress.emit('progress', 100);
                         console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                        this.initPlayer(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                        this.initPlayer(await this.convertMpdToM3u8(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]));
                     } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
                         if (this.state.progress == 0) {
                             this.props.updateUploadStatus("");
