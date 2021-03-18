@@ -154,7 +154,9 @@ export let roundTime = function(time) {
     if (time.low) {
         time = time.low;
     }
+    console.log(time);
     time = new Date(time).toLocaleString();
+    console.log(time);
     if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)) {
         if (time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] && time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2]) {
             return time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[1] + " " + time.match(/([a-zA-Z0-9].*)[:].*([a-zA-Z].)/)[2].toLowerCase();
