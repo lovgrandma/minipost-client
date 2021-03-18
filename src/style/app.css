@@ -5374,6 +5374,10 @@ a code:hover {
     width: 100%;
 }
 
+.history-media-info {
+    flex-shrink: 10;
+}
+
 .no-display {
     display: none;
 }

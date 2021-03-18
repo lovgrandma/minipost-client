@@ -53,7 +53,7 @@ export default class Upload extends Component { // ulc upload component
         this.budgetTotal = React.createRef();
         this.adUrl = React.createRef();
         this.uploadMessages = {
-            takeAWhile: 'Depending on the size of your video, uploading can take a while',
+            takeAWhile: 'Depending on the size of your video, transcoding can take a while',
             whileYoureGone: 'When your video is converting you can visit other pages and watch videos, we\'ll take care of this while you\'re gone',
             copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our guidelines'
         }
@@ -662,6 +662,7 @@ export default class Upload extends Component { // ulc upload component
                 axios.post(currentrooturl + 'm/videoupload', data, options)
                     .then(async (response) => {
                         console.log(response);
+                        console.log(response.data.querystatus);
                         if (response.data.err) {
                             if (response.data.err == "reset") {
                                 if (response.data.querystatus) {
