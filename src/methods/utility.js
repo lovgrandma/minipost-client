@@ -6,6 +6,50 @@ Includes helper utility functions that abstract more complicated functionality f
 Original code for deepEquals, arraysEqual, objectsEqual, mapsEqual typedArraysEqual from stackoverflow user @ninjagecko
 https://stackoverflow.com/questions/3115982/how-to-check-if-two-arrays-are-equal-with-javascript */
 
+// Original code for toLocaleString alternate by @Eric Mahieu from https://stackoverflow.com/users/2225737/eric-mahieu
+
+(function() {
+    Number.prototype._toLocaleString = Number.prototype.toLocaleString;
+    Number.prototype.toLocaleString = function(locales,options) {
+        if(options.style == "currency") {     // only format currencies.
+            var prepend = "";
+            if(options.currency == "EUR") {
+            prepend = "\u20AC ";     // unicode for euro.
+            }
+            var val = this;
+            val = val;
+            
+            // check if the toLocaleString really does nothing (ie Safari)
+            
+            var tempValue = val._toLocaleString(locales,options);
+            if(tempValue == val.toString()) { // "broken"
+            return prepend+val.formatMoney(2); // <-- our own formatting function.
+            } else {
+            return tempValue;
+            }
+        } else {
+        return this._toLocaleString(locales,options);
+        }
+    };
+    
+    Number.prototype.formatMoney = function(c, d, t){
+    var n = this, 
+    c = isNaN(c = Math.abs(c)) ? 2 : c, 
+    d = d == undefined ? "," : d, 
+    t = t == undefined ? "." : t, 
+    s = n < 0 ? "-" : "", 
+    i = String(parseInt(n = Math.abs(Number(n) || 0).toFixed(c))), 
+    j = (j = i.length) > 3 ? j % 3 : 0;
+    return s + (j ? i.substr(0, j) + t : "") + i.substr(j).replace(/(\d{3})(?=\d)/g, "$1" + t) + (c ? d + Math.abs(n - i).toFixed(c).slice(2) : "");
+     };
+   
+    // demonstration code
+//    var amount = 1250.75;
+//    var formattedAmount = amount.toLocaleString('nl-NL', {style:'currency',currency: 'EUR'});
+//    console.log(formattedAmount);
+
+})();
+
 export let debounce = function(a, b, c) {
     var d,e;return function(){function h(){d=null,c||(e=a.apply(f,g))}var f=this,g=arguments;return clearTimeout(d),d=setTimeout(h,b),c&&!d&&(e=a.apply(f,g)),e}
 };
