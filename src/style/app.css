@@ -3015,6 +3015,7 @@ label {
     font-size: 0.72em;
     transition: 100ms;
     user-select: none;
+    max-height: 17px;
 }
 
 .bump-btn-offline {
@@ -3041,6 +3042,7 @@ label {
     font-size: 0.72em;
     transition: 200ms;
     user-select: none;
+    max-height: 17px;
 }
 
 .search-user-watch {
@@ -3078,6 +3080,7 @@ label {
     transition: 200ms;
     user-select: none;
     font-weight: 700;
+    max-height: 17px;
 }
 
 .search-user-profile:hover {
@@ -3097,6 +3100,7 @@ label {
     transition: 200ms;
     user-select: none;
     height: 18px;
+    max-height: 17px;
 }
 
 .searched-user-message:hover {
