@@ -66,7 +66,7 @@ export default class Article extends Component {
                         this.setState({ author: this.props.location.props.author });
                     }
                     if (this.props.location.props.published) {
-                        this.setState({ published: this.props.location.props.published });
+                        this.setState({ published: roundTime(this.props.location.props.published) });
                     }
                     if (this.props.location.props.reads) {
                         this.setState({ reads: this.props.location.props.reads });
@@ -252,7 +252,7 @@ export default class Article extends Component {
         return (
             <div className="article-container-articlepage">
                 <div className="article-title-articlepage">{this.state.title}</div>
-                <div className="article-author-articlepage prompt-basic-s grey-out">published by <NavLink exact to={"/profile?p=" + this.state.author} className="to-profile-link-btn">{this.state.author}</NavLink> at {roundTime(this.state.published)}</div>
+                <div className="article-author-articlepage prompt-basic-s grey-out">published by <NavLink exact to={"/profile?p=" + this.state.author} className="to-profile-link-btn">{this.state.author}</NavLink> at {this.state.published}</div>
                 <div className="article-body-articlepage article-font-body">{parseBody(this.state.body)}</div>
                 <div className="article-menu-flex">
                     <div className="article-stats-articlepage">
