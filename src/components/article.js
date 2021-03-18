@@ -25,7 +25,7 @@ export default class Article extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            id: "", title: "", author: "", body: "", published: "", reads: 0, responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0, thumbnail: "", words: 200, sbri: '', readIncrementId: ''
+            id: "", title: "", author: "", body: "", published: "", reads: 0, responseTo: {}, articleResponses: [], videoResponses: [], relevant: [], liked: false, disliked: false, likes: 0, dislikes: 0, thumbnail: "", words: 200, sbri: '', readIncrementId: '', fetched: false
         }
         this.moreOptions = React.createRef();
     }
@@ -145,6 +145,7 @@ export default class Article extends Component {
                             })
                             .then((result) => {
                                 if (result.article) {
+                                    this.setState({ fetched: true });
                                     for (const [key, value] of Object.entries(result.article)) {
                                         if (key == "published") { // If date, round value
                                             this.setState(setStateDynamic(key, roundTime(value)));
@@ -258,9 +259,9 @@ export default class Article extends Component {
                     <div className="article-stats-articlepage">
                         <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faBookOpen} color={ 'grey' } alt="read"/>{this.state.reads}</span>
                         <span className="nbsp-w">&nbsp;•&nbsp;</span>
-                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className={this.state.liked ? "thumbsup-interact-s active-black" : "thumbsup-interact-s"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.id, "article", cookies.get('loggedIn'))}}/>{this.state.likes}</span>
+                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className={this.state.liked ? "thumbsup-interact-s active-black" : "thumbsup-interact-s"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.id, "article", cookies.get('loggedIn'), this.state.fetched)}}/>{this.state.likes}</span>
                         <span className="nbsp-w">&nbsp;•&nbsp;</span>
-                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact-s active-black" : "thumbsdown-interact-s"} icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.id, "article", cookies.get('loggedIn'))}}/>{this.state.dislikes}</span>
+                        <span className="prompt-basic stats-container-s"><FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact-s active-black" : "thumbsdown-interact-s"} icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.id, "article", cookies.get('loggedIn'), this.state.fetched)}}/>{this.state.dislikes}</span>
                     </div>
                     <div className="more-options-ellipsis-container">
                         <FontAwesomeIcon className="read-interact-s icon-hover" icon={faReply} color={ 'grey' } onClick={(e) => {showMoreOptions.call(this, e)}} alt="reply"/>

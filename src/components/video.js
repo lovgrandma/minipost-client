@@ -35,7 +35,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -362,6 +362,7 @@ export default class Video extends Component {
             })
             .then((result) => {
                 console.log(result);
+                this.setState({ fetched: true });
                 /* Sets all video document related data */
                 if (result.video.hasOwnProperty('viewable')) {
                     if (result.video.viewable == false) {
@@ -1209,14 +1210,14 @@ export default class Video extends Component {
                                     </div>
                                 </div>
                                 <div className='publisher-video-interact-block'>
-                                    <div className="likes-click" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'))}}>
+                                    <div className="likes-click" onClick={(e) => {incrementLike.call(this, opposite(this.state.liked), this.state.mpd, "video", cookies.get('loggedIn'), this.state.fetched)}}>
                                         <FontAwesomeIcon className={this.state.liked ? "thumbsup-interact active-black" : "thumbsup-interact"} icon={faThumbsUp} color={ 'grey' } alt="thumbs up" />
                                         <div className={this.state.liked ? "active-black" : ""}>{roundNumber(this.state.likes)}</div>
                                     </div>
                                 </div>
                                 <div className='publisher-video-interact-block'>
                                     <div className="dislikes-click">
-                                        <FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact active-black" : "thumbsdown-interact"}icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'))}}/>
+                                        <FontAwesomeIcon className={this.state.disliked ? "thumbsdown-interact active-black" : "thumbsdown-interact"}icon={faThumbsDown} color={ 'grey' } alt="thumbs down" onClick={(e) => {incrementDislike.call(this, opposite(this.state.disliked), this.state.mpd, "video", cookies.get('loggedIn'), this.state.fetched)}}/>
                                         <div className={this.state.disliked ? "active-black" : ""}>{roundNumber(this.state.dislikes)}</div>
                                     </div>
                                 </div>

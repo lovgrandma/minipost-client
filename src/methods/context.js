@@ -26,19 +26,21 @@ export const setResponseToParentPath = function() {
 }
 
 // Increment or decrements like.
-export const incrementLike = async function(increment, id, type, user) {
+export const incrementLike = async function(increment, id, type, user, fetched) {
     try {
-        if (type == "video" && this) {
-            if (this.player) {
-                if (this.player.getAssetUri()) {
-                    return await incrementLikeDislike.call(this, true, increment, id, type, user);
-                }
-            }
-        } else if (type == "article" && this) {
-            if (this.state) {
-                if (this.state.body) {
-                    if (this.state.body.length > 0) {
+        if (fetched) {
+            if (type == "video" && this) {
+                if (this.player) {
+                    if (this.player.getAssetUri()) {
                         return await incrementLikeDislike.call(this, true, increment, id, type, user);
+                    }
+                }
+            } else if (type == "article" && this) {
+                if (this.state) {
+                    if (this.state.body) {
+                        if (this.state.body.length > 0) {
+                            return await incrementLikeDislike.call(this, true, increment, id, type, user);
+                        }
                     }
                 }
             }
