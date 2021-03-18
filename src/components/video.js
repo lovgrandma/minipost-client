@@ -1195,6 +1195,7 @@ export default class Video extends Component {
                     ref={this.videoComponent}
                     poster={minipostpreviewbanner}
                     style={Object.assign(styles.height, styles.maxheight)}
+                    playsinline
                     />
                 </div>
                 <div className="video-stats-and-related-container">
