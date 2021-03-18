@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import Cookies from 'universal-cookie';
 import Sidebarfooter from './sidebarfooter.js';
 import minipostLogo from '../static/minipostLogoText.svg'; import minipostLogoNoText from '../static/minipostLogoNoText.svg';
-import minipostAppLogoNoText from '../static/minipostAppLogo2NoText.svg';
+import minipostAppLogoNoText from '../static/MinipostLogo2021-Q1-smaller.svg';
 import IntlTelInput from 'react-intl-tel-input';
 import 'react-intl-tel-input/dist/main.css';
 
