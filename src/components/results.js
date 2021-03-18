@@ -10,7 +10,7 @@ import {
 import parseBody from '../methods/htmlparser.js';
 import currentrooturl from '../url.js';
 import history from '../methods/history.js';
-import { convertDate, get, returnLink, returnProfile } from '../methods/utility.js';
+import { roundTime, convertDate, get, returnLink, returnProfile } from '../methods/utility.js';
 import greythumb from '../static/greythumb.jpg';
 import corsdefault from '../cors.js';
 
@@ -116,7 +116,7 @@ export default class Results extends Component {
                                                     <Link to={returnProfile(media)}>
                                                         <div className="video-author">{media.author} •&nbsp;</div>
                                                     </Link>
-                                                    <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views + " views" : media.reads + " reads" } • { convertDate(media.publishDate) }</div>
+                                                    <div className="video-views-result">{ media.hasOwnProperty("views") ? media.views + " views" : media.reads + " reads" } • { roundTime(media.publishDate) }</div>
                                                 </div>
                                                 <Link to={returnLink(media, "results")}>
                                                     <div className="video-description">{ media.body ? "read here.." : media.description }</div>
