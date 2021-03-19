@@ -409,6 +409,19 @@ export const resolveString = function(variable) {
     return variable;
 }
 
+export const checkToString = function(value) {
+    try {
+        if (value) {
+            if (value.toString) {
+                return value.toString();
+            }
+        }
+        return value;
+    } catch (err) {
+        return value;
+    }
+}
+
 //module.exports = {
 //    debounce: debounce,
 //    deepEquals: deepEquals,

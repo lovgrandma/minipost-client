@@ -7,7 +7,7 @@ import React, { Component } from 'react';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url.js';
-import { checkAtBottom, setData, getNumber } from '../methods/utility.js';
+import { checkAtBottom, setData, getNumber, checkToString } from '../methods/utility.js';
 import {
     Form,
     FormGroup,
@@ -200,11 +200,11 @@ export default class Dash extends Component {
                             this.state.dashVideos.length > 0 ?
                                 this.state.dashVideos.map((content, index) =>
                                     content._fields[0].properties.mpd ?
-                                        <Videos mpd={content._fields[0].properties.mpd.toString()}
-                                        title={content._fields[0].properties.title.toString()}
+                                        <Videos mpd={checkToString(content._fields[0].properties.mpd)}
+                                        title={checkToString(content._fields[0].properties.title)}
                                         description={setData(content, "description")}
                                         thumbnailUrl={setData(content, "thumbnailUrl")}
-                                        author={content._fields[0].properties.author.toString()}
+                                        author={checkToString(content._fields[0].properties.author)}
                                         published={content._fields[0].properties.publishDate}
                                         views={getNumber(content._fields[0].properties.views)}
                                         responses={content._fields[0].properties.responses}
@@ -217,7 +217,7 @@ export default class Dash extends Component {
                                         />
                                     :   <ArticlePreview id={content._fields[0].properties.id}
                                         title={content._fields[0].properties.title}
-                                        author={content._fields[0].properties.author.toString()}
+                                        author={checkToString(content._fields[0].properties.author)}
                                         body={content._fields[0].properties.body}
                                         likes={content._fields[0].properties.likes}
                                         dislikes={content._fields[0].properties.dislikes}

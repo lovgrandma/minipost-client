@@ -701,7 +701,7 @@ export default class Upload extends Component { // ulc upload component
                                 this.resetPage();
                             }
                         } else if (response.data.querystatus) {
-                            if (response.data.querystatus.match(/processbegin/)[0]) {
+                            if (response.data.querystatus.match(/processbegin/)[0]) { // Successful start of video upload
                                 if (advertisement) {
                                     this.setState({ advertisement: true });
                                 }
