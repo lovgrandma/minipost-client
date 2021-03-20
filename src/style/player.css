@@ -122,6 +122,12 @@
     max-height: 80vh;
 }
 
+@media all and (display-mode: fullscreen) {    
+    .video-container-preview .shaka-video {
+        max-height: 100% !important;
+    }
+}
+
 .shaka-overflow-button-label,
 .shaka-pip-button > .material-icons,
 .shaka-resolution-button > .material-icons,
