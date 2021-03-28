@@ -24,6 +24,12 @@ html {
     font-weight: normal;
 }
 
+@font-face {
+    font-family: 'Miller Text Bd It2';
+    src: local('Miller Text Bd It2'), url(./font/MillerTextBoldItalic.otf) format('opentype');
+    font-display: swap;
+}
+
 .ck-content h2, .ck-content h3, .ck-content h4 {
     font-family: 'Open Sans', sans-serif;
     font-weight: 500;
@@ -46,7 +52,7 @@ html {
 }
 
 #upl-article-title {
-    font-family: "Miller Text Bd It", 'Crimson Text', serif !important;
+    font-family: "Miller Text Bd It2", "Miller Text Bd It", 'Crimson Text', serif !important;
     font-display: swap;
 }
 
