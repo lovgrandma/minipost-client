@@ -6,6 +6,7 @@ import pagehistory from './pagehistory.js';
 import './index.css';
 import './style/app.css';
 import './style/player.css';
+import './style/page.css';
 import App from './App';
 import SearchForm from './App';
 import registerServiceWorker from './registerServiceWorker';

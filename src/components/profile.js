@@ -60,13 +60,14 @@ export default class Profile extends Component {
     }
 
     // Fetch profile data, always match by user name instead of id. Username more readily available
-    fetchProfileData = async (user) => {
+    fetchProfileData = async (username) => {
         try {
             let self = false;
-            if (user == cookies.get('loggedIn')) {
+            if (username == cookies.get('loggedIn')) {
                 self = true;
             }
-            if (user) {
+            if (username) {
+                let hash = cookies.get('hash');
                 return await fetch(currentrooturl + 'm/fetchprofilepagedata', {
                     method: "POST",
                     headers: {
@@ -75,36 +76,39 @@ export default class Profile extends Component {
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        user, self
+                        username, self, hash
                     })
                 })
                 .then((response) => {
                     return response.json();
                 })
                 .then((result) => {
-                    if (result.totalviews) {
-                        this.setState({ totalVideoViews: result.totalviews });
-                    }
-                    if (result.totalvideos) {
-                        this.setState({ videosUploaded: result.totalvideos });
-                    }
-                    if (result.totalreads) {
-                        this.setState({ totalReads: result.totalreads });
-                    }
-                    if (get(result, "user.username")) {
-                        this.setState({ username: result.user.username });
-                    }
-                    if (get(result, "user.avatarurl")) {
-                        this.setState({ avatarurl: result.user.avatarurl });
-                    }
-                    if (result.content) {
-                        if (result.content.length > 0) {
-                            this.setState({ content: result.content });
+                    let authenticated = this.props.checkAndConfirmAuthentication(result);
+                    if (result && authenticated) {
+                        if (result.totalviews) {
+                            this.setState({ totalVideoViews: result.totalviews });
                         }
-                    }
-                    if (result.cloud) {
-                        this.props.setCloud(result.cloud);
-                    }
+                        if (result.totalvideos) {
+                            this.setState({ videosUploaded: result.totalvideos });
+                        }
+                        if (result.totalreads) {
+                            this.setState({ totalReads: result.totalreads });
+                        }
+                        if (get(result, "user.username")) {
+                            this.setState({ username: result.user.username });
+                        }
+                        if (get(result, "user.avatarurl")) {
+                            this.setState({ avatarurl: result.user.avatarurl });
+                        }
+                        if (result.content) {
+                            if (result.content.length > 0) {
+                                this.setState({ content: result.content });
+                            }
+                        }
+                        if (result.cloud) {
+                            this.props.setCloud(result.cloud);
+                        }
+                    } 
                     console.log(result);
                 })
             }

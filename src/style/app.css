@@ -46,7 +46,7 @@ html {
 }
 
 #upl-article-title {
-    font-family: "Miller Text Bd It";
+    font-family: "Miller Text Bd It" !important;
 }
 
 h2 {
@@ -140,6 +140,10 @@ h5 {
     height: 8px;
     color: #4e4e4e;
     transition: 200ms;
+}
+
+.margin-bottom-25 {
+    margin-bottom: 25px;
 }
 
 .margin-bottom-10 {
@@ -768,7 +772,7 @@ ul li {
 .sidebar-open {
     width: 300px;
     padding-left: 8px;
-    padding-right: 8px;
+/*    padding-right: 8px;*/
 }
 
 .sidebarx {
@@ -809,6 +813,11 @@ ul li {
 
 .minimize-dash:hover {
     cursor: pointer;
+}
+
+.dash-logged-out {
+    display: flex;
+    justify-self: end;
 }
 
 .sidebarimg {
@@ -875,6 +884,7 @@ ul li {
 .sidebarcontainer {
     width: 280px;
     direction: ltr;
+    padding-right: 8px;
 }
 
 .sidebar {
@@ -1058,7 +1068,7 @@ ul li {
 
 .minireel-logo-center {
     text-align: center;
-    margin-bottom: 20%;
+    margin-bottom: 17.5%;
 }
 
 .register-year {
@@ -1070,7 +1080,8 @@ ul li {
 
 .registerform,
 .loginform,
-.verifyform {
+.verifyform,
+.resetform {
     font-family: 'Open Sans', sans-serif;
     text-align: center;
     font-size:14px;
@@ -1093,8 +1104,13 @@ ul li {
 
 .registerform input,
 .loginform input,
-.verifyform input {
+.verifyform input,
+.resetform input {
     padding-left: 8px;
+}
+
+.resetform {
+    border-bottom: dotted 3px gray;
 }
 
 label {
@@ -1198,7 +1214,7 @@ label {
 
 /* server errors */
 
-.loginerror {
+.loginerror, .resetpassstatus {
     margin: 0 auto;
     width: 80%;
     text-align: center;
@@ -1210,6 +1226,12 @@ label {
     border-radius: 10px;
     border: 1px solid #ffc7c7;
     transition: 200ms;
+}
+
+.resetpassstatus {
+    color: #848484;
+    background: #e8e8e8;
+    border: 1px solid #cccccc;
 }
 
 .loginerror:hover {
@@ -3679,11 +3701,14 @@ If user only has one friend, styling wont apply */
     color: black;
 }
 
-.info-blurb-3 {
+.info-blurb-3, .info-blurb-3-thick {
     font-size: 0.9em;
-    font-weight: 600;
     padding: 10px;
     border-radius: 10px;
+}
+
+.info-blurb-3-thick {
+    font-weight: 600;
     user-select: none;
 }
 
@@ -3753,6 +3778,8 @@ If user only has one friend, styling wont apply */
 
 .thumbnail-upload-choose-file {
     margin-bottom: 10px;
+    text-overflow: clip;
+    max-width: 300px;
 }
 
 .upload-button-hidden,
@@ -5382,6 +5409,43 @@ a code:hover {
     flex-shrink: 10;
 }
 
+.overlay {
+    transition: 200ms;
+    height: 185px;
+    overflow: hidden;
+}
+
+.overlay-hidden {
+    height: 0px;
+    border-bottom: none;
+}
+
 .no-display {
     display: none;
+}
+
+.grey {
+    color: grey;
+}
+
+.dark-grey {
+    color: #515151;
+}
+
+.reset-password-container {
+    max-width: 300px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.reset-password-center {
+    margin-top: 15vh;
+}
+
+.resetform .resetpassstatus {
+    margin-bottom: 5px;
+}
+
+.resetform .form-group {
+    margin-bottom: 0.5rem;
 }

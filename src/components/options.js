@@ -48,7 +48,8 @@ export default class Options extends Component {
     fetchProfileOptionsData = async () => {
         try {
             if (cookies.get('loggedIn')) {
-                let user = cookies.get('loggedIn');
+                let username = cookies.get('loggedIn');
+                let hash = cookies.get('hash');
                 return await fetch(currentrooturl + 'm/fetchprofileoptionsdata', {
                     method: "POST",
                     headers: {
@@ -57,7 +58,7 @@ export default class Options extends Component {
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        user
+                        username, hash
                     })
                 })
                 .then((response) => {
@@ -65,11 +66,14 @@ export default class Options extends Component {
                 })
                 .then((result) => {
                     if (result) {
-                        if (result.avatarurl) {
-                            this.setState({ avatarurl: result.avatarurl });
-                        }
-                        if (result.email) {
-                            this.setState({ email: result.email });
+                        let authenticated = this.props.checkAndConfirmAuthentication(result);
+                        if (authenticated) {
+                            if (result.avatarurl) {
+                                this.setState({ avatarurl: result.avatarurl });
+                            }
+                            if (result.email) {
+                                this.setState({ email: result.email });
+                            }
                         }
                     }
                 })
@@ -85,7 +89,8 @@ export default class Options extends Component {
         if (!this.state.client_secret) {
             try {
                 if (cookies.get('loggedIn')) {
-                    let user = cookies.get('loggedIn');
+                    let username = cookies.get('loggedIn');
+                    let hash = cookies.get('hash');
                     return await fetch(currentrooturl + 'm/getclientsecret', {
                         method: "POST",
                         headers: {
@@ -94,7 +99,7 @@ export default class Options extends Component {
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            user
+                            username, hash
                         })
                     })
                     .then((response) => {
@@ -102,22 +107,25 @@ export default class Options extends Component {
                     })
                     .then((result) => {
                         if (result) {
-                            this.setState({ payment_customer: result.user });
-                            this.setState({ client_secret: result.client_secret });
-                            if (result.advertiser) {
-                                this.setState({ advertiser: result.advertiser });
-                            }
-                            console.log(result);
-                            if (get(result, 'card.data')) {
-                                if (result.card.data[0]) {
-                                    if (result.card.data[0].card) {
-                                        if (result.card.data[0].card.last4 && result.card.data[0].card.networks) {
-                                            if (result.card.data[0].card.networks.available) {
-                                                if (result.card.data[0].card.networks.available[0]) {
-                                                    this.setState({ network: result.card.data[0].card.networks.available[0] });
+                            let authenticated = this.props.checkAndConfirmAuthentication(result);
+                            if (authenticated) {
+                                this.setState({ payment_customer: result.user });
+                                this.setState({ client_secret: result.client_secret });
+                                if (result.advertiser) {
+                                    this.setState({ advertiser: result.advertiser });
+                                }
+                                console.log(result);
+                                if (get(result, 'card.data')) {
+                                    if (result.card.data[0]) {
+                                        if (result.card.data[0].card) {
+                                            if (result.card.data[0].card.last4 && result.card.data[0].card.networks) {
+                                                if (result.card.data[0].card.networks.available) {
+                                                    if (result.card.data[0].card.networks.available[0]) {
+                                                        this.setState({ network: result.card.data[0].card.networks.available[0] });
+                                                    }
                                                 }
+                                                this.setState({ last4: result.card.data[0].card.last4 });
                                             }
-                                            this.setState({ last4: result.card.data[0].card.last4 });
                                         }
                                     }
                                 }
@@ -138,14 +146,15 @@ export default class Options extends Component {
                 this.setState({ uploadavatarbusy: true });
                 if (this.upload.current.files[0]) {
                     let file = this.upload.current.files[0];
-                    if (file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg" && cookies.get('loggedIn')) {
+                    if ((file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg") && cookies.get('loggedIn')) {
                         if (file.name.match(/\.([a-zA-Z0-9]*)$/)) {
                             let formData = new FormData();
                             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1];
-                            let user = cookies.get('loggedIn');
+                            let username = cookies.get('loggedIn');
                             formData.append('extension', extension);
                             formData.append('thumbnail', file);
-                            formData.append('user', user);
+                            formData.append('username', username);
+                            formData.append('hash', cookies.get('hash'));
                             return await fetch(currentrooturl + 'm/uploadthumbnail', {
                                 method: "POST",
                                 credentials: corsdefault,
@@ -156,8 +165,11 @@ export default class Options extends Component {
                             })
                             .then((result) => {
                                 console.log(result);
-                                if (result.avatarurl) {
-                                    this.setState({ avatarurl: result.avatarurl });
+                                let authenticated = this.props.checkAndConfirmAuthentication(result);
+                                if (authenticated) {
+                                    if (result.avatarurl) {
+                                        this.setState({ avatarurl: result.avatarurl });
+                                    }
                                 }
                                 this.setState({ uploadavatarbusy: false });
                             })

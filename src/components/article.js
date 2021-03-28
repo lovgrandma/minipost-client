@@ -125,10 +125,11 @@ export default class Article extends Component {
                             }
                         }
                         if (id) {
-                            let user = "";
+                            let username = "";
                             if (cookies.get('loggedIn')) {
-                                user = cookies.get('loggedIn');
+                                username = cookies.get('loggedIn');
                             }
+                            let hash = cookies.get('hash');
                             const articleData = await fetch(currentrooturl + 'm/fetcharticlepagedata', {
                                 method: "POST",
                                 headers: {
@@ -137,50 +138,59 @@ export default class Article extends Component {
                                 },
                                 credentials: corsdefault,
                                 body: JSON.stringify({
-                                    id, user
+                                    id, username, hash
                                 })
                             })
                             .then((response) => {
                                 return response.json();
                             })
                             .then((result) => {
-                                if (result.article) {
-                                    this.setState({ fetched: true });
-                                    for (const [key, value] of Object.entries(result.article)) {
-                                        if (key == "published") { // If date, round value
-                                            this.setState(setStateDynamic(key, roundTime(value)));
-                                        } else if (value) {
-                                            this.setState(setStateDynamic(key, value));
-                                        } else if (!value && key == "reads" || !value && key == "likes" || !value && key == "dislikes") {
-                                            this.setState(setStateDynamic(key, value));
+                                let authenticated = this.props.checkAndConfirmAuthentication(result);
+                                if (authenticated) {
+                                    if (result.article) {
+                                        this.setState({ fetched: true });
+                                        for (const [key, value] of Object.entries(result.article)) {
+                                            if (key == "published") { // If date, round value
+                                                this.setState(setStateDynamic(key, roundTime(value)));
+                                            } else if (value) {
+                                                this.setState(setStateDynamic(key, value));
+                                            } else if (!value && key == "reads" || !value && key == "likes" || !value && key == "dislikes") {
+                                                this.setState(setStateDynamic(key, value));
+                                            }
                                         }
+                                        if (result.article.body) {
+                                            updateHistory.call(this, 'article');
+                                        }
+                                    } else {
+                                        return false;
                                     }
-                                    if (result.article.body) {
-                                        updateHistory.call(this, 'article');
-                                    }
+                                } else {
+                                    return false;
                                 }
                                 console.log(result);
                                 return result;
                             });
-                            let words = countBody(this.state.body);
-                            this.setState({ words: words });
-                            this.setTtr(words);
-                            if (articleData.articleResponses) {
-                                this.setState({ articleResponses: articleData.articleResponses });
-                            }
-                            if (articleData.videoResponses) {
-                                this.setState({ videoResponses: articleData.videoResponses });
-                            }
-                            if (articleData.responseTo) {
-                                this.setState({ responseTo: articleData.responseTo });
-                            }
-                            if (articleData.likedDisliked) {
-                                if (articleData.likedDisliked == "likes") {
-                                    this.setState({ liked: true });
-                                    this.setState({ disliked: false });
-                                } else if (articleData.likedDisliked == "dislikes") {
-                                    this.setState({ disliked: true });
-                                    this.setState({ liked: false });
+                            if (articleData) {
+                                let words = countBody(this.state.body);
+                                this.setState({ words: words });
+                                this.setTtr(words);
+                                if (articleData.articleResponses) {
+                                    this.setState({ articleResponses: articleData.articleResponses });
+                                }
+                                if (articleData.videoResponses) {
+                                    this.setState({ videoResponses: articleData.videoResponses });
+                                }
+                                if (articleData.responseTo) {
+                                    this.setState({ responseTo: articleData.responseTo });
+                                }
+                                if (articleData.likedDisliked) {
+                                    if (articleData.likedDisliked == "likes") {
+                                        this.setState({ liked: true });
+                                        this.setState({ disliked: false });
+                                    } else if (articleData.likedDisliked == "dislikes") {
+                                        this.setState({ disliked: true });
+                                        this.setState({ liked: false });
+                                    }
                                 }
                             }
                         }
@@ -224,8 +234,9 @@ export default class Article extends Component {
     
     incrementRead = () => {
         if (cookies.get('loggedIn') && this.state.id ) {
-            let user = cookies.get('loggedIn');
+            let username = cookies.get('loggedIn');
             let id = this.state.id;
+            let hash = cookies.get('hash');
             fetch(currentrooturl + 'm/incrementread', {
                 method: "POST",
                 headers: {
@@ -234,7 +245,7 @@ export default class Article extends Component {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    id, user
+                    id, username, hash
                 })
             })
             .then((response) => {
@@ -242,7 +253,8 @@ export default class Article extends Component {
             })
             .then((result) => {
                 console.log(result);
-                if (result) {
+                let authenticated = this.props.checkAndConfirmAuthentication(result);
+                if (result && authenticated) {
                     this.setState({ reads: this.state.reads + 1 });
                 }
             });

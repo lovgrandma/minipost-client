@@ -341,10 +341,11 @@ export default class Video extends Component {
 
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
     fetchVideoPageData = async (rawMpd, ad = false) => {
-        let user = "";
+        let username = "";
         if (cookies.get('loggedIn')) {
-            user = cookies.get('loggedIn');
+            username = cookies.get('loggedIn');
         }
+        let hash = cookies.get('hash');
         try {
             const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
                 method: "POST",
@@ -354,7 +355,7 @@ export default class Video extends Component {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    rawMpd, user, ad
+                    rawMpd, username, ad, hash
                 })
             })
             .then((response) => {
@@ -362,78 +363,85 @@ export default class Video extends Component {
             })
             .then((result) => {
                 console.log(result);
-                this.setState({ fetched: true });
-                /* Sets all video document related data */
-                if (result.video.hasOwnProperty('viewable')) {
-                    if (result.video.viewable == false) {
-                        this.setState({viewable: false });
-                    } else {
-                        this.setState({viewable: true });
+                let authenticated = this.props.checkAndConfirmAuthentication(result);
+                if (authenticated) {
+                    this.setState({ fetched: true });
+                    /* Sets all video document related data */
+                    if (result.video.hasOwnProperty('viewable')) {
+                        if (result.video.viewable == false) {
+                            this.setState({viewable: false });
+                        } else {
+                            this.setState({viewable: true });
+                        }
                     }
-                }
-                for (const [key, value] of Object.entries(result.video)) {
-                    if (this.state) {
-                        if (key == "published") {
-                            this.setState(setStateDynamic(key, roundTime(value)));
-                        } else if (key == "likedDisliked") {
-                            if (value == "likes") {
-                                this.setState({ liked: true });
-                                this.setState({ disliked: false });
-                            } else if (value == "dislikes") {
-                                this.setState({ disliked: true });
-                                this.setState({ liked: false });
+                    for (const [key, value] of Object.entries(result.video)) {
+                        if (this.state) {
+                            if (key == "published") {
+                                this.setState(setStateDynamic(key, roundTime(value)));
+                            } else if (key == "likedDisliked") {
+                                if (value == "likes") {
+                                    this.setState({ liked: true });
+                                    this.setState({ disliked: false });
+                                } else if (value == "dislikes") {
+                                    this.setState({ disliked: true });
+                                    this.setState({ liked: false });
+                                }
+                            } else if (key == "description") {
+                                this.setState({ description: value })
+                            } else if (key == "adUrl") {
+                                this.setState({ adLink: result.video.adUrl });
+                            } else if (key == "dailyBudget") {
+                                this.setState({ adBudget: result.video.dailyBudget })
+                            } else if (value) {
+                                this.setState(setStateDynamic(key, value));
+                            } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
+                                this.setState(setStateDynamic(key, value));
                             }
-                        } else if (key == "description") {
-                            this.setState({ description: value })
-                        } else if (key == "adUrl") {
-                            this.setState({ adLink: result.video.adUrl });
-                        } else if (key == "dailyBudget") {
-                            this.setState({ adBudget: result.video.dailyBudget })
-                        } else if (value) {
-                            this.setState(setStateDynamic(key, value));
-                        } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
-                            this.setState(setStateDynamic(key, value));
                         }
                     }
-                }
-                if (ad) {
-                    if (result.video.title) {
-                        this.setState({ adTitle: result.video.title });
-                    }
-                    if (result.video.author) {
-                        this.setState({ adAuthor: result.video.author });
-                    }
-                    if (result.video.mpd) {
-                        if (result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
-                            this.setState({ adUriRaw: result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2] });
+                    if (ad) {
+                        if (result.video.title) {
+                            this.setState({ adTitle: result.video.title });
+                        }
+                        if (result.video.author) {
+                            this.setState({ adAuthor: result.video.author });
+                        }
+                        if (result.video.mpd) {
+                            if (result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
+                                this.setState({ adUriRaw: result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2] });
+                            }
                         }
                     }
-                }
-                if (result) {
-                    return result;
+                    if (result) {
+                        return result;
+                    }
                 }
                 return false;
             });
-            if (videoData.video.mpd) {
-                this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses, friendsWatched: videoData.friendsWatched });
-                this.setState({ viewCounted: false });
-                // Determine if user is currently following
-                if (window.localStorage.getItem('mediahistory')) {
-                    let jsondata = JSON.parse(window.localStorage.getItem('mediahistory'));
-                    if (jsondata) {
-                        if (jsondata.subscribed) {
-                            let subscriptions = JSON.parse(window.localStorage.getItem('mediahistory')).subscribed;
-                            for (let i = 0; i < subscriptions.length; i++) {
-                                if (subscriptions[i].channel == this.state.author) {
-                                    this.setState({ following: true });
-                                    break;
+            if (videoData) {
+                if (videoData.video) {
+                    if (videoData.video.mpd) {
+                        this.setState({ articleResponses: videoData.articleResponses, responseTo: videoData.responseTo, videoResponses: videoData.videoResponses, friendsWatched: videoData.friendsWatched });
+                        this.setState({ viewCounted: false });
+                        // Determine if user is currently following
+                        if (window.localStorage.getItem('mediahistory')) {
+                            let jsondata = JSON.parse(window.localStorage.getItem('mediahistory'));
+                            if (jsondata) {
+                                if (jsondata.subscribed) {
+                                    let subscriptions = JSON.parse(window.localStorage.getItem('mediahistory')).subscribed;
+                                    for (let i = 0; i < subscriptions.length; i++) {
+                                        if (subscriptions[i].channel == this.state.author) {
+                                            this.setState({ following: true });
+                                            break;
+                                        }
+                                    }
                                 }
                             }
                         }
+                        return videoData.video.mpd;
                     }
                 }
-                return videoData.video.mpd;
-            }
+            } 
         } catch (err) {
             // Componenent unmounted during method
             console.log(err);
@@ -446,9 +454,9 @@ export default class Video extends Component {
     incrementView = async () => {
         this.endViewCountInterval();
         if (this.state.mpd && !this.state.viewCounted && !this.state.adPlaying || this.state.adUriRaw && this.state.adPlaying && this.state.adBudget && this.state.startDate && this.state.endDate && !this.state.viewCounted) {
-            let user = "";
+            let username = "";
             if (cookies.get('loggedIn')) {
-                user = cookies.get('loggedIn');
+                username = cookies.get('loggedIn');
             }
             let ad = false;
             if (this.props.ad) {
@@ -485,46 +493,47 @@ export default class Video extends Component {
                 startDate = this.state.startDate;
                 endDate = this.state.endDate;
             }
-            if (!dontInc) {
+            if (!dontInc && username) {
+                let hash = cookies.get('hash');
                 await fetch(currentrooturl + 'm/incrementview', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: corsdefault,
-                        body: JSON.stringify({
-                            mpd, user, ad, adBudget, startDate, endDate
-                        })
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        mpd, username, ad, adBudget, startDate, endDate, hash
                     })
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then((result) => {
-                        console.log(result);
-                        if (result) {
-                            if (result.hasOwnProperty('increment')) {
-                                if (result.increment) {
-                                    this.setState({ viewCounted: true });
-                                    this.setState({ views: this.state.views+1 });
-                                }
-                            }
-                            if (result.hasOwnProperty('playlist')) {
-                                if (result.playlist === false) {
-                                    this.props.playlist.buildPlaylist(true);
-                                }
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((result) => {
+                    let authentication = this.props.checkAndConfirmAuthentication(result);
+                    if (result && authentication) {
+                        if (result.hasOwnProperty('increment')) {
+                            if (result.increment) {
+                                this.setState({ viewCounted: true });
+                                this.setState({ views: this.state.views+1 });
                             }
                         }
-                    })
+                        if (result.hasOwnProperty('playlist')) {
+                            if (result.playlist === false) {
+                                this.props.playlist.buildPlaylist(true);
+                            }
+                        }
+                    }
+                });
             }
         }
     }
     
     incrementClick = async () => {
         if (this.state.mpd && !this.state.clickCounted || this.state.adUriRaw && this.state.adPlaying && this.state.adBudget && this.state.startDate && this.state.endDate && !this.state.clickCounted) {
-            let user = "";
+            let username = "";
             if (cookies.get('loggedIn')) {
-                user = cookies.get('loggedIn');
+                username = cookies.get('loggedIn');
             }
             let ad = false;
             if (this.props.ad) {
@@ -561,35 +570,37 @@ export default class Video extends Component {
                 startDate = this.state.startDate;
                 endDate = this.state.endDate;
             }
-            if (!dontInc) {
+            if (!dontInc && username) {
+                let hash = cookies.get('hash');
                 await fetch(currentrooturl + 'm/incrementclick', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: corsdefault,
-                        body: JSON.stringify({
-                            mpd, user, ad, adBudget, startDate, endDate
-                        })
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        mpd, username, ad, adBudget, startDate, endDate, hash
                     })
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then((result) => {
-                        if (result) {
-                            if (result.hasOwnProperty('increment')) {
-                                if (result.increment) {
-                                    this.setState({ clickCounted: true });
-                                }
-                            }
-                            if (result.hasOwnProperty('playlist')) {
-                                if (result.playlist === false) {
-                                    this.props.playlist.buildPlaylist(true);
-                                }
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((result) => {
+                    let authentication = this.props.checkAndConfirmAuthentication(result);
+                    if (result && authentication) {
+                        if (result.hasOwnProperty('increment')) {
+                            if (result.increment) {
+                                this.setState({ clickCounted: true });
                             }
                         }
-                    })
+                        if (result.hasOwnProperty('playlist')) {
+                            if (result.playlist === false) {
+                                this.props.playlist.buildPlaylist(true);
+                            }
+                        }
+                    }
+                })
             }
         }
     }

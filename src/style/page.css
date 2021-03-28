@@ -1,0 +1,29 @@
+.page-basic-container {
+    max-width: 900px;
+    margin: 0 auto;
+}
+
+.lead-basic {
+    margin-top: 10%;
+    text-align: center;
+}
+
+.branded {
+    font-family: "Miller Text Bd It";
+    font-display: swap;
+    font-style: normal;
+    font-weight: normal;
+}
+
+.branded-h3 {
+    font-size: 3.1em;
+}
+
+.p1-para {
+    font-size: 0.85em;
+}
+
+.center-text {
+    text-align: center;
+    justify-self: center;
+}

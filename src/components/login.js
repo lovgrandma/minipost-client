@@ -7,7 +7,7 @@ import IntlTelInput from 'react-intl-tel-input';
 import 'react-intl-tel-input/dist/main.css';
 
 const reEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-const rePass = /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*]{8,56}$/; // More accepting 0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*
+const rePass = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*]{8,56}$/; // More accepting 0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*
 // Old pass regex /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,56}$/;
 const reUsername = /^[a-z0-9.]{5,22}$/;
 const cookies = new Cookies();
@@ -15,12 +15,14 @@ const cookies = new Cookies();
 export default class Login extends Component {
     constructor(props) {
         super(props);
-        this.state = { welcome: 'Welcome to minireel', message: "Watch videos with friends Speak your mind Enjoy original content", username: "", password: "", verificationIn: false }
+        this.state = { welcome: 'Welcome to minireel', message: "Watch videos with friends Speak your mind Enjoy original content", username: "", password: "", verificationIn: false, overlay: false }
         this.phone = React.createRef();
         this.verify = React.createRef();
         this.phoneVerify = React.createRef();
         this.emailVerify = React.createRef();
         this.countryCodePrompt = React.createRef();
+        this.phoneReset = React.createRef();
+        this.resetPassEmail = React.createRef();
     }
 
     componentDidMount() {
@@ -254,6 +256,45 @@ export default class Login extends Component {
             document.getElementsByClassName('faulty-verification')[0].style.display = 'none';
         }
     }
+    
+    submitResetPass = async (e) => { 
+        let validPhone = false;
+        let validEmail = false;
+        if (this.phoneReset && document.getElementById('phonein-reset-pass')) {
+            if (this.phoneReset.current && document.getElementById('phonein-reset-pass').value) {
+                let number = this.phoneReset.current.getNumber(document.getElementById('phonein-reset-pass').value,intlTelInputUtils.numberFormat.E164);
+                if (number.charAt(0) == '+') {
+                    validPhone = number;
+                }
+            }
+        }
+        if (this.resetPassEmail) {
+            if (this.resetPassEmail.current) {
+                if (this.resetPassEmail.current.value) {
+                    validEmail = this.resetPassEmail.current.value;
+                }
+            }
+        }
+        if (validPhone && validEmail) {
+            let data = await this.props.submitResetPass(e, validPhone, validEmail);
+            this.setState({ resetPassUpdate: data });
+            
+        }
+    }
+    
+    /**
+    * Sets overlay for reset password and verify account functions
+    *
+    * @return {none} Changes state. Does not return value
+    */
+    setOverlay = (e) => {
+        e.preventDefault();
+        if (this.state.overlay) {
+            this.setState({ overlay: false });
+        } else {
+            this.setState({ overlay: true });
+        }
+    }
    
     render() {
         return (
@@ -261,6 +302,26 @@ export default class Login extends Component {
                 <div className="minireel-logo-center">
                     <img className="minipost-register-logo-notext" src={minipostAppLogoNoText} alt="Minireel" draggable="false"></img>
                     <p className="register-text">Watch together</p>
+                </div>
+                <div className={this.state.overlay ? "overlay resetform" : "overlay overlay-hidden resetform"}>
+                    <div className="info-blurb-3-thick dark-grey">Reset your password using the form below</div>
+                    <div className="form-group">
+                        <input className="form-control" ref={this.resetPassEmail} id="resetpass-email" type="email" name="resetpass-email" placeholder="reset email"></input>
+                    </div>
+                    <div className="form-group">
+                        <IntlTelInput
+                        containerClassName="intl-tel-input"
+                        inputClassName="form-control"
+                        fieldName="intl-input"
+                        ref={this.phoneReset} fieldId="phonein-reset-pass" name="phonein-reset-pass" placeholder="reset phone #"
+                        />
+                    </div>
+                    {
+                        this.state.resetPassUpdate ? <div className="resetpassstatus">{this.state.resetPassUpdate}</div> : <div></div>
+                    }
+                    {
+                        this.state.resetPassUpdate != "Success! You'll get a text on your phone if you have an account with us" ? <button className="btn btn-primary reset-passbtn" type="submit" onClick={(e) => {this.submitResetPass(e)}}>reset password</button> : <div></div>
+                    }
                 </div>
                 <form className="loginform" refs='loginform' onSubmit={this.props.fetchlogin} noValidate="novalidate">
                     <div className="form-group">
@@ -270,6 +331,7 @@ export default class Login extends Component {
                     <div className="form-group">
                         <input className="form-control" ref='pass' id="pw" type="password" name="password" placeholder="password"></input>
                         <div id='passerrorcontainer'><div className='form-error faulty-pass' style={{display: 'none'}}>password must be between 8-56 characters, have 1 uppercase, 1 lowercase and a number</div></div>
+                        <a onClick={(e)=>{this.setOverlay(e)}} href="#" className="info-blurb-3">{this.state.overlay ? "Remembered your password?" : "Forgot your password?" }</a>
                     </div>
                     <button className="btn btn-primary loginbtn" type="submit" onClick={this.submitLogin}>login</button>
                     { this.props.loginerror ?
@@ -314,7 +376,7 @@ export default class Login extends Component {
                     }
                     {
                         this.props.verifyinfo ? 
-                            <div className="info-blurb-3">{this.props.verifyinfo}</div> : null
+                            <div className="info-blurb-3-thick">{this.props.verifyinfo}</div> : null
                     }
                 </form>
                 <div className="info-blurb-2 verifyform select" onClick={(e) => {this.openVerification(e)}}>I already registered. I need to verify my account</div>

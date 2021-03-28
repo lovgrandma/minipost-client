@@ -191,6 +191,7 @@ export default class writeArticle extends Component {
                 if (this.titleIn.current._ref.value.length > 0 && this.editor.getData().length > 250) {
                     this.setState({ publishing: true });
                     const author = cookies.get('loggedIn');
+                    const username = author;
                     const body = this.editor.getData();
                     const title = this.titleIn.current._ref.value;
                     let responseTo = "";
@@ -209,6 +210,7 @@ export default class writeArticle extends Component {
                         edit = true;
                         id = this.state.editId;
                     }
+                    let hash = cookies.get('hash');
                     fetch(currentrooturl + 'm/publisharticle', {
                         method: "POST",
                         headers: {
@@ -217,26 +219,28 @@ export default class writeArticle extends Component {
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            author, title, body, responseTo, responseType, edit, id
+                            author, title, body, responseTo, responseType, edit, id, username, hash
                         })
                     })
                     .then((response) => {
                         return response.json(); // Parsed data
                     })
                     .then((data) => {
-                        if (data.id) {
-                            this.setState({ id: data.id });
+                        let authenticated = this.props.checkAndConfirmAuthentication(data);
+                        if (data && authenticated) {
+                            if (data.id) {
+                                this.setState({ id: data.id });
+                            }
+                            if (data.querystatus == "article posted") {
+                                this.setState({ published: true });
+                                this.setState({ currentErr: "" });
+                            } else if (data.querystatus == "you have already posted an article with this title") {
+                                this.setState({ currentErr: "You have already posted an article with this title" });
+                            } else if (data.querystatus == "article updated") {
+                                this.setState({ published: true });
+                                this.setState({ currentErr: "" });
+                            }
                         }
-                        if (data.querystatus == "article posted") {
-                            this.setState({ published: true });
-                            this.setState({ currentErr: "" });
-                        } else if (data.querystatus == "you have already posted an article with this title") {
-                            this.setState({ currentErr: "You have already posted an article with this title" });
-                        } else if (data.querystatus == "article updated") {
-                            this.setState({ published: true });
-                            this.setState({ currentErr: "" });
-                        }
-                        console.log(data);
                     })
                     .then(() => {
                         this.setState({ publishing: false });

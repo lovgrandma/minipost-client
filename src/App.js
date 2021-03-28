@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js';
 import { Switch } from 'react-router';
 import {
     BrowserRouter,
@@ -11,7 +11,7 @@ import {
 } from 'react-router-dom';
 import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
-import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import close from './static/close.svg';
+import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import close from './static/close.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg';
 import { updateNotif } from './methods/history.js';
 import './videoplayer.css';
 import 'shaka-player/dist/controls.css';
@@ -337,9 +337,16 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    /**
+    * Retrieves friend conversations from mongoDb
+    *
+    * @args {none}
+    * @return {none}
+    */
     getFriendConversations() {
         // This will retrieve all chats within "chats" in the user document.
         let username = this.state.isLoggedIn;
+        let hash = cookies.get('hash');
         if (!socket) {
             fetch(currentrooturl + 'm/getconversationlogs', {
                 method: "POST",
@@ -349,28 +356,33 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username
+                    username, hash
                 })
             })
             .then(function(response) {
                 return response.json();
             })
             .then((data) => {
-                if (!socket) { // Do not run logic for mongo db converstations. Proceed to get redis data via socket instead
-                    console.log("Conversations:", data);
-                    if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
-                        this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
+                let authorized = this.props.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    if (!socket) { // Do not run logic for mongo db converstations. Proceed to get redis data via socket instead
+                        console.log("Conversations:", data);
+                        if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
+                            this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
+                        }
+                        this.setState({ conversations: data }); // set state for conversations
+                        let convoIds = [];
+                        for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
+                            convoIds.push(data[i]._id);
+                        }
+                        this.setState({ convoIds: convoIds });
                     }
-                    this.setState({ conversations: data }); // set state for conversations
-                    let convoIds = [];
-                    for (let i = 0; i < data.length; i++) { // Sets convo ids from conversations object
-                        convoIds.push(data[i]._id);
-                    }
-                    this.setState({ convoIds: convoIds });
+                    return data;
+                } else {
+                    return false;
                 }
-                return data;
             })
-            .then(() => {
+            .then((data) => {
                 this.rebuildSocketConnection();
             })
         } else {
@@ -391,7 +403,51 @@ class Socialbar extends Component { // Main social entry point sb1
         }, 200);
     }
 
-    // Entry point method after login.
+    /**
+    * Asks serve to send text message to user to reset password via link
+    *
+    * @args {event e, String phone, String email}
+    * @returns {String status || Boolean} Will return whether or not submitReset successfully happened or failed or false
+    * communicating false non-action.
+    */
+    submitResetPass = async (e, phone, email) => {
+        let hash = cookies.get('hash');
+        if (phone && email) {
+            return await fetch(currentrooturl + 'm/submitresetpass', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                mode: 'cors',
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    phone, email, hash
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                let authorized = this.props.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    if (data) {
+                        return "Success! You'll get a text on your phone if you have an account with us";
+                    }
+                }
+                return "Reset failed. Please retry";
+            });
+        } else {
+            return false;
+        }
+    }
+    
+    /**
+    * Logs user in and authenticates them. Provides back hash which is required for all authenticated actions
+    *
+    * @args {Event e} 
+    * @return {none}
+    */
     fetchlogin = (e) => {
         e.preventDefault();
         let email = document.getElementById('email').value;
@@ -414,10 +470,9 @@ class Socialbar extends Component { // Main social entry point sb1
         .then((data) => {
             this.setState({ registererror: null });
             this.setState({ loginerror: null });
-            if (data.querystatus== "loggedin" && data.username) {
+            if (data.querystatus== "loggedin" && data.username && data.hash) {
+                cookies.set('hash', data.hash); // Set hash first as features do not run without hash
                 cookies.set('loggedIn', data.username);
-                this.setState({ isLoggedIn: data.user });
-                this.getfriends();
             }
             if (data.error) {
                 console.log(data.error);
@@ -428,16 +483,24 @@ class Socialbar extends Component { // Main social entry point sb1
         })
         .then((data) => {
             if (cookies.get('loggedIn')) {
+                this.getfriends();
                 this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
             }
             if (data.querystatus == "loggedin") {
                 this.props.updateLogin(data.username);
             }
         })
-        .catch(error => { console.log(error);
+        .catch(error => { 
+            console.log(error);
         })
     }
 
+    /**
+    * Allows visitor to register a new account in order to become a user
+    *
+    * @args {Event e, String phone} 
+    * @return {none}
+    */
     fetchregister = (e, phone) => {
         e.preventDefault();
         try {
@@ -488,14 +551,12 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     fetchVerify = (e, verif, phone, email) => {
-        console.log(phone.current);
         e.preventDefault(e);
         if (verif && phone && email) {
             if (verif.current && phone.current && email.current) {
                 if (verif.current.value && email.current.value) {
                     const verification = verif.current.value;
                     const phoneVal = phone.current.getNumber(document.getElementById('phoneverify').value,intlTelInputUtils.numberFormat.E164);
-                    console.log(phoneVal);
                     const emailVal = email.current.value;
                     fetch(currentrooturl + 'm/verify', {
                         method: "POST",
@@ -538,10 +599,9 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     fetchlogout(e) {
-         cookies.remove('loggedIn', { path: '/' });
-         cookies.remove('user', { path: '/' });
-        //  puts users taken from server script into state.
-        // fetch('/m/logout');
+        cookies.remove('loggedIn', { path: '/' });
+        cookies.remove('user', { path: '/' });
+        cookies.remove('hash', { path: '/' });
         fetch(currentrooturl + 'm/logout', {
                 method: "GET",
                 headers: {
@@ -598,8 +658,15 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
     
+    /**
+    * Lets the user search for users to befriend and interact with
+    *
+    * @args {String username, integer limit, Boolean requery}
+    * @return {none}
+    */
     limitedsearch(username, limit, requery) { // limit is limited amount of users to return, requery is for if no more users but needs to requery to update state of searched users
         let searchusers = document.getElementById('usersearch').value;
+        let hash = cookies.get('hash');
         if (this.state.searchusers[1].moreusers || requery) { // if moreusers state is true or requery necessary to update state
             fetch(currentrooturl + 'm/searchusers', {
                 method: "POST",
@@ -609,14 +676,17 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    searchusers, username, limit
+                    searchusers, username, limit, hash
                 })
             })
             .then(function(response) {
                 return response.json(); // parse the data into a useable format using `.json()`
             })
             .then((data) => {
-                this.setState({ searchusers: data }); // set user data to
+                let authorized = this.props.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    this.setState({ searchusers: data }); // set user data to
+                }
             })
             .catch(error => {
                 console.log(error);
@@ -624,11 +694,18 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    /**
+    * Fires method to do first search for users which only returns 10
+    *
+    * @args {none}
+    * @return {none}
+    */
     searchusers() { // Search method that uses value in user search bar to return 10 searched users
         // debounced fetch users event
         if (this.state && this.state.isLoggedIn) {
             let username = this.state.isLoggedIn;
             let searchusers = document.getElementById('usersearch').value;
+            let hash = cookies.get('hash');
             if (searchusers) {
                 fetch(currentrooturl + 'm/searchusers', {
                     method: "POST",
@@ -638,19 +715,29 @@ class Socialbar extends Component { // Main social entry point sb1
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        searchusers, username
+                        searchusers, username, hash
                     })
                 })
                 .then(function(response) {
                     return response.json(); // parse the data into a useable format using `.json()`
                 })
                 .then((data) => {
+                    let authorized = this.props.checkAndConfirmAuthentication(data);
                     /* Returns array with [0] searched users, [1] moreusers boolean and [2] pending friends */
-                    this.setState({ searchusers: data }); // set user data to
+                    if (authorized) {
+                        this.setState({ searchusers: data }); // set user data to
+                    } else {
+                        return null;
+                    }
+                    return data;
+                })
+                .then((data) => {
+                    if (data) {
+                        document.getElementsByClassName('search-users-results-container')[0].classList.add('search-users-results-container-opened');
+                    }
                 })
                 .catch(error => { console.log(error);
                 })
-                document.getElementsByClassName('search-users-results-container')[0].classList.add('search-users-results-container-opened');
             } else if (!searchusers) {
                 this.setState({ searchusers: [] });
                 if (document.getElementsByClassName('search-users-results-container')[0]) {
@@ -674,10 +761,17 @@ class Socialbar extends Component { // Main social entry point sb1
         e.preventDefault();
     }
 
+    /**
+    * Sends friend request to another user 
+    *
+    * @args {Event e, String friend} 
+    * @return {none}
+    */
     sendfriendrequest = (e, friend) => {
         console.log("You want to be friends with: " + friend);
         let thetitleofsomeonewewanttobecloseto = friend;
         let username = this.state.isLoggedIn;
+        let hash = cookies.get('hash');
         fetch(currentrooturl + 'm/requestfriendship', {
             method: "POST",
             headers: {
@@ -686,15 +780,20 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                thetitleofsomeonewewanttobecloseto, username
+                thetitleofsomeonewewanttobecloseto, username, hash
             })
         })
-            .then(function(response) {
+        .then(function(response) {
             return response.json(); // You parse the data into a useable format using `.json()`
         })
-            .then(function(data) {
-            if (data == { querystatus: 'already friends' }) {
-                this.getfriends();
+        .then(function(data) {
+            let authorized = this.props.checkAndConfirmAuthentication(data);
+            if (authorized) {
+                if (data == { querystatus: 'already friends' }) {
+                    this.getfriends();
+                }
+            } else {
+                return data;
             }
             return data; // `data` is the parsed version of the JSON returned from the above endpoint.
         })
@@ -702,7 +801,11 @@ class Socialbar extends Component { // Main social entry point sb1
             console.log(error);
         })
         .then((data) => {
-            this.limitedsearch(this.state.isLoggedIn, this.state.searchusers[0].length, true); // re update list
+            if (this.state.isLoggedIn && this.state.searchusers) {
+                if (this.state.searchusers[0]) {
+                    this.limitedsearch(this.state.isLoggedIn, this.state.searchusers[0].length, true); // re update list
+                }
+            }
         })
 
         e.preventDefault();
@@ -711,6 +814,7 @@ class Socialbar extends Component { // Main social entry point sb1
     revokefriendrequest = (e, friend, pending, refuse, block, search) => { // Pending if you're waiting for user to accept. Refuse true if user is refusing request
         let thetitleofsomeoneiusedtowanttobecloseto = friend;
         let username = this.state.isLoggedIn;
+        let hash = cookies.get('hash');
         console.log("revokefriendrequest arguments; pending: " + pending + " refuse: " + refuse);
         fetch(currentrooturl + 'm/revokefriendship', {
             method: "POST",
@@ -720,40 +824,45 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                thetitleofsomeoneiusedtowanttobecloseto, username, pending, refuse, block
+                thetitleofsomeoneiusedtowanttobecloseto, username, pending, refuse, block, hash
             })
         })
         .then((response) => {
             return response.json();
         })
         .then((data) => {
-            console.log(data);
-            if (data.querystatus) {
-                console.log("Bad revoke friend query: " + data.querystatus);
-                if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
-                    this.getfriends();
-                } else if (data.querymsg) {
-                    this.getfriends();
+            let authorized = this.props.checkAndConfirmAuthentication(data);
+            if (authorized) {
+                if (data.querystatus) {
+                    if (data.querystatus == "not on other users pending list" || data.querystatus == "no users on other users pending list") {
+                        this.getfriends();
+                    } else if (data.querymsg) {
+                        this.getfriends();
+                    } else {
+                        this.getfriends();
+                    }
                 } else {
-                    this.getfriends();
+                    // will have to add conversation state update when adding remove conversation functionality
+                    this.setState({ friends: data });
                 }
             } else {
-                // will have to add conversation state update when adding remove conversation functionality
-                this.setState({ friends: data });
+                return;
             }
             return data;
         })
         .catch(error => { console.log(error);
         })
         .then((data) => {
-            if (pending) {
-                if (this.state.searchusers[0]) {
-                    this.limitedsearch(this.state.isLoggedIn, this.state.searchusers[0].length, true);
-                } else {
-                    this.searchusers();
+            if (data) {
+                if (pending) {
+                    if (this.state.searchusers[0]) {
+                        this.limitedsearch(this.state.isLoggedIn, this.state.searchusers[0].length, true);
+                    } else {
+                        this.searchusers();
+                    }
+                } else if (refuse == "requestslist" || refuse == "nonfriendslist") {
+                    this.getpendingrequests(null, true, username); // true arguement to search again after qeuery
                 }
-            } else if (refuse == "requestslist" || refuse == "nonfriendslist") {
-                this.getpendingrequests(null, true, username); // true arguement to search again after qeuery
             }
         })
         .then((data) => {
@@ -769,8 +878,13 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
-    /* Get pending requests method that often runs in background to populate pending requests data, other methods
-    rely on this data to get important information */
+    /**
+    * Get pending requests method that often runs in background to populate pending requests data, other methods
+    * rely on this data to get important information 
+    *
+    * @args {Boolean show, Boolean search, String username}
+    * @return {none}
+    */
     getpendingrequests = (show, search, username) => {
         // show variable must be null, "hidden" or "show"
         // search must be true to search after query or false to not search (e.g if want to close requests header but do not want to search)
@@ -780,7 +894,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!username) {
             username = cookies.get('loggedIn');
         }
-
+        let hash = cookies.get('hash');
         if ((search || !this.state.pendingfriendrequests) && username) { // If searching again or pendingfriendrequests is null
             fetch(currentrooturl + 'm/pendingrequests', {
                 method: "POST",
@@ -790,23 +904,29 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username
+                    username, hash
                 })
             })
             .then(function(response) {
                 return response.json();
             })
             .then((data) => { // Pending requests will appear as an array in the data member here
-                let pendingfriendrequestquery = data;
-                if (show == "hidden") { // Changes state to show pending requests if argument is passed
-                    this.setState({showpendingrequests : "hidden"});
-                } else if (show == "show") {
-                    this.setState({showpendingrequests : "show"});
+                let authorized = this.props.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    let pendingfriendrequestquery = data;
+                    if (show == "hidden") { // Changes state to show pending requests if argument is passed
+                        this.setState({showpendingrequests : "hidden"});
+                    } else if (show == "show") {
+                        this.setState({showpendingrequests : "show"});
+                    }
+                    this.setState({ pendingfriendrequests: pendingfriendrequestquery });
+                } else {
+                    return null;
                 }
-                this.setState({ pendingfriendrequests: pendingfriendrequestquery });
                 return data;
             })
-            .catch(error => { console.log(error);
+            .catch(error => { 
+                console.log(error);
             })
         } else if (this.state.pendingfriendrequests) {
             this.setState({ pendingfriendrequests: null })
@@ -818,7 +938,7 @@ class Socialbar extends Component { // Main social entry point sb1
         console.log("You are going become friends with " + friend);
         let username = this.state.isLoggedIn;
         let newfriend = friend;
-        
+        let hash = cookies.get('hash');
         fetch(currentrooturl + 'm/acceptfriendrequest', {
             method: "POST",
             headers: {
@@ -827,31 +947,41 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                newfriend, username
+                newfriend, username, hash
             })
         })
         .then(function(response) {
             return response.json();
         })
         .then((data) => {
-            this.setState({ friends: data });
-            setTimeout(this.getpendingrequests(null, requests, username), 1500); // Reset user search after friend accepted.
+            let authorized = this.props.checkAndConfirmAuthentication(data);
+            if (authorized) {
+                this.setState({ friends: data });
+                setTimeout(this.getpendingrequests(null, requests, username), 1500); // Reset user search after friend accepted.
+            }
             return data;
         })
         .then((data) => {
             this.debouncefetchusers();
         })
-        .catch(error => { console.log(error);
+        .catch(error => { 
+            console.log(error);
         })
     }
     
-    // Fetches both user friends and userconversations from server. Avoids running two fetch requests. Costly
+    /**
+    * Fetches both user friends and userconversations from server. Avoids running two fetch requests. Costly
+    * 
+    * @args {none}
+    * @return {none}
+    */
     getfriends = () => {
         if (!this.state.isLoggedIn) {
             this.setState({ isLoggedIn: cookies.get('loggedIn')});
         }
         if (this.state.isLoggedIn || cookies.get('loggedIn')) {
             let username = this.state.isLoggedIn || cookies.get('loggedIn');
+            let hash = cookies.get('hash');
             fetch(currentrooturl + 'm/getfriends', {
                 method: "POST",
                 headers: {
@@ -860,33 +990,36 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username
+                    username, hash
                 })
             })
             .then(function(response) {
                 return response.json();
             })
             .then((data) => {
-                console.log("Friends of", username, ":", data);
-                if (data.subscribed) {
-                    if (Array.isArray(data.subscribed)) {
-                        this.setState({ following: updateNotif(data.subscribed) });
+                let authorized = this.props.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    console.log("Friends of", username, ":", data);
+                    if (data.subscribed) {
+                        if (Array.isArray(data.subscribed)) {
+                            this.setState({ following: updateNotif(data.subscribed) });
+                        }
                     }
+                    if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
+                        this.setState({ friends: data.userfriendslist });
+                    }
+                    let convoIds = [];
+                    if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
+                        this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
+                    }
+                    if (!socket) { // Only append conversations from mongodb if socket is not valid. Otherwise application is getting conversations from redis live db
+                        this.setState({ conversations: data.conversations }); // set state for conversations
+                    }
+                    for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
+                        convoIds.push(data.conversations[i]._id);
+                    }
+                    this.setState({ convoIds: convoIds });
                 }
-                if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
-                    this.setState({ friends: data.userfriendslist });
-                }
-                let convoIds = [];
-                if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
-                    this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
-                }
-                if (!socket) { // Only append conversations from mongodb if socket is not valid. Otherwise application is getting conversations from redis live db
-                    this.setState({ conversations: data.conversations }); // set state for conversations
-                }
-                for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
-                    convoIds.push(data.conversations[i]._id);
-                }
-                this.setState({ convoIds: convoIds });
                 return data;
             })
             .then((data) => {
@@ -898,6 +1031,14 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    
+    /**
+    * Begins chat with another user. Will either send via socket or via mongoDB POST req
+    * If convo Id exists (chat already started) it will use socket. Else it will start chat via mongo.
+    *
+    * @args {Event e, String chatwith, String message, String convoId, Boolean fromSearch}
+    * @return {none}
+    */
     beginchat = (e, chatwith, message, convoId, fromSearch ) => {
         let username = this.state.isLoggedIn;
         // All beginchat methods ran from searchbar will run as a fetch request.
@@ -933,6 +1074,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     socket.emit('sendChat', chatObj);
                 }
             } else { // If fromSearch true or no conversation between both users, will use fetch request defaults to fetch request. This will not create a mongo log convo, just a record that the chat exists. Will still force conversation to occur via socket after call
+                let hash = cookies.get('hash');
                 if (message.length > 0) { // Message must be valid
                     fetch(currentrooturl + 'm/beginchat', {
                         method: "POST",
@@ -942,15 +1084,18 @@ class Socialbar extends Component { // Main social entry point sb1
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            username, chatwith, message
+                            username, chatwith, message, hash
                         })
                     })
                     .then(function(response) {
                         return response.json();
                     })
                     .then((data) => {
-                        console.log(data);
-                        this.getFriendConversations();
+                        let authorized = this.props.checkAndConfirmAuthentication(data);
+                        if (authorized) {
+                            console.log(data);
+                            this.getFriendConversations();
+                        }
                         return data;
                     })
                     .then((data) => {
@@ -1088,7 +1233,8 @@ class Socialbar extends Component { // Main social entry point sb1
         
         const isLoggedIn = this.state.isLoggedIn;
         if (!isLoggedIn) {
-            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} />
+            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar}
+            submitResetPass={this.submitResetPass} resetPassData={this.state.resetPassData} />
         } else {
             sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump = {this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />
         }
@@ -1097,6 +1243,10 @@ class Socialbar extends Component { // Main social entry point sb1
             <div ref={this.sidebarcontainer}>
                 <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} togetherToken={this.props.togetherToken} sendCloseTogetherSession={this.props.sendCloseTogetherSession} />
                 <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
+                    {
+                        !isLoggedIn ? 
+                            <img className="minimize-dash dash-logged-out" src={angleDoubleLeft} alt="hamburger" onClick={this.toggleSideBar}></img> : <span></span>
+                    }
                     <div className="sidebarcontainer">
                         {sidebar}
                     </div>
@@ -1137,6 +1287,7 @@ class App extends Component {
         this.playlist = new Playlist(cookies.get('loggedIn'));
         if (!cookies.get('CloudFrontCookiesSet')) {
             let username = this.state.isLoggedIn;
+            let hash = cookies.get('hash');
             fetch(currentrooturl + 'm/setCloudCookies', {
                 method: "POST",
                 headers: {
@@ -1145,13 +1296,17 @@ class App extends Component {
                 },
                 credentials: 'include',
                 body: JSON.stringify({
-                    username
+                    username, hash
                 })
             })
             .then(function(response) {
                 return response.json();
             })
             .then((data) => {
+                let authorized = this.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    // Do create cloud content play cookies her
+                }
                 return data;
             })
             .catch(error => {
@@ -1163,6 +1318,40 @@ class App extends Component {
         }
         this.buildPlaylist();
         this.createTogetherPingInterval();
+        if (!cookies.get('hash')) {
+            this.doLogout();
+        }
+    }
+    
+    
+    /**
+    * Determines if user is authenticated or not and logs out, signals to prevent further authenticated operations on client
+    *
+    * @args {json data} json data object that may or may not contain "action" property
+    * @return {Boolean} True for good, false for user has been logged out, disauthenticated, prevent further operations
+    */
+    checkAndConfirmAuthentication = (data) => {
+        if (data) {
+            if (data.action) {
+                if (data.action == "logout") {
+                    this.doLogout();
+                    return false;
+                }
+            }
+        }
+        return true;
+    }
+    
+    doLogout = () => {
+        let refresh = false;
+        if (cookies.get('loggedIn')) {
+            refresh = true;
+        }
+        cookies.remove('loggedIn', { path: '/' }); // User logged out
+        cookies.remove('hash', { path: '/' });
+        if (refresh) {
+            window.location.reload(false);
+        }
     }
     
     // Will make a request to playlist to ensure that a valid playlist has been provided and is updated
@@ -1170,6 +1359,12 @@ class App extends Component {
         this.playlist.buildPlaylist();
     }
     
+    /**
+    * Fetches cloud url for user (logged in or not) to consume content (necessary for video playback, thumbnails, user icons, etc)
+    *
+    * @args {none}
+    * @return {none}
+    */
     fetchCloudUrl = () => {
         fetch(currentrooturl + 'm/fetchcloudfronturl', {
                     method: "POST",
@@ -1497,59 +1692,59 @@ class App extends Component {
     render() {     
         return (
             <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} />
                 <div className='maindashcontainer'>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
-                            <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
+                            <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/search' render={(props) => (
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
                         )}/>
                         <Route path='/watch?v=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/watch?va=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} />
+                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/read?a=:articleId' render={(props) => (
-                            <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} />
+                            <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/watch' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/read' render={(props) => (
-                            <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} />
+                            <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/options' render={(props) => (
-                            <Options {...props} key={getPath()} cloud={this.state.cloud}  />
+                            <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/upload' render={(props) => (
-                            <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                            <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/writearticle' render={(props) => (
-                            <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
+                            <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/upload?r=:replyId' render={(props) => (
-                            <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} />
+                            <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/writearticle?r=:replyId' render={(props) => (
-                            <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} />
+                            <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/profile?p=:username' render={(props) => (
-                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/profile' render={(props) => (
-                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud}/>
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/edit?v=:videoId' render={(props) => (
-                            <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
+                            <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/edit?va=:videoId' render={(props) => (
-                            <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} ad={true} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} />
+                            <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} ad={true} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/edit?a=:articleId' render={(props) => (
-                            <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} />
+                            <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/history' render={(props) => (
                             <History {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
@@ -1560,6 +1755,10 @@ class App extends Component {
                         <Route path='/about' render={(props) => (
                           <InfoTemplate {...props} />
                         )}/>
+                        <Route path='/passwordreset?u=:passwordresetsecret' render={(props) => (
+                           <ResetPass {...props} />                                  
+                        )}/>
+                        
                     </div>
                 </div>
             </div>

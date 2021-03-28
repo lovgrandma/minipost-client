@@ -1,6 +1,7 @@
 import currentrooturl from '../url.js';
 import $ from 'jquery';
 import { get } from './utility.js';
+import { cookies } from '../App.js';
 
 export const setResponseToParentPath = function() {
     try {
@@ -76,8 +77,9 @@ export const incrementDislike = async function(increment, id, type, user) {
 }
 
 // like property: true for like, false for dislike. Increment is true or false, id contains either video mpd/id or article id, type defines video or article, user is name of user to record on users document data they have liked/disliked
-const incrementLikeDislike = async function(like, increment, id, type, user) {
+const incrementLikeDislike = async function(like, increment, id, type, username) {
     try {
+        let hash = cookies.get('hash');
         return await fetch(currentrooturl + 'm/likedislike', {
             method: "POST",
             headers: {
@@ -86,7 +88,7 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
             },
             credentials: 'same-origin',
             body: JSON.stringify({
-                like, increment, id, type, user
+                like, increment, id, type, username, hash
             })
         })
         .then((response) => {
@@ -95,37 +97,49 @@ const incrementLikeDislike = async function(like, increment, id, type, user) {
         .then((result) => {
             console.log(result);
             if (result) {
-                let likes = this.state.likes;
-                let dislikes = this.state.dislikes;
-                if (like) {
-                    if (increment) {
-                        this.setState({ likes: likes + 1 });
-                        this.setState({ liked: true });
-                        if (this.state.disliked) {
-                            this.setState({ dislikes: dislikes - 1 });
-                        }
-                        this.setState({ disliked: false });
-                    } else {
-                        this.setState({ likes: likes - 1 });
-                        this.setState({ liked: false });
+                if (result.action) {
+                    if (result.action == "logout") {
+                        cookies.remove('loggedIn', { path: '/' }); // User logged out
+                        cookies.remove('hash', { path: '/' });
                     }
                 } else {
-                    if (increment) {
-                        this.setState({ dislikes: dislikes + 1 });
-                        this.setState({ disliked: true });
-                        if (this.state.liked) {
+                    let likes = this.state.likes;
+                    let dislikes = this.state.dislikes;
+                    if (like) {
+                        if (increment) {
+                            this.setState({ likes: likes + 1 });
+                            this.setState({ liked: true });
+                            if (this.state.disliked) {
+                                this.setState({ dislikes: dislikes - 1 });
+                            }
+                            this.setState({ disliked: false });
+                        } else {
                             this.setState({ likes: likes - 1 });
+                            this.setState({ liked: false });
                         }
-                        this.setState({ liked: false });
                     } else {
-                        this.setState({ dislikes: dislikes - 1 });
-                        this.setState({ disliked: false });
+                        if (increment) {
+                            this.setState({ dislikes: dislikes + 1 });
+                            this.setState({ disliked: true });
+                            if (this.state.liked) {
+                                this.setState({ likes: likes - 1 });
+                            }
+                            this.setState({ liked: false });
+                        } else {
+                            this.setState({ dislikes: dislikes - 1 });
+                            this.setState({ disliked: false });
+                        }
                     }
                 }
             }
             return result;
         })
+        .catch((err) => {
+            console.log(err);
+            return false;
+        })
     } catch (err) {
+        console.log(err);
         return false;
     }
 }
@@ -271,7 +285,7 @@ export const tryDeleteContent = async function(e) {
 
 export const resolveViews = function() {
     if (!this.props.title) {
-        return ''
+        return '';
     } else {
         return this.props.views;
     }

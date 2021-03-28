@@ -102,9 +102,9 @@ export default class Dash extends Component {
                 }
             }, 2000);
             this.setState({ fetchingTimeout: timeout });
-            let user = null;
+            let username = null;
             if (cookies.get('loggedIn')) {
-                user = cookies.get('loggedIn');
+                username = cookies.get('loggedIn');
             }
             let append = [];
             if (this.state) {
@@ -120,22 +120,27 @@ export default class Dash extends Component {
                     }
                 }
             }
+            let hash = cookies.get('hash');
+            console.log(username, hash);
             fetch(currentrooturl + 'm/serveVideos', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: corsdefault,
-                    body: JSON.stringify({
-                        user, append
-                    })
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, append, hash
                 })
-                .then((response) => {
-                    return response.json();
-                })
-                .then((data) => {
-                    console.log(data);
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                console.log("serve videos data" + data)
+                console.log(data);
+                let authentication = this.props.checkAndConfirmAuthentication(data);
+                if (authentication) {
                     if (!data.querystatus && Array.isArray(data.main)) {
                         if (data.main.length > 0 && !this.state.loaded) {
                             this.setState({ loaded: true });
@@ -143,14 +148,15 @@ export default class Dash extends Component {
                         let appendDash = append.concat(data.main); // Response will only return added videos, append new dash videos to old view and set state
                         this.setState({ dashVideos: appendDash });
                     }
-                    if (data.cloud) {
-                        this.props.setCloud(data.cloud);
-                    }
-                    this.setState({ fetching: false });
-                })
-                .catch((err) => {
-                    // Error occured while making fetch request
-                });
+                }
+                if (data.cloud) {
+                    this.props.setCloud(data.cloud);
+                }
+                this.setState({ fetching: false });
+            })
+            .catch((err) => {
+                // Error occured while making fetch request
+            });
         } catch (err) {
             if (this) {
                 if (this.state) {

@@ -12,6 +12,10 @@ export default class sidebarfooter extends Component {
 
         }
     }
+    
+    componentDidMount() {
+        
+    }
 
     render() {
         let logoutDiv;
@@ -31,6 +35,7 @@ export default class sidebarfooter extends Component {
                         <div className="footeritem sidebarfooter"><a href="#">Feedback</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Survey</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Help</a></div>
+                        <div className="footeritem sidebarfooter"><a href="#">Contact us</a></div>
                         {logoutDiv}
                     </div>
                     <div className="minipost-footer-brand"><div className="copyright-minipost">©2020 minipost</div><img className="minipost-footer-logo" src={minipostLogoNoText9a9a9a} alt="Minireel" draggable="false"></img></div>

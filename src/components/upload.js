@@ -374,7 +374,8 @@ export default class Upload extends Component { // ulc upload component
 
     retrieveSingleVideo = (type = "video", mpd) => {
         if (type == "ad" && cookies.get('loggedIn') && mpd) {
-            const user = cookies.get('loggedIn');
+            const username = cookies.get('loggedIn');
+            let hash = cookies.get('hash');
             fetch(currentrooturl + 'm/getSingleAd', {
                 method: "POST",
                 headers: {
@@ -383,7 +384,7 @@ export default class Upload extends Component { // ulc upload component
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    mpd, user
+                    mpd, username, hash
                 })
             })
             .then((response) => {
@@ -391,18 +392,21 @@ export default class Upload extends Component { // ulc upload component
             })
             .then((data) => {
                 console.log(data);
-                if (data.video) {
-                    if (get(data, 'video.startDate') && get(data, 'video.endDate') && get(data, 'video.dailyBudget')) {
-                        if (parseInt(data.video.startDate) && parseInt(data.video.endDate)) {
-                            if (new Date(parseInt(data.video.startDate)) && new Date(parseInt(data.video.endDate))) {
-                                this.startDate.current.valueAsDate = new Date(parseInt(data.video.startDate));
-                                this.endDate.current.valueAsDate = new Date(parseInt(data.video.endDate));
-                                this.setState({ dateEditable: false });
+                let authenticated = this.props.checkAndConfirmAuthentication(data);
+                if (authenticated) {
+                    if (data.video) {
+                        if (get(data, 'video.startDate') && get(data, 'video.endDate') && get(data, 'video.dailyBudget')) {
+                            if (parseInt(data.video.startDate) && parseInt(data.video.endDate)) {
+                                if (new Date(parseInt(data.video.startDate)) && new Date(parseInt(data.video.endDate))) {
+                                    this.startDate.current.valueAsDate = new Date(parseInt(data.video.startDate));
+                                    this.endDate.current.valueAsDate = new Date(parseInt(data.video.endDate));
+                                    this.setState({ dateEditable: false });
+                                }
                             }
+                            this.cost.current.value = data.video.dailyBudget;
+                            this.adUrl.current.value = data.video.adUrl;
+                            this.setState({ costEditable: false });
                         }
-                        this.cost.current.value = data.video.dailyBudget;
-                        this.adUrl.current.value = data.video.adUrl;
-                        this.setState({ costEditable: false });
                     }
                 }
             })
@@ -439,6 +443,7 @@ export default class Upload extends Component { // ulc upload component
             this.setState({ gettingUserVideos: true });
             if (cookies.get('loggedIn')) {
                 let username = cookies.get('loggedIn');
+                let hash = cookies.get('hash');
                 fetch(currentrooturl + 'm/getuservideos', {
                     method: "POST",
                     headers: {
@@ -447,7 +452,7 @@ export default class Upload extends Component { // ulc upload component
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        username
+                        username, hash
                     })
                 })
                 .then((response) => {
@@ -455,62 +460,65 @@ export default class Upload extends Component { // ulc upload component
                 })
                 .then(async(data) => {
                     console.log(data);
-                    if (data.advertiser) {
-                        this.setState({ advertiser: data.advertiser });
-                    }
-                    if (data.advertisement) {
-                        this.setState({ advertisement: data.advertisement });
-                    }
-                    if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
-                        if (data.title) {
-                            if (data.title.length > 0) {
-                                this.setState({ placeholderTitle: data.title });
-                            }
+                    let authenticated = this.props.checkAndConfirmAuthentication(data);
+                    if (authenticated) {
+                        if (data.advertiser) {
+                            this.setState({ advertiser: data.advertiser });
                         }
-                        if (data.description) {
-                            this.setState({ placeholderDesc: data.description });
+                        if (data.advertisement) {
+                            this.setState({ advertisement: data.advertisement });
                         }
-                        if (data.tags && data.tags != undefined) {
-                            console.log(data.tags);
-                            if (data.tags.length > 0) {
-                                if (data.tags[0] != "") {
-                                    console.log(data.tags);
-                                    this.setState({ tags: data.tags });
+                        if (data.querystatus.toString().match(/([a-z0-9].*);processing/)) { // Set UploadStatus to "processing" if video being processed
+                            if (data.title) {
+                                if (data.title.length > 0) {
+                                    this.setState({ placeholderTitle: data.title });
                                 }
                             }
+                            if (data.description) {
+                                this.setState({ placeholderDesc: data.description });
+                            }
+                            if (data.tags && data.tags != undefined) {
+                                console.log(data.tags);
+                                if (data.tags.length > 0) {
+                                    if (data.tags[0] != "") {
+                                        console.log(data.tags);
+                                        this.setState({ tags: data.tags });
+                                    }
+                                }
+                            }
+                            this.props.updateErrStatus("");
+                            this.setMsgInt();
+                            this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
+                            if (this.props.socket) {
+                                this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                            } else if (this.state.socket) {
+                                this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
+                            }
+                            if (this.props.uploadStatus.length < 1) {
+                                this.props.updateUploadStatus("processing video");
+                            }
+                            this.progress.emit('progress', 100);
+                        } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
+                            this.props.updateErrStatus("");
+                            if (this.props.uploadStatus !== "video ready") {
+                                this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                            } else {
+                                this.clearMsgInt();
+                            }
+                            if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
+                                this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
+                            }
+                            this.progress.emit('progress', 100);
+                            console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
+                            this.initPlayer(await this.convertMpdToM3u8(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]));
+                        } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
+                            if (this.state.progress == 0) {
+                                this.props.updateUploadStatus("");
+                                this.props.updateUploadStatus("remove mpd");
+                            }
+                        } else if (data.querystatus.toString() == null) {
+                            // no video processing found
                         }
-                        this.props.updateErrStatus("");
-                        this.setMsgInt();
-                        this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]});
-                        if (this.props.socket) {
-                            this.props.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
-                        } else if (this.state.socket) {
-                            this.state.socket.emit('joinUploadSession', "upl-" +  data.querystatus.toString().match(/([a-z0-9].*);processing/)[1]);
-                        }
-                        if (this.props.uploadStatus.length < 1) {
-                            this.props.updateUploadStatus("processing video");
-                        }
-                        this.progress.emit('progress', 100);
-                    } else if (data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)) { // Else set UploadStatus awaitinginfo state for video
-                        this.props.updateErrStatus("");
-                        if (this.props.uploadStatus !== "video ready") {
-                            this.props.updateUploadStatus("video ready;" + data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                        } else {
-                            this.clearMsgInt();
-                        }
-                        if (data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)) {
-                            this.setState({ videoId: data.querystatus.toString().match(/([a-z0-9].*)\/([a-z0-9].*)-/)[2] });
-                        }
-                        this.progress.emit('progress', 100);
-                        console.log(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]);
-                        this.initPlayer(await this.convertMpdToM3u8(data.querystatus.toString().match(/([a-z0-9].*);awaitinginfo/)[1]));
-                    } else if (data.querystatus.toString() == "no pending videos") { // Resets state of upload video if no video is currently being uploaded
-                        if (this.state.progress == 0) {
-                            this.props.updateUploadStatus("");
-                            this.props.updateUploadStatus("remove mpd");
-                        }
-                    } else if (data.querystatus.toString() == null) {
-                        // no video processing found
                     }
                     this.setState({ gettingUserVideos: false });
                     return data;
@@ -649,7 +657,8 @@ export default class Upload extends Component { // ulc upload component
             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1]; // match last set of strings after period
             data.append('extension', extension);
             data.append('video', file);
-            data.append('user', cookies.get('loggedIn'));
+            data.append('username', cookies.get('loggedIn'));
+            data.append('hash', cookies.get('hash'));
             if (advertisement) {
                 data.append('advertisement', true);
             }
@@ -686,8 +695,9 @@ export default class Upload extends Component { // ulc upload component
                 axios.post(currentrooturl + 'm/videoupload', data, options)
                     .then(async (response) => {
                         console.log(response);
+                        let authenticated = this.props.checkAndConfirmAuthentication(response);
                         console.log(response.data.querystatus);
-                        if (response.data.err) {
+                        if (response.data.err || !authenticated) {
                             if (response.data.err == "reset") {
                                 if (response.data.querystatus) {
                                     if (response.data.querystatus == "Bad resolution") {
@@ -779,7 +789,7 @@ export default class Upload extends Component { // ulc upload component
             if (this.titleIn.current.value.length > 0 && (this.props.uploading != null || this.state.videoId.length > 0)) {
                 this.setState({ publishing: true});
                 const title = this.titleIn.current.value;
-                const user = cookies.get('loggedIn');
+                const username = cookies.get('loggedIn');
                 let desc = "";
                 if (this.descIn.current) {
                     if (this.descIn.current.value.length > 0) {
@@ -814,7 +824,7 @@ export default class Upload extends Component { // ulc upload component
                 };
                 let data = new FormData();
                 data.append('title', this.titleIn.current.value);
-                data.append('user', user);
+                data.append('username', username);
                 data.append('desc', desc);
                 data.append('tags', tags);
                 data.append('nudity', nudity);
@@ -823,6 +833,7 @@ export default class Upload extends Component { // ulc upload component
                 data.append('responseTo', responseTo);
                 data.append('responseType', responseType);
                 data.append('extension', 'jpeg');
+                data.append('hash', cookies.get('hash'));
                 if (adData) { // if user is creating an advertisement. Forward the appropriate data
                     data.append('startDate', adData.startDate);
                     data.append('endDate', adData.endDate);
@@ -842,15 +853,18 @@ export default class Upload extends Component { // ulc upload component
                 try {
                     axios.post(currentrooturl + 'm/publishvideo', data, options)
                         .then((data) => {
-                        console.log(data);
-                            this.setState({ publishing: false });
-                            if (data.data.querystatus === "record published/updated") {
-                                this.setState({ publishedMpd: data.data.mpd });
-                                if (!this.player.getAssetUri) {
-                                    this.setState({ publishedAwait: true });
-                                } else {
-                                    this.setState({ publishedAwait: false });
-                                    this.setState({ published: true });
+                            console.log(data);
+                            let authenticated = this.props.checkAndConfirmAuthentication(data);
+                            if (authenticated) {
+                                this.setState({ publishing: false });
+                                if (data.data.querystatus === "record published/updated") {
+                                    this.setState({ publishedMpd: data.data.mpd });
+                                    if (!this.player.getAssetUri) {
+                                        this.setState({ publishedAwait: true });
+                                    } else {
+                                        this.setState({ publishedAwait: false });
+                                        this.setState({ published: true });
+                                    }
                                 }
                             }
                             console.log(data);
