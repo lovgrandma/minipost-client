@@ -46,7 +46,8 @@ html {
 }
 
 #upl-article-title {
-    font-family: "Miller Text Bd It" !important;
+    font-family: "Miller Text Bd It", 'Crimson Text', serif; !important;
+    font-display: fallback;
 }
 
 h2 {
