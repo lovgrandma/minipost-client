@@ -682,10 +682,6 @@ ul li {
     padding-top: 1px;
 }
 
-.searchbox:active {
-
-}
-
 .nav-loggedin-config {
     margin-left: 10px;
 }
@@ -1409,10 +1405,6 @@ label {
     flex-flow: wrap;
 }
 
-.video-responses-container {
-
-}
-
 .article-responses-container a,
 .video-responses-container a {
     text-decoration: none;
@@ -1771,6 +1763,11 @@ label {
     font-size: 0.85em;
 }
 
+.delete-prompt-box label {
+    font-weight: 600;
+    font-size: 0.95em;
+}
+
 .delete-prompt-box-article {
     z-index: 10;
 }
@@ -1786,6 +1783,7 @@ label {
     padding: 3px 15px;
     border-radius: 7px;
     border: none;
+    font-weight: 600;
 }
 
 .title-delete-submit:hover {
@@ -2144,10 +2142,6 @@ label {
     align-items: center;
 }
 
-.publisher-video-interact-block div {
-
-}
-
 .publisher-video-interact img,
 .publisher-video-interact-block img,
 .publisher-video-interact svg,
@@ -2397,8 +2391,8 @@ label {
 
 .friendchat-chat-container .chat-log-user .content-of-chat,
 .friendchat-chat-container .chat-log-other .content-of-chat,
-.otheruserchat-chat-container . chat-log-user . content-of-chat,
-.otheruserchat-chat-container . chat-log-other . content-of-chat {
+.otheruserchat-chat-container .chat-log-user .content-of-chat,
+.otheruserchat-chat-container .chat-log-other .content-of-chat {
     transition: 200ms;
     background-color: transparent;
 }
@@ -3813,6 +3807,7 @@ If user only has one friend, styling wont apply */
 .progress-upload-status {
     font-size: 0.9em;
     user-select: none;
+    font-weight: 600;
 }
 
 .progress-num {
@@ -4818,10 +4813,7 @@ a code:hover {
     }
 }
 
-@media (max-device-width: 660px), (max-width: 660px) {
-    .sidebar-isopen + .maindashcontainer .relatedpanel .col .videocontainer {
-    }
-    
+@media (max-device-width: 660px), (max-width: 660px) {    
     .sidebar-isopen + .maindashcontainer .videocontainer-related .dash-video-details-container {
         margin-top: 10px;
         margin-bottom: 2.5px;

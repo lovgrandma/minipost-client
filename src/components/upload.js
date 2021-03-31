@@ -173,6 +173,18 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    componentWillUnmount = () => {
+        try {
+            if (this.player) {
+                if (this.player.detach) {
+                    this.player.detach();
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     setMsgInt() {
         try {
             this.state ? this.setState({uploadInfo: randomProperty(this.uploadMessages) }) : null
@@ -885,6 +897,37 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    deleteProcessingVideo = async() => {
+        let username = cookies.get('loggedIn');
+        let hash = cookies.get('hash');
+        if (username && hash) {
+            let data = await fetch(currentrooturl + 'm/deleteprocessingvideo', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, hash
+                })
+            })
+            .then((response) => {
+                return response.json(response);
+            })
+            .then((result) => {
+                return result;
+            })
+            .catch((err) => {
+                return err;
+            });
+            if (data) {
+                if (data.querystatus) {
+                    window.location.reload(); // Will send user back to upload page after video deletion
+                }
+            }
+        }
+    }
     loadPlayer = async (data) => {
         this.setState({ videoPreview: data.name }); // Set video preview
     }
@@ -967,6 +1010,7 @@ export default class Upload extends Component { // ulc upload component
                 { !cookies.get('loggedIn') ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
+                    <div className={this.state.progress >= 100.00 && !this.props.edit ? "delete-container" : "hidden"}><div className="delete-video-text">{this.props.uploadStatus != "video ready" ? "You can delete this video before it completes processing." : "Video bugged out? Delete it here"} Click</div><div className="material-icons arrow-back-login">arrow_forward</div><div className="social-portal-times" onClick={(e)=>{this.deleteProcessingVideo(e)}}>&times;</div></div>
                     <div className="flex progress-update">
                         <div className="progress-upload-status">{this.props.uploadStatus}{this.state.dots}</div>
                         <div className="progress-num">{this.state.progress == 0 ? "" : Math.round(this.state.progress) + "%"}</div>

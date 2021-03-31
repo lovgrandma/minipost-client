@@ -1313,8 +1313,10 @@ class App extends Component {
                 console.log(error);
             });
         }
-        if (!this.state.cloud) {
+        if (!cookies.get('contentDelivery')) {
             this.fetchCloudUrl();
+        } else {
+            this.setState({ cloud: cookies.get('contentDelivery') });
         }
         this.buildPlaylist();
         this.createTogetherPingInterval();
@@ -1444,7 +1446,13 @@ class App extends Component {
         cookies.set('sidebarStatus', update, { path: '/', sameSite: true, signed: true });
         this.setState({sidebarStatus: update });
     }
-
+    
+    /**
+    * Allows child components to set cloud when they retrieve data from the serve and the cloud is bundled with
+    *
+    * @args {String cloud} Takes a string of the cloud address
+    * @return {none} 
+    */
     setCloud = (cloud) => {
         this.setState({ cloud: cloud });
         cookies.set('contentDelivery', cloud, { path: '/', sameSite: true, signed: true });

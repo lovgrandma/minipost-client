@@ -379,3 +379,68 @@
 .fullscreen-video-chats::-webkit-scrollbar-button:vertical:hover {
   color: rgb(155, 155, 155);
 }
+
+.delete-container {
+    display: -webkit-box;
+    display: -ms-flexbox;
+    display: flex;
+    font-size: 0.7em;
+    height: 18px;
+    background-color: rgb(255, 67, 67);
+    color:  rgb(255, 67, 67);
+    place-content: flex-start;
+    border-radius: 10px;
+    -webkit-transition: 200ms;
+    -o-transition: 200ms;
+    transition: 200ms;
+    width: -webkit-fit-content;
+    width: -moz-fit-content;
+    width: fit-content;
+    max-height: 25px;
+    padding: 2.5px;
+}
+
+.delete-container .delete-video-text {
+    overflow: hidden;
+    -webkit-transition: 200ms;
+    -o-transition: 200ms;
+    transition: 200ms;
+    width: 0;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
+.delete-container:hover .delete-video-text {
+    width: -webkit-fit-content;
+    width: -moz-fit-content;
+    width: fit-content;
+}
+
+.delete-container:hover {
+    color:  rgb(255, 255, 255);
+    padding: 5px;
+    height: -webkit-fit-content;
+    height: -moz-fit-content;
+    height: fit-content;
+}
+
+.delete-container .social-portal-times,
+.delete-container .material-icons {
+    font-size: 1.5em;
+    color: white;
+}
+
+.delete-container .social-portal-times {
+    padding-right: 5px;
+    cursor: pointer;
+}
+
+.delete-container .material-icons {
+    padding-left: 5px;
+    padding-top: 1px;
+    -webkit-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
+}
