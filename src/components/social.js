@@ -1,7 +1,6 @@
-import React, { Component } from 'react';
+import React from 'react';
 import Request from './request.js'; import Friend from './friend.js'; import SearchedUserResults from './searcheduserresults.js'; import NonFriendConversation from './nonfriendconversation.js'; import Sidebarfooter from './sidebarfooter.js';
 import angleDoubleLeft from '../static/angle-double-left-solid.svg'; import friendswhite from '../static/friendsWhite.svg'; import nonFriendsWhite from '../static/nonFriendsWhite.svg';
-import { cookies } from '../App.js';
 import {
     Link
 } from 'react-router-dom';

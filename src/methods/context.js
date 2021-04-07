@@ -290,3 +290,67 @@ export const resolveViews = function() {
         return this.props.views;
     }
 }
+
+
+export const editable = function() {
+    if (cookies.get('loggedIn')) {
+        if (cookies.get('loggedIn') == this.state.username) {
+            return true;
+        }
+    }
+    return false;
+}
+
+export const canFollow = function() {
+    if (cookies.get('loggedIn')) {
+        if (editable.call(this) == true) {
+            return false;
+        } else {
+            return true;
+        }
+    } 
+    return false;
+}
+
+export const isAd = function(record) {
+    if (record.dailyBudget && record.mpd || record.hasOwnProperty('clicks')) {
+        return "AdVideo";
+    } else {
+        return false;
+    }
+}
+
+export const getPathnameMatchProfile = async function() {
+    try {
+        if (this.props.location.search) {
+            if (this.props.location.search.length > 0) {
+                if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)) {
+                    if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
+                        return await this.fetchProfileData(this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                    }
+                }
+            }
+        }
+        if (this.props.location.pathname) {
+            if (this.props.location.pathname.length > 0) {
+                if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)) {
+                    if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
+                        return await this.fetchProfileData(this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                    }
+                }
+            }
+        }
+        return await this.fetchProfileData(cookies.get('loggedIn')); // fetch user data
+    } catch (err) {
+        // Component unmounted
+    }
+}
+
+export const interceptProfileMenuClick = function(page) {
+    try {
+        this.setState({ page: page });
+    } catch (err) {
+        // Fail silently
+        console.log(err);
+    }
+}

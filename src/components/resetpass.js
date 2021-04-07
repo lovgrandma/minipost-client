@@ -1,20 +1,5 @@
 import React, {Component} from 'react';
-import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link,
-    useParams
-} from 'react-router-dom';
-import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
-} from 'react-bootstrap';
 import currentrooturl from '../url';
-import { cookies } from '../App.js';
 import corsdefault from '../cors.js';
 const rePass = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*]{8,56}$/; // More accepting 
 

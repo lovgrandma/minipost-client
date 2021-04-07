@@ -28,3 +28,4 @@ src/proxy.js
 buildscript
 /src/cors.js
 /dist
+src/shopurl.js

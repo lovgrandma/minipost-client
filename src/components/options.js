@@ -1,24 +1,7 @@
 import React, {Component} from 'react';
-import ReactDom from 'react-dom';
-import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
-} from 'react-router-dom';
-import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
-} from 'react-bootstrap';
-import Videos from './videos.js';
-import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url';
-import dummythumbnail from '../static/greythumb.jpg';
 import { cookies } from '../App.js';
-import { get, setData } from '../methods/utility.js';
+import { get } from '../methods/utility.js';
 import keys from '../keys/stripecred.js';
 import amex from '../static/cc/amex.svg'; import mastercard from '../static/cc/mastercard.svg'; import visa from '../static/cc/visa.svg'; 
 import corsdefault from '../cors.js';
@@ -50,6 +33,7 @@ export default class Options extends Component {
             if (cookies.get('loggedIn')) {
                 let username = cookies.get('loggedIn');
                 let hash = cookies.get('hash');
+                let self = true;
                 return await fetch(currentrooturl + 'm/fetchprofileoptionsdata', {
                     method: "POST",
                     headers: {
@@ -58,7 +42,7 @@ export default class Options extends Component {
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        username, hash
+                        username, hash, self
                     })
                 })
                 .then((response) => {
@@ -91,6 +75,7 @@ export default class Options extends Component {
                 if (cookies.get('loggedIn')) {
                     let username = cookies.get('loggedIn');
                     let hash = cookies.get('hash');
+                    let self = true;
                     return await fetch(currentrooturl + 'm/getclientsecret', {
                         method: "POST",
                         headers: {
@@ -99,7 +84,7 @@ export default class Options extends Component {
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            username, hash
+                            username, hash, self
                         })
                     })
                     .then((response) => {
@@ -155,6 +140,7 @@ export default class Options extends Component {
                             formData.append('thumbnail', file);
                             formData.append('username', username);
                             formData.append('hash', cookies.get('hash'));
+                            formData.append('self', true);
                             return await fetch(currentrooturl + 'm/uploadthumbnail', {
                                 method: "POST",
                                 credentials: corsdefault,
@@ -230,7 +216,7 @@ export default class Options extends Component {
                     console.log(result);
                     let payment_id = result.setupIntent.payment_method;
                     let cus_id = this.state.payment_customer;
-                    return await fetch(currentrooturl + 'm/associatecardwithcustomer', {
+                     return await fetch(currentrooturl + 'm/associatecardwithcustomer', {
                             method: "POST",
                             headers: {
                                 'Accept': 'application/json',

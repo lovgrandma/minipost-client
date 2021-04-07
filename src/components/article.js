@@ -126,8 +126,10 @@ export default class Article extends Component {
                         }
                         if (id) {
                             let username = "";
+                            let self = false;
                             if (cookies.get('loggedIn')) {
                                 username = cookies.get('loggedIn');
+                                self = true;
                             }
                             let hash = cookies.get('hash');
                             const articleData = await fetch(currentrooturl + 'm/fetcharticlepagedata', {
@@ -138,7 +140,7 @@ export default class Article extends Component {
                                 },
                                 credentials: corsdefault,
                                 body: JSON.stringify({
-                                    id, username, hash
+                                    id, username, hash, self
                                 })
                             })
                             .then((response) => {
@@ -237,6 +239,7 @@ export default class Article extends Component {
             let username = cookies.get('loggedIn');
             let id = this.state.id;
             let hash = cookies.get('hash');
+            let self = true;
             fetch(currentrooturl + 'm/incrementread', {
                 method: "POST",
                 headers: {
@@ -245,7 +248,7 @@ export default class Article extends Component {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    id, username, hash
+                    id, username, hash, self
                 })
             })
             .then((response) => {

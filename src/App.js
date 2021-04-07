@@ -347,6 +347,10 @@ class Socialbar extends Component { // Main social entry point sb1
         // This will retrieve all chats within "chats" in the user document.
         let username = this.state.isLoggedIn;
         let hash = cookies.get('hash');
+        let self = false;
+        if (username) {
+            self = true;
+        }
         if (!socket) {
             fetch(currentrooturl + 'm/getconversationlogs', {
                 method: "POST",
@@ -356,7 +360,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, hash
+                    username, hash, self
                 })
             })
             .then(function(response) {
@@ -411,7 +415,6 @@ class Socialbar extends Component { // Main social entry point sb1
     * communicating false non-action.
     */
     submitResetPass = async (e, phone, email) => {
-        let hash = cookies.get('hash');
         if (phone && email) {
             return await fetch(currentrooturl + 'm/submitresetpass', {
                 method: "POST",
@@ -422,7 +425,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 mode: 'cors',
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    phone, email, hash
+                    phone, email
                 })
             })
             .then((response) => {
@@ -510,6 +513,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     this.setState({ loginerror: null });
                     let username = document.getElementById("username").value;
                     let regemail = document.getElementById("regemail").value;
+                    let self = true;
                     phone = phone.current.getNumber(document.getElementById('phonein').value,intlTelInputUtils.numberFormat.E164);
                     let regpassword = document.getElementById("regpw").value;
                     let confirmPassword = document.getElementById("regpw2").value;
@@ -575,6 +579,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     .then((data) => {
                         console.log(data);
                         if (data.querystatus== "loggedin" && data.username ) {
+                            cookies.set('hash', data.hash); // Set hash first as features do not run without hash
                             cookies.set('loggedIn', data.username);
                             this.setState({ isLoggedIn: data.user });
                             this.setState({ verifyerror: null });
@@ -772,6 +777,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let thetitleofsomeonewewanttobecloseto = friend;
         let username = this.state.isLoggedIn;
         let hash = cookies.get('hash');
+        let self = true;
         fetch(currentrooturl + 'm/requestfriendship', {
             method: "POST",
             headers: {
@@ -780,7 +786,7 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                thetitleofsomeonewewanttobecloseto, username, hash
+                thetitleofsomeonewewanttobecloseto, username, hash, self
             })
         })
         .then(function(response) {
@@ -815,6 +821,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let thetitleofsomeoneiusedtowanttobecloseto = friend;
         let username = this.state.isLoggedIn;
         let hash = cookies.get('hash');
+        let self = true;
         console.log("revokefriendrequest arguments; pending: " + pending + " refuse: " + refuse);
         fetch(currentrooturl + 'm/revokefriendship', {
             method: "POST",
@@ -824,7 +831,7 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                thetitleofsomeoneiusedtowanttobecloseto, username, pending, refuse, block, hash
+                thetitleofsomeoneiusedtowanttobecloseto, username, pending, refuse, block, hash, self
             })
         })
         .then((response) => {
@@ -894,6 +901,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!username) {
             username = cookies.get('loggedIn');
         }
+        let self = true;
         let hash = cookies.get('hash');
         if ((search || !this.state.pendingfriendrequests) && username) { // If searching again or pendingfriendrequests is null
             fetch(currentrooturl + 'm/pendingrequests', {
@@ -904,7 +912,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, hash
+                    username, hash, self
                 })
             })
             .then(function(response) {
@@ -939,6 +947,7 @@ class Socialbar extends Component { // Main social entry point sb1
         let username = this.state.isLoggedIn;
         let newfriend = friend;
         let hash = cookies.get('hash');
+        let self = true;
         fetch(currentrooturl + 'm/acceptfriendrequest', {
             method: "POST",
             headers: {
@@ -947,7 +956,7 @@ class Socialbar extends Component { // Main social entry point sb1
             },
             credentials: corsdefault,
             body: JSON.stringify({
-                newfriend, username, hash
+                newfriend, username, hash, self
             })
         })
         .then(function(response) {
@@ -982,6 +991,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (this.state.isLoggedIn || cookies.get('loggedIn')) {
             let username = this.state.isLoggedIn || cookies.get('loggedIn');
             let hash = cookies.get('hash');
+            let self = true;
             fetch(currentrooturl + 'm/getfriends', {
                 method: "POST",
                 headers: {
@@ -990,7 +1000,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, hash
+                    username, hash, self
                 })
             })
             .then(function(response) {
@@ -1075,6 +1085,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 }
             } else { // If fromSearch true or no conversation between both users, will use fetch request defaults to fetch request. This will not create a mongo log convo, just a record that the chat exists. Will still force conversation to occur via socket after call
                 let hash = cookies.get('hash');
+                let self = true;
                 if (message.length > 0) { // Message must be valid
                     fetch(currentrooturl + 'm/beginchat', {
                         method: "POST",
@@ -1084,7 +1095,7 @@ class Socialbar extends Component { // Main social entry point sb1
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            username, chatwith, message, hash
+                            username, chatwith, message, hash, self
                         })
                     })
                     .then(function(response) {
@@ -1723,6 +1734,12 @@ class App extends Component {
                         )}/>
                         <Route path='/read' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                        )}/>
+                        <Route path='/shop' render={(props) => (
+                            <Profile {...props} key={getPath()} page="" />
+                        )}/>
+                        <Route path='/shop?s=:username' render={(props) => (
+                            <Profile {...props} key={getPath()} page="" />
                         )}/>
                         <Route path='/options' render={(props) => (
                             <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />

@@ -9,11 +9,7 @@ import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url.js';
 import { checkAtBottom, setData, getNumber, checkToString } from '../methods/utility.js';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import { cookies } from '../App.js';
 import corsdefault from '../cors.js';
@@ -103,8 +99,10 @@ export default class Dash extends Component {
             }, 2000);
             this.setState({ fetchingTimeout: timeout });
             let username = null;
+            let self = false;
             if (cookies.get('loggedIn')) {
                 username = cookies.get('loggedIn');
+                self = true;
             }
             let append = [];
             if (this.state) {
@@ -130,7 +128,7 @@ export default class Dash extends Component {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, append, hash
+                    username, append, hash, self
                 })
             })
             .then((response) => {

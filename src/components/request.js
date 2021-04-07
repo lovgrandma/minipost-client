@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React from 'react';
 import heart from '../static/heart.svg'; import profile from '../static/profile.svg'; import close from '../static/close.svg'; import chatblack from '../static/chat-black.svg';
 
 function Request(props) {

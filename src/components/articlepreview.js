@@ -1,13 +1,10 @@
 import React, {Component} from 'react';
-import currentrooturl from '../url';
 import {
-    BrowserRouter,
-    Route,
     NavLink,
     Link
 } from 'react-router-dom';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
-import { convertDate, parseId, get } from '../methods/utility.js';
+import { convertDate } from '../methods/utility.js';
 import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';

@@ -5,7 +5,6 @@ import {
 } from 'react-router-dom';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
-import currentrooturl from '../url';
 import ArticlePreview from './articlepreview.js';
 import { convertDate, get } from '../methods/utility.js';
 import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';

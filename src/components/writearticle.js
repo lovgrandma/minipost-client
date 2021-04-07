@@ -3,16 +3,9 @@ import currentrooturl from '../url';
 import CKEditor from '@ckeditor/ckeditor5-react';
 import ckEditor from 'ckeditor5-custom-build';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import {
-    BrowserRouter,
-    Route,
-    NavLink,
     Link
 } from 'react-router-dom';
 import $ from 'jquery';
@@ -211,6 +204,7 @@ export default class writeArticle extends Component {
                         id = this.state.editId;
                     }
                     let hash = cookies.get('hash');
+                    let self = true;
                     fetch(currentrooturl + 'm/publisharticle', {
                         method: "POST",
                         headers: {
@@ -219,7 +213,7 @@ export default class writeArticle extends Component {
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            author, title, body, responseTo, responseType, edit, id, username, hash
+                            author, title, body, responseTo, responseType, edit, id, username, hash, self
                         })
                     })
                     .then((response) => {

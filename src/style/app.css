@@ -4,7 +4,7 @@ html {
 
 /* Check index file for cdn import */
 .millerbolditalic {
-    font-family: "Miller Text Bd It";
+    font-family: "Miller Text Bd It", "Miller Text Bd It2";
     font-display: swap;
     font-style: italic;
     font-weight: normal;
@@ -51,7 +51,8 @@ html {
     margin-bottom: 18px;
 }
 
-#upl-article-title {
+#upl-article-title,
+.title-cursive-font {
     font-family: "Miller Text Bd It2", "Miller Text Bd It", 'Crimson Text', serif !important;
     font-display: swap;
 }
@@ -76,8 +77,9 @@ h5 {
     font-weight: 600;
 }
 
-.weight500 {
-    font-weight: 500;
+.weight500,
+.weight600 {
+    font-weight: 600;
 }
 
 .no-select {
@@ -280,6 +282,22 @@ button {
     display: flex;
 }
 
+.flex-profile-data div {
+    display: flex;
+}
+
+.flex-profile-data div div {
+    padding-right: 10px;
+}
+
+.flex-profile-data div div:last-child {
+    padding-right: 0px;
+}
+
+.profile-user-container-meta {
+    padding-bottom: 2.5px;
+}
+
 .main-profile-header .flex-profile {
     flex-wrap: wrap;
 }
@@ -372,7 +390,7 @@ button {
 }
 
 .profile-stats {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .align-center {
@@ -5447,4 +5465,35 @@ a code:hover {
 
 .resetform .form-group {
     margin-bottom: 0.5rem;
+}
+
+.profile-menu {
+    display: flex;
+}
+
+button.profile-menu-link {
+    color:white;
+    background: #868686 !important;
+    font-size: 0.9em;
+    padding: 1px 30px;
+    border-radius: 2.5px 2.5px 5px 5px;
+    font-weight: 600;
+    margin: 2.5px;
+    margin-bottom: 1px;
+    transition: 200ms;
+    text-decoration: none;
+}
+
+button.profile-menu-link:hover {
+    background: darkgrey !important;
+    color: white;
+    text-decoration: none;
+}
+
+.profile-menu button.profile-menu-link:first-child {
+    margin-left: 0px;
+}
+
+.profile-menu button.profile-menu-link:last-child {
+    margin-right: 0px;
 }

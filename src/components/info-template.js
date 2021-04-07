@@ -5,14 +5,6 @@ Information page basic template */
 
 import React, { Component } from 'react';
 import currentrooturl from '../url.js';
-import { checkAtBottom, setData, getNumber, get } from '../methods/utility.js';
-import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
-} from 'react-bootstrap';
 import parseBody from '../methods/htmlparser.js';
 import { cookies } from '../App.js';
 import corsdefault from '../cors.js';

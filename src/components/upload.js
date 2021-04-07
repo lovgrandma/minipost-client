@@ -388,6 +388,7 @@ export default class Upload extends Component { // ulc upload component
         if (type == "ad" && cookies.get('loggedIn') && mpd) {
             const username = cookies.get('loggedIn');
             let hash = cookies.get('hash');
+            let self = true;
             fetch(currentrooturl + 'm/getSingleAd', {
                 method: "POST",
                 headers: {
@@ -396,7 +397,7 @@ export default class Upload extends Component { // ulc upload component
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    mpd, username, hash
+                    mpd, username, hash, self
                 })
             })
             .then((response) => {
@@ -456,6 +457,7 @@ export default class Upload extends Component { // ulc upload component
             if (cookies.get('loggedIn')) {
                 let username = cookies.get('loggedIn');
                 let hash = cookies.get('hash');
+                let self = true;
                 fetch(currentrooturl + 'm/getuservideos', {
                     method: "POST",
                     headers: {
@@ -464,7 +466,7 @@ export default class Upload extends Component { // ulc upload component
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        username, hash
+                        username, hash, self
                     })
                 })
                 .then((response) => {
@@ -900,6 +902,7 @@ export default class Upload extends Component { // ulc upload component
     deleteProcessingVideo = async() => {
         let username = cookies.get('loggedIn');
         let hash = cookies.get('hash');
+        let self = true;
         if (username && hash) {
             let data = await fetch(currentrooturl + 'm/deleteprocessingvideo', {
                 method: "POST",
@@ -909,7 +912,7 @@ export default class Upload extends Component { // ulc upload component
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, hash
+                    username, hash, self
                 })
             })
             .then((response) => {

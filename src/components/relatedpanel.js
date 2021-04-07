@@ -1,11 +1,7 @@
 import React, { Component } from 'react';
 import currentrooturl from '../url.js';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';

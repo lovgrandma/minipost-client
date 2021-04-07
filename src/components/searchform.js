@@ -1,6 +1,4 @@
 import React, {Component} from 'react';
-import search from '../static/search.svg';
-import currentrooturl from '../url';
 import history from '../methods/history.js';
 
 // Searchform within navbar

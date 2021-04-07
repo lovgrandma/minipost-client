@@ -1,17 +1,14 @@
 import React, { Component } from 'react';
 import RelatedPanel from './relatedpanel.js';
 import SocialVideoMeta from './socialvideometa.js';
-import Cookies from 'universal-cookie';
 import {
-    BrowserRouter,
-    Route,
     NavLink,
     Link
 } from 'react-router-dom';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
-import heart from '../static/heart.svg'; import thumbsup from '../static/thumbsup.svg'; import thumbsdown from '../static/thumbsdown.svg'; import share from '../static/share.svg'; import minipostpreviewbanner from '../static/minipostbannerblacksmaller5.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
+import minipostpreviewbanner from '../static/minipostbannerblacksmaller5.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
@@ -342,10 +339,13 @@ export default class Video extends Component {
     /* Entire fetch request returns object containing video object, relevantVideos array of objects, articleResponses array of objects, videoResponses array of objects. Video object contains mpd, author, title, description, tags, published, likes, dislikes, views */
     fetchVideoPageData = async (rawMpd, ad = false) => {
         let username = "";
+        let self = false;
         if (cookies.get('loggedIn')) {
             username = cookies.get('loggedIn');
+            self = true;
         }
         let hash = cookies.get('hash');
+        // When authentication doesn't matter, 
         try {
             const videoData = await fetch(currentrooturl + 'm/fetchvideopagedata', {
                 method: "POST",
@@ -355,7 +355,7 @@ export default class Video extends Component {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    rawMpd, username, ad, hash
+                    rawMpd, username, ad, hash, self
                 })
             })
             .then((response) => {
@@ -455,8 +455,10 @@ export default class Video extends Component {
         this.endViewCountInterval();
         if (this.state.mpd && !this.state.viewCounted && !this.state.adPlaying || this.state.adUriRaw && this.state.adPlaying && this.state.adBudget && this.state.startDate && this.state.endDate && !this.state.viewCounted) {
             let username = "";
+            let self = false;
             if (cookies.get('loggedIn')) {
                 username = cookies.get('loggedIn');
+                self = true;
             }
             let ad = false;
             if (this.props.ad) {
@@ -478,7 +480,7 @@ export default class Video extends Component {
             if (this.state.adPlaying && cookies.get('loggedIn') == this.state.adAuthor) {
                 dontInc = true;
             }
-            if (ad && !this.state.adBudget || ad && !this.state.startDate || ad && !this.state.startDate) { // If data is required to inc is not available, dont inc
+            if (ad && !this.state.adBudget || ad && !this.state.startDate || ad && !this.state.endDate) { // If data is required to inc is not available, dont inc
                 dontInc = true;
             }
             let mpd = this.state.mpd;
@@ -503,7 +505,7 @@ export default class Video extends Component {
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        mpd, username, ad, adBudget, startDate, endDate, hash
+                        mpd, username, ad, adBudget, startDate, endDate, hash, self
                     })
                 })
                 .then(function(response) {
@@ -532,8 +534,10 @@ export default class Video extends Component {
     incrementClick = async () => {
         if (this.state.mpd && !this.state.clickCounted || this.state.adUriRaw && this.state.adPlaying && this.state.adBudget && this.state.startDate && this.state.endDate && !this.state.clickCounted) {
             let username = "";
+            let self = false;
             if (cookies.get('loggedIn')) {
                 username = cookies.get('loggedIn');
+                self = true;
             }
             let ad = false;
             if (this.props.ad) {
@@ -580,7 +584,7 @@ export default class Video extends Component {
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        mpd, username, ad, adBudget, startDate, endDate, hash
+                        mpd, username, ad, adBudget, startDate, endDate, hash, self
                     })
                 })
                 .then(function(response) {

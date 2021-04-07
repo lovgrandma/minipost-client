@@ -12,48 +12,25 @@ import {
     Button,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
-import Videos from './videos.js';
-import ArticlePreview from './articlepreview.js';
+import Videos from './videos.js'; import ArticlePreview from './articlepreview.js'; import Shop from './shop.js';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
-import { get, setData } from '../methods/utility.js';
+import { get } from '../methods/utility.js';
+import { isAd, canFollow, editable, getPathnameMatchProfile, interceptProfileMenuClick } from '../methods/context.js';
 import corsdefault from '../cors.js';
 
 export default class Profile extends Component {
     constructor() {
         super();
-        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "" }
+        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "", page: "", shop: null }
     }
 
     componentDidMount = async () => {
         try {
-            await this.getPathnameMatch();
-        } catch (err) {
-            // Component unmounted
-        }
-    }
-
-    getPathnameMatch = async () => {
-        try {
-            if (this.props.location.search) {
-                if (this.props.location.search.length > 0) {
-                    if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)) {
-                        if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
-                            return await this.fetchProfileData(this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]);
-                        }
-                    }
-                }
+            if (this.props.page) {
+                interceptProfileMenuClick.call(this, this.props.page);
             }
-            if (this.props.location.pathname) {
-                if (this.props.location.pathname.length > 0) {
-                    if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)) {
-                        if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
-                            return await this.fetchProfileData(this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]);
-                        }
-                    }
-                }
-            }
-            return await this.fetchProfileData(cookies.get('loggedIn')); // fetch user data
+            await getPathnameMatchProfile.call(this);
         } catch (err) {
             // Component unmounted
         }
@@ -85,6 +62,9 @@ export default class Profile extends Component {
                 .then((result) => {
                     let authenticated = this.props.checkAndConfirmAuthentication(result);
                     if (result && authenticated) {
+                        if (result.shop) {
+                            this.setState({ shop: result.shop });
+                        }
                         if (result.totalviews) {
                             this.setState({ totalVideoViews: result.totalviews });
                         }
@@ -110,7 +90,8 @@ export default class Profile extends Component {
                         }
                     } 
                     console.log(result);
-                })
+                    return result;
+                });
             }
         } catch (err) {
             // Component was unmounted
@@ -119,90 +100,90 @@ export default class Profile extends Component {
         return true;
     }
 
-    editable() {
-        if (cookies.get('loggedIn')) {
-            if (cookies.get('loggedIn') == this.state.username) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    canFollow() {
-        if (cookies.get('loggedIn')) {
-            if (this.editable() == true) {
-                return false;
-            } else {
-                return true;
-            }
-        } 
-        return false;
-    }
-
-    isAd(record) {
-        if (record.dailyBudget && record.mpd || record.hasOwnProperty('clicks')) {
-            return "AdVideo";
-        } else {
-            return false;
-        }
-    }
 
     render() {
+        let pageData;
+        let profileData = <div className="profile-content flex-grid videogrid">
+                            { this.state.content ?
+                                this.state.content.length > 0 ?
+                                    this.state.content.map((record, index) =>
+                                        record.mpd ? <Videos mpd={record.mpd}
+                                            title={record.title}
+                                            description={record.description}
+                                            thumbnailUrl={record.thumbnailUrl}
+                                            avatarUrl={this.state.avatarurl}
+                                            author={record.author}
+                                            published={record.publishDate}
+                                            views={record.views}
+                                            articles={record.articles}
+                                            tags={record.tags}
+                                            cloud={this.props.cloud}
+                                            key={index}
+                                            index={index}
+                                            edit={editable.call(this)}
+                                            ad={isAd(record)}
+                                            />
+                                        : <ArticlePreview title={record.title}
+                                            author={record.author}
+                                            body={record.body}
+                                            id={record.id}
+                                            likes={record.likes}
+                                            dislikes={record.dislikes}
+                                            reads={record.reads}
+                                            published={record.publishDate}
+                                            key={index}
+                                            edit={editable.call(this)}
+                                            viewProfile={true}
+                                        />
+                                    )
+                                : null
+                            : null }
+                        </div>
+        if (this.state.page == "") {
+            pageData = profileData;
+        } else if (this.state.page == "shop") {
+            pageData = <Shop owner={this.state.username}
+                            shop={this.state.shop}
+                            edit={editable.call(this)}
+                        />
+        } else {
+            pageData = profileData;
+        }
         return (
             <div>
                 <div className="flex-profile main-profile-header">
                     <img className="profileavatar" src={this.props.cloud + "/av/" + this.state.avatarurl}></img>
                     <div>
-                        <div className="flex-profile off-black align-center">
-                            <div className="prompt-basic off-black weight500">{this.state.username}</div>
-                            <Button className={this.canFollow() ? "prompt-basic off-black weight500" : "prompt-basic off-black weight500 hidden"}>{this.canFollow() ? "follow" : ""}</Button>
-                            <div className="prompt-basic flex"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
-                            <div className="prompt-basic flex"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
+                        <div className="flex-profile-data off-black align-center">
+                            <div className="profile-user-container-meta">
+                                <div className="prompt-basic off-black weight500">{this.state.username}</div>
+                                <Button className={canFollow.call(this) ? "prompt-basic off-black weight500" : "prompt-basic off-black weight500 hidden"}>{canFollow.call(this) ? "follow" : ""}</Button>
+                            </div>
+                            <div className="profile-following-container-meta">
+                                <div className="prompt-basic flex"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
+                                <div className="prompt-basic flex"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
+                            </div>
                         </div>
                         <div className="prompt-basic off-black">{this.state.about}</div>
                     </div>
                 </div>
-                <div className="flex-profile profile-stats">
-                    <div className="prompt-basic-s grey-out">total reads {this.state.totalReads}</div>
-                    <div className="prompt-basic-s grey-out">total video views {this.state.totalVideoViews}</div>
-                    <div className="prompt-basic-s grey-out">videos uploaded {this.state.videosUploaded}</div>
+                <div className="profile-stats">
+                    <div className="flex-profile profile-stats-container">
+                        <div className="prompt-basic-s grey-out">total reads {this.state.totalReads}</div>
+                        <div className="prompt-basic-s grey-out">total video views {this.state.totalVideoViews}</div>
+                        <div className="prompt-basic-s grey-out">videos uploaded {this.state.videosUploaded}</div>
+                    </div>
+                    {
+                        this.state.shop && this.state.username ? 
+                            <div className="profile-menu">
+                                <Button className="profile-menu-link" onClick={(e)=> {interceptProfileMenuClick.call(this, "")}}>Profile</Button>
+                                <Button className="profile-menu-link" onClick={(e)=> {interceptProfileMenuClick.call(this, "shop")}}>Shop</Button>
+                            </div> 
+                            : 
+                            null
+                    }
                 </div>
-                <div className="profile-content flex-grid videogrid">
-                    { this.state.content ?
-                        this.state.content.length > 0 ?
-                            this.state.content.map((record, index) =>
-                                record.mpd ? <Videos mpd={record.mpd}
-                                    title={record.title}
-                                    description={record.description}
-                                    thumbnailUrl={record.thumbnailUrl}
-                                    avatarUrl={this.state.avatarurl}
-                                    author={record.author}
-                                    published={record.publishDate}
-                                    views={record.views}
-                                    articles={record.articles}
-                                    tags={record.tags}
-                                    cloud={this.props.cloud}
-                                    key={index}
-                                    index={index}
-                                    edit={this.editable()}
-                                    ad={this.isAd(record)}
-                                    />
-                                : <ArticlePreview title={record.title}
-                                    author={record.author}
-                                    body={record.body}
-                                    id={record.id}
-                                    likes={record.likes}
-                                    dislikes={record.dislikes}
-                                    reads={record.reads}
-                                    published={record.publishDate}
-                                    key={index}
-                                    edit={this.editable()}
-                                    viewProfile={true}
-                                />
-                            )
-                        : null
-                    : null }
-                </div>
+                {pageData}
             </div>
         )
     }
