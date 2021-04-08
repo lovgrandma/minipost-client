@@ -49,12 +49,14 @@ export default class Product extends Component {
                                     }
                                 </div>
                                 <textarea type='text' id="product-desc" className="product-desc-input" ref={this.prodDescIn} name="product-desc" placeholder="Product Description" value={this.props.name ? this.props.name : null}></textarea>
-                                <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="$ Price" autoComplete="off"></input>
+                                <div className="product-price-input-container">
+                                    <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off"></input>
+                                </div>
                             </div>
                             : 
                             <div>
                                 <div className="product-list-meta-name-edit-container">
-                                    <h5 className="product-name">{!this.props.dummy ? this.props.name : "Add Product"}</h5>
+                                    <h5 className={!this.props.dummy ? "product-name" : "product-name product-name-dummy" }>{!this.props.dummy ? this.props.name : "Add Product"}</h5>
                                     {
                                         this.props.self ? 
                                             <Button onClick={(e) => {this.props.enableEditMode(e, this.props.index)}} className="edit-interact-product"><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit" /></Button>
