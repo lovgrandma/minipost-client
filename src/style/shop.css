@@ -235,7 +235,7 @@
 
 .shipping-portal {
     transition: 200ms;
-    position: absolute;
+    position: fixed;
     top: -100%;
     opacity: 0;
     left: 50%;
@@ -246,7 +246,7 @@
 }
 
 .shipping-portal-visible {
-    top: 20%;
+    top: 17.5%;
     opacity: 1;
 }
 
@@ -318,4 +318,129 @@
 
 .generic-product-meta-stack-container {
     display: block;
+}
+
+.shipping-rule-countries {
+    min-height: 25px;
+    margin-bottom: 5px;
+    background: #f7f7f7;
+    border: none;
+    user-select: none;
+    font-weight: 600;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.shipping-rule-input {
+    margin-bottom: 5px;
+}
+
+/* Dropdown select country to add to rules */
+
+.react-select__control {
+    height: 28px !important;
+    min-height: 28px !important;
+    border-radius: 8.5px !important;
+    margin-bottom: 5px !important;
+}
+
+.react-select-add-country-container {
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.react-select-add-country-container > button,
+.react-add-all-remove-all-countries > button {
+    height: 25px;
+    background: lightgrey;
+    margin-top: 1.5px;
+}
+
+.react-select-add-country-container > button:hover,
+.react-add-all-remove-all-countries > button:hover {
+    background: #e2e2e2;
+}
+
+.react-select-container {
+    width: -webkit-fill-available;
+}
+
+.react-select__indicator {
+    padding-top: 5px !important;
+}
+
+.react-select__indicator-separator {
+    margin-top: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.react-select__menu * {
+    padding: 0px 0 !important;
+    margin: 5px 0 !important;
+    padding-left: 5px !important;
+}
+
+.react-select__menu *:first-child {
+    margin-top: 2.5px !important;
+}
+
+.react-select__menu *:last-child {
+    margin-bottom: 2.5px !important;
+}
+
+.react-select__value-container {
+    max-height: 25px !important;
+    position: unset !important;
+}
+
+.react-select__indicators {
+    max-height: 25px !important;
+    padding: 0 10px !important;
+}
+
+.react-select__menu {
+    top: 20px !important;
+}
+
+.react-add-all-remove-all-countries {
+    width: 100%;
+    display: flex;
+    gap: 5px;
+    margin-bottom: 5px;
+}
+
+.react-select__control {
+    margin-bottom: 0 !important;
+}
+
+.info-blurb {
+    font-size: 0.75em;
+    transition: 200ms;
+    color: grey;
+    max-width: 700px;
+}
+
+.info-blurb:hover {
+    color: #464646;
+}
+
+@media (max-width: 600px) {
+    .shipping-portal-visible {
+        top: 10%;
+        max-height: 80vh;
+        overflow-y: auto;
+    }
+
+    .react-select-add-country-container {
+        flex-wrap: wrap;
+    }
+
+    .react-select-container {
+        width: 100%;
+    }
+
+    .product-list-single {
+        width: max-content;
+    }
 }

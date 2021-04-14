@@ -23,15 +23,17 @@ export default class Product extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            shippingClassButton: "Set", currentOption: 0
+            shippingClassButton: "Set", currentStyle: 0, currentOption: 0
         }
         this.shippingClassDropdownRef = new React.createRef();
         this.productOptionsSelectContainerRef = new React.createRef();
+        this.productStylesSelectContainerRef = new React.createRef();
         this.prodNameIn = new React.createRef();
         this.prodDescIn = new React.createRef();
         this.prodPriceIn = new React.createRef();
         this.prodQuantityIn = new React.createRef();
         this.prodOptionDescIn = new React.createRef();
+        this.prodStyleDescIn = new React.createRef();
     }
 
     componentDidMount() {
@@ -51,8 +53,8 @@ export default class Product extends Component {
                             this.setState({ shippingClassButton: "Go"});
                         }
                     } else {
-                        if (this.state.shippingClassButton != "Set") {
-                            this.setState({ shippingClassButton: "Set" });
+                        if (this.state.shippingClassButton != "Add") {
+                            this.setState({ shippingClassButton: "Add" });
                         }
                     }
                 }
@@ -64,16 +66,94 @@ export default class Product extends Component {
         try {
             if (this.productOptionsSelectContainerRef) {
                 if (this.productOptionsSelectContainerRef.current) {
-                    if (this.productOptionsSelectContainerRef.current.value) {
-                        if (this.productOptionsSelectContainerRef.current.value != this.state.currentOption && Number.isInteger(parseInt(this.productOptionsSelectContainerRef.current.value))) {
-                            this.setState({ currentOption: parseInt(this.productOptionsSelectContainerRef.current.value) });
+                    if (this.productOptionsSelectContainerRef.current.value != this.state.currentOption && Number.isInteger(parseInt(this.productOptionsSelectContainerRef.current.value))) {
+                        this.setState({ currentOption: parseInt(this.productOptionsSelectContainerRef.current.value) });
+                    }
+                }
+            }
+            if (this.prodOptionDescIn) {
+                if (this.prodOptionDescIn.current && this.props.styles && this.state.currentStyle !== undefined) {
+                    if (this.props.styles[this.state.currentStyle]) {
+                        if (this.props.styles[this.state.currentStyle].options) {
+                            if (this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
+                                if (!this.props.styles[this.state.currentStyle].options[this.state.currentOption].descriptor) {
+                                    this.prodOptionDescIn.current.value = "";
+                                } else {
+                                    this.prodOptionDescIn.current.value = this.props.styles[this.state.currentStyle].options[this.state.currentOption].descriptor;
+                                }
+                            }
+                        }
+                    }
+                }
+                this.updateOptionPriceAndQuantity();
+            }
+        } catch (err) {
+            // fail silently
+        }   
+    }
+
+    trackCurrentStyle(e) {
+        try {
+            if (this.productStylesSelectContainerRef) {
+                if (this.productStylesSelectContainerRef.current) {
+                    if (this.productStylesSelectContainerRef.current.value != this.state.currentStyle && Number.isInteger(parseInt(this.productStylesSelectContainerRef.current.value))) {
+                        this.setState({ currentStyle: parseInt(this.productStylesSelectContainerRef.current.value), currentOption: 0 });
+                        if (this.productOptionsSelectContainerRef) {
+                            if (this.productOptionsSelectContainerRef.current) {
+                                this.productOptionsSelectContainerRef.current.value = 0;
+                            }
+                        }
+                    }
+                }
+            }
+            if (this.prodStyleDescIn) {
+                if (this.prodStyleDescIn.current && this.props.styles && this.state.currentStyle !== undefined) {
+                    if (this.props.styles[this.state.currentStyle]) {
+                        if (!this.props.styles[this.state.currentStyle].descriptor) {
+                            this.prodStyleDescIn.current.value = "";
+                        } else {
+                            this.prodStyleDescIn.current.value = this.props.styles[this.state.currentStyle].descriptor;
+                        }
+                    }
+                }
+            }
+            if (this.prodOptionDescIn && this.props.styles) {
+                if (this.prodOptionDescIn.current && this.props.styles[this.state.currentStyle]) {
+                    if (this.props.styles[this.state.currentStyle].options) {
+                        if (this.props.styles[this.state.currentStyle].options[0]) {
+                            this.prodOptionDescIn.current.value = this.props.styles[this.state.currentStyle].options[0].descriptor;
+                        }
+                    }
+                }
+            }
+            this.updateOptionPriceAndQuantity();
+        } catch (err) {
+            console.log(err);
+            // fail silently
+        }
+    }
+
+    updateOptionPriceAndQuantity() {
+        try {
+            if (this.props.styles && this.state.currentStyle != undefined && this.prodQuantityIn && this.prodPriceIn) {
+                if (this.props.styles[this.state.currentStyle].options && this.prodQuantityIn.current && this.prodPriceIn.current) {
+                    if (this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
+                        if (this.props.styles[this.state.currentStyle].options[this.state.currentOption].quantity >= 0) {
+                            this.prodQuantityIn.current.value = this.props.styles[this.state.currentStyle].options[this.state.currentOption].quantity;
+                        } else {
+                            this.prodQuantityIn.current.value = 0;
+                        }
+                        if (this.props.styles[this.state.currentStyle].options[this.state.currentOption].price >= 0) {
+                            this.prodPriceIn.current.value = this.props.styles[this.state.currentStyle].options[this.state.currentOption].price;
+                        } else {
+                            this.prodPriceIn.current.value = null;
                         }
                     }
                 }
             }
         } catch (err) {
-            // fail silently
-    }
+            // Fail silently
+        }
     }
 
     determineShippingClassAction(e) {
@@ -84,20 +164,122 @@ export default class Product extends Component {
         }
     }
 
+
+    newStyle = (e) => {
+        if (this.props.styles && this.state.currentStyle !== undefined) {
+            let currentStyles = this.props.styles;
+            currentStyles.push({ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] });
+            this.setState({ currentOption: 0 });
+            this.props.updateLocalProducts(this.props.index, currentStyles);
+        }
+    }
+
+    removeCurrStyle = (e) => {
+        if (this.props.styles && this.state.currentStyle !== undefined) {
+            let currentStyles = this.props.styles;
+            currentStyles.splice(this.state.currentStyle, 1);
+            this.setState({ currentStyle: 0, currentOption: 0 });
+            this.props.updateLocalProducts(this.props.index, currentStyles);
+        }
+    }
+
+
     newOption = (e) => {
-        let currentOptions = this.props.options;
-        currentOptions.push({descriptor: "", price: null, quantity: 0});
-        this.props.updateLocalProducts(this.props.index, currentOptions);
+        if (this.props.styles && this.state.currentStyle !== undefined) {
+            if (this.props.styles[this.state.currentStyle]) {
+                if (this.props.styles[this.state.currentStyle].options) {
+                    let currentStyles = this.props.styles;
+                    currentStyles[this.state.currentStyle].options.push({ descriptor: "", price: null, quantity: 0 });
+                    this.props.updateLocalProducts(this.props.index, currentStyles);
+                }
+            }
+        }
     }
 
     removeCurrOption = (e) => {
         // Don't allow user to delete if only single option left. Makes no sense, would result in a non product
         // A product should always have 1 option internally even though it doesnt appear that way on the front end
-        if (this.props.options.length > 1) {
-            let currentOptions = this.props.options;
-            currentOptions.splice(this.state.currentOption, 1);
-            this.setState({ currentOption: 0 });
-            this.props.updateLocalProducts(this.props.index, currentOptions);
+        if (this.props.styles && this.state.currentStyle !== undefined) {
+            if (this.props.styles[this.state.currentStyle]) {
+                if (this.props.styles[this.state.currentStyle].options) {
+                    let currentStyles = this.props.styles;
+                    currentStyles[this.state.currentStyle].options.splice(this.state.currentOption, 1);
+                    this.setState({ currentOption: 0 });
+                    this.props.updateLocalProducts(this.props.index, currentStyles);
+                }
+            } 
+        }
+    }
+
+    updateCurrStyleName = (e) => {
+        try {
+            if (this.props.styles && this.prodStyleDescIn && this.state.currentStyle !== undefined) {
+                if (this.props.styles[this.state.currentStyle] && this.prodStyleDescIn.current) {
+                    if (this.prodStyleDescIn.current.value !== undefined) {
+                        let currentStyles = this.props.styles;
+                        currentStyles[this.state.currentStyle].descriptor = this.prodStyleDescIn.current.value;
+                        this.props.updateLocalProducts(this.props.index, currentStyles);
+                    }
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    updateCurrOptionName = (e) => {
+        try {
+            if (this.props.styles && this.prodOptionDescIn && this.state.currentStyle !== undefined) {
+                if (this.props.styles[this.state.currentStyle].options && this.prodOptionDescIn.current) {
+                    if (this.prodOptionDescIn.current.value !== undefined && this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
+                        let currentStyles = this.props.styles;
+                        currentStyles[this.state.currentStyle].options[this.state.currentOption].descriptor = this.prodOptionDescIn.current.value;
+                        this.props.updateLocalProducts(this.props.index, currentStyles);
+                    }
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    updatePrice = (e) => {
+        try {
+            if (this.props.styles && this.state.currentStyle !== undefined) {
+                let currentStyles = this.props.styles;
+                if (currentStyles[this.state.currentStyle] && this.prodPriceIn) {
+                    if (currentStyles[this.state.currentStyle].options && this.state.currentOption !== undefined && this.prodPriceIn.current) {
+                        if (currentStyles[this.state.currentStyle].options[this.state.currentOption] && this.prodPriceIn.current.value !== undefined) {
+                            if (currentStyles[this.state.currentStyle].options[this.state.currentOption].price != parseFloat(this.prodPriceIn.current.value)) {
+                                currentStyles[this.state.currentStyle].options[this.state.currentOption].price = parseFloat(this.prodPriceIn.current.value);
+                                this.props.updateLocalProducts(this.props.index, currentStyles);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            // fail silently
+        }
+    }
+
+    updateQuantity = (e) => {
+        try {
+            if (this.props.styles && this.state.currentStyle !== undefined) {
+                let currentStyles = this.props.styles;
+                if (currentStyles[this.state.currentStyle] && this.prodQuantityIn) {
+                    if (currentStyles[this.state.currentStyle].options && this.state.currentOption !== undefined && this.prodQuantityIn.current) {
+                        if (currentStyles[this.state.currentStyle].options[this.state.currentOption] && this.prodQuantityIn.current.value !== undefined) {
+                            if (currentStyles[this.state.currentStyle].options[this.state.currentOption].quantity != parseInt(this.prodQuantityIn.current.value) && Number.isInteger(parseInt(this.prodQuantityIn.current.value))) {
+                                currentStyles[this.state.currentStyle].options[this.state.currentOption].quantity = parseInt(this.prodQuantityIn.current.value);
+                                this.props.updateLocalProducts(this.props.index, currentStyles);
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            // fail silently
         }
     }
 
@@ -109,10 +291,13 @@ export default class Product extends Component {
 
     }
 
-    resolveDescriptor(value) {
+    resolveDescriptor(value, type = "option") {
         if (value) {
             return value;
         } 
+        if (type == "style") {
+            return "style";
+        }
         return "*option*";
     }
 
@@ -137,29 +322,69 @@ export default class Product extends Component {
                                 <textarea type='text' id="product-desc" className="product-desc-input" ref={this.prodDescIn} name="product-desc" placeholder="Product Description" value={this.props.name ? this.props.name : null}></textarea>
                                 <div className="product-price-input-container">
                                     {
-                                        this.props.options ?
-                                            this.props.options.length > 1 ?
+                                        this.props.styles ?
+                                            this.props.styles.length > 1 ?
                                                 <div className="generic-product-meta-stack-container-flex">
-                                                    <select name="product-options-select-container" id="product-options-select-container" ref={this.productOptionsSelectContainerRef} onClick={(e) => {this.trackCurrentOption(e)}} onChange={(e) => {this.trackCurrentOption(e)}}>
+                                                    <select name="product-options-select-container" id="product-options-select-container" ref={this.productStylesSelectContainerRef} onClick={(e) => {this.trackCurrentStyle(e)}} onChange={(e) => {this.trackCurrentStyle(e)}}>
                                                         {
-                                                            this.props.options ?
-                                                                this.props.options.map((option, index) => 
-                                                                    <option value={index} key={index}>{this.resolveDescriptor(option.descriptor)}</option>
+                                                            this.props.styles ?
+                                                                this.props.styles.map((style, index) => 
+                                                                    <option value={index} key={index}>{this.resolveDescriptor(style.descriptor, "style")}</option>
                                                                 )
                                                                 : null
                                                         }
                                                     </select>
-                                                    <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodOptionDescIn} name="product-option-descriptor-input" placeholder="Option" autoComplete="off"></input>
+                                                    <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodStyleDescIn} name="product-option-descriptor-input" placeholder="Style" onChange={(e) => {this.updateCurrStyleName(e)}} autoComplete="off"></input>
                                                 </div>
+                                                : null
+                                            : null
+                                    }
+                                    <Button onClick={(e) => {this.newStyle(e)}} className="edit-interact-product">
+                                        <span>New Style</span>
+                                        <FontAwesomeIcon className="edit-interact" icon={faPlus} color={ '#919191' } alt="edit" />
+                                    </Button>
+                                    {
+                                        this.props.styles ?
+                                            this.props.styles.length > 1 ?
+                                                <Button onClick={(e) => {this.removeCurrStyle(e)}} className="edit-interact-product">
+                                                    <span>Remove Style</span>
+                                                    <FontAwesomeIcon className="edit-interact" icon={faTrashAlt} color={ '#919191' } alt="edit" />
+                                                </Button>
+                                                : null
+                                            : null
+                                    }
+                                    {
+                                        this.props.styles ?
+                                            this.props.styles[this.state.currentStyle] ?
+                                                this.props.styles[this.state.currentStyle].options ?
+                                                    this.props.styles[this.state.currentStyle].options.length > 1 ?
+                                                        <div className="generic-product-meta-stack-container-flex">
+                                                            <select name="product-options-select-container" id="product-options-select-container" ref={this.productOptionsSelectContainerRef} onClick={(e) => {this.trackCurrentOption(e)}} onChange={(e) => {this.trackCurrentOption(e)}}>
+                                                                {
+                                                                    this.props.styles ?
+                                                                        this.props.styles[this.state.currentStyle] ?
+                                                                            this.props.styles[this.state.currentStyle].options ?
+                                                                                this.props.styles[this.state.currentStyle].options.map((option, index) => 
+                                                                                    <option value={index} key={index}>{this.resolveDescriptor(option.descriptor)}</option>
+                                                                                )
+                                                                                : null
+                                                                            : null 
+                                                                        : null
+                                                                }
+                                                            </select>
+                                                            <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodOptionDescIn} name="product-option-descriptor-input" placeholder="Option" onChange={(e) => {this.updateCurrOptionName(e)}} autoComplete="off"></input>
+                                                        </div>
+                                                        : null
+                                                    : null
                                                 : null
                                             : null
                                     }
                                     <div className="product-price-input-container-holder">
                                         <span>$</span>
-                                        <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off"></input>
+                                        <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off" onChange={(e) => {this.updatePrice(e)}}></input>
                                     </div>
                                     <div className="quantity-container-input">
-                                        <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue="0"></input>
+                                        <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue="0" onChange={(e) =>{this.updateQuantity(e)}}></input>
                                     </div>
                                     <div className="options-add-container">
                                         <Button onClick={(e) => {this.newOption(e)}} className="edit-interact-product">
@@ -167,12 +392,16 @@ export default class Product extends Component {
                                             <FontAwesomeIcon className="edit-interact" icon={faPlus} color={ '#919191' } alt="edit" />
                                         </Button>
                                         {
-                                            this.props.options ?
-                                                this.props.options.length > 1 ?
-                                                    <Button onClick={(e) => {this.removeCurrOption(e)}} className="edit-interact-product">
-                                                        <span>Remove Option</span>
-                                                        <FontAwesomeIcon className="edit-interact" icon={faTrashAlt} color={ '#919191' } alt="edit" />
-                                                    </Button>
+                                            this.props.styles ?
+                                                this.props.styles[this.state.currentStyle] ?
+                                                    this.props.styles[this.state.currentStyle].options ?
+                                                        this.props.styles[this.state.currentStyle].options.length > 1 ?
+                                                            <Button onClick={(e) => {this.removeCurrOption(e)}} className="edit-interact-product">
+                                                                <span>Remove Option</span>
+                                                                <FontAwesomeIcon className="edit-interact" icon={faTrashAlt} color={ '#919191' } alt="edit" />
+                                                            </Button>
+                                                            : null
+                                                        : null
                                                     : null
                                                 : null
                                         }

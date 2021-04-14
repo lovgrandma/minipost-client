@@ -17,7 +17,7 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, dummyoptions: [{descriptor: "", price: null, quantity: 0}]
+            products: [], self: false, editIndex: -1, showShippingPortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: null
         }
     }
 
@@ -87,7 +87,7 @@ export default class Shop extends Component {
      * @param {Boolean} val "true"
      */
     toggleShippingPortal = (val) => {
-        if (val) {
+        if (val && this.state.self) {
             this.setState({ showShippingPortal: true });
         } else {
             this.setState({ showShippingPortal: false });
@@ -96,7 +96,7 @@ export default class Shop extends Component {
 
     updateLocalProducts = (index, data) => {
         if (index == "dummy") {
-            this.setState({ dummyoptions: data });
+            this.setState({ dummystyles: data });
         } else {
             let products = this.state.products;
             products[index] = data;
@@ -124,8 +124,9 @@ export default class Shop extends Component {
                             this.state.products.map((product, index) => 
                                 <Product name={product.name}
                                 desc={product.desc}
-                                options={product.options}
+                                styles={product.styles}
                                 self={this.state.self}
+                                shipping={product.shipping}
                                 enableEditMode={this.enableEditMode}
                                 toggleShippingPortal={this.toggleShippingPortal}
                                 updateLocalProducts={this.updateLocalProducts}
@@ -140,7 +141,10 @@ export default class Shop extends Component {
                     {
                         this.state.self ? 
                             <Product dummy={true}
-                            options={this.state.dummyoptions}
+                            name={this.state.dummyname}
+                            desc={this.state.dummydesc}
+                            styles={this.state.dummystyles}
+                            shipping={this.state.dummyshipping}
                             self={true}
                             enableEditMode={this.enableEditMode}
                             toggleShippingPortal={this.toggleShippingPortal}

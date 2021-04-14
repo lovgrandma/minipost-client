@@ -31,6 +31,8 @@
     "react-intl-tel-input": "^8.0.4",
     "react-router-dom": "^4.3.1",
     "react-scripts": "^4.0.3",
+    "react-select": "^4.3.0",
+    "react-select-country-list": "^2.2.3",
     "react-textarea-autosize": "^7.1.2",
     "regenerator-runtime": "^0.13.7",
     "shaka-player": "^2.5.20",
