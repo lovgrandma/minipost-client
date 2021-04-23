@@ -411,9 +411,9 @@ export default class Product extends Component {
                                     <div className="shipping-classes-container-holder">
                                         <select name="shipping-classes" id="shipping-classes" ref={this.shippingClassDropdownRef} onClick={(e) => {this.trackCurrentShippingClass(e)}} onChange={(e) => {this.trackCurrentShippingClass(e)}}>
                                             {
-                                                this.props.shippingclasses ? 
-                                                    this.props.shippingclasses.map((shipping, index) => 
-                                                        <option value={shipping.name}>{shipping.name}</option>
+                                                this.props.shippingClasses ? 
+                                                    this.props.shippingClasses.map((shipping, index) => 
+                                                        <option value={shipping.shippingRule}>{shipping.shippingRule}</option>
                                                     )
                                                     : null
                                             }

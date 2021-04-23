@@ -5423,7 +5423,7 @@ a code:hover {
 }
 
 .history-media-info {
-    flex-shrink: 10;
+    flex-shrink: 1000;
 }
 
 .overlay {
@@ -5473,7 +5473,7 @@ a code:hover {
 
 button.profile-menu-link {
     color:white;
-    background: #868686 !important;
+    background: #e2e2e2 !important;
     font-size: 0.9em;
     padding: 1px 30px;
     border-radius: 2.5px 2.5px 5px 5px;

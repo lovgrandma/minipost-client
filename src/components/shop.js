@@ -36,7 +36,7 @@ export default class Shop extends Component {
      * Takes a shop 
      */
     fetchShopData = async() => {
-        let owner = this.props.owner;
+        let owner = this.props.owner; // Should be the value of the profile being accessed
         if (owner) {
             if (cookies.get('loggedIn') == owner && !this.state.self) {
                 this.setState({ self: true });
@@ -65,7 +65,7 @@ export default class Shop extends Component {
                 return result;
             })
             .then((result) => {
-                if (self) {
+                if (this.state.self) {
                     // make request for admin protected edit data 
                     // for editing shipping classes and other things
                 }
@@ -112,8 +112,9 @@ export default class Shop extends Component {
                     {
                         this.state.self ?
                             <div className={this.state.showShippingPortal ? "shipping-portal shipping-portal-visible" : "shipping-portal"}>
-                                <ShippingClassSetup self={this.state.self}
-                                shippingclasses={this.state.shippingclasses}
+                                <ShippingClassSetup owner={this.props.owner}
+                                self={this.state.self}
+                                shippingClasses={this.props.shippingClasses}
                                 toggleShippingPortal={this.toggleShippingPortal}
                                 />
                             </div>
@@ -131,7 +132,7 @@ export default class Shop extends Component {
                                 toggleShippingPortal={this.toggleShippingPortal}
                                 updateLocalProducts={this.updateLocalProducts}
                                 editing={this.state.editIndex}
-                                shippingclasses={this.state.shippingclasses}
+                                shippingClasses={this.props.shippingClasses}
                                 index={index}
                                 key={index}
                                 />
@@ -150,7 +151,7 @@ export default class Shop extends Component {
                             toggleShippingPortal={this.toggleShippingPortal}
                             updateLocalProducts={this.updateLocalProducts}
                             editing={this.state.editIndex}
-                            shippingclasses={this.state.shippingclasses}
+                            shippingClasses={this.props.shippingClasses}
                             index="dummy"
                             />
                             : null

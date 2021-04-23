@@ -22,7 +22,7 @@ import corsdefault from '../cors.js';
 export default class Profile extends Component {
     constructor() {
         super();
-        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "", page: "", shop: null }
+        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "", page: "", shop: null, shippingClasses: [] }
     }
 
     componentDidMount = async () => {
@@ -63,7 +63,15 @@ export default class Profile extends Component {
                     let authenticated = this.props.checkAndConfirmAuthentication(result);
                     if (result && authenticated) {
                         if (result.shop) {
-                            this.setState({ shop: result.shop });
+                            if (result.shop.shippingClasses) {
+                                try {
+                                    JSON.parse(result.shop.shippingClasses);
+                                    result.shop.shippingClasses = JSON.parse(result.shop.shippingClasses);
+                                } catch (err) {
+                                    result.shop.shippingClasses = [];
+                                }
+                            }
+                            this.setState({ shop: result.shop, shippingClasses: result.shop.shippingClasses });
                         }
                         if (result.totalviews) {
                             this.setState({ totalVideoViews: result.totalviews });
@@ -88,7 +96,7 @@ export default class Profile extends Component {
                         if (result.cloud) {
                             this.props.setCloud(result.cloud);
                         }
-                    } 
+                    }
                     console.log(result);
                     return result;
                 });
@@ -144,6 +152,7 @@ export default class Profile extends Component {
         } else if (this.state.page == "shop") {
             pageData = <Shop owner={this.state.username}
                             shop={this.state.shop}
+                            shippingClasses={this.state.shippingClasses}
                             edit={editable.call(this)}
                         />
         } else {
