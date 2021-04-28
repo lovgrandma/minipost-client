@@ -106,6 +106,9 @@ export default class Shop extends Component {
                                         if (!this.props.shippingClasses[i].perProduct) {
                                             perProduct = false;
                                         }
+                                        if (this.props.shippingClasses[i].shippingPrice) {
+                                            this.shippingClassPriceIn.current.value = this.props.shippingClasses[i].shippingPrice;
+                                        }
                                         break;
                                     }
                                 }
@@ -151,6 +154,9 @@ export default class Shop extends Component {
                                             if (this.onlyOnce.current) {
                                                 this.onlyOnce.current.checked = true;
                                             }
+                                        }
+                                        if (this.props.shippingClasses[i].shippingPrice) {
+                                            this.shippingClassPriceIn.current.value = this.props.shippingClasses[i].shippingPrice;
                                         }
                                         this.setState({ selectedCountriesRuleDisplay: countries, currentShippingClass: name, currClassIndex: i });
                                         break;
@@ -260,16 +266,18 @@ export default class Shop extends Component {
                     return response.json();
                 })
                 .then((result) => {
-                    console.log(result);
-                    // call to shop.js to update products data
-                    // call to profile.js to update shop data
+                    if (result.data) {
+                        if (result.data.shippingClasses) {
+                            this.props.updateShippingClasses(result.data.shippingClasses);
+                        }
+                    }
                     return result;
                 })
                 .catch((err) => {
                     console.log(err);
                 })
                 .then((result) => {
-                    if (exit && result) { // fix later
+                    if (exit && result) { 
                         this.props.toggleShippingPortal(false);
                     }
                 })
@@ -311,12 +319,16 @@ export default class Shop extends Component {
             }
             if (this.shippingClassPriceIn) {
                 if (this.shippingClassPriceIn.current) {
-                    if (this.shippingClassPriceIn.current.value) {
-                        try {
-                            shippingClassPrice = parseFloat(this.shippingClassPriceIn.current.value).toFixed(2);
-                        } catch (err) {
-                            shippingClassPrice = false;
+                    try {
+                        if (typeof parseFloat(this.shippingClassPriceIn.current.value) == "number") { // Allows for user to input 0 (free) as price
+                            try {
+                                shippingClassPrice = parseFloat(this.shippingClassPriceIn.current.value).toFixed(2);
+                            } catch (err) {
+                                shippingClassPrice = false;
+                            }
                         }
+                    } catch (err) {
+                        shippingClassPrice = false;
                     }
                 }
             }
@@ -371,7 +383,7 @@ export default class Shop extends Component {
     render() {
         return (
             <div className="shipping-class-setup-container">
-                <div className="err-status" ref={this.errorStatus}>{this.state.error}</div>
+                <div className="err-status err-status-hidden" ref={this.errorStatus}>{this.state.error}</div>
                 <div className="shipping-class-setup-lead">
                     <h5>In order to ship products you need to have shipping classes. <br></br></h5>
                     <div className="shipping-classes-container shipping-classes-container-editor">

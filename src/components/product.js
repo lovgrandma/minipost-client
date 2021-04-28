@@ -15,15 +15,16 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
-import { faEdit, faEllipsisH, faPlus, faSave, faTrashAlt } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEllipsisH, faPlus, faSave, faTrashAlt, faCopy } from '@fortawesome/free-solid-svg-icons';
 
 import { cookies } from '../App.js';
+import { debounce } from '../methods/utility.js';
 
 export default class Product extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            shippingClassButton: "Set", currentStyle: 0, currentOption: 0
+            shippingClassButton: "Set", currentStyle: 0, currentOption: 0, error: ""
         }
         this.shippingClassDropdownRef = new React.createRef();
         this.productOptionsSelectContainerRef = new React.createRef();
@@ -157,13 +158,48 @@ export default class Product extends Component {
     }
 
     determineShippingClassAction(e) {
-        if (this.state.shippingClassButton == "Go") {
-            this.props.toggleShippingPortal(true);
-        } else {
-            // set visual change that shipping class has been changed, will only update on post request/publish 
-        }
+        try {
+            if (this.state.shippingClassButton == "Go") {
+                this.props.toggleShippingPortal(true);
+            } else {
+                // set visual change that shipping class has been changed, will only update on post request/publish 
+                if (this.shippingClassDropdownRef.current) {
+                    let index = this.shippingClassDropdownRef.current.selectedIndex;
+                    let uuid = this.props.shippingClasses[index].uuid;
+                    this.props.updateLocalProductMeta(this.props.index, uuid, "appliedShipping");
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        } 
     }
 
+    /**
+     * Will get all styles from a specific index and copy them to all other styles
+     * 
+     * @param {*} e 
+     * @returns {Array} Array of options objects
+     */
+    copyStyleOptionsToAll = (e) => {
+        try {
+            if (this.props.styles[this.state.currentStyle]) {
+                if (this.props.styles[this.state.currentStyle].options) {
+                    let tempStyles = this.props.styles;
+                    for (let i = 0; i < tempStyles.length; i++) {
+                        // Make shallow copy or else copy styles for all will function innapropriately. Will reference to part in memory not copy over
+                        let options = [];
+                        this.props.styles[this.state.currentStyle].options.forEach((option, index) => {
+                            options.push({descriptor: option.descriptor, price: option.price , quantity: option.quantity });
+                        });
+                        tempStyles[i].options = options;
+                    }
+                    this.props.updateLocalProducts(this.props.index, tempStyles);
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
 
     newStyle = (e) => {
         if (this.props.styles && this.state.currentStyle !== undefined) {
@@ -180,6 +216,8 @@ export default class Product extends Component {
             currentStyles.splice(this.state.currentStyle, 1);
             this.setState({ currentStyle: 0, currentOption: 0 });
             this.props.updateLocalProducts(this.props.index, currentStyles);
+            this.trackCurrentStyle(e);
+            this.trackCurrentOption(e);
         }
     }
 
@@ -252,7 +290,7 @@ export default class Product extends Component {
                         if (currentStyles[this.state.currentStyle].options[this.state.currentOption] && this.prodPriceIn.current.value !== undefined) {
                             if (currentStyles[this.state.currentStyle].options[this.state.currentOption].price != parseFloat(this.prodPriceIn.current.value)) {
                                 currentStyles[this.state.currentStyle].options[this.state.currentOption].price = parseFloat(this.prodPriceIn.current.value);
-                                this.props.updateLocalProducts(this.props.index, currentStyles);
+                                this.props.updateLocalProducts(this.props.index, currentStyles, true);
                             }
                         }
                     }
@@ -264,7 +302,7 @@ export default class Product extends Component {
     }
 
     updateQuantity = (e) => {
-        try {
+      try {
             if (this.props.styles && this.state.currentStyle !== undefined) {
                 let currentStyles = this.props.styles;
                 if (currentStyles[this.state.currentStyle] && this.prodQuantityIn) {
@@ -283,8 +321,117 @@ export default class Product extends Component {
         }
     }
 
+    /**
+     * Will return whether or not all styles/options have a set price. Quantity can be set to 0
+     * @param {Array} styles 
+     * @returns {Boolean} Whether prices are valid or not
+     */
+    resolveAllProductPrices = (styles) => {
+        try {
+            for (let i = 0; i < styles.length -1; i++) {
+                if (!styles[i].descriptor || styles[i].descriptor.isEmpty()) {
+                    return false; // Styles must be named
+                }
+                for (let j = 0; j < styles[i].options.length; j++) {
+                    if (typeof styles[i].options[j].price != "number" || styles[i].options[j].price === null) {
+                        return false; // There was a style/option with a null price. Not valid price
+                    }
+                    if (!styles[i].options[j].descriptor || styles[i].options[j].descriptor.isEmpty()) {
+                        return false; // Descriptors for options must be named before being published
+                    }
+                }
+            }
+            return true;
+        } catch (err) {
+            return false;
+        }
+    }
+    /**
+     * This will finally save a product to the database on the users shop record.
+     * In order to save a product the following things are required:
+     * Name
+     * Price (Price of 0 constitutes free)
+     * Quantity (Quantity of 0 constitutes sold out)
+     * Single Shipping Class applied (Product must ship somewhere unless "virtual" (future implementation))
+     * 
+     * Description, styles and options are not required, but can be added
+     * Uuid is optional. If the server is not given a uuid it will create a new product, otherwise it will merge to that uuid
+     * 
+     * @param {Event} e
+     * @returns {void} Will make a fetch request to db or return nothing (fail) It updates error state instead
+     */
     saveProduct = (e) => {
-
+        this.setState({ error: "" }); // Reset error state
+        this.updatePrice(e);
+        this.updateQuantity(e);
+        try {
+            let goodName = false;
+            let goodStyles = false;
+            let desc = "";
+            let goodShipping = false;
+            if (this.prodNameIn) {
+                if (this.prodNameIn.current) {
+                    if (this.prodNameIn.current.value) {
+                        if (this.prodNameIn.current.value.length > 0) {
+                            let goodName = this.prodNameIn.current.value.length;
+                        }
+                    }
+                }
+            }
+            if (!goodName) {
+                this.setState({ error: "Please name your product"});
+                return;
+            }
+            if (this.prodPriceIn) {
+                if (this.prodPriceIn.current) {
+                    if (typeof this.prodPriceIn.current.value == "number") { // If this price is equal to a number, we know atleast this one is set
+                        try {
+                            goodStyles = this.resolveAllProductPrices(this.props.styles);
+                        } catch (err) {
+                            this.setState({ error: "Please enter a valid price and name for all styles/options"});
+                            return;
+                        }
+                    } else {
+                        this.setState({ error: "The current style does not have a valid price"});
+                        return;
+                    }
+                }
+            }
+            if (!goodStyles) {
+                this.setState({ error: "Please enter a valid price and name for all styles/options"});
+                return;
+            }
+            if (this.prodDescIn) {
+                if (this.prodDescIn.current) {
+                    if (this.prodDescIn.current.value) {
+                        desc = this.prodDescIn.current.value;
+                    }
+                }
+            }
+            if (this.props.shipping) {
+                if (this.props.shipping.length > 0) {
+                    goodShipping = true;
+                } else {
+                    this.setState({ error: "You need atleast one shipping class applied to save this product"});
+                    return;
+                }
+            }
+            if (goodName && goodStyles && goodShipping) {
+                let product = {
+                    name: goodName,
+                    description: desc,
+                    styles: this.props.styles,
+                    shipping: this.props.shipping
+                }
+                console.log(product);
+                // call request to db
+            } else {
+                this.setState({ error: "Some data is not complete for this product. Please review all options and values"});
+                return;
+            }
+        } catch (err) {
+            this.setState({ error: "An error occured while saving the product"}); // Saving product failed
+        }
     }
 
     delProduct = (e) => {
@@ -301,7 +448,41 @@ export default class Product extends Component {
         return "*option*";
     }
 
+    /**
+     * Will resolve all shipping data uuid references passed as argument and find matching names to present to user
+     * 
+     * @param {Array} shippingData Array of uuids
+     * @returns {Array} shippingData data with uuids {uuid: String, shippingRule, String}
+     */
+    resolveAppliedShippingNames(shippingData) {
+        let findAndAddTo = (arr, matchUuid) => {
+            for (let j = 0; j < this.props.shippingClasses.length; j++) {
+                if (this.props.shippingClasses[j].uuid == matchUuid) {
+                    arr.push({
+                        uuid: this.props.shippingClasses[j].uuid,
+                        shippingRule: this.props.shippingClasses[j].shippingRule
+                    });
+                    return arr;
+                }
+            }
+        }
+        let newData = [];
+        for (let i = 0; i < shippingData.length; i++) {
+            newData = findAndAddTo(newData, shippingData[i]);
+        }
+        return newData;
+    }
+
+    removeAppliedShippingClass(e, uuid) {
+        try {
+            this.props.removeShippingClassFromProduct(this.props.index, uuid);
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
+        let appliedShippingClassesData = this.resolveAppliedShippingNames(this.props.shipping);
         return (
             <div className="product-list-single">
                 <div className="product-list-meta-container">
@@ -339,20 +520,28 @@ export default class Product extends Component {
                                                 : null
                                             : null
                                     }
-                                    <Button onClick={(e) => {this.newStyle(e)}} className="edit-interact-product">
-                                        <span>New Style</span>
-                                        <FontAwesomeIcon className="edit-interact" icon={faPlus} color={ '#919191' } alt="edit" />
-                                    </Button>
-                                    {
-                                        this.props.styles ?
-                                            this.props.styles.length > 1 ?
-                                                <Button onClick={(e) => {this.removeCurrStyle(e)}} className="edit-interact-product">
-                                                    <span>Remove Style</span>
-                                                    <FontAwesomeIcon className="edit-interact" icon={faTrashAlt} color={ '#919191' } alt="edit" />
-                                                </Button>
+                                    <div>
+                                        <Button onClick={(e) => {this.newStyle(e)}} className="edit-interact-product">
+                                            <span>New Style</span>
+                                            <FontAwesomeIcon className="edit-interact" icon={faPlus} color={ '#919191' } alt="edit" />
+                                        </Button>
+                                        {
+                                            this.props.styles ?
+                                                this.props.styles.length > 1 ?
+                                                    <span>
+                                                        <Button onClick={(e) => {this.removeCurrStyle(e)}} className="edit-interact-product">
+                                                            <span>Remove Style</span>
+                                                            <FontAwesomeIcon className="edit-interact" icon={faTrashAlt} color={ '#919191' } alt="edit" />
+                                                        </Button>
+                                                        <Button onClick={(e) => {this.copyStyleOptionsToAll(e)}} className="edit-interact-product">
+                                                            <span>Copy Options To Other Styles</span>
+                                                            <FontAwesomeIcon className="edit-interact" icon={faCopy} color={ '#919191' } alt="edit" />
+                                                        </Button>
+                                                    </span>
+                                                    : null
                                                 : null
-                                            : null
-                                    }
+                                        }
+                                    </div>
                                     {
                                         this.props.styles ?
                                             this.props.styles[this.state.currentStyle] ?
@@ -381,7 +570,7 @@ export default class Product extends Component {
                                     }
                                     <div className="product-price-input-container-holder">
                                         <span>$</span>
-                                        <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off" onChange={(e) => {this.updatePrice(e)}}></input>
+                                        <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off" onBlur={(e) => {this.updatePrice(e)}}></input>
                                     </div>
                                     <div className="quantity-container-input">
                                         <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue="0" onChange={(e) =>{this.updateQuantity(e)}}></input>
@@ -408,12 +597,21 @@ export default class Product extends Component {
                                     </div>
                                 </div>
                                 <div className="shipping-classes-container">
+                                    <div className="tags-applied-shipping-classes">
+                                        {
+                                            appliedShippingClassesData ?
+                                                appliedShippingClassesData.map((data, index) => 
+                                                    <span className="tag" uuid={data.uuid} key={index}>{data.shippingRule}<span className="tag-close" onClick={(e) => {this.removeAppliedShippingClass(e, data.uuid)}}></span></span>
+                                                )
+                                                : null
+                                        }
+                                    </div>
                                     <div className="shipping-classes-container-holder">
                                         <select name="shipping-classes" id="shipping-classes" ref={this.shippingClassDropdownRef} onClick={(e) => {this.trackCurrentShippingClass(e)}} onChange={(e) => {this.trackCurrentShippingClass(e)}}>
                                             {
                                                 this.props.shippingClasses ? 
                                                     this.props.shippingClasses.map((shipping, index) => 
-                                                        <option value={shipping.shippingRule}>{shipping.shippingRule}</option>
+                                                        <option value={shipping.shippingRule} key={index} index={index}>{shipping.shippingRule}</option>
                                                     )
                                                     : null
                                             }
@@ -422,6 +620,7 @@ export default class Product extends Component {
                                         <Button onClick={(e) => {this.determineShippingClassAction(e)}}>{this.state.shippingClassButton}</Button>
                                     </div>
                                 </div>
+                                <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-active" : "err-status err-status-hidden" : "err-status err-status-hidden"}>{this.state.error}</div>
                                 <div className="products-buttons-container">
                                     <Button onClick={(e) => {this.saveProduct(e)}} className="edit-interact-product">
                                         <span>Save All Changes</span>

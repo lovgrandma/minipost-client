@@ -187,11 +187,17 @@
     .shop-col {
             width: calc(98.4%/5);
     }
+    .sidebar-isopen + .maindashcontainer .profile-shop-container .shop-col {
+        width: calc(120%/5);
+    }
 }
 
 @media (max-width: 1330px) {
     .maindashwide .shop-col {
-        width: calc(98.4%/3);
+        width: calc(98.4%/5);
+    }
+    .sidebar-isopen + .maindashcontainer .profile-shop-container .shop-col {
+        width: calc(120%/5);
     }
 }
 
@@ -199,10 +205,16 @@
     .shop-col {
         width: calc(98.4%/4);
     }
+    .sidebar-isopen + .maindashcontainer .profile-shop-container .shop-col {
+        width: calc(120%/4);
+    }
 }
 
 @media (max-width: 1160px) {
     .maindashwide .shop-col {
+        width: calc(98.4%/2);
+    }
+    .sidebar-isopen + .maindashcontainer .profile-shop-container .shop-col {
         width: calc(98.4%/2);
     }
 }
@@ -210,6 +222,9 @@
 @media (max-width: 940px) {
     .shop-col {
         width: calc(98.4%/3);
+    }
+    .sidebar-isopen + .maindashcontainer .profile-shop-container .shop-col {
+        width: calc(160%/3);
     }
 }
 
@@ -519,10 +534,50 @@ button.profile-menu-link:hover {
     border: 1px solid #ffc7c7;
     transition: 200ms;
     cursor: pointer;
-    opacity: 0;
     transition: 200ms;
+}
+
+.err-status-hidden {
+    opacity: 0;
 }
 
 .err-status-active {
     opacity: 1 !important;
+}
+
+.tags-applied-shipping-classes .tag {
+    font-size: 85%;
+    padding: 0.25em 0.5em;
+    margin: 0.2em;
+    display: inline-block;
+    background-color: #ddd;
+    transition: all 0.1s linear;
+    border-radius: 12px;
+    vertical-align: middle;
+    font-size: 14px;
+    font-weight: 600;
+    user-select: none;
+}
+
+.tags-applied-shipping-classes .tag-close {
+    margin-left: 3px;
+    transition: 100ms;
+    border-radius: 20px;
+    font-size: 12px;
+    line-height: 14px;
+    vertical-align: middle;
+}
+
+.tags-applied-shipping-classes .tag-close:hover {
+    background-color: #c1c1c1;
+    color: white;
+}
+
+.tags-applied-shipping-classes .tag .tag-close::after {
+    cursor: pointer;
+    content: '×';
+    font-weight: bold;
+    display: inline-block;
+    transform: scale(1.3);
+    margin: 0.3em 0.5em 0.3em 0.5em;
 }

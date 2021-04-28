@@ -4178,6 +4178,10 @@ If user only has one friend, styling wont apply */
     max-width: 600px;
 }
 
+.article-err-status {
+    max-width: 100% !important;
+}
+
 .nudity-radio {
     margin-bottom: 20px;
 }

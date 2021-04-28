@@ -70,6 +70,8 @@ export default class Profile extends Component {
                                 } catch (err) {
                                     result.shop.shippingClasses = [];
                                 }
+                            } else {
+                                result.shop.shippingClasses = [];
                             }
                             this.setState({ shop: result.shop, shippingClasses: result.shop.shippingClasses });
                         }
@@ -106,6 +108,18 @@ export default class Profile extends Component {
             return false;
         }
         return true;
+    }
+
+    updateShippingClasses = (data) => {
+        console.log(data);
+        console.log(JSON.parse(data));
+        try {
+            JSON.parse(data);
+            data = JSON.parse(data);
+            this.setState({ shippingClasses: data });
+        } catch (err) {
+            // Fail silently
+        }
     }
 
 
@@ -154,6 +168,7 @@ export default class Profile extends Component {
                             shop={this.state.shop}
                             shippingClasses={this.state.shippingClasses}
                             edit={editable.call(this)}
+                            updateShippingClasses={this.updateShippingClasses}
                         />
         } else {
             pageData = profileData;
