@@ -41,6 +41,7 @@ import { debounce, deepEquals, arraysEqual, getPath, get } from './methods/utili
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 const bumpEvent = new EventEmitter();
+const localEvents = new EventEmitter();
 bumpEvent.setMaxListeners(100);
 let socket; // Expose socket to entire application once it is created
 
@@ -94,6 +95,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (this.props.cloud) {
             //this.props.setCloud();
         }
+        localEvents.on("openSideBar", () => { this.openSideBar() });
     };
         
     componentDidUpdate(e, prevState, prevProps) {
@@ -1792,4 +1794,4 @@ class App extends Component {
 }
 
 export default App;
-export { cookies, socket, bumpEvent, EventEmitter };
+export { cookies, socket, bumpEvent, localEvents, EventEmitter };

@@ -17,7 +17,7 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: []
+            products: [], self: false, editIndex: -1, showShippingPortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid"
         }
     }
 
@@ -122,6 +122,7 @@ export default class Shop extends Component {
             }
             return newData;
         } catch (err) {
+            console.log(err);
             return newData;
         }
     }
@@ -143,7 +144,7 @@ export default class Shop extends Component {
             if (priceUpdate) {
                 data = this.appendOptionsPriceDataToOthersIfNull(data);
             }
-            products[index] = data;
+            products[index].styles = data; // Make sure to update the styles not the actual index member
             this.setState({ products: products });
         }
     }
@@ -175,8 +176,8 @@ export default class Shop extends Component {
             } else if (type == "desc") {
                 products[index].description = data;
             } else if (type == "appliedShipping") {
-                if (products[index].shippingClasses.indexOf(data) < 0) { // data should be a uuid
-                    products[index].shippingClasses.push(data);
+                if (products[index].shipping.indexOf(data) < 0) { // data should be a uuid
+                    products[index].shipping.push(data);
                 }
             }
             this.setState({ products: products });
@@ -191,15 +192,14 @@ export default class Shop extends Component {
     removeShippingClassFromProduct = (index, uuid) => {
         if (index == "dummy") {
             let tempShipping = this.state.dummyshipping;
-            console.log(tempShipping.indexOf(uuid))
             if (tempShipping.indexOf(uuid) > -1) {
                 tempShipping.splice(tempShipping.indexOf(uuid), 1);
             }
             this.setState({ dummyshipping: tempShipping });
         } else {
             let products = this.state.products;
-            if (products[index].shippingClasses.indexOf(data) > -1) {
-                products[index].shippingClasses.splice(products[index].shippingClasses.indexOf(data), 1);
+            if (products[index].shipping.indexOf(uuid) > -1) {
+                products[index].shipping.splice(products[index].shipping.indexOf(uuid), 1);
             }
             this.setState({ products: products });
         }
@@ -209,7 +209,7 @@ export default class Shop extends Component {
         return (
             <div className="profile-shop-container">
                 <div className="shop-name profile-shop off-black weight600">{this.resolveData(this.props.shop, "name")}</div>
-                <div className="profile-products-container shop-col">
+                <div className="profile-products-container">
                     {
                         this.state.self ?
                             <div className={this.state.showShippingPortal ? "shipping-portal shipping-portal-visible" : "shipping-portal"}>
@@ -226,10 +226,11 @@ export default class Shop extends Component {
                         this.state.products ?
                             this.state.products.map((product, index) => 
                                 <Product name={product.name}
-                                desc={product.desc}
+                                desc={product.description}
                                 styles={product.styles}
-                                self={this.state.self}
+                                id={product.id}
                                 shipping={product.shipping}
+                                self={this.state.self}
                                 enableEditMode={this.enableEditMode}
                                 toggleShippingPortal={this.toggleShippingPortal}
                                 updateLocalProducts={this.updateLocalProducts}
@@ -239,6 +240,7 @@ export default class Shop extends Component {
                                 shippingClasses={this.props.shippingClasses}
                                 index={index}
                                 key={index}
+                                owner={this.props.owner}
                                 />
                             )
                             : null
@@ -249,6 +251,7 @@ export default class Shop extends Component {
                             name={this.state.dummyname}
                             desc={this.state.dummydesc}
                             styles={this.state.dummystyles}
+                            id={this.state.dummyid}
                             shipping={this.state.dummyshipping}
                             self={true}
                             enableEditMode={this.enableEditMode}
@@ -259,6 +262,7 @@ export default class Shop extends Component {
                             editing={this.state.editIndex}
                             shippingClasses={this.props.shippingClasses}
                             index="dummy"
+                            owner={this.props.owner}
                             />
                             : null
                     }

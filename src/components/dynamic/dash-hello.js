@@ -1,0 +1,1 @@
+// append entire data from server into react component, more dynamic

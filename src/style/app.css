@@ -5386,10 +5386,40 @@ a code:hover {
     margin-bottom: 5px;
     vertical-align: middle;
     line-height: normal;
+    border-radius: 15px;
+    padding: 2.5px;
+    background-color: #69b2e8;
+    box-shadow: 0 0 0 1px #45b3ff inset, 0 0 0 1px rgba(58, 134, 232, 0.15) inset, 1px 2px 0px 0px rgba(78, 167, 210, 0.7), 2px 3px 0px 0px rgba(105, 194, 238, 0.4), 1px 1px 0px 0px rgba(105, 194, 238, 0.5);
+    max-width: -moz-fit-content;
+    margin-right: 5px;
+    color: white;
+    transition: 200ms;
+}
+
+.social-portal-login-prompt:hover {
+    background-color: #82bdeb;
+    box-shadow: 0 0 0 1px #45b3ff inset, 0 0 0 1px rgba(58, 134, 232, 0.15) inset, 1px 2px 0px 0px rgba(78, 167, 210, 0.7), 2px 3px 0px 0px rgba(105, 194, 238, 0.4), 1px 1px 0px 0px rgba(105, 194, 238, 0.5);;
+}
+
+.social-portal-login-prompt .arrow-back-login {
+    color: white;
+    padding-left: 2.5px;
+}
+
+.social-portal-login-prompt .info-blurb {
+    color: white;
+    font-weight: 600;
+}
+
+.social-portal-login-prompt .info-blurb:hover,
+.social-portal-login-prompt .arrow-back-login:hover {
+    color: white !important;
+    cursor: pointer;
 }
 
 .social-portal-times {
     padding-left: 5px;
+    padding-right: 5px;
     line-height: 1;
 }
 

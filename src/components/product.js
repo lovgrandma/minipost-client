@@ -15,7 +15,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
-import { faEdit, faEllipsisH, faPlus, faSave, faTrashAlt, faCopy } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faEllipsisH, faPlus, faSave, faTrashAlt, faCopy, faArrowCircleUp } from '@fortawesome/free-solid-svg-icons';
 
 import { cookies } from '../App.js';
 import { debounce } from '../methods/utility.js';
@@ -35,6 +35,7 @@ export default class Product extends Component {
         this.prodQuantityIn = new React.createRef();
         this.prodOptionDescIn = new React.createRef();
         this.prodStyleDescIn = new React.createRef();
+        this.publishedRef = new React.createRef();
     }
 
     componentDidMount() {
@@ -328,21 +329,22 @@ export default class Product extends Component {
      */
     resolveAllProductPrices = (styles) => {
         try {
-            for (let i = 0; i < styles.length -1; i++) {
-                if (!styles[i].descriptor || styles[i].descriptor.isEmpty()) {
-                    return false; // Styles must be named
+            for (let i = 0; i < styles.length; i++) {
+                if (styles.length > 1 && !styles[i].descriptor) {
+                    return false; // Styles must be named if there are more than one
                 }
                 for (let j = 0; j < styles[i].options.length; j++) {
-                    if (typeof styles[i].options[j].price != "number" || styles[i].options[j].price === null) {
+                    if (typeof styles[i].options[j].price != "number" || isNaN(styles[i].options[j].price)) {
                         return false; // There was a style/option with a null price. Not valid price
                     }
-                    if (!styles[i].options[j].descriptor || styles[i].options[j].descriptor.isEmpty()) {
-                        return false; // Descriptors for options must be named before being published
+                    if (styles[i].options.length > 1 && !styles[i].options[j].descriptor) {
+                        return false; // If there are more than 1 option on a style, the descriptors for options must be named before being published
                     }
                 }
             }
             return true;
         } catch (err) {
+            console.log(err);
             return false;
         }
     }
@@ -369,11 +371,15 @@ export default class Product extends Component {
             let goodStyles = false;
             let desc = "";
             let goodShipping = false;
+            let id = "dummyid";
+            if (this.props.id) {
+                id = this.props.id;
+            }
             if (this.prodNameIn) {
                 if (this.prodNameIn.current) {
                     if (this.prodNameIn.current.value) {
                         if (this.prodNameIn.current.value.length > 0) {
-                            let goodName = this.prodNameIn.current.value.length;
+                            goodName = this.prodNameIn.current.value;
                         }
                     }
                 }
@@ -384,14 +390,19 @@ export default class Product extends Component {
             }
             if (this.prodPriceIn) {
                 if (this.prodPriceIn.current) {
-                    if (typeof this.prodPriceIn.current.value == "number") { // If this price is equal to a number, we know atleast this one is set
-                        try {
-                            goodStyles = this.resolveAllProductPrices(this.props.styles);
-                        } catch (err) {
-                            this.setState({ error: "Please enter a valid price and name for all styles/options"});
+                    try {
+                        if (typeof parseFloat(this.prodPriceIn.current.value) == "number") { // If this price is equal to a number, we know atleast this one is set
+                            try {
+                                goodStyles = this.resolveAllProductPrices(this.props.styles);
+                            } catch (err) {
+                                this.setState({ error: "Please enter a valid price and name for all styles/options"});
+                                return;
+                            }
+                        } else {
+                            this.setState({ error: "The current style does not have a valid price"});
                             return;
                         }
-                    } else {
+                    } catch (err) {
                         this.setState({ error: "The current style does not have a valid price"});
                         return;
                     }
@@ -416,21 +427,56 @@ export default class Product extends Component {
                     return;
                 }
             }
+            let published = false;
+            if (this.publishedRef) {
+                if (this.publishedRef.current) {
+                    if (this.publishedRef.current.checked) {
+                        published = true;
+                    }
+                }
+            }
             if (goodName && goodStyles && goodShipping) {
                 let product = {
+                    id: id,
                     name: goodName,
                     description: desc,
                     styles: this.props.styles,
-                    shipping: this.props.shipping
+                    shipping: this.props.shipping,
+                    published: published
                 }
-                console.log(product);
-                // call request to db
+                this.sendProductToServerAndSave(product); // Send product data to db to save
             } else {
                 this.setState({ error: "Some data is not complete for this product. Please review all options and values"});
                 return;
             }
         } catch (err) {
             this.setState({ error: "An error occured while saving the product"}); // Saving product failed
+        }
+    }
+
+    sendProductToServerAndSave = (product) => {
+        if (product) {
+            let owner = this.props.owner; // Owner of the shop to identify the shop
+            let username = cookies.get("loggedIn"); // Name of the authenticated employee, by default the shop owner
+            let hash = cookies.get("hash"); // Hash for protected route
+            let self = this.props.self; // Necessary for route to filter traffic to protected route
+            fetch(currentshopurl + "s/savesingleproducttoshop", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    owner, username, hash, self, product
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                console.log(result);
+            })
         }
     }
 
@@ -455,22 +501,28 @@ export default class Product extends Component {
      * @returns {Array} shippingData data with uuids {uuid: String, shippingRule, String}
      */
     resolveAppliedShippingNames(shippingData) {
-        let findAndAddTo = (arr, matchUuid) => {
-            for (let j = 0; j < this.props.shippingClasses.length; j++) {
-                if (this.props.shippingClasses[j].uuid == matchUuid) {
-                    arr.push({
-                        uuid: this.props.shippingClasses[j].uuid,
-                        shippingRule: this.props.shippingClasses[j].shippingRule
-                    });
-                    return arr;
+        try {
+            let findAndAddTo = (arr, matchUuid) => {
+                if (this.props.shippingClasses) {
+                    for (let j = 0; j < this.props.shippingClasses.length; j++) {
+                        if (this.props.shippingClasses[j].uuid == matchUuid) {
+                            arr.push({
+                                uuid: this.props.shippingClasses[j].uuid,
+                                shippingRule: this.props.shippingClasses[j].shippingRule
+                            });
+                            return arr;
+                        }
+                    }
                 }
             }
+            let newData = [];
+            for (let i = 0; i < shippingData.length; i++) {
+                newData = findAndAddTo(newData, shippingData[i]);
+            }
+            return newData;
+        } catch (err) {
+            return [];
         }
-        let newData = [];
-        for (let i = 0; i < shippingData.length; i++) {
-            newData = findAndAddTo(newData, shippingData[i]);
-        }
-        return newData;
     }
 
     removeAppliedShippingClass(e, uuid) {
@@ -481,26 +533,104 @@ export default class Product extends Component {
         }
     }
 
+    resolveCurrPrice() {
+        try {
+            if (this.props.styles) {
+                if (this.props.styles[this.state.currentStyle]) {
+                    if (this.props.styles[this.state.currentStyle].options) {
+                        if (this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
+                            if (this.props.styles[this.state.currentStyle].options[this.state.currentOption].hasOwnProperty("price")) {
+                                if (typeof this.props.styles[this.state.currentStyle].options[this.state.currentOption].price === "number") {
+                                    return parseFloat(this.props.styles[this.state.currentStyle].options[this.state.currentOption].price).toFixed(2);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            return 0.00;
+        }
+    }
+
+    resolveCurrQuantity() {
+        try {
+            if (this.props.styles) {
+                if (this.props.styles[this.state.currentStyle]) {
+                    if (this.props.styles[this.state.currentStyle].options) {
+                        if (this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
+                            if (this.props.styles[this.state.currentStyle].options[this.state.currentOption].hasOwnProperty("quantity")) {
+                                if (typeof this.props.styles[this.state.currentStyle].options[this.state.currentOption].quantity === "number") {
+                                    return Number(this.props.styles[this.state.currentStyle].options[this.state.currentOption].quantity);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            return 0;
+        }
+    }
+
+    resolveCurrStyle() {
+        try {
+            if (this.props.styles) {
+                if (this.props.styles[this.state.currentStyle]) {
+                    if (this.props.styles[this.state.currentStyle].descriptor) {
+                        return this.props.styles[this.state.currentStyle].descriptor;
+                    }
+                }
+            }
+        } catch (err) {
+            return "";
+        }
+    }
+
+    resolveCurrOption() {
+        try {
+            if (this.props.styles) {
+                if (this.props.styles[this.state.currentStyle]) {
+                    if (this.props.styles[this.state.currentStyle].options) {
+                        if (this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
+                            if (this.props.styles[this.state.currentStyle].options[this.state.currentOption].descriptor) {
+                                return this.props.styles[this.state.currentStyle].options[this.state.currentOption].descriptor;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            return "";
+        }
+    }
+
+
     render() {
         let appliedShippingClassesData = this.resolveAppliedShippingNames(this.props.shipping);
+        let currPrice = this.resolveCurrPrice();
+        let currQuantity = this.resolveCurrQuantity();
+        let currStyle = this.resolveCurrStyle();
+        let currOption = this.resolveCurrOption();
         return (
-            <div className="product-list-single">
+            <div className="product-list-single shop-col">
                 <div className="product-list-meta-container">
                     <div className="product-list-img-container">
                         <img src={this.props.imgurl ? this.props.imgurl : greyproduct}></img>
+                        <FontAwesomeIcon className="edit-interact" icon={faArrowCircleUp} color={ '#919191' } alt="edit" />
                     </div>
                     {
                         this.props.editing == this.props.index ?
                             <div>
                                 <div className="product-list-meta-name-edit-container">
-                                    <input type='text' id="product-name" className="product-name-input" ref={this.prodNameIn} name="product-name" placeholder="Product Name" autoComplete="off"></input>
+                                    <input type='text' id="product-name" className="product-name-input" ref={this.prodNameIn} name="product-name" placeholder="Product Name" autoComplete="off" defaultValue={this.props.name ? this.props.name : null}></input>
                                     {
                                         this.props.self ? 
                                             <Button onClick={(e) => {this.props.enableEditMode(e, this.props.index)}} className="edit-interact-product"><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit" /></Button>
                                             : null
                                     }
                                 </div>
-                                <textarea type='text' id="product-desc" className="product-desc-input" ref={this.prodDescIn} name="product-desc" placeholder="Product Description" value={this.props.name ? this.props.name : null}></textarea>
+                                <textarea type='text' id="product-desc" className="product-desc-input" ref={this.prodDescIn} name="product-desc" placeholder="Product Description" defaultValue={this.props.desc ? this.props.desc : null}></textarea>
                                 <div className="product-price-input-container">
                                     {
                                         this.props.styles ?
@@ -515,7 +645,7 @@ export default class Product extends Component {
                                                                 : null
                                                         }
                                                     </select>
-                                                    <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodStyleDescIn} name="product-option-descriptor-input" placeholder="Style" onChange={(e) => {this.updateCurrStyleName(e)}} autoComplete="off"></input>
+                                                    <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodStyleDescIn} name="product-option-descriptor-input" placeholder="Style" onChange={(e) => {this.updateCurrStyleName(e)}} autoComplete="off" defaultValue={currStyle}></input>
                                                 </div>
                                                 : null
                                             : null
@@ -561,7 +691,7 @@ export default class Product extends Component {
                                                                         : null
                                                                 }
                                                             </select>
-                                                            <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodOptionDescIn} name="product-option-descriptor-input" placeholder="Option" onChange={(e) => {this.updateCurrOptionName(e)}} autoComplete="off"></input>
+                                                            <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodOptionDescIn} name="product-option-descriptor-input" placeholder="Option" onChange={(e) => {this.updateCurrOptionName(e)}} autoComplete="off" defaultValue={currOption}></input>
                                                         </div>
                                                         : null
                                                     : null
@@ -570,10 +700,10 @@ export default class Product extends Component {
                                     }
                                     <div className="product-price-input-container-holder">
                                         <span>$</span>
-                                        <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off" onBlur={(e) => {this.updatePrice(e)}}></input>
+                                        <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off" onBlur={(e) => {this.updatePrice(e)}} defaultValue={currPrice}></input>
                                     </div>
                                     <div className="quantity-container-input">
-                                        <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue="0" onChange={(e) =>{this.updateQuantity(e)}}></input>
+                                        <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue={currQuantity} onChange={(e) =>{this.updateQuantity(e)}}></input>
                                     </div>
                                     <div className="options-add-container">
                                         <Button onClick={(e) => {this.newOption(e)}} className="edit-interact-product">
@@ -620,7 +750,11 @@ export default class Product extends Component {
                                         <Button onClick={(e) => {this.determineShippingClassAction(e)}}>{this.state.shippingClassButton}</Button>
                                     </div>
                                 </div>
-                                <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-active" : "err-status err-status-hidden" : "err-status err-status-hidden"}>{this.state.error}</div>
+                                <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.error}</div>
+                                <span className="flex publish-selection">
+                                    <label for="published" className="info-prompt">Publish</label>
+                                    <input type="checkbox" id="published" name="published" value="published" ref={this.publishedRef}></input>
+                                </span>
                                 <div className="products-buttons-container">
                                     <Button onClick={(e) => {this.saveProduct(e)}} className="edit-interact-product">
                                         <span>Save All Changes</span>

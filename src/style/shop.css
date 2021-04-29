@@ -28,6 +28,9 @@
 .product-desc {
     width: 100%;
 }
+.profile-products-container {
+    display: flex;
+}
 
 .edit-interact-product,
 .shipping-classes-container-holder button,
@@ -131,6 +134,23 @@
     font-size: 0.85em;
     font-weight: 400;
     color: #292929;
+}
+
+.product-list-img-container {
+    position: relative;
+}
+
+.product-list-img-container > svg {
+    position: absolute;
+    left: 6%;
+    bottom: 5%;
+    font-size: 26px;
+    height: 35px !important;
+    width: 35px !important; 
+}
+
+.product-list-img-container > svg:hover {
+    cursor: pointer;
 }
 
 .product-list-img-container img {
@@ -251,7 +271,7 @@
 .shipping-portal {
     transition: 200ms;
     position: fixed;
-    top: -100%;
+    top: -150%;
     opacity: 0;
     left: 50%;
     transform: translateX(-50%);
@@ -545,6 +565,17 @@ button.profile-menu-link:hover {
     opacity: 1 !important;
 }
 
+.err-status-product {
+    margin-top: 0px;
+    margin-bottom: 0px;
+    transition: 200ms;
+}
+
+.err-status-product-active {
+    margin-top: 3.5px;
+    margin-bottom: 3.5px;
+}
+
 .tags-applied-shipping-classes .tag {
     font-size: 85%;
     padding: 0.25em 0.5em;
@@ -580,4 +611,17 @@ button.profile-menu-link:hover {
     display: inline-block;
     transform: scale(1.3);
     margin: 0.3em 0.5em 0.3em 0.5em;
+}
+
+.publish-selection {
+    background: #ececec;
+    align-items: center;
+    border-radius: 5px;
+    padding: 2.5px 10px;;
+}
+
+.publish-selection label {
+    font-weight: 600;
+    color: #3e3e3e;
+    font-size: 14px;
 }

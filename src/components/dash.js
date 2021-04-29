@@ -11,9 +11,8 @@ import { checkAtBottom, setData, getNumber, checkToString } from '../methods/uti
 import {
     Button
 } from 'react-bootstrap';
-import { cookies } from '../App.js';
+import { cookies, localEvents } from '../App.js';
 import corsdefault from '../cors.js';
-const EventEmitter = require('events');
 
 export default class Dash extends Component {
     constructor(props) {
@@ -190,11 +189,19 @@ export default class Dash extends Component {
         this.setState({ closeSocialPrompt: true });
     }
 
+    eventEmitOpenSideBar() {
+        try {
+            localEvents.emit("openSideBar");
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
         return (
             <div className='videodash'>
                 {
-                    !this.props.username && !this.state.closeSocialPrompt ? <div className="flex flex-start social-portal-login-prompt"><div className="material-icons arrow-back-login">arrow_back</div><div className="info-blurb">You're not logged in, to log in click on the bar on the left to open the social portal</div><div className="social-portal-times" onClick={(e)=>{this.setCloseSocialPrompt(e)}}>&times;</div></div>
+                    !this.props.username && !this.state.closeSocialPrompt ? <div className="flex flex-start social-portal-login-prompt"><div className="material-icons arrow-back-login" onClick={(e) => {this.eventEmitOpenSideBar(e)}}>arrow_back</div><div className="info-blurb" onClick={(e) => {this.eventEmitOpenSideBar(e)}}>You're not logged in, to log in click on the bar on the left to open the social portal</div><div className="social-portal-times" onClick={(e)=>{this.setCloseSocialPrompt(e)}}>&times;</div></div>
                     : null
                 }
                 <h5 className="videodash-recommended-header">Recommended</h5>
