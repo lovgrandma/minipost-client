@@ -6,7 +6,7 @@ import {
     Link
 } from 'react-router-dom';
 import currentshopurl from '../shopurl.js';
-import Product from './product.js'; import ShippingClassSetup from './shippingclasssetup.js';
+import Product from './product.js'; import ShippingClassSetup from './shippingclasssetup.js'; import ImageUploadSelection from './partial/image-upload-selection.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
@@ -17,7 +17,7 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid"
+            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: []
         }
     }
 
@@ -91,6 +91,18 @@ export default class Shop extends Component {
             this.setState({ showShippingPortal: true });
         } else {
             this.setState({ showShippingPortal: false });
+        }
+    }
+
+    /**
+     * Allows admin to toggle whether to show image portal or not
+     * @param {Boolean} val 
+     */
+    toggleImagePortal = (val) => {
+        if (val && this.state.self) {
+            this.setState({ showImagePortal: true });
+        } else {
+            this.setState({ showImagePortal: false });
         }
     }
 
@@ -205,20 +217,68 @@ export default class Shop extends Component {
         }
     }
 
+    resolveCurrentImages() {
+        if (this.state.editIndex == "dummy") {
+            return this.state.dummyimages;
+        } else if (this.state.products && this.state.editIndex > -1) {
+            if (this.state.products[this.state.editIndex].images) {
+                return this.state.products[this.state.editIndex].images;
+            }
+        }
+        return [];
+    }
+
+    sendTempImgData = (data) => {
+        this.setState({ tempImgData: data });
+    }
+
+    /**
+     * Will search images for current images selected index by url and then update the name
+     * If editing dummy, search this state tempImgData, else search existing product image data on product object
+     * 
+     * @param {String} url 
+     * @param {String || Number} editing 
+     * @param {String} name 
+     */
+    searchAndUpdateImgName = (url, editing, name) => {
+        console.log(url, editing, name);
+        if (editing == "dummy") {
+            for (let i = 0; i < this.state.tempImgData.length; i++) {
+                if (url == this.state.tempImgData[i].url) {
+                    let temp = this.state.tempImgData;
+                    temp[i].name = name;
+                    this.setState({ tempImgData: temp });
+                    break;
+                }
+            }
+        }
+    }
+
     render() {
+        let currImages = this.resolveCurrentImages();
         return (
             <div className="profile-shop-container">
                 <div className="shop-name profile-shop off-black weight600">{this.resolveData(this.props.shop, "name")}</div>
                 <div className="profile-products-container">
                     {
                         this.state.self ?
-                            <div className={this.state.showShippingPortal ? "shipping-portal shipping-portal-visible" : "shipping-portal"}>
-                                <ShippingClassSetup owner={this.props.owner}
-                                self={this.state.self}
-                                shippingClasses={this.props.shippingClasses}
-                                toggleShippingPortal={this.toggleShippingPortal}
-                                updateShippingClasses={this.props.updateShippingClasses}
-                                />
+                            <div>
+                                <div className={this.state.showShippingPortal ? "shipping-portal shipping-portal-visible" : "shipping-portal"}>
+                                    <ShippingClassSetup owner={this.props.owner}
+                                    self={this.state.self}
+                                    shippingClasses={this.props.shippingClasses}
+                                    toggleShippingPortal={this.toggleShippingPortal}
+                                    updateShippingClasses={this.props.updateShippingClasses}
+                                    />
+                                </div>
+                                <div className={this.state.showImagePortal ? "image-portal image-portal-visible" : "image-portal"}>
+                                    <ImageUploadSelection images={currImages}
+                                    editing={this.state.editIndex}
+                                    toggleImagePortal={this.toggleImagePortal} 
+                                    sendTempImgData={this.sendTempImgData}
+                                    searchAndUpdateImgName={this.searchAndUpdateImgName}
+                                    tempImgData={this.state.tempImgData} />
+                                </div>
                             </div>
                             : null
                     }
@@ -233,6 +293,7 @@ export default class Shop extends Component {
                                 self={this.state.self}
                                 enableEditMode={this.enableEditMode}
                                 toggleShippingPortal={this.toggleShippingPortal}
+                                toggleImagePortal={this.toggleImagePortal}
                                 updateLocalProducts={this.updateLocalProducts}
                                 updateLocalProductMeta={this.updateLocalProductMeta}
                                 removeShippingClassFromProduct={this.removeShippingClassFromProduct}
@@ -256,6 +317,7 @@ export default class Shop extends Component {
                             self={true}
                             enableEditMode={this.enableEditMode}
                             toggleShippingPortal={this.toggleShippingPortal}
+                            toggleImagePortal={this.toggleImagePortal}
                             updateLocalProducts={this.updateLocalProducts}
                             updateLocalProductMeta={this.updateLocalProductMeta}
                             removeShippingClassFromProduct={this.removeShippingClassFromProduct}
@@ -263,6 +325,7 @@ export default class Shop extends Component {
                             shippingClasses={this.props.shippingClasses}
                             index="dummy"
                             owner={this.props.owner}
+                            tempImgData={this.state.tempImgData}
                             />
                             : null
                     }

@@ -617,7 +617,7 @@ export default class Product extends Component {
                 <div className="product-list-meta-container">
                     <div className="product-list-img-container">
                         <img src={this.props.imgurl ? this.props.imgurl : greyproduct}></img>
-                        <FontAwesomeIcon className="edit-interact" icon={faArrowCircleUp} color={ '#919191' } alt="edit" />
+                        <FontAwesomeIcon className={this.props.editing == this.props.index ? "edit-interact edit-interact-hidden edit-interact-visible" : "edit-interact edit-interact-hidden"} onClick={(e) => {this.props.toggleImagePortal(true)}} icon={faArrowCircleUp} color={ '#919191' } alt="edit" />
                     </div>
                     {
                         this.props.editing == this.props.index ?
@@ -691,7 +691,7 @@ export default class Product extends Component {
                                                                         : null
                                                                 }
                                                             </select>
-                                                            <input type='text' id="product-option-descriptor-input" className="product-option-descriptor-input" ref={this.prodOptionDescIn} name="product-option-descriptor-input" placeholder="Option" onChange={(e) => {this.updateCurrOptionName(e)}} autoComplete="off" defaultValue={currOption}></input>
+                                                            <input type='text' id="product-option-descriptor-input-option" className="product-option-descriptor-input" ref={this.prodOptionDescIn} name="product-option-descriptor-input" placeholder="Option" onChange={(e) => {this.updateCurrOptionName(e)}} autoComplete="off" defaultValue={currOption}></input>
                                                         </div>
                                                         : null
                                                     : null

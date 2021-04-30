@@ -32,9 +32,22 @@
     display: flex;
 }
 
+.edit-interact {
+    transition: 200ms;
+}
+
+.edit-interact-hidden {
+    opacity: 0;
+}
+
+.edit-interact-visible {
+    opacity: 1;
+}
+
 .edit-interact-product,
 .shipping-classes-container-holder button,
-.shipping-class-interact-button-container button {
+.shipping-class-interact-button-container button,
+.image-upload-interact-button-container button {
     transition: 200ms;
     background: transparent;
     border-radius: 25px;
@@ -63,11 +76,13 @@
     justify-content: space-between;
 }
 
-.shipping-class-interact-button-container button {
+.shipping-class-interact-button-container button,
+.image-upload-interact-button-container button {
     background: lightgrey;
 }
 
-.shipping-class-interact-button-container button:hover {
+.shipping-class-interact-button-container button:hover,
+.image-upload-interact-button-container button:hover {
     background: #e2e2e2;
 }
 
@@ -149,7 +164,7 @@
     width: 35px !important; 
 }
 
-.product-list-img-container > svg:hover {
+.product-list-img-container > .edit-interact-visible:hover {
     cursor: pointer;
 }
 
@@ -268,7 +283,8 @@
     width: -webkit-fill-available;
 }
 
-.shipping-portal {
+.shipping-portal,
+.image-portal {
     transition: 200ms;
     position: fixed;
     top: -150%;
@@ -281,7 +297,8 @@
     z-index: 11;
 }
 
-.shipping-portal-visible {
+.shipping-portal-visible,
+.image-portal-visible {
     top: 17.5%;
     opacity: 1;
 }
@@ -624,4 +641,51 @@ button.profile-menu-link:hover {
     font-weight: 600;
     color: #3e3e3e;
     font-size: 14px;
+}
+
+.upload-product-images-container {
+    display: flex;
+    gap: 5px;
+}
+
+.upload-product-images-meta {
+    flex: 1;
+}
+
+.upload-product-images-loaded {
+    flex: 2;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+#imgurl-product-img {
+    padding: 5px;
+    border: none;
+}
+
+#imgname {
+    padding: 5px;
+}
+
+.cached-img {
+    width: 33%;
+    padding: 5px;
+}
+
+.cached-img:hover {
+    cursor: pointer;
+}
+
+.img-product-name {
+    border-radius: 15px;
+    border: 1px solid grey;
+    font-weight: 600;
+}
+
+#imgurl-product-img {
+    margin-bottom: 5px;
+    width: 100%;
+    font-size: 14px;
+    font-weight: 600;
+    color: grey;
 }
