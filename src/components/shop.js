@@ -17,12 +17,15 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: []
+            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: ""
         }
     }
 
     componentDidMount() {
         this.fetchShopData();
+        if (cookies.get('contentDelivery')) {
+            this.setState({ cloud: cookies.get('contentDelivery')});
+        }
     }
 
     resolveData(data, prop) {
@@ -251,6 +254,16 @@ export default class Shop extends Component {
                     break;
                 }
             }
+        } else {
+            let currImages = this.resolveCurrentImages();
+            for (let i = 0; i < currImages.length; i++) {
+                if (url == currImages[i].url) {
+                    currImages[i].name = name;
+                    let tempProducts = this.state.products;
+                    tempProducts[this.state.editIndex].images = currImages;
+                    this.setState({ products: tempProducts });
+                }
+            }
         }
     }
 
@@ -287,6 +300,7 @@ export default class Shop extends Component {
                             this.state.products.map((product, index) => 
                                 <Product name={product.name}
                                 desc={product.description}
+                                images={product.images}
                                 styles={product.styles}
                                 id={product.id}
                                 shipping={product.shipping}
@@ -302,6 +316,7 @@ export default class Shop extends Component {
                                 index={index}
                                 key={index}
                                 owner={this.props.owner}
+                                cloud={this.state.cloud}
                                 />
                             )
                             : null
@@ -311,6 +326,7 @@ export default class Shop extends Component {
                             <Product dummy={true}
                             name={this.state.dummyname}
                             desc={this.state.dummydesc}
+                            images={this.state.dummyimages}
                             styles={this.state.dummystyles}
                             id={this.state.dummyid}
                             shipping={this.state.dummyshipping}

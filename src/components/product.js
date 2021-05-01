@@ -435,6 +435,10 @@ export default class Product extends Component {
                     }
                 }
             }
+            let images = [];
+            if (this.props.images) {
+                images = this.props.images;
+            }
             if (goodName && goodStyles && goodShipping) {
                 let product = {
                     id: id,
@@ -442,7 +446,8 @@ export default class Product extends Component {
                     description: desc,
                     styles: this.props.styles,
                     shipping: this.props.shipping,
-                    published: published
+                    published: published,
+                    images: images
                 }
                 this.sendProductToServerAndSave(product); // Send product data to db to save
             } else {
@@ -453,30 +458,72 @@ export default class Product extends Component {
             this.setState({ error: "An error occured while saving the product"}); // Saving product failed
         }
     }
+    
 
-    sendProductToServerAndSave = (product) => {
-        if (product) {
-            let owner = this.props.owner; // Owner of the shop to identify the shop
-            let username = cookies.get("loggedIn"); // Name of the authenticated employee, by default the shop owner
-            let hash = cookies.get("hash"); // Hash for protected route
-            let self = this.props.self; // Necessary for route to filter traffic to protected route
-            fetch(currentshopurl + "s/savesingleproducttoshop", {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: corsdefault,
-                body: JSON.stringify({
-                    owner, username, hash, self, product
+    /**
+     * Formdata upload to upload images and product data at the same time
+     * @param {*} product 
+     */
+    sendProductToServerAndSave = async (product) => {
+        try {
+            if (product) {
+                let newImages = this.resolveNewImages(); // This will be images that have yet to be uploaded for local dummy product
+                let owner = this.props.owner; // Owner of the shop to identify the shop
+                let username = cookies.get("loggedIn"); // Name of the authenticated employee, by default the shop owner
+                let hash = cookies.get("hash"); // Hash for protected route
+                let self = this.props.self; // Necessary for route to filter traffic to protected route
+                let imgNames = [];
+                const formData = new FormData();
+                formData.append('product', JSON.stringify(product));
+                newImages.forEach(img=>{
+                    formData.append("image", img.file); // Will store files for temp upload to server
+                    imgNames.push(img.name); // in order stores name for file
+                });
+                formData.append("imgNames", JSON.stringify(imgNames)); // in order stores name for file
+                formData.append('owner', owner);
+                formData.append('username', username);
+                formData.append('hash', hash);
+                formData.append('self', self);
+                return await fetch(currentshopurl + "s/savesingleproducttoshop", {
+                    method: "POST",
+                    credentials: corsdefault,
+                    body: formData
                 })
-            })
-            .then((response) => {
-                return response.json();
-            })
-            .then((result) => {
-                console.log(result);
-            })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((result) => {
+                    if (result.error) {
+                        this.setState({ error: result.error }); // Saving product failed
+                    }
+                    console.log(result);
+                })
+                .catch((err) => {
+                    this.setState({ error: "An error occured while uploading the product"}); // Saving product failed
+                })
+            } else {
+                this.setState({ error: "An error occured while saving the product"}); // Saving product failed
+            }
+        } catch (err) {
+            this.setState({ error: "An error occured while saving the product"}); // Saving product failed
+        }
+    }
+
+    /**
+     * This will retrieve upload local images for dummy product
+     * 
+     * @param {none}
+     * @returns {Object[]} Image url and name object {url: String url, name: String name}
+     */
+    resolveNewImages = () => {
+        try {
+            let imgArr = [];
+            if (this.props.index == "dummy" && this.props.tempImgData) {
+                imgArr = this.props.tempImgData; // Get local image data
+            }
+            return imgArr;
+        } catch (err) {
+            return [];
         }
     }
 
@@ -605,6 +652,54 @@ export default class Product extends Component {
         }
     }
 
+    resolveProductImages() {
+        try {
+            if (this.props.images) {
+                if (this.props.images[0]) {
+                    if (this.props.images[0].url) {
+                        return this.props.images[0].url;
+                    }
+                }
+            }
+            return false;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    resolveSecondProductImage() {
+        try {
+            if (this.props.images) {
+                if (this.props.images[1]) {
+                    if (this.props.images[1].url) {
+                        return this.props.images[1].url;
+                    }
+                }
+            }
+            return false;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    resolveValidBuyPrice() {
+        try {
+            if (this.props.styles) {
+                if (this.props.styles[0]) {
+                    if (this.props.styles[0].options) {
+                        if (this.props.styles[0].options[0]) {
+                            if (typeof this.props.styles[0].options[0].price == "number") {
+                                return this.props.styles[0].options[0].price;
+                            }
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            return false;
+        }
+    }
+
 
     render() {
         let appliedShippingClassesData = this.resolveAppliedShippingNames(this.props.shipping);
@@ -612,11 +707,14 @@ export default class Product extends Component {
         let currQuantity = this.resolveCurrQuantity();
         let currStyle = this.resolveCurrStyle();
         let currOption = this.resolveCurrOption();
+        let productImg = this.resolveProductImages();
+        let productSecondImg = this.resolveSecondProductImage();
+        let validBuyPrice = this.resolveValidBuyPrice();
         return (
             <div className="product-list-single shop-col">
                 <div className="product-list-meta-container">
                     <div className="product-list-img-container">
-                        <img src={this.props.imgurl ? this.props.imgurl : greyproduct}></img>
+                        <img src={productImg ? this.props.cloud + "/" + productImg : greyproduct}></img>
                         <FontAwesomeIcon className={this.props.editing == this.props.index ? "edit-interact edit-interact-hidden edit-interact-visible" : "edit-interact edit-interact-hidden"} onClick={(e) => {this.props.toggleImagePortal(true)}} icon={faArrowCircleUp} color={ '#919191' } alt="edit" />
                     </div>
                     {
@@ -769,14 +867,27 @@ export default class Product extends Component {
                             : 
                             <div>
                                 <div className="product-list-meta-name-edit-container">
-                                    <h5 className={!this.props.dummy ? "product-name" : "product-name product-name-dummy" }>{!this.props.dummy ? this.props.name : "Add Product"}</h5>
+                                    <div className="product-meta-name-desc-container">
+                                        <h5 className={!this.props.dummy ? "product-name" : "product-name product-name-dummy" }>{!this.props.dummy ? this.props.name : "Add Product"}</h5>
+                                        <p className="product-description-display">{this.props.desc}</p>
+                                    </div>
                                     {
                                         this.props.self ? 
-                                            <Button onClick={(e) => {this.props.enableEditMode(e, this.props.index)}} className="edit-interact-product"><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit" /></Button>
+                                            <Button onClick={(e) => {this.props.enableEditMode(e, this.props.index)}} className="edit-interact-product edit-interact-product-button"><FontAwesomeIcon className="edit-interact" icon={faEdit} color={ '#919191' } alt="edit" /></Button>
                                             : null
                                     }
                                 </div>
-                                <div>{this.props.price}</div>
+                                <div className="product-meta-data-display">
+                                    <div className="product-price-display">{ validBuyPrice ? "$" + validBuyPrice : ""}</div>
+                                </div>
+                                <div className="purchase-cart-container">
+                                    <div>
+                                        <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space">Add To Cart</Button>
+                                    </div>
+                                    <div>
+                                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space">Buy Now</Button>
+                                    </div>
+                                </div>
                             </div>
                     }
                 </div>
