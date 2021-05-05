@@ -45,11 +45,14 @@ export default class Video extends Component {
         window.addEventListener('keydown', this.interceptEnter);
     }
 
-    componentDidMount() {
+    async componentDidMount() {
         this.setUpState();
         this.loadPage();
         if (cookies.get('contentDelivery')) {
             this.setState({ cloud: cookies.get('contentDelivery')});
+        } else {
+            let cloudData = await this.props.fetchCloudUrl(); // Retrieve data from server if cloud data nonexistent in props and cookies
+            this.setState({ cloud: cloudData });
         }
         if (cookies.get('video-wide') == "true") {
             if (document.getElementsByClassName('maindash')[0]) {
@@ -226,16 +229,24 @@ export default class Video extends Component {
      * @return {String} "-hls.m3u8" or "-mpd.mpd"
      */
     checkPlaybackSupportType = async () => {
-        const support = await shaka.Player.probeSupport();
-        console.log(support.manifest);
-        if (support.manifest.mpd) {
+        try {
+            const support = await shaka.Player.probeSupport();
+            if (support.manifest.mpd) {
+                return "-mpd.mpd";
+            } else {
+                return "-hls.m3u8";
+            }
+        } catch (err) {
             return "-mpd.mpd";
-        } else {
-            return "-hls.m3u8";
         }
-        return "-mpd.mpd";
     }
     
+    /**
+     * Sets up the page to load the next valid data to watch. To push the next video from a playlist (not ad) to play, use nextVideo (code logic later, not done yet)
+     * @param {Boolean} reload 
+     * @param {Boolean} playEndAd 
+     * @param {Uuid} nextVideo 
+     */
     loadPage = async (reload = false, playEndAd = false) => {
         try {
             let playbackFormat = await this.checkPlaybackSupportType();
@@ -244,11 +255,11 @@ export default class Video extends Component {
                     this.initPlayer(await this.fetchVideoPageData(reload) + playbackFormat);
                     this.setState({ mpd: reload});
                 } else {
-                    if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) {
-                        this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + playbackFormat, false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + playbackFormat);
+                    if (window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)) { // Unique match 2 urls in href, first video, second ad
+                        this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]) + playbackFormat, false, await this.fetchVideoPageData(window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[5], true) + playbackFormat); 
                         this.setState({ mpd: window.location.href.match(/\?([v|a].*)=([a-zA-Z0-9].*)&([a-zA-Z0-9].*)\?([v|a].*)=([a-zA-Z0-9].*)/)[2]});
                     } else if (window.location.href.match(/\?v=([a-zA-Z0-9].*)/)) {
-                        this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + playbackFormat, playEndAd);
+                        this.initPlayer(await this.fetchVideoPageData(window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]) + playbackFormat, playEndAd); // Play end ad false? Play normal video, else play end ad from ad playlist
                         this.setState({ mpd: window.location.href.match(/\?v=([a-zA-Z0-9].*)/)[1]});
                     } else if (this.props.location.pathname == "/watch") { // Runs if visitor loads directly from Url
                         if (this.props.location.search) {
@@ -625,6 +636,31 @@ export default class Video extends Component {
         }
         return false; 
     }
+
+    /**
+     * Will determine if an ad is due to be played. Ads are played at the start if they haven't been played for x time ago. The default is 14 minutes but it can be set to anything externally and passed as an argument
+     * If videos watched over 6 or last ad watched was over 14 min ago or adRun.start == 0 then set a new ad to play
+     * If last end ad watched x minutes ago, set it to watch. 
+     * This function will just determine if its time for an ad to be played. Nothing else.
+     * @param {Object} adRun 
+     * @param {Number} xMinutesAgo 
+     * @param {Number} vidsWatched 
+     */
+    determineIfAdStartOrAdEndWaiting = (adRun, xMinutesAgo, vidsWatched) => {
+        if (adRun) {
+            if (adRun.hasOwnProperty('start')) {
+                if (adRun.start == 0 || adRun.start < xMinutesAgo || vidsWatched > 6) { // null adStart, over 7 min ago or user watched 7 videos? Run ad
+                    this.setState({ adStart: true });
+                    this.props.playlist.setVidsWatchedZero(); // If ad is running, always set vids watched to 0 to reset counter
+                }
+            }
+            if (adRun.hasOwnProperty('end')) {
+                if (adRun.end == 0 || adRun.end < xMinutesAgo) {
+                    this.setState({ adEnd: true });
+                }
+            }
+        }
+    }
     
     /* Initialize player and player error handlers */
     initPlayer = async(manifest, playEndAd = false, serveAd = null) => {
@@ -646,19 +682,8 @@ export default class Video extends Component {
                 let adRun = await this.props.playlist.checkAdSetup();
                 let xMinutesAgo = new Date().getTime() - 1000*60*14; // 14 minutes ago
                 let vidsWatched = this.props.playlist.playlistVidsWatched;
-                if (adRun) {
-                    if (adRun.hasOwnProperty('start')) {
-                        if (adRun.start == 0 || adRun.start < xMinutesAgo || vidsWatched > 6) { // null adStart, over 7 min ago or user watched 7 videos? Run ad
-                            this.setState({ adStart: true });
-                            this.props.playlist.setVidsWatchedZero(); // If ad is running, always set vids watched to 0 to reset counter
-                        }
-                    }
-                    if (adRun.hasOwnProperty('end')) {
-                        if (adRun.end == 0 || adRun.end < xMinutesAgo) {
-                            this.setState({ adEnd: true });
-                        }
-                    }
-                }
+
+                this.determineIfAdStartOrAdEndWaiting(adRun, xMinutesAgo, vidsWatched);
                 // Return array of times to play ad on this video. store. This will be retrieved from server from original fetch video data request
 
                 // Run function to get ad, play ad as manifest and then return back to normal video playthrough on skip or finish. Run in playlist class, save video timestamp and manifest // Always play the very next ad. Advertisements can be ordered chronologically from server side
@@ -689,7 +714,6 @@ export default class Video extends Component {
                 console.log(adUri, adData, this.state.adStart, playEndAd, adsAvailable);
 
                 // During playback, at x time, send request to server set watched, at start set impression to server, on click send to server
-
                 // After ad has played (start of video, defer) in video, dont defer, end of video (defer) (two different defers? one at end one at start?). Set defers and if more ads will play
 
                 const video = this.videoComponent.current;
@@ -764,8 +788,8 @@ export default class Video extends Component {
                     adUri = serveAd;
                 }
                 
-                if (adUri && adData && this.state.adStart && adsAvailable && this.checkTogetherHost() || adUri && adData && playEndAd && adsAvailable && this.checkTogetherHost() || serveAd) { // there is an ad to be played at the start. Load ad first
-                    this.setupSendWatch(manifestUri, 0, true, adUriRaw);
+                if (adUri && adData && this.state.adStart && adsAvailable && this.checkTogetherHost() || adUri && adData && playEndAd && adsAvailable && this.checkTogetherHost() || serveAd) { // there is an ad to be played. Load ad first, when ad is done, it will reload normal video
+                    this.setupSendWatch(manifestUri, 0, true, adUriRaw); // Sends watch to the other user in the socket to update their view
                     player.load(adUri).then(() => {
                         this.setState({ viewInterval: "" });
                         this.setState({ viewCounted: false });
@@ -777,7 +801,7 @@ export default class Video extends Component {
                         }
                         if (this.checkTogetherHost()) {
                             this.props.playlist.incToNextAd(); // Once an ad has started playing, you should cycle the playlist in the background so next ad played is not the same
-                            // this.props.playlist.incrementVidsWatched(); 
+                            // Dont increment videos watched because ads do not count as videos watched. Videos watched are for normal videos. Once user has watched x amount of videos, then display ad
                         }
                         this.setState({ adPlaying: true });
                         if (adUriRaw) {
@@ -787,7 +811,6 @@ export default class Video extends Component {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
                                 video.style.height = this.resolvePlaceholderHeight() + "px";
-                                console.log(video.style.height);
                                 this.viewCountedInterval(adUriRaw); // set custom viewcountedinterval for ad
                             }
                             this.setUpCropButton();
@@ -812,8 +835,7 @@ export default class Video extends Component {
                         if (this.videoComponent) {
                             if (this.videoComponent.current) {
                                 this.videoComponent.current.play();
-                                video.style.height="";
-                                console.log(video.style.height);
+                                video.style.height=""; // log video.style.height to configure player height styling
                                 this.viewCountedInterval(this.state.mpd);
                             }
                         }
@@ -883,7 +905,6 @@ export default class Video extends Component {
                     }
                 })
                 updateAdStart.then(async (result) => {
-                    console.log(result);
                     let detached = await this.player.detach();
                     this.player.destroy();
                     if (document.getElementsByClassName('shaka-controls-container')) {
@@ -902,7 +923,7 @@ export default class Video extends Component {
                     this.setState({ clickCounted: false });
                     this.setState({ adPlaying: false });
                     this.endViewCountInterval();
-                    this.loadPage();
+                    this.loadPage(); // This should begin playing the normal video the user wished to play
                 })
             } else if (this.state.adPlaying && this.state.adEnd) { // end ad was playing, set new data
                 this.setState({ adEnd: false });
@@ -932,9 +953,9 @@ export default class Video extends Component {
                     this.setState({ clickCounted: false });
                     this.setState({ adPlaying: false });
                     this.endViewCountInterval();
-                    this.loadPage();
+                    this.loadPage(); // Load next video, should be normal video if enough time didn't elapse, else it will be ad
                 });
-            } else if (this.state.adEnd) { // normal video was playing, play end ad
+            } else if (this.state.adEnd) { // normal video was playing, try to play end ad if there is an end ad
                 let detached = await this.player.detach();
                 this.player.destroy();
                 if (document.getElementsByClassName('shaka-controls-container')) {
@@ -947,7 +968,7 @@ export default class Video extends Component {
                         document.getElementsByClassName('shaka-spinner-container')[0].remove();
                     }
                 }
-                this.loadPage(false, true);
+                this.loadPage(false, true); // Will load end ad if there is one, always update window.location.href to next playlist video so after the end ad it will automatically load the next playlist item
             }
         }
     }

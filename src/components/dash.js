@@ -247,7 +247,7 @@ export default class Dash extends Component {
                 </div>
                 <div className="flex-button-center">
                     {this.state.loaded && !this.state.fetching ?
-                    <Button className="flex-button-center-btn" onClick={(e)=>{this.fetchRecommendations()}}>More videos</Button> : <div ref={this.spinnerRef} className="spinner-search-holder-visible spinner-video-dash">
+                    <Button className="flex-button-center-btn red-btn" onClick={(e)=>{this.fetchRecommendations()}}>More videos</Button> : <div ref={this.spinnerRef} className="spinner-search-holder-visible spinner-video-dash">
                     <div className="loadingio-spinner-dual-ball-m6fvn6j93c loadingio-spinner-dual-ball-m6fvn6j93c-dash"><div className="ldio-oo3b7d4nmnr ldio-oo3b7d4nmnr-dash">
                     <div></div><div></div><div></div>
                     </div></div>

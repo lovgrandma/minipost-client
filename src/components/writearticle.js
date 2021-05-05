@@ -349,7 +349,7 @@ export default class writeArticle extends Component {
                         }
                         <Button className={!this.state.published ? "publish-button publish-button-article" : "publish-button publish-button-article publish-button-hidden"} onClick={(e) => {this.publishArticle(e)}}>Publish</Button>
                     </div>
-                    <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden"}>Your article was published, view it <Link to={{ pathname:`/read?a=${this.state.id}`}}>here</Link></div>
+                    <div className={this.state.published ? "prompt-basic publish-confirmed" : "prompt-basic publish-confirmed publish-confirmed-hidden weight600"}>Your article was published, view it <Link to={{ pathname:`/read?a=${this.state.id}`}}>here</Link></div>
                 </div>
             </div>
         )

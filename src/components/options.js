@@ -317,7 +317,7 @@ export default class Options extends Component {
                                                 <input type="text" id="cc-name-input" ref={this.cc_name} className="fixfocuscolor cc-input-field" name="cc-name-input" placeholder={this.state.client_secret ? "Full name on card" : "Getting server data please wait.."} autocomplete="name" disabled={this.state.client_secret ? "" : "disabled"} required></input>
                                                 <div className="margin-bottom-5 info-blurb">All payments and billing info are handled securely through © Stripe payment solutions</div>
                                                 <div>{this.state.err}</div>
-                                                <button className={ this.state.ccbusy ? "btn upload-button save-data-button save-data-button-hidden" : "btn upload-button save-data-button" } type="submit">save payment info</button>
+                                                <button className={ this.state.ccbusy ? "btn upload-button save-data-button save-data-button-hidden" : "btn upload-button save-data-button red-btn" } type="submit">save payment info</button>
                                             </div>
                                         </form>
                                     )}

@@ -26,6 +26,14 @@ export default class Profile extends Component {
     }
 
     componentDidMount = async () => {
+        if (this.props.cloud) {
+            this.setState({ cloud: this.props.cloud });
+        } else if (cookies.get("contentDelivery")) {
+            this.setState({ cloud: cookies.get("contentDelivery" ) });
+        } else {
+            let cloudData = await this.props.fetchCloudUrl(); // Retrieve data from server if cloud data nonexistent in props and cookies
+            this.setState({ cloud: cloudData });
+        }
         try {
             if (this.props.page) {
                 interceptProfileMenuClick.call(this, this.props.page);
@@ -111,8 +119,6 @@ export default class Profile extends Component {
     }
 
     updateShippingClasses = (data) => {
-        console.log(data);
-        console.log(JSON.parse(data));
         try {
             JSON.parse(data);
             data = JSON.parse(data);
@@ -139,7 +145,7 @@ export default class Profile extends Component {
                                             views={record.views}
                                             articles={record.articles}
                                             tags={record.tags}
-                                            cloud={this.props.cloud}
+                                            cloud={this.state.cloud}
                                             key={index}
                                             index={index}
                                             edit={editable.call(this)}
@@ -169,6 +175,7 @@ export default class Profile extends Component {
                             shippingClasses={this.state.shippingClasses}
                             edit={editable.call(this)}
                             updateShippingClasses={this.updateShippingClasses}
+                            cloud={this.state.cloud}
                         />
         } else {
             pageData = profileData;
@@ -176,16 +183,16 @@ export default class Profile extends Component {
         return (
             <div>
                 <div className="flex-profile main-profile-header">
-                    <img className="profileavatar" src={this.props.cloud + "/av/" + this.state.avatarurl}></img>
+                    <img className="profileavatar" src={this.state.cloud + "/av/" + this.state.avatarurl}></img>
                     <div>
                         <div className="flex-profile-data off-black align-center">
                             <div className="profile-user-container-meta">
                                 <div className="prompt-basic off-black weight500">{this.state.username}</div>
-                                <Button className={canFollow.call(this) ? "prompt-basic off-black weight500" : "prompt-basic off-black weight500 hidden"}>{canFollow.call(this) ? "follow" : ""}</Button>
+                                <Button className={!canFollow.call(this) ? "prompt-basic hidden" : "prompt-basic red-btn weight600"}>{!canFollow.call(this) ? "" : "follow"}</Button>
                             </div>
                             <div className="profile-following-container-meta">
-                                <div className="prompt-basic flex"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
-                                <div className="prompt-basic flex"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
+                                <div className="prompt-basic flex italicized"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
+                                <div className="prompt-basic flex italicized"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
                             </div>
                         </div>
                         <div className="prompt-basic off-black">{this.state.about}</div>
@@ -200,8 +207,12 @@ export default class Profile extends Component {
                     {
                         this.state.shop && this.state.username ? 
                             <div className="profile-menu">
-                                <Button className="profile-menu-link" onClick={(e)=> {interceptProfileMenuClick.call(this, "")}}>Profile</Button>
-                                <Button className="profile-menu-link" onClick={(e)=> {interceptProfileMenuClick.call(this, "shop")}}>Shop</Button>
+                                <NavLink exact to={"/profile?p=" + this.state.username}>
+                                    <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "")}}>Profile</Button>
+                                </NavLink>
+                                <NavLink exact to={"/shop?s=" + this.state.username}>
+                                    <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "shop")}}>Shop</Button>
+                                </NavLink>
                             </div> 
                             : 
                             null

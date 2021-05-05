@@ -2,6 +2,10 @@ html {
     overflow-y: scroll;
 }
 
+.white-page > .maindash {
+    background: white !important;
+}
+
 /* Check index file for cdn import */
 .millerbolditalic {
     font-family: "Miller Text Bd It", "Miller Text Bd It2";
@@ -88,6 +92,10 @@ h5 {
 
 .off-black {
     color: #454545;
+}
+
+.italicized {
+    font-style: italic;
 }
 
 .logo-nav-font {
@@ -1196,17 +1204,49 @@ label {
 
 .btn {
     padding: 1px 8px;
-    background: linear-gradient(to right, rgba(243,158,151,1) 0%, rgba(252,146,138,1) 100%);
+    color: white;
+    background: rgb(138, 138, 138);
     border: none;
     transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 }
 
 .btn:hover {
-    background: linear-gradient(to right, rgb(239, 129, 120) 0%, rgb(239, 129, 120) 100%);
+    color: white;
+    background: rgb(116, 116, 116);
 }
 
 .btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
-    background: linear-gradient(to right, rgb(255, 174, 168) 0%, rgb(255, 137, 127) 100%);
+    background: rgb(207, 207, 207);
+}
+
+.red-btn {
+    padding: 1px 8px;
+    color: white;
+    background: rgb(255, 102, 102) !important;
+    box-shadow: 0 0 0 1px #ff0000 inset, 0 0 0 1px rgb(148 0 0 / 15%) inset, 1px 2px 0px 0px rgb(255 165 165 / 70%), 2px 1px 0px 0px rgb(255 164 164 / 40%), 1px 1px 0px 0px rgb(251 189 189 / 50%) !important;
+    border: none;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
+}
+
+.red-btn:hover {
+    color: white;
+    background: rgb(255, 119, 119) !important;
+    box-shadow: 0 0 0 1px #ff0000 inset, 0 0 0 1px rgb(148 0 0 / 15%) inset, 1px 2px 0px 0px rgb(255 165 165 / 70%), 2px 1px 0px 0px rgb(255 164 164 / 40%), 1px 1px 0px 0px rgb(251 189 189 / 50%) !important;
+}
+
+.red-btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show>.btn-primary.dropdown-toggle {
+    background: rgb(214, 86, 86) !important;
+    box-shadow: 0 0 0 1px #ff0000 inset, 0 0 0 1px rgb(148 0 0 / 15%) inset, 1px 2px 0px 0px rgb(255 165 165 / 70%), 2px 1px 0px 0px rgb(255 164 164 / 40%), 1px 1px 0px 0px rgb(251 189 189 / 50%) !important;
+}
+
+.grey-btn {
+    background: #b2b2b2 !important;
+    box-shadow: 0 0 0 1px #969696 inset, 0 0 0 1px rgb(146 146 146 / 15%) inset, 1px 2px 0px 0px rgb(195 195 195 / 70%), 2px 1px 0px 0px rgb(132 132 132 / 40%), 1px 1px 0px 0px rgb(138 138 138 / 50%) !important;
+}
+
+.grey-btn:hover {
+    background: #818181 !important;
+    box-shadow: 0 0 0 1px #969696 inset, 0 0 0 1px rgb(146 146 146 / 15%) inset, 1px 2px 0px 0px rgb(195 195 195 / 70%), 2px 1px 0px 0px rgb(132 132 132 / 40%), 1px 1px 0px 0px rgb(138 138 138 / 50%) !important;
 }
 
 .flex-button-center {
@@ -1218,12 +1258,20 @@ label {
 .flex-button-center-btn[type="button"] {
     font-size: 0.75em;
     margin: 0 auto;
-    background: #dddddd;
+    background: #ffbaba;
     transition: 700ms;
 }
 
 .flex-button-center-btn[type="button"]:hover {
-    background: linear-gradient(to right, rgb(237, 237, 237) 0%, rgb(222, 222, 222) 100%) !important;
+    background: rgb(255, 117, 117) !important;
+}
+
+.btn-related[type="button"] {
+    transition: 100ms;
+}
+
+.btn-related[type="button"]:hover {
+    background: #818181 !important;
 }
 
 .loginbtn,
@@ -3709,6 +3757,7 @@ If user only has one friend, styling wont apply */
 }
 
 .canvas-thumbnail-preview {
+    border: 1px solid grey;
     margin-bottom: 10px;
 }
 
@@ -3835,6 +3884,8 @@ If user only has one friend, styling wont apply */
 .progress-num {
     font-size: 0.85em;
     user-select: none;
+    font-weight: 600;
+    color: grey;
 }
 
 .progress-update {
@@ -3846,7 +3897,7 @@ If user only has one friend, styling wont apply */
     user-select: none;
     width: 0%;
     height: 3px;
-    background: linear-gradient(to right, rgba(243,158,151,1) 0%, rgba(252,146,138,1) 100%);
+    background: linear-gradient(to right, rgb(255 170 164) 0%, rgb(255 92 92) 100%);
 }
 
 .progress-bar-container {
@@ -3993,6 +4044,8 @@ If user only has one friend, styling wont apply */
     transition: all 0.1s linear;
     border-radius: 8px;
     font-size: 0.95em;
+    font-weight: 600;
+    color: #4a4a4a;
 }
 
 .video-tags-list .video-tag-individual:first-child {
@@ -4362,7 +4415,7 @@ textarea:focus {
 
 .article-container-dash img {
     width: 100%;
-    max-height: 110px;
+    max-height: 105px;
     object-fit: cover;
 }
 
@@ -4378,7 +4431,7 @@ textarea:focus {
 .article-container-dash .article-preview-body {
 /*    max-height: 238.328px;*/
     transition: 200ms;
-    max-height: calc(9em/1.04);
+    max-height: calc(9em/0.9);
 }
 
 /* Use button for rollout feature */
@@ -5122,6 +5175,11 @@ a code:hover {
 .col .article-preview-body-edit {
     padding: 5px;
     border-radius: 5px;
+}
+
+.videodash .article-container-dash .article-preview-title,
+.videodash .article-container-dash .article-preview-body {
+    padding-top: 0;
 }
 
 .videodash .article-container-dash .article-preview-body img,

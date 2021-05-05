@@ -161,6 +161,7 @@
 .shaka-overflow-menu {
     user-select: none !important;
     font-size: 0.8em !important;
+    border-radius: 2.5px;
 }
 
 .shaka-overflow-menu span,

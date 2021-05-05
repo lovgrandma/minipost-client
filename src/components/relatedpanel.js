@@ -200,7 +200,7 @@ export default class RelatedPanel extends Component {
                 {
                     this.state.relatedContent.length > 0 ?
                         this.state.loaded && !this.state.fetching ?
-                            <Button className="flex-button-center-btn" onClick={(e)=>{this.fetchRelated()}}>More videos</Button> : <div ref={this.spinnerRef} className="spinner-search-holder-visible spinner-video-dash"><div className="loadingio-spinner-dual-ball-m6fvn6j93c loadingio-spinner-dual-ball-m6fvn6j93c-dash"><div className="ldio-oo3b7d4nmnr ldio-oo3b7d4nmnr-dash">
+                            <Button className="flex-button-center-btn grey-btn btn-related" onClick={(e)=>{this.fetchRelated()}}>More videos</Button> : <div ref={this.spinnerRef} className="spinner-search-holder-visible spinner-video-dash"><div className="loadingio-spinner-dual-ball-m6fvn6j93c loadingio-spinner-dual-ball-m6fvn6j93c-dash"><div className="ldio-oo3b7d4nmnr ldio-oo3b7d4nmnr-dash">
                             <div></div><div></div><div></div>
                             </div></div>
                         </div>

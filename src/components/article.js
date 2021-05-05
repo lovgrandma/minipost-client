@@ -218,9 +218,6 @@ export default class Article extends Component {
             this.setReadIncrement(45);
             return 45;
         }
-        this.setState({ sbri: 45 });
-        this.setReadIncrement(45);
-        return 45;
     }
     
     setReadIncrement = (seconds, title) => {

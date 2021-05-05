@@ -95,7 +95,6 @@ const incrementLikeDislike = async function(like, increment, id, type, username)
             return response.json();
         })
         .then((result) => {
-            console.log(result);
             if (result) {
                 if (result.action) {
                     if (result.action == "logout") {
@@ -135,11 +134,9 @@ const incrementLikeDislike = async function(like, increment, id, type, username)
             return result;
         })
         .catch((err) => {
-            console.log(err);
             return false;
         })
     } catch (err) {
-        console.log(err);
         return false;
     }
 }
@@ -198,7 +195,7 @@ export const resetOpenMenus = function(exclude) {
         }
         return;
     } catch (err) {
-        console.log(err);
+        // Fail silently
     }
 }
 
@@ -324,18 +321,18 @@ export const getPathnameMatchProfile = async function() {
     try {
         if (this.props.location.search) {
             if (this.props.location.search.length > 0) {
-                if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)) {
-                    if (this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
-                        return await this.fetchProfileData(this.props.location.search.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                if (this.props.location.search.match(/\?(s|p)=([a-zA-Z0-9].*)/)) {
+                    if (this.props.location.search.match(/\?(s|p)=([a-zA-Z0-9].*)/)[2]) {
+                        return await this.fetchProfileData(this.props.location.search.match(/\?(s|p)=([a-zA-Z0-9].*)/)[2]);
                     }
                 }
             }
         }
         if (this.props.location.pathname) {
             if (this.props.location.pathname.length > 0) {
-                if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)) {
-                    if (this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]) {
-                        return await this.fetchProfileData(this.props.location.pathname.match(/\?p=([a-zA-Z0-9].*)/)[1]);
+                if (this.props.location.pathname.match(/\?(s|p)=([a-zA-Z0-9].*)/)) {
+                    if (this.props.location.pathname.match(/\?(s|p)=([a-zA-Z0-9].*)/)[2]) {
+                        return await this.fetchProfileData(this.props.location.pathname.match(/\?(s|p)=([a-zA-Z0-9].*)/)[2]);
                     }
                 }
             }
@@ -348,9 +345,12 @@ export const getPathnameMatchProfile = async function() {
 
 export const interceptProfileMenuClick = function(page) {
     try {
-        this.setState({ page: page });
+        if (page) {
+            this.setState({ page: page });
+        } else {
+            this.setState({ page: "" });
+        }
     } catch (err) {
         // Fail silently
-        console.log(err);
     }
 }

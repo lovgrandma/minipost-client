@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js';
 import { Switch } from 'react-router';
 import {
     BrowserRouter,
@@ -1378,10 +1378,10 @@ class App extends Component {
     * Fetches cloud url for user (logged in or not) to consume content (necessary for video playback, thumbnails, user icons, etc)
     *
     * @args {none}
-    * @return {none}
+    * @return {String} Cloud data
     */
-    fetchCloudUrl = () => {
-        fetch(currentrooturl + 'm/fetchcloudfronturl', {
+    fetchCloudUrl = async () => {
+        return await fetch(currentrooturl + 'm/fetchcloudfronturl', {
                     method: "POST",
                     headers: {
                         'Accept': 'application/json',
@@ -1398,12 +1398,13 @@ class App extends Component {
                 .then((data) => {
                     if (data) {
                         if (data.querystatus != 'err') {
-                            this.setState({ cloud: data.querystatus });
+                            this.setCloud(data.querystatus);
+                            return data.querystatus;
                         }
                     }
                 })
                 .catch((err) => {
-                    console.log(err);    
+                    // Fail silently  
                 });
     }
 
@@ -1710,11 +1711,23 @@ class App extends Component {
         }
     }
 
+    resolveIsShopPage() {
+        try {
+            if (window.location.href.match(/(shop\?s|product\?p)/)) {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            return false;
+        }
+    }
+
     render() {     
+        let isShopPage = this.resolveIsShopPage();
         return (
             <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
                 <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} />
-                <div className='maindashcontainer'>
+                <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
                             <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
@@ -1723,25 +1736,31 @@ class App extends Component {
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
                         )}/>
                         <Route path='/watch?v=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/watch?va=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/read?a=:articleId' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/watch' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/read' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
-                        <Route path='/shop' render={(props) => (
-                            <Profile {...props} key={getPath()} page="" />
-                        )}/>
                         <Route path='/shop?s=:username' render={(props) => (
-                            <Profile {...props} key={getPath()} page="" />
+                            <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                        )}/>
+                        <Route path='/shop' render={(props) => (
+                            <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                        )}/>
+                        <Route path='/product' render={(props) => (
+                            <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />
+                        )}/>
+                        <Route path='/product?p=:product' render={(props) => (
+                            <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/options' render={(props) => (
                             <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
@@ -1759,10 +1778,10 @@ class App extends Component {
                             <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/profile?p=:username' render={(props) => (
-                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/profile' render={(props) => (
-                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/edit?v=:videoId' render={(props) => (
                             <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />

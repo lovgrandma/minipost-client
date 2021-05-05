@@ -1022,7 +1022,7 @@ export default class Upload extends Component { // ulc upload component
                 </div>
                 <div className={ cookies.get('loggedIn') && !this.state.gettingUserVideos ? "upload-button-container" : "hidden"}>
                     <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
-                    <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
+                    <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button red-btn" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
                     <div className={ this.state.advertiser && this.props.uploadStatus != "video ready" && !this.state.beginUpload ? "hidden hidden-visible custom-control custom-switch margin-bottom-5 custom-switch-spacing-upload" : "hidden" }>
                         <input type="checkbox" className="custom-control-input" id="customSwitch1" ref={this.advertisementSwitch}></input>
                         <label className="custom-control-label info-blurb switch-line-height-text" for="customSwitch1">Upload as an advertisement and fill in advertisement contract details</label>
@@ -1101,12 +1101,12 @@ export default class Upload extends Component { // ulc upload component
                             <div className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></div>
                         </form>
                         <div className={this.props.edit ? "prompt-basic-s grey-out margin-bottom-5" : "hidden"}>{this.props.edit ? "If you've made changes that you don\'t want to save you can just leave this page and nothing will be changed. Otherwise you can revise your changes and click the button below" : null}</div>
-                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>{!this.props.edit ? "Publish" : "Update"}</Button>
+                        <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video red-btn" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>{!this.props.edit ? "Publish" : "Update"}</Button>
                     </div>
                 </div>
                 <div className={this.state.responseToTitle ? this.state.responseToTitle.length > 0 ? "prompt-basic grey-out responding-to" : "hidden" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle ? this.state.responseToTitle : null}</Link></div>
-                <div className={this.state.published && !this.state.publishedAwait ? "hidden hidden-visible prompt-basic" : "hidden"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.getWatchHere()}`}}>here</Link></div>
-                <div className={this.state.publishedAwait ? "hidden hidden-visible prompt-basic grey-out" : "hidden"}>Your video has been published but it has not finished uploading yet. You can continue to edit video details above</div>
+                <div className={this.state.published && !this.state.publishedAwait ? "hidden hidden-visible prompt-basic weight600" : "hidden"}>Your video has been published, watch it <Link to={{ pathname:`/watch?v=${this.getWatchHere()}`}}>here</Link></div>
+                <div className={this.state.publishedAwait ? "hidden hidden-visible prompt-basic grey-out weight600" : "hidden"}>Your video has been published but it has not finished uploading yet. You can continue to edit video details above</div>
                 <div className={this.props.isLoggedIn && !this.props.edit ? "write-article-prompt prompt-basic grey-out" : "write-article-prompt hidden"}>Want to write an article instead? <NavLink exact to="/writearticle">Click here</NavLink></div>
             </div>
         )

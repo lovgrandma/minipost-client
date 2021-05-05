@@ -17,15 +17,18 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: ""
+            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: "", error: ""
         }
     }
 
     componentDidMount() {
-        this.fetchShopData();
-        if (cookies.get('contentDelivery')) {
+        if (this.props.cloud) {
+            this.setState({ cloud: this.props.cloud });
+        } else if (cookies.get('contentDelivery')) {
             this.setState({ cloud: cookies.get('contentDelivery')});
         }
+        console.log(this.state.cloud);
+        this.fetchShopData();
     }
 
     resolveData(data, prop) {
@@ -36,43 +39,48 @@ export default class Shop extends Component {
     }
 
     /**
-     * Takes a shop 
+     * Takes a shop and retrieves product data
      */
     fetchShopData = async() => {
-        let owner = this.props.owner; // Should be the value of the profile being accessed
-        if (owner) {
-            if (cookies.get('loggedIn') == owner && !this.state.self) {
-                this.setState({ self: true });
+        try {
+            let owner; // Should be the value of the profile being accessed
+            if (this.props.owner) {
+                owner = this.props.owner;
+            } else {
+                owner = window.location.search.match(/\?(s|p)=([a-zA-Z0-9].*)/)[2];
             }
-            fetch(currentshopurl + 's/getshopproducts', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: corsdefault,
-                body: JSON.stringify({
-                    owner
+            if (owner) {
+                if (cookies.get('loggedIn') == owner && !this.state.self) {
+                    this.setState({ self: true });
+                }
+                fetch(currentshopurl + 's/getshopproducts', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        owner
+                    })
                 })
-            })
-            .then((response) => {
-                return response.json();
-            })
-            .then((result) => {
-                console.log(result);
-                if (result) {
-                    if (result.products) {
-                        this.setState({ products: result.products });
+                .then((response) => {
+                    return response.json();
+                })
+                .then((result) => {
+                    console.log(result);
+                    if (result) {
+                        if (result.products) {
+                            this.setState({ products: result.products });
+                        }
                     }
-                }
-                return result;
-            })
-            .then((result) => {
-                if (this.state.self) {
-                    // make request for admin protected edit data 
-                    // for editing shipping classes and other things
-                }
-            })
+                    return result;
+                });
+            }
+        } catch (err) {
+            console.log(err);
+            this.setState({ error: "Shop wasn't able to load "});
+            // Fail silently
         }
     }
 

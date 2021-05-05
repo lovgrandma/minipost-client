@@ -1,14 +1,9 @@
 import React, { Component } from 'react';
 import {
-    Link
+    NavLink
 } from 'react-router-dom';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Dropdown,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import currentshopurl from '../shopurl.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -334,7 +329,7 @@ export default class Product extends Component {
                     return false; // Styles must be named if there are more than one
                 }
                 for (let j = 0; j < styles[i].options.length; j++) {
-                    if (typeof styles[i].options[j].price != "number" || isNaN(styles[i].options[j].price)) {
+                    if (typeof Number(styles[i].options[j].price) != "number" || isNaN(styles[i].options[j].price)) {
                         return false; // There was a style/option with a null price. Not valid price
                     }
                     if (styles[i].options.length > 1 && !styles[i].options[j].descriptor) {
@@ -689,15 +684,52 @@ export default class Product extends Component {
                     if (this.props.styles[0].options) {
                         if (this.props.styles[0].options[0]) {
                             if (typeof this.props.styles[0].options[0].price == "number") {
-                                return this.props.styles[0].options[0].price;
+                                return this.props.styles[0].options[0].price.toFixed(2);
                             }
                         }
                     }
                 }
             }
         } catch (err) {
-            return false;
+            return "";
         }
+    }
+
+    /**
+     * Will determine if there is only one choice for this product, allowing for "Add To Cart" option, else give "See details"
+     */
+    resolveOnlyOneChoice() {
+        try {
+            if (this.props.styles) {
+                if (this.props.styles.length == 1 && this.props.styles[0]) {
+                    if (this.props.styles[0].options) {
+                        if (this.props.styles[0].options.length == 1 && this.props.styles[0].options[0]) {
+                            if (this.props.styles[0].options.length == 1 && this.props.styles[0].options[0].quantity > 0) {
+                                return "Add To Cart";
+                            }
+                        }
+                    }
+                }
+            }
+            return "See Details";
+        } catch (err) {
+            return "See Details";
+        }
+    }
+
+    /**
+     * Will attempt to add a product to the cart. If this fails, redirect to product page using this.props.id
+     * If redirect is true, always redirect after attempt adding to cart (Should be true when user clicks "Buy Now" but should be false when user clicks "Add To Cart")
+     * @param {Boolean} redirect 
+     */
+    addToCart(page = "") {
+        // if page is "product" dont add to cart, just go page
+        // if product invalid, dont add to cart, always go product page
+        // if product valid, add to cart, dont redirect anywhere
+    }
+
+    goBuy() {
+        // if product valid, go checkout, else go product page
     }
 
 
@@ -710,11 +742,14 @@ export default class Product extends Component {
         let productImg = this.resolveProductImages();
         let productSecondImg = this.resolveSecondProductImage();
         let validBuyPrice = this.resolveValidBuyPrice();
+        let cartChoice = this.resolveOnlyOneChoice();
         return (
             <div className="product-list-single shop-col">
                 <div className="product-list-meta-container">
                     <div className="product-list-img-container">
-                        <img src={productImg ? this.props.cloud + "/" + productImg : greyproduct}></img>
+                        <NavLink exact to={"/product?p=" + this.props.id}>
+                            <img src={productImg ? this.props.cloud + "/" + productImg : greyproduct}></img>
+                        </NavLink>
                         <FontAwesomeIcon className={this.props.editing == this.props.index ? "edit-interact edit-interact-hidden edit-interact-visible" : "edit-interact edit-interact-hidden"} onClick={(e) => {this.props.toggleImagePortal(true)}} icon={faArrowCircleUp} color={ '#919191' } alt="edit" />
                     </div>
                     {
@@ -868,7 +903,9 @@ export default class Product extends Component {
                             <div>
                                 <div className="product-list-meta-name-edit-container">
                                     <div className="product-meta-name-desc-container">
-                                        <h5 className={!this.props.dummy ? "product-name" : "product-name product-name-dummy" }>{!this.props.dummy ? this.props.name : "Add Product"}</h5>
+                                        <NavLink exact to={"/product?p=" + this.props.id}>
+                                            <h5 className={!this.props.dummy ? "product-name" : "product-name product-name-dummy" }>{!this.props.dummy ? this.props.name : "Add Product"}</h5>
+                                        </NavLink>
                                         <p className="product-description-display">{this.props.desc}</p>
                                     </div>
                                     {
@@ -882,10 +919,15 @@ export default class Product extends Component {
                                 </div>
                                 <div className="purchase-cart-container">
                                     <div>
-                                        <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space">Add To Cart</Button>
+                                        {
+                                            cartChoice == "Add To Cart" ?
+                                                <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space" onClick={(e)=>{this.addToCart("")}}>{cartChoice}</Button>
+                                                : 
+                                                <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space" onClick={(e)=>{this.addToCart("product")}}>{cartChoice}</Button>
+                                        }
                                     </div>
                                     <div>
-                                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space">Buy Now</Button>
+                                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space" onClick={(e)=>{this.goBuy()}}>Buy Now</Button>
                                     </div>
                                 </div>
                             </div>
