@@ -18,13 +18,13 @@ import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowCircleLeft, faArrowCircleRight, faCartPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { cookies } from '../App.js';
-import { checkoutNowWithCurrentCartItems, prepareCheckoutWithCurrentCartItems } from '../methods/ecommerce.js';
+import { checkoutNowWithCurrentCartItems, prepareCheckoutWithCurrentCartItems, addOneProductToCart } from '../methods/ecommerce.js';
 
 export default class ProductSinglePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            product: {}, recommended: [], cloud: "", currStyleIndex: 0, currSelectedOption: -1, atleastOneValidOption: false, error: ""
+            product: {}, recommended: [], cloud: "", currStyleIndex: 0, currSelectedOption: -1, atleastOneValidOption: false, error: "", success: ""
         }
         this.optionsRef = React.createRef();
     }
@@ -84,6 +84,7 @@ export default class ProductSinglePage extends Component {
                             if (result.data.product) {
                                 this.setState({ product: result.data.product });
                                 this.setState({ atleastOneValidOption: this.resolveAtleastOneValidOption(result.data.product.styles) });
+                                this.setState({ currSelectedOption: this.resolveFirstValidOptionOnCurrStyle(0) });
                             }
                             if (result.data.shop) {
                                 this.setState({ shop: result.data.shop });
@@ -239,21 +240,42 @@ export default class ProductSinglePage extends Component {
      * Will successfully add current option of product to cart if all data valid, add amount tracking for when user adds 2 or more
      * @param {*} e 
      */
-    resolveAddToCart(e) {
+    resolveAddToCart = async(e) => {
         try {
+            this.setState({ success: "" });
             let shop = this.state.shop;
-            let currProductOption;
-            if (this.state.product.styles[this.state.currStyleIndex]) {
-                if (this.state.product.styles[this.state.currStyleIndex].options) {
-                    if (this.state.product.styles[this.state.currStyleIndex].options[index]) {
-                        if (this.state.product.styles[this.state.currStyleIndex].options[index].quantity > 0) {
-                            currProductOption = this.state.product.styles[this.state.currStyleIndex].options[index]; // Confirm that the quantity of the current product is over 0
+            if (shop.id) {
+                let productMatch = {
+                    id: "",
+                    style: "",
+                    option: "",
+                    price: null,
+                    shopId: shop.id
+                }
+                if (this.state.product.styles[this.state.currStyleIndex]) {
+                    if (this.state.product.styles[this.state.currStyleIndex].options) {
+                        if (this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption]) {
+                            if (this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].quantity > 0) {
+                                productMatch.id = this.state.product.id;
+                                productMatch.style = this.state.product.styles[this.state.currStyleIndex].descriptor;
+                                productMatch.option = this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].descriptor;
+                                productMatch.price = this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].price;
+                            }
                         }
                     }
                 }
-            }
-            if (currProductOption) {
-                
+                if (productMatch.id.length > 0 && productMatch.style.length > 0 && productMatch.option.length > 0) {
+                    let data = await addOneProductToCart(productMatch);
+                    if (data) {
+                        this.setState({ success: "Product added to cart" });
+                    } else {
+                        this.setState({ error: "Was not able to add product to cart" });
+                    }
+                } else {
+                    this.setState({ error: "Was not able to add product to cart"});
+                }
+            } else {
+                this.setState({ error: "Was not able to add product to cart"});
             }
         } catch (err) {
             // Fail silently
@@ -302,6 +324,30 @@ export default class ProductSinglePage extends Component {
         }
     }
 
+    resolveCurrPrice() {
+        try {
+            if (this.state.product) {
+                if (this.state.product.styles) {
+                    if (this.state.product.styles[this.state.currStyleIndex]) {
+                        if (this.state.product.styles[this.state.currStyleIndex].options) {
+                            if (this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption]) {
+                                if (this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].hasOwnProperty("price")) {
+                                    if (typeof this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].price === "number") {
+                                        if (parseFloat(this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].price)) {
+                                            return parseFloat(this.state.product.styles[this.state.currStyleIndex].options[this.state.currSelectedOption].price).toFixed(2);
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    } 
+                }
+            }
+        } catch (err) {
+            return null;
+        }
+    }
+
     render() {
         let fulfill = this.determineValidProduct(); 
         let imgsLength = this.resolveProductImgsLength();
@@ -311,6 +357,7 @@ export default class ProductSinglePage extends Component {
         let shopOwner = this.resolveProductAttribute("owner");
         let currOptions = this.resolveCurrentOptions();
         let currStyleIndex = this.resolveCurrStyleIndex();
+        let currPrice = this.resolveCurrPrice();
         return (
             <div className="single-product-page-container">
                 <div className="single-product-page-images-container">
@@ -355,7 +402,7 @@ export default class ProductSinglePage extends Component {
                                 <p className="single-product-page-shop-name">{shopName}</p>
                             </NavLink>
                             <h3 className="single-product-page-title">{productName}</h3>
-                            <div className="single-product-page-calculated-price">{this.state.calcPrice}</div>
+                            <div className="single-product-page-calculated-price"><span className="single-product-page-calculated-price-label weight600 grey-out">Price:</span><span className="single-product-page-calculated-price-value weight600">{!isNaN(currPrice) ? currPrice : ""}</span></div>
                             <p className="single-product-page-desc">{parseBody(productDesc)}</p>
                             <div className="product-page-product-styles-selection-container">
                                 {
@@ -402,6 +449,7 @@ export default class ProductSinglePage extends Component {
                             <div className="product-page-action-button-container">
                                 <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space" onClick={(e)=>{this.resolveAddToCart(e)}}>{fulfill}</Button>
                             </div>
+                            <div className={this.state.success ? this.state.success.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>{this.state.success}</div>
                             <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.error}</div>
                         </div>
                     </div>

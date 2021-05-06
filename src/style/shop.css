@@ -601,7 +601,9 @@ button.profile-menu-link:hover {
 }
 
 .err-status,
-.shipping-error {
+.shipping-error,
+.shipping-success
+.generic-success {
     margin: 0 auto;
     width: 80%;
     max-width: 400px;
@@ -618,13 +620,24 @@ button.profile-menu-link:hover {
     transition: 200ms;
 }
 
+.shipping-success,
+.generic-success {
+    color: #ffffff;
+    background: #69b2e8;
+    border: 1px solid #45b3ff;
+}
+
 .err-status-hidden,
-.shipping-error-hidden {
+.shipping-error-hidden,
+.shipping-success-hidden,
+.generic-success-hidden {
     opacity: 0;
 }
 
 .err-status-active,
-.shipping-error-active {
+.shipping-error-active,
+.shipping-success-active,
+.generic-success-active {
     opacity: 1 !important;
 }
 
@@ -875,6 +888,7 @@ Button.transaction-button-checkout:hover {
     overflow-y: auto;
     direction: rtl;
     padding-left: 3px;
+    height: -webkit-fill-available;
 }
 
 .single-product-page-meta-inputs-container {
@@ -924,15 +938,28 @@ Button.transaction-button-checkout:hover {
     }
     
     .main-product-img-slider {
+        align-self: center;
         width: 65vw;
     }
 
     .single-product-carousel-provider {
         justify-content: center;
+        flex-direction: column-reverse;
+    }
+
+    .single-product-page-thumbnails {
+        max-width: 92vw;
+        align-self: center;
+        flex-direction: row-reverse;
     }
 
     .single-product-page-meta-container {
-        padding: 0 22.5px;
+        padding: 0;
+        max-width: 100vw;
+    }
+
+    Button.transaction-button {
+        padding: 3px 15px !important;
     }
 }
 
@@ -1015,12 +1042,13 @@ Button.transaction-button-checkout:hover {
 .option-size-unselected {
     outline: 1px solid rgba(0, 0, 0, 0);
     padding: 5px 15px;
-    cursor: unset;
+    cursor: pointer;
 }
 
 .option-size-selected[disabled], .option-size-unselected[disabled] {
     color: #a0a0a0 !important;
     text-decoration: line-through;
+    cursor: unset;
 }
 
 .product-page-options-select-container {
@@ -1029,4 +1057,17 @@ Button.transaction-button-checkout:hover {
 
 .shipping-destination-options-container {
     display: flex;
+}
+
+.single-product-page-calculated-price {
+    margin-bottom: 5px;
+}
+
+.single-product-page-calculated-price-label {
+    font-size: 14px;
+    padding-right: 5px;
+}
+
+.single-product-page-calculated-price-value {
+    color: darkred;
 }

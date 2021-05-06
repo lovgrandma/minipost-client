@@ -10,12 +10,13 @@ import corsdefault from '../cors.js';
 
 import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import currentshopurl from '../shopurl';
 const stripePromise = loadStripe(keys.livekey);
 
 export default class Options extends Component {
     constructor() {
         super();
-        this.state = { username: "", avatarurl: '', uploadavatarbusy: false, ccbusy: false, shippingData: null, email: '', phone: '###-###-####', cclastfourdigits: "-------------", cctype: '', openportal: '', err: "", client_secret: null, countries: [], shippingError: "" }
+        this.state = { username: "", avatarurl: '', uploadavatarbusy: false, ccbusy: false, shippingData: null, email: '', phone: '###-###-####', cclastfourdigits: "-------------", cctype: '', openportal: '', err: "", client_secret: null, countries: [], shippingError: "", shippingSuccess: "" }
         this.upload = React.createRef();
         this.cc_name = React.createRef();
         this.countryDestinationShippingSelectRef = React.createRef();
@@ -30,6 +31,7 @@ export default class Options extends Component {
     componentDidMount = async () => {
         try {
             this.fetchProfileOptionsData();
+            this.fetchShippingData();
             this.setState({ uploadavatarbusy: false });
             this.buildCountriesOptions();
         } catch (err) {
@@ -227,8 +229,10 @@ export default class Options extends Component {
                     this.setState({ ccbusy: false });
                     return;
                 }
-
-                const fullname = this.cc_name.current.value
+                let username = cookies.get('loggedIn');
+                let hash = cookies.get('hash');
+                let self = true;
+                const fullname = this.cc_name.current.value;
                 const result = await stripe.confirmCardSetup(this.state.client_secret, {
                     payment_method: {
                         card: elements.getElement(CardElement),
@@ -239,33 +243,31 @@ export default class Options extends Component {
                 });
                 if (result.error) {
                     this.setState({ ccbusy: false });
-                    console.log(result);
                 } else {
-                    console.log(result);
                     let payment_id = result.setupIntent.payment_method;
                     let cus_id = this.state.payment_customer;
-                     return await fetch(currentrooturl + 'm/associatecardwithcustomer', {
-                            method: "POST",
-                            headers: {
-                                'Accept': 'application/json',
-                                'Content-Type': 'application/json'
-                            },
-                            credentials: corsdefault,
-                            body: JSON.stringify({
-                                payment_id, cus_id
-                            })                        
-                        })
-                        .then((response) => {
-                            return response.json();
-                        })
-                        .then((result) => {
-                            this.setState({ last4: 'Card has been updated' });
-                            this.setState({ ccbusy: false });
-                        })
-                        .catch((err) => {
-                            console.log(err);
-                            this.setState({ ccbusy: false });
-                        })
+                    return await fetch(currentrooturl + 'm/associatecardwithcustomer', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: corsdefault,
+                        body: JSON.stringify({
+                            username, hash, self, payment_id, cus_id
+                        })                        
+                    })
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then((result) => {
+                        this.setState({ last4: 'Card has been updated' });
+                        this.setState({ ccbusy: false });
+                    })
+                    .catch((err) => {
+                        console.log(err);
+                        this.setState({ ccbusy: false });
+                    })
                 }
             } else {
                 this.setState({ ccbusy: false });
@@ -286,12 +288,12 @@ export default class Options extends Component {
     }
 
     /**
-     * Make call to server to upload new shipping data to user record
+     * Iterate through shipping data on page to ensure valid shipping info
      * @param {*} e 
      */
-    saveShippingAddress = (e) => {
+    saveShippingAddressPre = (e) => {
         try {
-            this.setState({ shippingError: "" });
+            this.setState({ shippingError: "", shippingSuccess: ""  });
             let shippingData = {
                 country: "",
                 fullName: "",
@@ -301,29 +303,20 @@ export default class Options extends Component {
                 state: "",
                 zip: ""
             }
-            let resolveCountry = () => {
+            // Validates a reference for a property in shipping data
+            let resolveGeneric = (ref, type = "") => {
                 try {
-                    if (this.countryDestinationShippingSelectRef.current.select.getValue()[0].label) {
-                        return this.countryDestinationShippingSelectRef.current.select.getValue()[0].label;
-                    }
-                    return false;
-                } catch (err) {
-                    return false;
-                } 
-            }
-            if (resolveCountry()) {
-                shippingData.country = resolveCountry();
-            } else {
-                this.setState({ shippingError: "Please select a country" });
-                return false;
-            }
-            let resolveGeneric = (key) => {
-                try {
-                    if (this[key].current) {
-                        if (this[key].current.value) {
-                            if (this[key].current.value.length > 0) {
-                                return this[key].current.value;
+                    if (!type) {
+                        if (this[ref].current) {
+                            if (this[ref].current.value) {
+                                if (this[ref].current.value.length > 0) {
+                                    return this[ref].current.value;
+                                }
                             }
+                        }
+                    } else {
+                        if (this[ref].current.select.getValue()[0].label) { // For countries
+                            return this[ref].current.select.getValue()[0].label;
                         }
                     }
                     return false;
@@ -331,23 +324,112 @@ export default class Options extends Component {
                     return false;
                 }
             }
-            let updateData = (key, error) => {
-                if (resolveGeneric(key)) {
-                    shippingData[key] = resolveGeneric(key);
+            let updateData = (key, ref, error, type = "") => {
+                if (resolveGeneric(ref, type)) {
+                    shippingData[key] = resolveGeneric(ref, type);
                     return true;
                 } else {
                     this.setState({ shippingError: error });
                     return false;
                 }
             }
-            updateData("shippingZipRef", "Please enter a valid ZIP/Postal Code");
-            updateData("shippingStateRef", "Please enter a state/province to ship to");
-            updateData("shippingCityRef", "Please enter a valid city for shipping");
-            updateData("shippingAddressRef", "Please enter valid shipping address");
-            updateData("shippingEmailRef", "Please enter valid email address for shipping");
-            updateData("shippingFullNameRef", "Please enter a full name for shipping");
+            updateData("country", "countryDestinationShippingSelectRef", "Please select a country", "country");
+            updateData("zip", "shippingZipRef", "Please enter a valid ZIP/Postal Code");
+            updateData("state", "shippingStateRef", "Please enter a state/province to ship to");
+            updateData("city", "shippingCityRef", "Please enter a valid city for shipping");
+            updateData("address", "shippingAddressRef", "Please enter valid shipping address");
+            updateData("email", "shippingEmailRef", "Please enter valid email address for shipping");
+            updateData("fullName", "shippingFullNameRef", "Please enter a full name for shipping");
+            // Check all data members to see if they exist
+            for (const [key, value] of Object.entries(shippingData)) {
+                if (!`${value}`) {
+                    return false;
+                }
+            }
+            this.saveShippingAddress(shippingData);
         } catch (err) {
             return false;
+        }
+    }
+
+    /**
+     * Will save single shipping data info object to user record
+     * @param {Object} shippingData 
+     */
+    saveShippingAddress(shippingData) {
+        let username = cookies.get('loggedIn');
+        let hash = cookies.get('hash');
+        let self = true;
+        if (username && hash && shippingData) {
+            fetch(currentshopurl + "s/saveshippingdataonuser", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, hash, self, shippingData
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                if (result.data && result.querystatus) {
+                    this.setState({ shippingSuccess: result.querystatus });
+                } else if (result.error) {
+                    this.setState({ shippingError: result.error });
+                }
+            })
+            .catch((err) => {
+                return false;
+            })
+        }
+    }
+
+    fetchShippingData() {
+        try {
+            let username = cookies.get('loggedIn');
+            let hash = cookies.get('hash');
+            let self = true;
+            if (username && hash) {
+                fetch(currentshopurl + "s/fetchusershippingdata", {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        username, hash, self
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((result) => {
+                    console.log(result);
+                    if (result.data) {
+                        let checkPropertyAndAppend = (ref, key, data) => {
+                            if (data.hasOwnProperty(key)) {
+                                this[ref].current.value = data[key];
+                            }
+                        }
+                        checkPropertyAndAppend("shippingFullNameRef", "fullName", result.data);
+                        checkPropertyAndAppend("shippingEmailRef", "email", result.data);
+                        checkPropertyAndAppend("shippingAddressRef", "address", result.data);
+                        checkPropertyAndAppend("shippingCityRef", "city", result.data);
+                        checkPropertyAndAppend("shippingStateRef", "state", result.data);
+                        checkPropertyAndAppend("shippingZipRef", "zip", result.data);
+                        let matchCountrySelect = this.countryDestinationShippingSelectRef.current.select.props.options.filter(option => option.label == result.data.country);
+                        this.countryDestinationShippingSelectRef.current.select.setValue(matchCountrySelect);
+                    }
+                })
+            }
+        } catch (err) {
+            console.log(err);
+            // Fail silently
         }
     }
     
@@ -377,7 +459,7 @@ export default class Options extends Component {
                         <div className="grey-out">{this.state.phone}</div><button className="btn upload-button">Change phone number</button>
                     </div>
                     <div className="key-and-value">
-                        <div className="grey-out">{this.state.shippingData}</div><button className="btn upload-button" onClick={(e) => {this.openShipping(e)}}>Update Shipping Information</button>
+                        <div className="grey-out">{this.state.shippingData}</div><button className="btn upload-button" onClick={(e) => {this.openShipping(e)}}>{this.state.openportal == 'shipping' ? "Minimize shipping info" : "Manage shipping info"}</button>
                     </div>
                     <div className={this.state.openportal == 'shipping' ? 'portal portal-open' : 'portal' }>
                         <div className="shipping-destination-options-container">
@@ -395,6 +477,7 @@ export default class Options extends Component {
                                     <label for="adr"><i class="fa fa-address-card-o"></i>Address:</label>
                                     <input type="text" id="adr" name="address" placeholder="542 W. 15th Street" ref={this.shippingAddressRef}></input>
                                 </div>
+                                <div className="prompt-basic grey-out max-width-350">The shipping information you put here will be used for all orders processed on © minipost</div>
                             </div>
                             <div className="shipping-destination-options-half">
                                 <div className="react-select-add-country-container shipping-key-value">
@@ -414,15 +497,16 @@ export default class Options extends Component {
                                     <input type="text" id="zip" name="zip" placeholder="10001" ref={this.shippingZipRef}></input>
                                 </div>
                                 <div>
-                                    <button className="btn upload-button save-data-button red-btn" onClick={(e) => {this.saveShippingAddress(e)}}>Save Shipping Address</button>
+                                    <button className="btn upload-button save-data-button red-btn" onClick={(e) => {this.saveShippingAddressPre(e)}}>Save Shipping Address</button>
                                 </div>
                             </div>
                         </div>
+                        <div className={this.state.shippingError ? "shipping-error shipping-error-active" : "shipping-error shipping-error-hidden"}>{this.state.shippingError}</div>
+                        <div className={this.state.shippingSuccess ? "shipping-success shipping-success-active" : "shipping-success shipping-success-hidden"}>{this.state.shippingSuccess}</div>
                     </div>
                     <div className="key-and-value">
                         <div className="grey-out">{this.state.cclastfourdigits}</div><button onClick={(e)=> {this.opencc(e)}} className="btn upload-button">{this.state.openportal == 'cc' ? 'Minimize payment info' : 'Manage payment info'}</button>
                     </div>
-                    <div className={this.state.shippingError ? "shipping-error shipping-error-active" : "shipping-error shipping-error-hidden"}>{this.state.shippingError}</div>
                     <div className={this.state.openportal == 'cc' ? 'portal portal-open' : 'portal'}>
                         <div className="key-and-value cc-desc-and-input">
                             <div className="cc-desc grey-out"><div className="cc-desc-blurb prompt-basic">This is where you can input billing information for membership subscriptions and other © minipost services.</div><div className="margin-bottom-5 info-blurb">{ this.state.advertiser ? "Advertisers: your advertisement campaign will also use this information to fulfill payments on the 28th of every month" : "" }</div><div><img src={amex} className="cc-supported-badge"></img><img src={mastercard} className="cc-supported-badge"></img><img src={visa} className="cc-supported-badge"></img></div></div>
@@ -464,7 +548,7 @@ export default class Options extends Component {
                         </div>
                     </div>
                     <div className="key-and-value">
-                        <div className="grey-out"></div><a href="#" className="prompt-basic">See payment history</a>
+                        <div className="grey-out"></div><a href="#" className="prompt-basic btn upload-button">See order history</a>
                     </div>
                 </div>
             </div>

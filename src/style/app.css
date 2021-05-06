@@ -175,6 +175,10 @@ h5 {
     margin-bottom: 2.5px;
 }
 
+.max-width-350 {
+    max-width: 350px;
+}
+
 .dropdown-menu a {
     text-decoration: none;
     color: #696969;
@@ -1951,7 +1955,7 @@ label {
     }
 
     .watchpage-title, .video-stats-bar, .publisher-bar, .articles-bar, .dash-video-details-container {
-        margin: 0 10px;
+        margin: 0;
     }
 
     .videodash-recommended-header {
@@ -2298,12 +2302,19 @@ label {
     font-size: 14px;
     font-weight: 400;
     color: #f7796f;
-    padding: 0px 8px;
-    border: solid #f9958d 2px;
-    border-radius: 5px;
+    padding: 0px 24px;
     transition: 200ms;
     line-height: normal;
     height: 24px;
+    opacity: 1;
+}
+
+.publisher-followbutton-following {
+    opacity: 0.8;
+}
+
+.publisher-followbutton-following:hover {
+    opacity: 1;
 }
 
 .publisher-followbutton:hover {
@@ -5303,6 +5314,18 @@ a code:hover {
     color: white;
 }
 
+@media (max-width: 1012px) {
+    .sidebar-isopen + .maindashcontainer .portal-open {
+        height: 410px;
+    }
+}
+
+@media (max-width: 724px) {
+    .maindashcontainer .portal-open {
+        height: 440px;
+    }
+}
+
 @media (max-width: 860px) {
     .sidebar-isopen + .maindashcontainer .portal > .key-and-value {
         flex-direction: column;
@@ -5311,10 +5334,6 @@ a code:hover {
     .sidebar-isopen + .maindashcontainer .cc-desc-and-input > div {
         width: 100%;
         margin-bottom: 10px;
-    }
-    
-    .sidebar-isopen + .maindashcontainer .portal-open {
-        height: 340px;
     }
 }
 
@@ -5326,10 +5345,6 @@ a code:hover {
     .maindashcontainer .cc-desc-and-input > div {
         width: 100%;
         margin-bottom: 10px;
-    }
-    
-    .maindashcontainer .portal-open {
-        height: 340px;
     }
 }
 
@@ -5617,7 +5632,7 @@ button.profile-menu-link:hover {
     flex-grow: 2;
     border-radius: 5px !important;
     border: 1px solid rgb(204, 204, 204);
-    padding: 2.5px;
+    padding: 5px 10px;
 }
 
 .shipping-key-value > label {

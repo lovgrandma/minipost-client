@@ -27,7 +27,7 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            shippingSetupContextInfo: false, classes: [], countries: [], currClassIndex: -1, selectedCountriesRuleDisplay: [], currentShippingClass: "New Shipping Class", allowAppendAll: false, classUuid: null, error: ""
+            shippingSetupContextInfo: false, classes: [], countries: [], currClassIndex: -1, selectedCountriesRuleDisplay: [], currentShippingClass: "New Shipping Class", classUuid: null, error: ""
         }
         this.shippingClassDropdownEditorRef = new React.createRef();
         this.shippingClassCountriesIn = new React.createRef();
@@ -69,7 +69,6 @@ export default class Shop extends Component {
                     if (this.shippingClassDropdownEditorRef.current.value) {
                         if (this.shippingClassDropdownEditorRef.current.value != this.state.currentShippingClass || !this.state.currentShippingClass) {
                             if (this.shippingClassDropdownEditorRef.current.value == "New Shipping Class") {
-                                this.setState({ allowAppendAll: false });
                                 if (this.shippingClassRuleIn) {
                                     if (this.shippingClassRuleIn.current) {
                                         this.shippingClassRuleIn.current.value = "";
@@ -81,10 +80,10 @@ export default class Shop extends Component {
                                         this.shippingClassPriceIn.current.value = "";
                                     }
                                 }
-                                this.perProduct.current.checked = true;
+                                this.perProduct.current.checked = false;
+                                this.onlyOnce.current.checked = true;
                                 this.setState({ selectedCountriesRuleDisplay: [], currentShippingClass: "New Shipping Class", currClassIndex: -1 });
                             } else if (this.shippingClassDropdownEditorRef.current.value == "Set International Rule") {
-                                this.setState({ allowAppendAll: true });
                                 if (this.shippingClassRuleIn) {
                                     if (this.shippingClassRuleIn.current) {
                                         this.shippingClassRuleIn.current.value = "International";
@@ -98,13 +97,13 @@ export default class Shop extends Component {
                                 }
                                 let internationalIndex = -1;
                                 let internationalCountries = [];
-                                let perProduct = true;
+                                let perProduct = false;
                                 for (let i = 0; i < this.props.shippingClasses.length; i++) {
                                     if (this.props.shippingClasses[i].international)  {
                                         internationalIndex = i;
                                         internationalCountries = this.props.shippingClasses[i].selectedCountries;
-                                        if (!this.props.shippingClasses[i].perProduct) {
-                                            perProduct = false;
+                                        if (this.props.shippingClasses[i].perProduct) {
+                                            perProduct = true;
                                         }
                                         if (this.props.shippingClasses[i].shippingPrice) {
                                             this.shippingClassPriceIn.current.value = this.props.shippingClasses[i].shippingPrice;
@@ -123,7 +122,6 @@ export default class Shop extends Component {
                                     this.setState({ selectedCountriesRuleDisplay: internationalCountries, currentShippingClass: "Set International Rule", currClassIndex: internationalIndex });
                                 }
                             } else {
-                                this.setState({ allowAppendAll: false });
                                 if (this.shippingClassRuleIn) {
                                     if (this.shippingClassRuleIn.current) {
                                         this.shippingClassRuleIn.current.value = "";
@@ -433,14 +431,10 @@ export default class Shop extends Component {
                         <Button onClick={(e) => {this.removeCountry(e)}}>Remove</Button>
                     </div>
                 </div>
-                {
-                    this.state.allowAppendAll ?
-                        <div className="react-add-all-remove-all-countries">
-                            <Button onClick={(e) => {this.addAllCountries(e)}}>Add All</Button>
-                            <Button onClick={(e) => {this.removeAllCountries(e)}}>Remove All</Button>
-                        </div>
-                        : null
-                }
+                <div className="react-add-all-remove-all-countries">
+                    <Button onClick={(e) => {this.addAllCountries(e)}}>Add All</Button>
+                    <Button onClick={(e) => {this.removeAllCountries(e)}}>Remove All</Button>
+                </div>
                 <div className="product-price-input-container-holder">
                     <span>$</span>
                     <input type='text' id="product-price" className="product-price-input" ref={this.shippingClassPriceIn} name="product-price" placeholder="Shipping Fee" autoComplete="off"></input>
@@ -451,11 +445,11 @@ export default class Shop extends Component {
                 </div>
                 <div className="info-blurb little-space-container">
                     <span>
-                        <input type="radio" id="per-product" name="policy" value="Per product" defaultChecked={true} ref={this.perProduct}></input>
+                        <input type="radio" id="per-product" name="policy" value="Per product" ref={this.perProduct}></input>
                         <label for="per-product">Per Product</label>
                     </span>
                     <span>
-                        <input type="radio" id="only-once" name="policy" value="Only once" ref={this.onlyOnce}></input>
+                        <input type="radio" id="only-once" name="policy" value="Only once" defaultChecked={true} ref={this.onlyOnce}></input>
                         <label for="only-once">Only Once</label>
                     </span>
                 </div>

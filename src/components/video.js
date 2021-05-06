@@ -1295,7 +1295,7 @@ export default class Video extends Component {
                                                 {
                                                     cookies.get('loggedIn') ?
                                                         cookies.get('loggedIn') != this.state.author ?
-                                                            <span className='publisher-followbutton' onClick={(e)=>{this.followCheck()}}>{ this.state.following == false ? "follow" : "unfollow" }</span>
+                                                            <span className={this.state.following ? 'publisher-followbutton publisher-followbutton-following btn upload-button save-data-button red-btn' : 'publisher-followbutton btn upload-button save-data-button red-btn'} onClick={(e)=>{this.followCheck()}}>{ this.state.following == false ? "follow" : "following" }</span>
                                                         : null
                                                     : null
                                                 }

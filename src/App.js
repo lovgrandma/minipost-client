@@ -76,10 +76,6 @@ class Socialbar extends Component { // Main social entry point sb1
         this.sidebarcontainer = React.createRef();
     }
     
-    componentWillMount(e) {
-
-    }
-    
     componentDidMount(e) {
         if (this.props.sidebarStatus === 'open') {
             document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
