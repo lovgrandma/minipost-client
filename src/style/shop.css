@@ -600,7 +600,8 @@ button.profile-menu-link:hover {
     margin-right: 2.5px;
 }
 
-.err-status {
+.err-status,
+.shipping-error {
     margin: 0 auto;
     width: 80%;
     max-width: 400px;
@@ -617,11 +618,13 @@ button.profile-menu-link:hover {
     transition: 200ms;
 }
 
-.err-status-hidden {
+.err-status-hidden,
+.shipping-error-hidden {
     opacity: 0;
 }
 
-.err-status-active {
+.err-status-active,
+.shipping-error-active {
     opacity: 1 !important;
 }
 
@@ -989,16 +992,41 @@ Button.transaction-button-checkout:hover {
 }
 
 .product-page-options-select {
-    padding: 0 55px;
-    vertical-align: middle;
+    display: flex;
+    justify-content: flex-start;
+    max-width: 400px;
+    flex-wrap: wrap;
 }
 
-.product-page-options-size-span {
+.product-page-options-size-descriptor {
     font-size: 14px;
     padding-right: 5px;
     vertical-align: middle;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.option-size-selected {
+    outline: 1px solid black;
+    padding: 5px 15px;
+    cursor: pointer;
+}
+
+.option-size-unselected {
+    outline: 1px solid rgba(0, 0, 0, 0);
+    padding: 5px 15px;
+    cursor: unset;
+}
+
+.option-size-selected[disabled], .option-size-unselected[disabled] {
+    color: #a0a0a0 !important;
+    text-decoration: line-through;
 }
 
 .product-page-options-select-container {
     margin-bottom: 7.5px;
+}
+
+.shipping-destination-options-container {
+    display: flex;
 }

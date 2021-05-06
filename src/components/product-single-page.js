@@ -24,7 +24,7 @@ export default class ProductSinglePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            product: {}, recommended: [], cloud: "", currStyleIndex: 0, atleastOneValidOption: false
+            product: {}, recommended: [], cloud: "", currStyleIndex: 0, currSelectedOption: -1, atleastOneValidOption: false, error: ""
         }
         this.optionsRef = React.createRef();
     }
@@ -197,6 +197,7 @@ export default class ProductSinglePage extends Component {
         try {
             if (this.state.currStyleIndex != index) {
                 this.setState({ currStyleIndex: index });
+                this.setState({ currSelectedOption: this.resolveFirstValidOptionOnCurrStyle(index) });
             }
         } catch (err) {
             // Fail silently
@@ -231,6 +232,73 @@ export default class ProductSinglePage extends Component {
             }
         } catch (err) {
             return null;
+        }
+    }
+
+    /**
+     * Will successfully add current option of product to cart if all data valid, add amount tracking for when user adds 2 or more
+     * @param {*} e 
+     */
+    resolveAddToCart(e) {
+        try {
+            let shop = this.state.shop;
+            let currProductOption;
+            if (this.state.product.styles[this.state.currStyleIndex]) {
+                if (this.state.product.styles[this.state.currStyleIndex].options) {
+                    if (this.state.product.styles[this.state.currStyleIndex].options[index]) {
+                        if (this.state.product.styles[this.state.currStyleIndex].options[index].quantity > 0) {
+                            currProductOption = this.state.product.styles[this.state.currStyleIndex].options[index]; // Confirm that the quantity of the current product is over 0
+                        }
+                    }
+                }
+            }
+            if (currProductOption) {
+                
+            }
+        } catch (err) {
+            // Fail silently
+            try {
+                this.setState({ error: "Was not able to add product to cart"});
+            } catch (err) {
+                // State not available
+            }
+        }
+    }
+
+    selectOption(e, index) {
+        try {
+            if (this.state.product.styles[this.state.currStyleIndex]) {
+                if (this.state.product.styles[this.state.currStyleIndex].options) {
+                    if (this.state.product.styles[this.state.currStyleIndex].options[index]) {
+                        if (this.state.product.styles[this.state.currStyleIndex].options[index].quantity > 0) {
+                            this.setState({ currSelectedOption: index });
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    resolveFirstValidOptionOnCurrStyle(styleIndex = null) {
+        try {
+            if (typeof styleIndex != "number") {
+                styleIndex = this.state.currStyleIndex;
+            }
+            if (this.state.product.styles[styleIndex]) {
+                if (this.state.product.styles[styleIndex].options) {
+                    for (let i = 0; i < this.state.product.styles[styleIndex].options.length; i++) {
+                        if (this.state.product.styles[styleIndex].options[i].quantity > 0) {
+                            return i;
+                        }
+                    }
+                }
+            }
+            return -1; // No valid option on current style
+        } catch (err) {
+            return -1;
+            // Fail silently
         }
     }
 
@@ -316,24 +384,25 @@ export default class ProductSinglePage extends Component {
                                     currOptions ?
                                         currOptions.length > 1 && this.state.atleastOneValidOption ?
                                             <div>
-                                                <span className="product-page-options-size-span">Size:</span>
-                                                <select name="options" id="options" ref={this.optionsRef} className="product-page-options-select">
+                                                <div className="product-page-options-size-descriptor">Size</div>
+                                                <div name="options" id="options" ref={this.optionsRef} className="product-page-options-select">
                                                     {
                                                         currOptions ? 
                                                             currOptions.map((option, index) => 
-                                                                <option value={option.descriptor} key={index} index={index} className={option.quantity ? "option-size-available" : "option-size-unavailable"} disabled={option.quantity ? false : true}>{option.descriptor}</option>
+                                                                <div value={option.descriptor} key={index} index={index} className={this.state.currSelectedOption == index ? "option-size-selected" : "option-size-unselected"}  disabled={option.quantity ? "" : "true"} onClick={(e) => {this.selectOption(e, index)}}>{option.descriptor}</div>
                                                             )
                                                             : null
                                                     }
-                                                </select>
+                                                </div>
                                             </div>
                                             : null
                                         : null   
                                 }
                             </div>
                             <div className="product-page-action-button-container">
-                                <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space" onClick={(e)=>{this.addToCart(false)}}>{fulfill}</Button>
+                                <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space" onClick={(e)=>{this.resolveAddToCart(e)}}>{fulfill}</Button>
                             </div>
+                            <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.error}</div>
                         </div>
                     </div>
                     <div className="single-product-page-action">

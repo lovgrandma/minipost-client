@@ -2,6 +2,8 @@ import React, {Component} from 'react';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
 import { get } from '../methods/utility.js';
+import countryList from 'react-select-country-list';
+import Select from 'react-select';
 import keys from '../keys/stripecred.js';
 import amex from '../static/cc/amex.svg'; import mastercard from '../static/cc/mastercard.svg'; import visa from '../static/cc/visa.svg'; 
 import corsdefault from '../cors.js';
@@ -13,17 +15,35 @@ const stripePromise = loadStripe(keys.livekey);
 export default class Options extends Component {
     constructor() {
         super();
-        this.state = { username: "", avatarurl: '', uploadavatarbusy: false, ccbusy: false, email: '', phone: '###-###-####', cclastfourdigits: "-------------", cctype: '', openportal: '', err: "", client_secret: null }
+        this.state = { username: "", avatarurl: '', uploadavatarbusy: false, ccbusy: false, shippingData: null, email: '', phone: '###-###-####', cclastfourdigits: "-------------", cctype: '', openportal: '', err: "", client_secret: null, countries: [], shippingError: "" }
         this.upload = React.createRef();
         this.cc_name = React.createRef();
+        this.countryDestinationShippingSelectRef = React.createRef();
+        this.shippingFullNameRef = React.createRef();
+        this.shippingEmailRef = React.createRef();
+        this.shippingAddressRef = React.createRef();
+        this.shippingCityRef = React.createRef();
+        this.shippingStateRef = React.createRef();
+        this.shippingZipRef = React.createRef();
     }
 
     componentDidMount = async () => {
         try {
             this.fetchProfileOptionsData();
             this.setState({ uploadavatarbusy: false });
+            this.buildCountriesOptions();
         } catch (err) {
             // Component unmounted
+        }
+    }
+
+    buildCountriesOptions() {
+        if (!this.state.countries) {
+            this.setState({ countries: [] });
+        }
+        if (this.state.countries.length < 1) {
+            const countries = countryList().getData();
+            this.setState({ countries: countries });
         }
     }
     
@@ -177,12 +197,20 @@ export default class Options extends Component {
         }
     }
     
-    opencc = () => {
+    opencc = (e) => {
         if (this.state.client_secret == null) {
             this.getClientSecret();
         }
         if (this.state.openportal != "cc") {
             this.setState({ openportal: "cc" });
+        } else {
+            this.setState({ openportal: "" });
+        }
+    }
+
+    openShipping = (e) => {
+        if (this.state.openportal != "shipping") {
+            this.setState({ openportal: "shipping" });
         } else {
             this.setState({ openportal: "" });
         }
@@ -256,6 +284,72 @@ export default class Options extends Component {
             return visa;
         }
     }
+
+    /**
+     * Make call to server to upload new shipping data to user record
+     * @param {*} e 
+     */
+    saveShippingAddress = (e) => {
+        try {
+            this.setState({ shippingError: "" });
+            let shippingData = {
+                country: "",
+                fullName: "",
+                email: "",
+                address: "",
+                city: "",
+                state: "",
+                zip: ""
+            }
+            let resolveCountry = () => {
+                try {
+                    if (this.countryDestinationShippingSelectRef.current.select.getValue()[0].label) {
+                        return this.countryDestinationShippingSelectRef.current.select.getValue()[0].label;
+                    }
+                    return false;
+                } catch (err) {
+                    return false;
+                } 
+            }
+            if (resolveCountry()) {
+                shippingData.country = resolveCountry();
+            } else {
+                this.setState({ shippingError: "Please select a country" });
+                return false;
+            }
+            let resolveGeneric = (key) => {
+                try {
+                    if (this[key].current) {
+                        if (this[key].current.value) {
+                            if (this[key].current.value.length > 0) {
+                                return this[key].current.value;
+                            }
+                        }
+                    }
+                    return false;
+                } catch (err) {
+                    return false;
+                }
+            }
+            let updateData = (key, error) => {
+                if (resolveGeneric(key)) {
+                    shippingData[key] = resolveGeneric(key);
+                    return true;
+                } else {
+                    this.setState({ shippingError: error });
+                    return false;
+                }
+            }
+            updateData("shippingZipRef", "Please enter a valid ZIP/Postal Code");
+            updateData("shippingStateRef", "Please enter a state/province to ship to");
+            updateData("shippingCityRef", "Please enter a valid city for shipping");
+            updateData("shippingAddressRef", "Please enter valid shipping address");
+            updateData("shippingEmailRef", "Please enter valid email address for shipping");
+            updateData("shippingFullNameRef", "Please enter a full name for shipping");
+        } catch (err) {
+            return false;
+        }
+    }
     
     render() {
         return (
@@ -272,7 +366,7 @@ export default class Options extends Component {
                     </div>
                 </div>
                 <div className="options-payment-gateway">
-                    <h3 className="prompt-basic background-color-header">Membership & Billing</h3>
+                    <h3 className="prompt-basic background-color-header">Membership &amp; Billing</h3>
                     <div className="key-and-value">
                         <div className="grey-out">{this.state.email}</div><div>email</div>
                     </div>
@@ -283,8 +377,52 @@ export default class Options extends Component {
                         <div className="grey-out">{this.state.phone}</div><button className="btn upload-button">Change phone number</button>
                     </div>
                     <div className="key-and-value">
+                        <div className="grey-out">{this.state.shippingData}</div><button className="btn upload-button" onClick={(e) => {this.openShipping(e)}}>Update Shipping Information</button>
+                    </div>
+                    <div className={this.state.openportal == 'shipping' ? 'portal portal-open' : 'portal' }>
+                        <div className="shipping-destination-options-container">
+                            <div className="shipping-destination-options-half">
+                                <h3>Shipping</h3>
+                                <div className="shipping-key-value">
+                                    <label for="fname"><i class="fa fa-user"></i>Full Name:</label>
+                                    <input type="text" id="fname" name="firstname" placeholder="John M. Doe" ref={this.shippingFullNameRef}></input>
+                                </div>
+                                <div className="shipping-key-value">
+                                    <label for="email"><i class="fa fa-envelope"></i>Email:</label>
+                                    <input type="text" id="email" name="email" placeholder="john@example.com" ref={this.shippingEmailRef}></input>
+                                </div>
+                                <div className="shipping-key-value">
+                                    <label for="adr"><i class="fa fa-address-card-o"></i>Address:</label>
+                                    <input type="text" id="adr" name="address" placeholder="542 W. 15th Street" ref={this.shippingAddressRef}></input>
+                                </div>
+                            </div>
+                            <div className="shipping-destination-options-half">
+                                <div className="react-select-add-country-container shipping-key-value">
+                                    <label for="country">Country:</label>
+                                    <Select className="react-select-container" classNamePrefix="react-select" options={this.state.countries} ref={this.countryDestinationShippingSelectRef}/>
+                                </div>
+                                <div className="shipping-key-value">
+                                    <label for="city"><i class="fa fa-institution"></i>City:</label>
+                                    <input type="text" id="city" name="city" placeholder="New York" ref={this.shippingCityRef}></input>
+                                </div>
+                                <div className="shipping-key-value">
+                                    <label for="state">State:</label>
+                                    <input type="text" id="state" name="state" placeholder="NY" ref={this.shippingStateRef}></input>
+                                </div>
+                                <div className="shipping-key-value">
+                                    <label for="zip">Zip:</label>
+                                    <input type="text" id="zip" name="zip" placeholder="10001" ref={this.shippingZipRef}></input>
+                                </div>
+                                <div>
+                                    <button className="btn upload-button save-data-button red-btn" onClick={(e) => {this.saveShippingAddress(e)}}>Save Shipping Address</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="key-and-value">
                         <div className="grey-out">{this.state.cclastfourdigits}</div><button onClick={(e)=> {this.opencc(e)}} className="btn upload-button">{this.state.openportal == 'cc' ? 'Minimize payment info' : 'Manage payment info'}</button>
                     </div>
+                    <div className={this.state.shippingError ? "shipping-error shipping-error-active" : "shipping-error shipping-error-hidden"}>{this.state.shippingError}</div>
                     <div className={this.state.openportal == 'cc' ? 'portal portal-open' : 'portal'}>
                         <div className="key-and-value cc-desc-and-input">
                             <div className="cc-desc grey-out"><div className="cc-desc-blurb prompt-basic">This is where you can input billing information for membership subscriptions and other © minipost services.</div><div className="margin-bottom-5 info-blurb">{ this.state.advertiser ? "Advertisers: your advertisement campaign will also use this information to fulfill payments on the 28th of every month" : "" }</div><div><img src={amex} className="cc-supported-badge"></img><img src={mastercard} className="cc-supported-badge"></img><img src={visa} className="cc-supported-badge"></img></div></div>
