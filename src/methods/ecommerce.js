@@ -1,3 +1,4 @@
+import { cookies } from '../App.js';
 import currentrooturl from '../url.js';
 import currentshopurl from '../shopurl.js';
 import corsdefault from '../cors.js';
@@ -20,12 +21,12 @@ export const prepareCheckoutWithCurrentCartItems = () => {
 
 }
 
-export const addOneProductToCart = async (product) => {
+export const addOneProductToCart = async (product, userShippingData) => {
     try {
         let username = cookies.get('loggedIn');
         let hash = cookies.get('hash');
         let self = true;
-        if (username && hash && product) {
+        if (username && hash && product && userShippingData.hasOwnProperty("country")) {
             return await fetch(currentshopurl + "s/addoneproducttocart", {
                 method: "POST",
                 headers: {
@@ -34,7 +35,7 @@ export const addOneProductToCart = async (product) => {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, hash, self, product
+                    username, hash, self, product, userShippingData
                 })
 
             })
@@ -42,15 +43,20 @@ export const addOneProductToCart = async (product) => {
                 return response.json();
             })
             .then((result) => {
-                console.log(result);
-                if (result.error) {
-                    return false;
+                if (result.hasOwnProperty("data")) {
+                    if (result.data.hasOwnProperty("data")) {
+                        if (result.data.data.hasOwnProperty("items") && result.data.data.hasOwnProperty("wishList")) {
+                            updateCachedCart(result.data.data);
+                        }
+                    }
                 }
+                return result;
             })
             .catch((err) => {
                 return false;
             });
         } else {
+            // Either user is not logged in or they dont have any shipping data. Just allow product to be added to local cart even if shipping data is not accurate. Will validate and ask for shipping info at checkout
             return false;
         }
     } catch (err) {
@@ -58,7 +64,13 @@ export const addOneProductToCart = async (product) => {
     }
 }
 
-export const removeOneProductFromCart = (id, style, option) => {
+/**
+ * Will be used to removing cart product values and setting to a specific quantity
+ * @param {*} id 
+ * @param {*} style 
+ * @param {*} option 
+ */
+export const SetQuantityOfProduct = (id, style, option, quantity) => {
 
 }
 
@@ -66,16 +78,20 @@ export const emptyCart = () => {
 
 }
 
-export const setQuantityOfProduct = (id, style, option, quantity) => {
-
-}
-
 export const getCachedCart = () => {
-
+    try {
+        return JSON.parse(window.localStorage.getItem('cachedcart'));
+    } catch (err) {
+        return false;
+    }
 }
 
-export const updateCachedCart = () => {
-
+export const updateCachedCart = (cart) => {
+    try {
+        window.localStorage.setItem('cachedcart', JSON.stringify(cart));
+    } catch (err) {
+        return false;
+    }
 }
 
 export const getUserShippingData = () => {

@@ -12,6 +12,7 @@ import {
     Dropdown,
     Col, Grid, Row, Clearfix,
 } from 'react-bootstrap';
+import Checkout from './checkout.js';
 import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
 import parseBody from '../methods/htmlparser.js';
@@ -243,6 +244,7 @@ export default class ProductSinglePage extends Component {
     resolveAddToCart = async(e) => {
         try {
             this.setState({ success: "" });
+            this.setState({ error: "" });
             let shop = this.state.shop;
             if (shop.id) {
                 let productMatch = {
@@ -264,12 +266,18 @@ export default class ProductSinglePage extends Component {
                         }
                     }
                 }
-                if (productMatch.id.length > 0 && productMatch.style.length > 0 && productMatch.option.length > 0) {
-                    let data = await addOneProductToCart(productMatch);
-                    if (data) {
-                        this.setState({ success: "Product added to cart" });
-                    } else {
+                if (productMatch.id.length > 0) {
+                    let userShippingData = {};
+                    if (this.props.userShippingData) {
+                        userShippingData = this.props.userShippingData;
+                    }
+                    let data = await addOneProductToCart(productMatch, userShippingData);
+                    if (!data) {
                         this.setState({ error: "Was not able to add product to cart" });
+                    } else if (data.hasOwnProperty("error")) {
+                        this.setState({ error: data.error });
+                    } else {
+                        this.setState({ success: "Product added to cart" });
                     }
                 } else {
                     this.setState({ error: "Was not able to add product to cart"});
@@ -454,7 +462,7 @@ export default class ProductSinglePage extends Component {
                         </div>
                     </div>
                     <div className="single-product-page-action">
-                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space" onClick={(e)=>{prepareCheckoutWithCurrentCartItems(e)}}>Checkout</Button>
+                        <Checkout fullCheckout={false} cloud={this.state.cloud} />
                     </div>
                 </div>
             </div>

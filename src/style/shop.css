@@ -602,7 +602,7 @@ button.profile-menu-link:hover {
 
 .err-status,
 .shipping-error,
-.shipping-success
+.shipping-success,
 .generic-success {
     margin: 0 auto;
     width: 80%;
@@ -645,6 +645,7 @@ button.profile-menu-link:hover {
     margin-top: 0px;
     margin-bottom: 0px;
     transition: 200ms;
+    width: 100%;
 }
 
 .err-status-product-active {
@@ -1070,4 +1071,42 @@ Button.transaction-button-checkout:hover {
 
 .single-product-page-calculated-price-value {
     color: darkred;
+}
+
+.checkout-products-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 2.5px;
+}
+
+.checkout-product-name {
+    font-weight: 600;
+    white-space: pre-wrap;
+    font-size: 0.8em;
+}
+
+.checkout-product-flex-container {
+    display: flex;
+    gap: 5px;
+}
+
+.checkout-product-meta-data-container {
+    font-size: 0.8em;
+    display: flex;
+    gap: 2.5px;
+}
+
+.checkout-image-min {
+    max-width: 35px;
+    max-height: 40px;
+}
+
+.checkout-product-style,
+.checkout-product-option,
+.checkout-product-quantity {
+    white-space: pre-wrap;
+}
+
+.checkout-product-option {
+    font-style: italic;
 }

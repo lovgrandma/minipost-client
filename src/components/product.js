@@ -537,7 +537,7 @@ export default class Product extends Component {
     }
 
     /**
-     * Will resolve all shipping data uuid references passed as argument and find matching names to present to user
+     * Will resolve all shipping data uuid references passed as argument and find matching names to present to user. No match? Ignore
      * 
      * @param {Array} shippingData Array of uuids
      * @returns {Array} shippingData data with uuids {uuid: String, shippingRule, String}

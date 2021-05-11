@@ -35,6 +35,7 @@ import proxyurl from './proxy.js';
 import corsdefault from './cors.js';
 import { Playlist } from './class/playlist.js';
 import { Together } from './class/together.js';
+import { updateCachedCart } from './methods/ecommerce.js';
 
 import { debounce, deepEquals, arraysEqual, getPath, get } from './methods/utility.js';
 
@@ -1008,6 +1009,12 @@ class Socialbar extends Component { // Main social entry point sb1
                 let authorized = this.props.checkAndConfirmAuthentication(data);
                 if (authorized) {
                     console.log("Friends of", username, ":", data);
+                    if (data.hasOwnProperty("shipping")) {
+                        this.props.setUserShippingData(data.shipping);
+                    }
+                    if (data.hasOwnProperty("cart")) {
+                        updateCachedCart(data.cart);
+                    }
                     if (data.subscribed) {
                         if (Array.isArray(data.subscribed)) {
                             this.setState({ following: updateNotif(data.subscribed) });
@@ -1283,7 +1290,8 @@ class App extends Component {
         this.state = { 
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
-                        moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null, friendConvoMirror: null, typingMirror: []
+                        moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null, friendConvoMirror: null, typingMirror: [],
+                        shipping: {}
                      };
         this.playlist = null;
         this.together = null;
@@ -1718,11 +1726,15 @@ class App extends Component {
         }
     }
 
+    setUserShippingData = (shippingData) => {
+        this.setState({ userShippingData: shippingData });
+    }
+
     render() {     
         let isShopPage = this.resolveIsShopPage();
         return (
             <div className="App" onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} />
                 <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
@@ -1753,10 +1765,10 @@ class App extends Component {
                             <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
                         )}/>
                         <Route path='/product' render={(props) => (
-                            <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />
+                            <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/product?p=:product' render={(props) => (
-                            <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />
+                            <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/options' render={(props) => (
                             <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
@@ -1800,7 +1812,9 @@ class App extends Component {
                         <Route path='/passwordreset?u=:passwordresetsecret' render={(props) => (
                            <ResetPass {...props} />                                  
                         )}/>
-                        
+                        <Route path='/checkout' render={(props) => (
+                            <Checkout {...props} fullCheckout={true} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />
+                        )}/>
                     </div>
                 </div>
             </div>

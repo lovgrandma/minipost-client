@@ -326,7 +326,7 @@
     overflow-wrap: anywhere;
     padding-left: 5px;
     padding-right: 5px;
-    max-height: 55vh;
+    max-height: 65vh;
 }
 
 .fullscreen-video-chat-container .friend-chat-form {
@@ -444,4 +444,12 @@
        -moz-user-select: none;
         -ms-user-select: none;
             user-select: none;
+}
+
+.chat-fullscreen-open .friendchat-chat-container-open {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 500px;
+    padding-bottom: 5px;
 }
