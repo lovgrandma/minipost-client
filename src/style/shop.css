@@ -848,6 +848,9 @@ Button.transaction-button-checkout:hover {
     flex-direction: column;
     flex-grow: 1;
     white-space: nowrap;
+    padding: 10px;
+    border-radius: 7.5px;
+    background-color: #f8f8f8;
 }
 
 .single-product-page-container {
@@ -1094,6 +1097,7 @@ Button.transaction-button-checkout:hover {
     font-size: 0.8em;
     display: flex;
     gap: 2.5px;
+    align-items: center;
 }
 
 .checkout-image-min {
@@ -1105,6 +1109,21 @@ Button.transaction-button-checkout:hover {
 .checkout-product-option,
 .checkout-product-quantity {
     white-space: pre-wrap;
+}
+
+.checkout-product-quantity-min-checkout {
+    background: gainsboro;
+    color: white;
+    padding: 1.5px 3px;
+    font-weight: 600;
+    border-radius: 5px;
+    display: flex;
+    gap: 4px;
+}
+
+.checkout-product-quantity-min-checkout > svg {
+    width: 11px !important;
+    height: auto !important;
 }
 
 .checkout-product-option {

@@ -9,6 +9,8 @@ import {
 } from 'react-bootstrap';
 import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCube } from '@fortawesome/free-solid-svg-icons';
 import { prepareCheckoutWithCurrentCartItems, getCachedCart } from '../methods/ecommerce.js';
 import { cookies } from '../App.js';
 
@@ -127,8 +129,14 @@ export default class Checkout extends Component {
                                                         : null
                                                 }
                                                 {
-                                                    item.quantity  && this.props.fullCheckout ?
-                                                        <div className="checkout-product-quantity">{item.quantity}</div>
+                                                    item.quantity ?
+                                                        this.props.fullCheckout ?
+                                                            <div>*dropdown*</div>
+                                                            : item.quantity > 1 ?
+                                                                <div className="checkout-product-quantity checkout-product-quantity-min-checkout">
+                                                                    <FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" /><div>{item.quantity}</div>
+                                                                </div>
+                                                                : null
                                                         : null
                                                 }
                                             </div>
