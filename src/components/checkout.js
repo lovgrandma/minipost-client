@@ -110,41 +110,55 @@ export default class Checkout extends Component {
                                         <div>
                                             <img src={this.props.cloud ? this.props.cloud + "/" + item.image : ""} className="checkout-image-min"></img>
                                         </div>
-                                        <div>
+                                        <div className="checkout-product-container">
                                             <div className="checkout-product-name">{item.name}</div>
                                             <div className="checkout-product-meta-data-container">
-                                                {
-                                                    item.style ?
-                                                        <div className="checkout-product-style">{item.style}</div>
-                                                        : null
-                                                }
-                                                {
-                                                    item.style && item.option ?
-                                                        "|"
-                                                        : null
-                                                }
-                                                {
-                                                    item.option ?
-                                                        <div className="checkout-product-option grey-out">{item.option}</div>
-                                                        : null
-                                                }
-                                                {
-                                                    item.quantity ?
-                                                        this.props.fullCheckout ?
-                                                            <div>*dropdown*</div>
-                                                            : item.quantity > 1 ?
-                                                                <div className="checkout-product-quantity checkout-product-quantity-min-checkout">
-                                                                    <FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" /><div>{item.quantity}</div>
-                                                                </div>
-                                                                : null
-                                                        : null
-                                                }
+                                                <div className="checkout-product-flex-data-container">
+                                                    {
+                                                        item.style ?
+                                                            <div className="checkout-product-style">{item.style}</div>
+                                                            : null
+                                                    }
+                                                    {
+                                                        item.style && item.option ?
+                                                            <span>|</span>
+                                                            : null
+                                                    }
+                                                    {
+                                                        item.option ?
+                                                            <div className="checkout-product-option grey-out">{item.option}</div>
+                                                            : null
+                                                    }
+                                                    {
+                                                        item.quantity ?
+                                                            this.props.fullCheckout ?
+                                                                <div>*dropdown*</div>
+                                                                : item.quantity > 1 ?
+                                                                    <div className="checkout-product-quantity checkout-product-quantity-min-checkout">
+                                                                        <FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" /><div className="align-vert">{item.quantity}</div>
+                                                                    </div>
+                                                                    : null
+                                                            : null
+                                                    }
+                                                </div>
+                                                <div>
+                                                    <div className="social-portal-times times-checkout-button">&times;</div>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
                                 )
                             : null
                         : null
+                    }
+                </div>
+                <div>
+                    {
+                        this.state.cartData ?
+                            this.state.cartData.length > 5 ?
+                                <Button className="transaction-button transaction-button-checkout btn-center cart-button-space" onClick={(e)=>{prepareCheckoutWithCurrentCartItems(e)}}>Checkout</Button>
+                                : null
+                            : null
                     }
                 </div>
             </div>

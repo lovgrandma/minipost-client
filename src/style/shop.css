@@ -1080,6 +1080,7 @@ Button.transaction-button-checkout:hover {
     display: flex;
     flex-direction: column;
     gap: 2.5px;
+    margin-bottom: 7.5px;
 }
 
 .checkout-product-name {
@@ -1088,9 +1089,18 @@ Button.transaction-button-checkout:hover {
     font-size: 0.8em;
 }
 
+.checkout-product-container {
+    width: 100%;
+}
+
 .checkout-product-flex-container {
     display: flex;
     gap: 5px;
+}
+
+.checkout-product-flex-data-container {
+    display: flex;
+    gap: 2px;
 }
 
 .checkout-product-meta-data-container {
@@ -1098,6 +1108,7 @@ Button.transaction-button-checkout:hover {
     display: flex;
     gap: 2.5px;
     align-items: center;
+    justify-content: space-between;
 }
 
 .checkout-image-min {
@@ -1108,6 +1119,7 @@ Button.transaction-button-checkout:hover {
 .checkout-product-style,
 .checkout-product-option,
 .checkout-product-quantity {
+    line-break: anywhere;
     white-space: pre-wrap;
 }
 
@@ -1128,4 +1140,18 @@ Button.transaction-button-checkout:hover {
 
 .checkout-product-option {
     font-style: italic;
+}
+
+.times-checkout-button {
+    opacity: 0;
+    background: #dcdcdc;
+    border-radius: 15px;
+    color: #919191;
+    font-weight: 600;
+    font-size: 1.1em;
+    transition: 150ms;
+}
+
+.checkout-product-container:hover .times-checkout-button {
+    opacity: 1;
 }

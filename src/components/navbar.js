@@ -6,7 +6,7 @@ import {
     NavLink,
     Link
 } from 'react-router-dom';
-import logo from '../static/minireel-dot-com-3.svg'; import heart from '../static/heart.svg'; import history from '../static/history.svg'; import notifications from '../static/notifications.svg'; import profile from '../static/profile.svg'; import upload from '../static/upload.svg';
+import logo from '../static/minireel-dot-com-3.svg'; import heart from '../static/heart.svg'; import history from '../static/history.svg'; import notifications from '../static/notifications.svg'; import profile from '../static/profile.svg'; import upload from '../static/upload.svg'; import greyavatar from '../static/greyavatar.jpg';
 import { showMoreOptions, hideOptions, resetOpenMenus } from '../methods/context.js';
 import $ from 'jquery';
 
@@ -165,6 +165,17 @@ export default class Navbar extends Component {
                             <div className='close-together-session-dot'></div>
                         </div>
                         <div className='btn-desc btn-desc-close-session'>click to close together session</div>
+                        {
+                            this.props.username && this.props.cloud ?
+                                this.props.useravatar ?
+                                    <NavLink exact to="/profile" className="hyperlink navbar-avatar-link" onClick={(e)=> {resetOpenMenus.call(this)}}>
+                                        <img src={this.props.cloud + "/av/" + this.props.useravatar} className="navbar-avatar"></img>
+                                    </NavLink>
+                                    : <NavLink exact to="/profile" className="hyperlink navbar-avatar-link" onClick={(e)=> {resetOpenMenus.call(this)}}>
+                                        <img src={greyavatar} className="navbar-avatar"></img>
+                                    </NavLink>
+                                : null
+                        }
                         <div className="nav-loggedin-config nav-icon" onClick={(e)=>{showMoreOptions.call(this, e, "profile")}} onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
                         <div className="btn-desc btn-desc-conf" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>change various user settings and preferences</div>
                         <div className="btn-desc btn-desc-conf-menu" ref={tag => (this.userOptions = tag)}>

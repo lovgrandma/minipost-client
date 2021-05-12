@@ -26,6 +26,13 @@ export const addOneProductToCart = async (product, userShippingData) => {
         let username = cookies.get('loggedIn');
         let hash = cookies.get('hash');
         let self = true;
+        if (username && !userShippingData.hasOwnProperty("country")) {
+            // User is logged in but their shipping data is not set
+            return {
+                error: "Please add shipping data to your account before adding products. Click here to update your shipping info",
+                action: "shipping data input"
+            }
+        }
         if (username && hash && product && userShippingData.hasOwnProperty("country")) {
             return await fetch(currentshopurl + "s/addoneproducttocart", {
                 method: "POST",
@@ -50,7 +57,7 @@ export const addOneProductToCart = async (product, userShippingData) => {
                         }
                     }
                 }
-                return result;
+                return result.data;
             })
             .catch((err) => {
                 return false;

@@ -98,6 +98,10 @@ h5 {
     font-style: italic;
 }
 
+.align-vert {
+    align-self: center;
+}
+
 .logo-nav-font {
     transition: 200ms;
     color: grey;
@@ -449,11 +453,30 @@ button {
 .minireel-nav {
     position: relative;
     z-index: 5;
-    display: inline;
+    display: block;
 }
 
 .minireel-nav-small {
     display: none;
+}
+
+.navbar-avatar {
+    display: none;
+    height: 100%;
+    align-self: center;
+    border-radius: 5px;
+    border: 1px solid rgba(100, 100, 100, 0);
+    transition: 100ms;
+}
+
+@media (min-width: 640px) {
+    .navbar-avatar {
+        display: block;
+    }
+}
+
+.navbar-avatar:hover {
+    border: 1px solid rgb(100, 100, 100);
 }
 
 .navbtnsleft {
@@ -534,7 +557,7 @@ button {
     }
 
     .minireel-nav-small {
-        display: inline;
+        display: block;
     }
 
     .search-field {
@@ -644,6 +667,7 @@ ul li {
     transition: 200ms;
     color: grey;
     font-size: 0.9em;
+    font-weight: 600;
 }
 
 .nav-loggedin-config:hover {
@@ -653,6 +677,13 @@ ul li {
 .nav-icon:hover,
 .nav-loggedin-config:hover {
     cursor: pointer;
+}
+
+.navbar-avatar-link {
+    height: 145%;
+    align-self: center;
+    border-radius: 5px;
+    display: inline-flex;
 }
 
 .favorites {
@@ -814,7 +845,7 @@ ul li {
 
 .sidebarx {
     height: 100%;
-    width: 15px;
+    width: 17.5px;
     position: fixed;
     z-index: 10;
     top: 0;
@@ -826,6 +857,12 @@ ul li {
 
 .sidebarx:hover {
     cursor: pointer;
+    background: linear-gradient(to top, #d1d1d1 0%,#d8d8d8 100%);
+}
+
+.sidebarxopen,
+.sidebarxopen:hover {
+    background: linear-gradient(to top, #d6d6d6 0%,#e6e6e6 100%) !important;
 }
 
 .sidebarxclosed {
@@ -860,10 +897,10 @@ ul li {
 .sidebarimg {
     z-index: 6;
     position: fixed;
-    top: 50%;
+    top: calc(50% - 17.5px);
     vertical-align: middle;
-    width: 13px;
-    height: 30px;
+    width: 17.5px;
+    height: 45px;
     padding: 1.5px;
     transition: 300ms;
 }
@@ -2023,6 +2060,7 @@ label {
 
 .navbar {
     width: 100%;
+    transition: 200ms;
 }
 .navbar .nowrap {
     width: 100%;
@@ -4110,7 +4148,7 @@ If user only has one friend, styling wont apply */
 .upl-vid-title-label {
     padding: 0 10px;
     margin-top: 15px;
-    font-weight: 500;
+    font-weight: 600;
     font-size: 18px;
     margin-bottom: 5px;
     color: grey;
@@ -5357,7 +5395,7 @@ a code:hover {
     }
     
     .sidebar-isopen .navbar .minireel-nav-small {
-        display: inline;
+        display: block;
     }
     
     .sidebar-isopen .brand {
