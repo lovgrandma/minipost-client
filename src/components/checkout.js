@@ -316,7 +316,7 @@ export default class Checkout extends Component {
                                                             <div className="checkout-product-individual-price weight700">{item.price ? this.formatAPrice(item.price) : null}</div>
                                                             <div>
                                                                 <div className="checkout-subtotal-quantity-block"><FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" />&nbsp;{item.quantity}</div>
-                                                                <div className="checkout-subtotal-text">Subtotal:</div>
+                                                                <div className="checkout-subtotal-text grey-out">Subtotal:</div>
                                                                 <div className="checkout-product-individual-subtotal weight700">{item.calculatedTotal ? this.formatAPrice(item.calculatedTotal) : null}</div>
                                                             </div>
                                                         </div>

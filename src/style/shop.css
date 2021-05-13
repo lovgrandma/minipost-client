@@ -1192,6 +1192,7 @@ Button.transaction-button-checkout:hover {
 .fullcheckout-flex {
     display: flex;
     gap: 25px;
+    justify-content: space-evenly;
 }
 
 .fullcheckout-flex .fullcheckout-meta-data {
@@ -1268,6 +1269,7 @@ Button.transaction-button-checkout:hover {
 
 .fullcheckout-flex .shipping-methods-container #product-options-select-container {
     padding: 0;
+    min-width: 100px;
 }
 
 .shipping-label-text-checkout {
@@ -1286,10 +1288,11 @@ Button.transaction-button-checkout:hover {
     padding: 2.5px 7.5px;
     max-width: fit-content;
     font-size: 0.9em;
+    margin-bottom: 5px;
 }
 
 @media (max-width: 720px) {
-    
+
     .fullcheckout-flex .checkout-image-min {
         max-width: 50px;
     }
