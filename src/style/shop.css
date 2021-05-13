@@ -1194,6 +1194,17 @@ Button.transaction-button-checkout:hover {
     gap: 25px;
 }
 
+.fullcheckout-flex .fullcheckout-meta-data {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    min-width: 80px;
+}
+
+.fullcheckout-flex .fullcheckout-meta-data svg {
+    height: 15px !important;
+}
+
 .fullcheckout-flex .checkout-product-quantity-min-checkout {
     background: #e4e4e4;
     padding: 15px 5px;
@@ -1244,7 +1255,8 @@ Button.transaction-button-checkout:hover {
     margin-bottom: 5px;
 }
 
-.fullcheckout-flex .checkout-product-individual-price {
+.fullcheckout-flex .checkout-product-individual-price,
+.fullcheckout-flex .checkout-product-individual-subtotal {
     font-size: 0.95em;
     padding-bottom: 3.2px;
 }
@@ -1262,4 +1274,54 @@ Button.transaction-button-checkout:hover {
     font-size: 0.8em;
     padding-right: 5px;
     align-self: center;
+}
+
+.fullcheckout-flex .checkout-subtotal-text {
+    font-size: 0.8em;
+}
+
+.fullcheckout-flex .checkout-subtotal-quantity-block {
+    background: gainsboro;
+    border-radius: 5px;
+    padding: 2.5px 7.5px;
+    max-width: fit-content;
+    font-size: 0.9em;
+}
+
+@media (max-width: 720px) {
+    
+    .fullcheckout-flex .checkout-image-min {
+        max-width: 50px;
+    }
+
+    .fullcheckout-flex {
+        flex-direction: column-reverse;
+    }
+
+    .checkout-place-order-container {
+        margin-top: 10px;
+    }
+
+    .fullcheckout-flex .checkout-products-and-btn-container {
+        max-width: 100vw;
+    }
+
+    .fullcheckout-flex .checkout-product-flex-data-container,
+    .fullcheckout-flex .shipping-methods-container {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .fullcheckout-flex .checkout-product-quantity-min-checkout {
+        margin: 0;
+    }
+
+    .fullcheckout-flex .shipping-label-text-checkout {
+        align-self: flex-start;
+        margin-bottom: 5px;
+    }
+
+    .fullcheckout-flex .checkout-product-flex-data-container span {
+        display: none;
+    }
 }
