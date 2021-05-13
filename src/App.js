@@ -2,7 +2,7 @@ import React, { Component } from 'react';
 import ReactDOM from 'react-dom';
 import axios from 'axios';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js';
+import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js';
 import { Switch } from 'react-router';
 import {
     BrowserRouter,
@@ -618,7 +618,6 @@ class Socialbar extends Component { // Main social entry point sb1
                 return response.json(); // You parse the data into a useable format using `.json()`
             })
             .then(function(data) { // `data` is the parsed version of the JSON returned from the above endpoint.
-                console.log(data);
                 this.setState({ isLoggedIn: "",
                               friends: [] });
                 this.props.history.push('/');

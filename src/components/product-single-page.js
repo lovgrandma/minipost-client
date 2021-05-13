@@ -25,7 +25,7 @@ export default class ProductSinglePage extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            product: {}, recommended: [], cloud: "", currStyleIndex: 0, currSelectedOption: -1, atleastOneValidOption: false, error: "", success: ""
+            product: {}, recommended: [], cloud: "", currStyleIndex: 0, currSelectedOption: -1, atleastOneValidOption: false, error: "", success: "", iteration: 1
         }
         this.optionsRef = React.createRef();
     }
@@ -278,6 +278,7 @@ export default class ProductSinglePage extends Component {
                         this.setState({ error: data.error });
                     } else {
                         this.setState({ success: "Product added to cart" });
+                        this.setState({ iteration: this.state.iteration + 1 }); // Iteration will force a new cart fetch on checkout every time
                     }
                 } else {
                     this.setState({ error: "Was not able to add product to cart"});
@@ -286,6 +287,7 @@ export default class ProductSinglePage extends Component {
                 this.setState({ error: "Was not able to add product to cart"});
             }
         } catch (err) {
+            console.log(err);
             // Fail silently
             try {
                 this.setState({ error: "Was not able to add product to cart"});
@@ -410,7 +412,7 @@ export default class ProductSinglePage extends Component {
                                 <p className="single-product-page-shop-name">{shopName}</p>
                             </NavLink>
                             <h3 className="single-product-page-title">{productName}</h3>
-                            <div className="single-product-page-calculated-price"><span className="single-product-page-calculated-price-label weight600 grey-out">Price:</span><span className="single-product-page-calculated-price-value weight600">{!isNaN(currPrice) ? currPrice : ""}</span></div>
+                            <div className="single-product-page-calculated-price"><span className="single-product-page-calculated-price-label weight600 grey-out">Price:</span><span className="single-product-page-calculated-price-value weight600">{!isNaN(currPrice) ? "$" + currPrice : ""}</span></div>
                             <p className="single-product-page-desc">{parseBody(productDesc)}</p>
                             <div className="product-page-product-styles-selection-container">
                                 {
@@ -462,7 +464,7 @@ export default class ProductSinglePage extends Component {
                         </div>
                     </div>
                     <div className="single-product-page-action">
-                        <Checkout fullCheckout={false} cloud={this.state.cloud} />
+                        <Checkout {...this.props} fullCheckout={false} cloud={this.state.cloud} iteration={this.state.iteration} />
                     </div>
                 </div>
             </div>

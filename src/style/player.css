@@ -313,7 +313,7 @@
     height: fit-content;
     left: 7.5%;
     transition: 150ms;
-    top: 200%;
+    top: -200%;
     background-color: white;
     border-radius: 5px;
     padding-top: 5px;

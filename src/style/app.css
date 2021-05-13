@@ -86,6 +86,10 @@ h5 {
     font-weight: 600;
 }
 
+.weight700 {
+    font-weight: 700;
+}
+
 .no-select {
     user-select: none;
 }
@@ -485,6 +489,10 @@ button {
 
 .navbtnsleft, .navbtnsright {
     height: 18px;
+}
+
+.close-together-session {
+    padding-right: 10px;
 }
 
 .close-together-session-dot {

@@ -277,7 +277,6 @@ export default class Login extends Component {
         if (validPhone && validEmail) {
             let data = await this.props.submitResetPass(e, validPhone, validEmail);
             this.setState({ resetPassUpdate: data });
-            
         }
     }
     

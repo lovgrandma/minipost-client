@@ -791,6 +791,10 @@ Button.transaction-button-checkout:hover {
     box-shadow: 0 0 0 1px #d19e51 inset, 0 0 0 1px rgb(58 134 232 / 15%) inset, 1px 2px 0px 0px rgb(185 161 61 / 70%), 2px 1px 0px 0px rgb(228 173 72 / 40%), 1px 1px 0px 0px rgb(234 150 44 / 50%) !important;;
 }
 
+.transaction-button-cart-full-width {
+    width: 100%;
+}
+
 .btn-center {
     margin: 0 auto !important;
 }
@@ -955,6 +959,8 @@ Button.transaction-button-checkout:hover {
         max-width: 92vw;
         align-self: center;
         flex-direction: row-reverse;
+        padding-bottom: 2px;
+        padding-left: 0;
     }
 
     .single-product-page-meta-container {
@@ -964,6 +970,18 @@ Button.transaction-button-checkout:hover {
 
     Button.transaction-button {
         padding: 3px 15px !important;
+    }
+
+    .single-product-page-meta-inputs-container {
+        max-width: 55vw;
+        flex-grow: 1;
+    }
+}
+
+@media (max-width: 640px) {
+    .single-product-page-meta-inputs-container {
+        max-width: 50vw;
+        flex-grow: 1;
     }
 }
 
@@ -1101,6 +1119,7 @@ Button.transaction-button-checkout:hover {
 .checkout-product-flex-data-container {
     display: flex;
     gap: 2px;
+    align-items: center;
 }
 
 .checkout-product-meta-data-container {
@@ -1131,6 +1150,7 @@ Button.transaction-button-checkout:hover {
     border-radius: 5px;
     display: flex;
     gap: 4px;
+    max-height: 22px;
 }
 
 .checkout-product-quantity-min-checkout > svg {
@@ -1154,4 +1174,92 @@ Button.transaction-button-checkout:hover {
 
 .checkout-product-container:hover .times-checkout-button {
     opacity: 1;
+}
+
+.checkout-quantity-dropdown {
+    max-width: 40px;
+}
+
+.checkout-quantity-dropdown-full {
+    max-width: 80px;
+    background: #f9f9f9;
+    border: 0.5px solid #b5b5b5;
+    border-radius: 2.5px;
+    padding: 2.5px 7.5px;
+    max-width: 65px;
+}
+
+.fullcheckout-flex {
+    display: flex;
+    gap: 25px;
+}
+
+.fullcheckout-flex .checkout-product-quantity-min-checkout {
+    background: #e4e4e4;
+    padding: 15px 5px;
+    align-items: center;
+    margin: 0 5px;
+}
+
+.fullcheckout-flex .checkout-products-and-btn-container {
+    max-width: 70vw;
+    flex-grow: 1;
+    padding: 25px;
+    background: whitesmoke;
+    border-radius: 5px;
+}
+
+.fullcheckout-flex .checkout-product-name {
+    font-size: 1em;
+    margin-bottom: 5px;
+    padding-bottom: 2.5px;
+    border-bottom: 1px solid #e6e6e6;
+}
+
+.fullcheckout-flex .checkout-products-list-container {
+    gap: 7.5px;
+}
+
+.fullcheckout-flex .checkout-image-min {
+    max-width: 95px;
+    max-height: 240px;
+}
+
+.fullcheckout-flex .checkout-product-flex-container {
+    background: #ffffff;
+    padding: 15px;
+    border-radius: 5px;
+}
+
+.fullcheckout-flex .checkout-product-quantity-min-checkout svg {
+    height: auto !important;
+}
+
+.fullcheckout-flex .checkout-product-meta-data-container {
+    justify-content: flex-start;
+}
+
+.fullcheckout-flex .checkout-product-shop {
+    font-size: 0.85em;
+    margin-bottom: 5px;
+}
+
+.fullcheckout-flex .checkout-product-individual-price {
+    font-size: 0.95em;
+    padding-bottom: 3.2px;
+}
+
+.fullcheckout-flex .shipping-methods-container {
+    display: flex;
+    align-items: center;
+}
+
+.fullcheckout-flex .shipping-methods-container #product-options-select-container {
+    padding: 0;
+}
+
+.shipping-label-text-checkout {
+    font-size: 0.8em;
+    padding-right: 5px;
+    align-self: center;
 }

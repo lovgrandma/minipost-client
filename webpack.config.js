@@ -27,7 +27,7 @@ const regeneratorRuntime = require("regenerator-runtime");
 module.exports = {
     entry: "./src/index.js", // The entry point for the application
     output: {
-        path: path.join(__dirname, '/dist'),
+        path: path.resolve(__dirname, 'dist'),
         publicPath: '/',
         filename: 'index_bundle.js' // This will be the created bundle file that webpack creates for react to use in production
     },
@@ -56,8 +56,16 @@ module.exports = {
         ]
     },
     target: ['web', 'es5'],
+    devServer: {
+        port: 3000,
+        historyApiFallback: {
+            index: '/'
+        }
+    },
     plugins: [
-        new HtmlWebpackPlugin({ template: './public/index.html'}),
+        new HtmlWebpackPlugin({ 
+            template: "./public/index.html"
+        }),
         new webpack.ProvidePlugin({
             process: 'process/browser'
         })        

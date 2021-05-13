@@ -10,15 +10,16 @@ import corsdefault from '../cors.js';
  * Check shop has valid Stripe account
  * Fulfill payment using Stripe. Charge account, pay 92% to business. 8% to Minipost. Record payment on ledger
  */
-export const checkoutNowWithCurrentCartItems = () => {
-
+export const checkoutNowWithCurrentCartItems = function(e) {
+    
 }
 
 /**
  * Direct user to the checkout page where they can see all cart details before fulfilling Stripe payment 
  */
-export const prepareCheckoutWithCurrentCartItems = () => {
-
+export const prepareCheckoutWithCurrentCartItems = function(e) {
+    console.log(this);
+    this.props.history.push('/checkout');
 }
 
 export const addOneProductToCart = async (product, userShippingData) => {
