@@ -114,6 +114,12 @@ export default class Navbar extends Component {
             } else if (enterexit == "exit") {
                 document.querySelector(".btn-desc-conf-menu").classList.remove("visible");
             }
+        } else if (name == "cart") {
+            if (enterexit == "enter") {
+                document.querySelector(".btn-desc-cart").classList.add("visible");
+            } else if (enterexit == "exit") {
+                document.querySelector(".btn-desc-cart").classList.remove("visible");
+            }
         } else if (name == "home") {
             if (enterexit == "enter") {
                 document.querySelector(".btn-desc-home").classList.add("visible");
@@ -146,6 +152,10 @@ export default class Navbar extends Component {
                 </div>
                 {this.props.username ?
                     <ul className="nav flex-grow2 flex-end navbtnsright nowrapbuttons">
+                        <div className="nav-icon cart material-icons" onMouseOver={(e) => {this.hoverShow(e, "cart", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "cart", "exit")}}>
+                            <NavLink exact to="/checkout" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>shopping_cart</NavLink>
+                        </div>
+                        <div className="btn-desc btn-desc-cart">view your cart</div>
                         <div className="nav-icon notifications material-icons" onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}}>
                             <NavLink exact to="/notifications" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>notifications</NavLink>
                         </div>

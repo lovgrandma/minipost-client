@@ -1240,7 +1240,11 @@ Button.transaction-button-checkout:hover {
 .fullcheckout-flex .checkout-product-flex-container {
     background: #ffffff;
     padding: 15px;
-    border-radius: 5px;
+    border-radius: 7.5px;
+}
+
+.fullcheckout-flex .checkout-place-order-container {
+    max-width: 300px;
 }
 
 .fullcheckout-flex .checkout-product-quantity-min-checkout svg {
@@ -1279,7 +1283,7 @@ Button.transaction-button-checkout:hover {
 }
 
 .fullcheckout-flex .checkout-subtotal-text {
-    font-size: 0.8em;
+    font-size: 0.75em;
 }
 
 .fullcheckout-flex .checkout-subtotal-quantity-block {
@@ -1289,6 +1293,41 @@ Button.transaction-button-checkout:hover {
     max-width: fit-content;
     font-size: 0.9em;
     margin-bottom: 5px;
+}
+
+.fullcheckout-flex .checkout-totals-container-padding {
+    padding: 15px;
+    display: flex;
+    justify-content: flex-end;
+    border-top: 1px solid #e6e6e6;
+    margin-top: 15px;
+}
+
+.fullcheckout-flex .totals-label-and-price {
+    vertical-align: unset;
+}
+
+.totals-label-and-price > td > div {
+    font-size: 14px;
+}
+
+.totals-container-place-order-main {
+    text-align: right;
+}
+
+.totals-container-place-order-main .prompt-basic-s2 {
+    max-width: 300px;
+    margin-left: auto;
+    text-align: left;
+}
+
+.totals-container-place-order-main .transaction-button-cart-full-width {
+    max-width: 300px;
+}
+
+.totals-label-and-price h3,
+.totals-label-and-price h5 {
+    
 }
 
 @media (max-width: 720px) {
@@ -1327,4 +1366,55 @@ Button.transaction-button-checkout:hover {
     .fullcheckout-flex .checkout-product-flex-data-container span {
         display: none;
     }
+
+    .fullcheckout-flex .checkout-place-order-container {
+        max-width: 100%;
+        text-align: -webkit-right !important;
+        text-align: right;
+    }
+
+    .totals-container-place-order-main .transaction-button-cart-full-width {
+        max-width: 100%;
+    }
+
+}
+
+.cover-page {
+    position: fixed;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+    left: 0;
+    transition: 150ms;
+    top: -200%;
+    background-color: rgb(202, 202, 202, .5);
+}
+
+.cover-on {
+    top: 0;
+}
+
+.no-shipping-err {
+    margin: 0 5px;
+    padding: 2px 15px;
+    width: auto;
+}
+
+.checkout-page .sidebarx,
+.checkout-page .sidebar,
+.checkout-page .navbar .nav .favorites,
+.checkout-page .navbar .nav .history,
+.checkout-page .navbar .nav .notifications,
+.checkout-page .navbar .nav .profile,
+.checkout-page .navbar .nav .upload {
+    display: none;
+}
+
+.checkout-page .maindashwide {
+    padding-left: 0 !important;
+}
+
+.checkout-page .sidebar-open {
+    width: 0;
+    padding: 0;
 }

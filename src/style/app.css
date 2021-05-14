@@ -141,6 +141,10 @@ h5 {
     font-size: 0.8em;
 }
 
+.prompt-basic-s2 {
+    font-size: 0.7em;
+}
+
 .grey-out, .grey-out a {
     color: grey;
     transition: 200ms;
@@ -183,8 +187,16 @@ h5 {
     margin-bottom: 2.5px;
 }
 
+.margin0auto {
+    margin: 0 auto;
+}
+
 .max-width-350 {
     max-width: 350px;
+}
+
+.max-width-1600 {
+    max-width: 1600px;
 }
 
 .dropdown-menu a {
@@ -704,7 +716,7 @@ ul li {
     line-height: 0.7;
 }
 
-.notifications, .profile, .upload, .history {
+.notifications, .profile, .upload, .history, .cart {
     transition: 200ms;
     color: grey;
     margin: 0 10px;
@@ -712,7 +724,7 @@ ul li {
 }
 
 @media(max-width: 720px) {
-    .notifications, .profile, .upload, .history {
+    .notifications, .profile, .upload, .history, .cart {
         transition: 200ms;
         color: grey;
         margin: 0 4px;
@@ -720,7 +732,7 @@ ul li {
     }
 }
 
-.notifications:hover, .profile:hover, .upload:hover, .history:hover, .favorites:hover {
+.notifications:hover, .profile:hover, .upload:hover, .history:hover, .favorites:hover, .cart:hover {
     color: black;
 }
 

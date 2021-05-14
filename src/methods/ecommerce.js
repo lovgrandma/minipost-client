@@ -18,8 +18,11 @@ export const checkoutNowWithCurrentCartItems = function(e) {
  * Direct user to the checkout page where they can see all cart details before fulfilling Stripe payment 
  */
 export const prepareCheckoutWithCurrentCartItems = function(e) {
-    console.log(this);
-    this.props.history.push('/checkout');
+    try {
+        this.props.history.push('/checkout');
+    } catch (err) {
+        // Fail silently
+    }
 }
 
 export const addOneProductToCart = async (product, userShippingData) => {
@@ -73,17 +76,49 @@ export const addOneProductToCart = async (product, userShippingData) => {
 }
 
 /**
- * Will be used to removing cart product values and setting to a specific quantity
- * @param {*} id 
- * @param {*} style 
- * @param {*} option 
+ * Will be used to removing cart product values and setting to a specific quantity for many or 1 products
+ * @param {Object[]} products
  */
-export const SetQuantityOfProduct = (id, style, option, quantity) => {
+export const setQuantityOfProducts = async (products) => {
+    if (cookies.get("loggedIn")) {
+        let username = cookies.get('loggedIn');
+        let hash = cookies.get('hash');
+        let self = true;
+        return await fetch(currentshopurl + 's/setproductquantites', {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: corsdefault,
+            body: JSON.stringify({
+                username, hash, self, products
+            })
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((result) => {
+            if (result.data) {
+                if (result.cart) {
+                    updateCachedCart(result.cart); // Necessarily updates local cart to get new cart values on checkout reload data
+                }
+                return result;
+            }
+            return {
+                data: null,
+                error: "did not complete"
+            }
+        })
+        .catch((err) => {
+            return {
+                data: null,
+                error: "did not complete"
+            }
+        });
+    } else {
 
-}
-
-export const emptyCart = () => {
-
+    }
 }
 
 export const getCachedCart = () => {
@@ -102,6 +137,44 @@ export const updateCachedCart = (cart) => {
     }
 }
 
-export const getUserShippingData = () => {
-
+export const updateSingleShippingOnProduct = async (productData, shippingRule) => {
+    if (cookies.get('loggedIn') && cookies.get('hash')) {
+        let username = cookies.get('loggedIn');
+        let hash = cookies.get('hash');
+        let self = true;
+        return await fetch(currentshopurl + 's/updatesingleshippingonproduct', {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            crednetials: corsdefault,
+            body: JSON.stringify({
+                username, hash, self, productData, shippingRule
+            })
+        })
+        .then((response) => {
+            return response.json();
+        })
+        .then((result) => {
+            console.log(result);
+            if (result) {
+                if (result.error) {
+                    return false;
+                }
+                if (result.data) {
+                    if (result.data.items) {
+                        updateCachedCart(result.data);
+                        return result;
+                    }
+                }
+            }
+        })
+        .catch((err) => {
+            console.log(err);
+            return false;
+        })
+    } else {
+        return false;
+    }
 }

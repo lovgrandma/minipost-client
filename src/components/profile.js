@@ -170,7 +170,7 @@ export default class Profile extends Component {
         if (this.state.page == "") {
             pageData = profileData;
         } else if (this.state.page == "shop") {
-            pageData = <Shop owner={this.state.username}
+            pageData = <Shop {...this.props} owner={this.state.username}
                             shop={this.state.shop}
                             shippingClasses={this.state.shippingClasses}
                             edit={editable.call(this)}

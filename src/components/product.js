@@ -723,7 +723,10 @@ export default class Product extends Component {
      * @param {Boolean} redirect 
      */
     addToCart(page = "") {
-        // if page is "product" dont add to cart, just go page
+        // if page is "product" dont add to cart, always go to page
+        if (page == "product") {
+            this.props.history.push("/product?p=" + this.props.id);
+        }
         // if product invalid, dont add to cart, always go product page
         // if product valid, add to cart, dont redirect anywhere
     }

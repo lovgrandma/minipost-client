@@ -11,7 +11,7 @@ import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
-import { prepareCheckoutWithCurrentCartItems, checkoutNowWithCurrentCartItems, getCachedCart } from '../methods/ecommerce.js';
+import { prepareCheckoutWithCurrentCartItems, checkoutNowWithCurrentCartItems, getCachedCart, setQuantityOfProducts, updateSingleShippingOnProduct } from '../methods/ecommerce.js';
 import { cookies } from '../App.js';
 import { debounce } from '../methods/utility.js';
 
@@ -19,7 +19,7 @@ export default class Checkout extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            error: "", cartData: null, wishListData: null
+            error: "", cartData: [], wishListData: null
         }
         this.debounceUpdateQuantity = this.debounceUpdateQuantity.bind(this);
     }
@@ -49,6 +49,19 @@ export default class Checkout extends Component {
         }
     }
 
+    async componentWillUnmount() {
+        try {
+            let data = await this.doUpdateProductQuantity();
+            if (data) {
+                return true; // Component unmounted
+            } else {
+                return false; // Component unmounted
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     setCachedCartState = () => {
         let cachedCart = getCachedCart();
         if (cachedCart) {
@@ -63,7 +76,7 @@ export default class Checkout extends Component {
      * Will get appropriate images and titles for cart products to display to user
      * @returns {Boolean}
      */
-    getImagesAndTitlesForCartProducts() {
+    getImagesAndTitlesForCartProducts(getNewCart = false) {
         this.setState({ error: "" });
         if (cookies.get('loggedIn') && cookies.get('hash')) {
             let username = cookies.get('loggedIn');
@@ -79,7 +92,7 @@ export default class Checkout extends Component {
                     },
                     credentials: corsdefault,
                     body: JSON.stringify({
-                        username, hash, self, cachedCart
+                        username, hash, self, cachedCart, getNewCart
                     })
                 })
                 .then((response) => {
@@ -91,9 +104,11 @@ export default class Checkout extends Component {
                     } else {
                         if (result.hasOwnProperty("data")) {
                             if (result.data.hasOwnProperty("items")) {
+                                this.setState({ cartData: [] }); // You need to set cartData arr to empty to ensure uncontrolled quantities are reloaded in correct sectors
                                 this.setState({ cartData: result.data.items });
                             }
                             if (result.data.hasOwnProperty("wishList")) {
+                                this.setState({ wishListData: [] });
                                 this.setState({ wishListData: result.data.wishList });
                             }
                             if (result.data.hasOwnProperty("checkoutTruths")) {
@@ -120,15 +135,10 @@ export default class Checkout extends Component {
                     style: 'currency',
                     currency: 'USD'
                 });
-                // console.log(parseFloat(number).toFixed(2));
-                // if (ensureToFixed) {
-                //     number = parseFloat(number).toFixed(2);
-                // }
                 return nf.format(number);
             }
             return null;
         } catch (err) {
-            console.log(err);
             return number;
         }
     }
@@ -184,8 +194,24 @@ export default class Checkout extends Component {
         return "";
     }
 
-    changeShippingClass(e, item) {
-
+    async changeShippingClass(e, item) {
+        try {
+            this.setState({ busy: true });
+            let newShippingRule = e.target.value;
+            let productIndex = e.target.getAttribute("index");
+            let productCopy = this.state.cartData[productIndex];
+            let data = await updateSingleShippingOnProduct(productCopy, newShippingRule);
+            console.log(data);
+            if (data) {
+                this.setCachedCartState();
+                this.setState({ busy: false });
+            } else {
+                this.setState({ busy: false });
+            }
+        } catch (err) {
+            console.log(err);
+            this.setState({ busy: false }); // Fail silently
+        }
     }
 
     resolveSelectedShipping(item, ship) {
@@ -203,24 +229,66 @@ export default class Checkout extends Component {
         return false;
     }
 
-    resolveShippingOptions(classes, item) {
+    resolveShippingOptions(classes, item, index) {
         let result = [];
         for (let i = 0; i < classes.length; i++) {
-            result.push(<option value={classes[i].shippingRule} key={i} uuid={classes[i].uuid}>{classes[i].shippingRule}</option>);
+            result.push(<option value={classes[i].shippingRule} key={i} uuid={classes[i].uuid} onChange={(e) => {this.changeShippingClass(e)}}>{classes[i].shippingRule}</option>);
         }
         return result;
     }
 
-    doUpdateProductQuantity() {
-        console.log("do update product quantity");
-        // go through all item quantites displayed on page and determine if equal to value in state. If not, update on server. Debounced
+    setQuantityToNoneDelete(e) {
+        try {
+            let quantities = document.getElementsByClassName("checkout-quantity-dropdown");
+            quantities[e.target.getAttribute("index")].value = 0;
+            this.doUpdateProductQuantity();
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    // Go through all item quantites displayed on page and determine if equal to value in state. If not, update on server. Debounced
+    async doUpdateProductQuantity() {
+        try {
+            if (!this.state.busy) {
+                this.setState({ busy: true });
+                let toChange = [];
+                let quantities = document.getElementsByClassName("checkout-quantity-dropdown");
+                for (let i = 0; i < quantities.length; i++) { // Each quantity value should map perfectly with cartData state
+                    if (quantities[i].value != this.state.cartData[i].quantity) { // User has changed quantity on this product
+                        toChange.push({
+                            product: this.state.cartData[i], 
+                            newQuantity: quantities[i].value
+                        });
+                    }
+                }
+                if (toChange.length > 0) {
+                    let complete = await setQuantityOfProducts(toChange);
+                    if (complete) {
+                        if (complete.error) {
+                            this.setState({ error: complete.error });
+                        } else {
+                            this.getImagesAndTitlesForCartProducts(true);
+                        }
+                        this.setState({ busy: false });
+                    } else {
+                        this.setState({ busy: false });
+                    }
+                } else {
+                    this.setState({ busy: false });
+                }
+            }
+        } catch (err) {
+            this.setState({ busy: false }); // Fail silently
+        }
     }
 
     debounceUpdateQuantity = debounce(() => this.doUpdateProductQuantity(), 5000);
 
     render() {
         return (
-            <div className={this.props.fullCheckout ? "fullcheckout-flex" : ""}>
+            <div className={this.props.fullCheckout ? "fullcheckout-flex max-width-1600 margin0auto" : ""}>
+                <div className={this.state.busy ? "cover-page cover-on" : "cover-page cover-off"}></div>
                 <div className="checkout-products-and-btn-container">
                     {
                         !this.props.fullCheckout ?
@@ -258,15 +326,23 @@ export default class Checkout extends Component {
                                                                 <div className="shipping-methods-container">
                                                                     <span className="weight600 grey-out shipping-label-text-checkout">shipping class:</span>
                                                                     <div>
-                                                                        <select name="product-options-select-container" id="product-options-select-container" defaultValue={item.shippingClass.shippingRule} onChange={(e) => {this.changeShippingClass(e, item)}}>
-                                                                            {
-                                                                                item.validShippingClassesForUser ?
-                                                                                    item.validShippingClassesForUser.classes ?
-                                                                                            this.resolveShippingOptions(item.validShippingClassesForUser.classes, item)
-                                                                                        : null 
+                                                                        {
+                                                                            item.validShippingClassesForUser ?
+                                                                                item.validShippingClassesForUser.classes ?
+                                                                                    item.validShippingClassesForUser.classes.length > 0 ?
+                                                                                        <select name="product-options-select-container" id="product-options-select-container" className="product-options-select-dropdown" defaultValue={item.shippingClass.shippingRule} index={index} onChange={(e) => {this.changeShippingClass(e, item)}}>
+                                                                                            {
+                                                                                                item.validShippingClassesForUser ?
+                                                                                                    item.validShippingClassesForUser.classes ?
+                                                                                                            this.resolveShippingOptions(item.validShippingClassesForUser.classes, item)
+                                                                                                        : null 
+                                                                                                    : null
+                                                                                            }
+                                                                                        </select>
+                                                                                        : <p className="err-status prompt-basic-s2 no-shipping-err">Unfortunately, this product does not ship to your country</p>
                                                                                     : null
-                                                                            }
-                                                                        </select>
+                                                                                : null
+                                                                        }
                                                                     </div>
                                                                 </div>
                                                             </div>
@@ -306,7 +382,7 @@ export default class Checkout extends Component {
                                                             }
                                                         </div>
                                                         <div>
-                                                            <div className="social-portal-times times-checkout-button">&times;</div>
+                                                            <div className="social-portal-times times-checkout-button" index={index} onClick={(e) => {this.setQuantityToNoneDelete(e)}}>&times;</div>
                                                         </div>
                                                     </div>
                                                 </div>
@@ -338,14 +414,85 @@ export default class Checkout extends Component {
                                 : null
                         }
                     </div>
+                    <div className="checkout-totals-container-padding">
+                        { this.props.fullCheckout ?
+                            <table className="totals-container">
+                                {
+                                    this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.products ?
+                                        <tr className="totals-label-and-price">
+                                            <td><div className="grey-out weight600">Products:&nbsp;</div></td>
+                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.products)}</h5></td>
+                                        </tr>
+                                        : null : null : null
+                                }
+                                {
+                                    this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.shipping ?
+                                        <tr className="totals-label-and-price">
+                                            <td><div className="grey-out weight600">Shipping:&nbsp;</div></td>
+                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.shipping)}</h5></td>
+                                        </tr>
+                                        : null : null : null
+                                }
+                                {
+                                    this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.total ?
+                                        <tr className="totals-label-and-price">
+                                            <td><div className="grey-out weight600">Cart Subtotal:&nbsp;</div></td>
+                                            <td><h3>{this.formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
+                                        </tr>
+                                        : null : null : null
+                                }
+                            </table>
+                            : null
+                        }
+                    </div>
                     <div>
-                        <div className="totals-container">{this.state.checkoutTruths ? this.formatAPrice(this.state.checkoutTruths.totals.total) : null}</div>
+                        {
+                            this.props.fullCheckout && this.state.cartData.length > 0 ?
+                                <div className="totals-container totals-container-place-order totals-container-place-order-main">
+                                    <Button className="transaction-button transaction-button-checkout btn-center cart-button-space transaction-button-cart-full-width" onClick={(e)=>{checkoutNowWithCurrentCartItems.call(this, e)}}>Place Your Order</Button>
+                                    <p className="prompt-basic-s2 grey-out">Placing with your order above will fulfill payment to the shop vendors and confirms your agreement with Minipost &copy; terms and conditions</p>
+                                </div>
+                                : null
+                        }
                     </div>
                 </div>
                 {
                     this.props.fullCheckout ?
                         <div className="checkout-place-order-container">
-                            <Button className="transaction-button transaction-button-checkout btn-center cart-button-space transaction-button-cart-full-width" onClick={(e)=>{checkoutNowWithCurrentCartItems.call(this, e)}}>Place Your Order</Button>
+                            <table className="totals-container totals-container-place-order">
+                                {
+                                    this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.products ?
+                                        <tr className="totals-label-and-price">
+                                            <td><div className="grey-out weight600">Products:&nbsp;</div></td>
+                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.products)}</h5></td>
+                                        </tr>
+                                        : null : null : null
+                                }
+                                {
+                                    this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.shipping ?
+                                        <tr className="totals-label-and-price">
+                                            <td><div className="grey-out weight600">Shipping:&nbsp;</div></td>
+                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.shipping)}</h5></td>
+                                        </tr>
+                                        : null : null : null
+                                }
+                                {
+                                    this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.total ?
+                                        <tr className="totals-label-and-price">
+                                            <td><div className="grey-out weight600">Cart Subtotal:&nbsp;</div></td>
+                                            <td><h3>{this.formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
+                                        </tr>
+                                        : null : null : null
+                                }
+                            </table>
+                            {
+                                this.state.cartData.length > 0 ? 
+                                    <div>
+                                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space transaction-button-cart-full-width" onClick={(e)=>{checkoutNowWithCurrentCartItems.call(this, e)}}>Place Your Order</Button>
+                                        <p className="prompt-basic-s2 grey-out">Placing with your order above will fulfill payment to the shop vendors and confirms your agreement with Minipost &copy; terms and conditions</p>
+                                    </div>
+                                    : null
+                            }
                         </div>
                         : null
                 }

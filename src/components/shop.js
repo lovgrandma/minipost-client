@@ -306,7 +306,7 @@ export default class Shop extends Component {
                     {
                         this.state.products ?
                             this.state.products.map((product, index) => 
-                                <Product name={product.name}
+                                <Product {...this.props} name={product.name}
                                 desc={product.description}
                                 images={product.images}
                                 styles={product.styles}
@@ -331,7 +331,7 @@ export default class Shop extends Component {
                     }
                     {
                         this.state.self ? 
-                            <Product dummy={true}
+                            <Product {...this.props} dummy={true}
                             name={this.state.dummyname}
                             desc={this.state.dummydesc}
                             images={this.state.dummyimages}
