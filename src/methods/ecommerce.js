@@ -10,8 +10,43 @@ import corsdefault from '../cors.js';
  * Check shop has valid Stripe account
  * Fulfill payment using Stripe. Charge account, pay 92% to business. 8% to Minipost. Record payment on ledger
  */
-export const checkoutNowWithCurrentCartItems = function(e) {
-    
+export const checkoutNowWithCurrentCartItems = async function(e) {
+    console.log("checkout!")
+    try {
+        if (cookies.get('loggedIn') && cookies.get('hash')) {
+            let username = cookies.get('loggedIn');
+            let hash = cookies.get('hash');
+            let self = true;
+            let checkCC = true;
+            let getNewCart = true;
+            let cachedCart = getCachedCart();
+            console.log("processcomplete")
+            return await fetch(currentshopurl + 's/processcompletecheckout', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, hash, self, checkCC, getNewCart, cachedCart
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                console.log(result); // if success push user to completed checkout page
+                return true;
+            })
+        } else {
+            this.setState({ checkoutError: "Failed to complete cart checkout" }); // Failed silently
+            return false;
+        }
+    } catch (err) {
+        this.setState({ checkoutError: "Failed to complete cart checkout" }); // Failed silently
+        return false;
+    }
 }
 
 /**
@@ -157,7 +192,6 @@ export const updateSingleShippingOnProduct = async (productData, shippingRule) =
             return response.json();
         })
         .then((result) => {
-            console.log(result);
             if (result) {
                 if (result.error) {
                     return false;

@@ -5525,6 +5525,7 @@ a code:hover {
     background-color: #69b2e8;
     box-shadow: 0 0 0 1px #45b3ff inset, 0 0 0 1px rgba(58, 134, 232, 0.15) inset, 1px 2px 0px 0px rgba(78, 167, 210, 0.7), 2px 3px 0px 0px rgba(105, 194, 238, 0.4), 1px 1px 0px 0px rgba(105, 194, 238, 0.5);
     max-width: -moz-fit-content;
+    max-width: fit-content;
     margin-right: 5px;
     color: white;
     transition: 200ms;

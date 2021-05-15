@@ -413,8 +413,8 @@ class Socialbar extends Component { // Main social entry point sb1
     * @returns {String status || Boolean} Will return whether or not submitReset successfully happened or failed or false
     * communicating false non-action.
     */
-    submitResetPass = async (e, phone, email) => {
-        if (phone && email) {
+    submitResetPass = async (e, email, username) => {
+        if (email && username) {
             return await fetch(currentrooturl + 'm/submitresetpass', {
                 method: "POST",
                 headers: {
@@ -424,7 +424,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 mode: 'cors',
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    phone, email
+                    email, username
                 })
             })
             .then((response) => {
@@ -434,7 +434,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 let authorized = this.props.checkAndConfirmAuthentication(data);
                 if (authorized) {
                     if (data) {
-                        return "Success! You'll get a text on your phone if you have an account with us";
+                        return "Success! You'll get an email to reset your password with. Please check your junk folder";
                     }
                 }
                 return "Reset failed. Please retry";
@@ -503,64 +503,63 @@ class Socialbar extends Component { // Main social entry point sb1
     * @args {Event e, String phone} 
     * @return {none}
     */
-    fetchregister = (e, phone) => {
+    fetchregister = (e) => {
         e.preventDefault();
         try {
-            if (phone) {
-                if (phone.current) {
-                    this.setState({ registererror: null });
-                    this.setState({ loginerror: null });
-                    let username = document.getElementById("username").value;
-                    let regemail = document.getElementById("regemail").value;
-                    let self = true;
-                    phone = phone.current.getNumber(document.getElementById('phonein').value,intlTelInputUtils.numberFormat.E164);
-                    let regpassword = document.getElementById("regpw").value;
-                    let confirmPassword = document.getElementById("regpw2").value;
-                    fetch(currentrooturl + 'm/register', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: corsdefault,
-                        body: JSON.stringify({
-                            username, regemail, regpassword, confirmPassword, phone
-                        })
-                    })
-                    .then((response) => {
-                            return response.json(); // Parsed data
-                    })
-                    .then((data) => {
-                        if (data.querystatus== "registered" && data.user ) {
-                            console.log(data);
-                            // cookies.set('loggedIn', data.user);
-                            // this.setState({ isLoggedIn: data.user });
-                            // this.getfriends();
-                            // advise user to check phone to activate
-                            this.setState({ verifyinfo: "You signed up! You must verify your account to login. Click the button below when you get your verification code"})
-                        }
-                        if (data.error) {
-                            this.setState({ registererror: {error: data.error, type: data.type }});
-                        }
-                        return data;
-                    })
-                    .catch(error => { console.log(error);
-                    })
+            this.setState({ registererror: null });
+            this.setState({ loginerror: null });
+            let username = document.getElementById("username").value;
+            let regemail = document.getElementById("regemail").value;
+            let self = true;
+            let regpassword = document.getElementById("regpw").value;
+            let confirmPassword = document.getElementById("regpw2").value;
+            fetch(currentrooturl + 'm/register', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, regemail, regpassword, confirmPassword
+                })
+            })
+            .then((response) => {
+                    return response.json(); // Parsed data
+            })
+            .then((data) => {
+                if (data.querystatus== "registered" && data.user ) {
+                    console.log(data);
+                    // cookies.set('loggedIn', data.user);
+                    // this.setState({ isLoggedIn: data.user });
+                    // this.getfriends();
+                    // advise user to check phone to activate
+                    this.setState({ verifyinfo: "You signed up! You must verify your account to login. Click the button below when you get your verification code"})
                 }
-            }
+                if (data.error) {
+                    this.setState({ registererror: { error: data.error, type: data.type } });
+                }
+                return data;
+            })
+            .catch(error => { console.log(error);
+            })
         } catch (err) {
             // Fail silently 
         }
     }
+
+    setRegisterErr = (err) => {
+        this.setState({ registererror: { error: err, type: "register error" } });
+    }
     
-    fetchVerify = (e, verif, phone, email) => {
+    fetchVerify = (e, verif, email, username) => {
         e.preventDefault(e);
-        if (verif && phone && email) {
-            if (verif.current && phone.current && email.current) {
-                if (verif.current.value && email.current.value) {
+        if (verif && email && username) {
+            if (verif.current && email.current && username.current) {
+                if (verif.current.value && email.current.value && username.current.value) {
                     const verification = verif.current.value;
-                    const phoneVal = phone.current.getNumber(document.getElementById('phoneverify').value,intlTelInputUtils.numberFormat.E164);
                     const emailVal = email.current.value;
+                    const usernameVal = username.current.value;
                     fetch(currentrooturl + 'm/verify', {
                         method: "POST",
                         headers: {
@@ -569,14 +568,13 @@ class Socialbar extends Component { // Main social entry point sb1
                         },
                         credentials: corsdefault,
                         body: JSON.stringify({
-                            verification, phoneVal, emailVal
+                            verification, emailVal, usernameVal
                         })
                     })
                     .then((response) => {
                         return response.json(); // Parsed data
                     })
                     .then((data) => {
-                        console.log(data);
                         if (data.querystatus== "loggedin" && data.username ) {
                             cookies.set('hash', data.hash); // Set hash first as features do not run without hash
                             cookies.set('loggedIn', data.username);
@@ -1252,7 +1250,7 @@ class Socialbar extends Component { // Main social entry point sb1
         
         const isLoggedIn = this.state.isLoggedIn;
         if (!isLoggedIn) {
-            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar}
+            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} setRegisterErr={this.setRegisterErr} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar}
             submitResetPass={this.submitResetPass} resetPassData={this.state.resetPassData} />
         } else {
             sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump={this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />

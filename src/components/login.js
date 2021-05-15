@@ -2,8 +2,6 @@ import React, { Component } from 'react';
 import Cookies from 'universal-cookie';
 import Sidebarfooter from './sidebarfooter.js';
 import minipostAppLogoNoText from '../static/MinipostLogo2021-Q1-smaller.svg';
-import IntlTelInput from 'react-intl-tel-input';
-import 'react-intl-tel-input/dist/main.css';
 
 const reEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const rePass = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*]{8,56}$/; // More accepting 0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*
@@ -15,13 +13,15 @@ export default class Login extends Component {
     constructor(props) {
         super(props);
         this.state = { welcome: 'Welcome to minireel', message: "Watch videos with friends Speak your mind Enjoy original content", username: "", password: "", verificationIn: false, overlay: false }
-        this.phone = React.createRef();
         this.verify = React.createRef();
-        this.phoneVerify = React.createRef();
         this.emailVerify = React.createRef();
-        this.countryCodePrompt = React.createRef();
-        this.phoneReset = React.createRef();
+        this.usernameVerify = React.createRef();
         this.resetPassEmail = React.createRef();
+        this.resetPassUsername = React.createRef();
+        this.username = React.createRef();
+        this.regemail = React.createRef();
+        this.regpw = React.createRef();
+        this.regpw2 = React.createRef();
     }
 
     componentDidMount() {
@@ -85,107 +85,89 @@ export default class Login extends Component {
     }
 
     submitRegister = (e) => {
-
-        function emailvalidation(email) {
-            let emailworks = false;
-            //check for proper email
-            if (reEmail.test(email) === true) {
-                emailworks = true;
-            } else {
-                emailworks = false;
-            }
-            return emailworks;
-        }
-
-        function usernamevalidation(username) {
-            let usernameworks = false;
-            //check for proper username
-            if(reUsername.test(username) === true) {
-               usernameworks = true;
-            } else {
-               usernameworks = false;
-            }
-            return usernameworks;
-        }
-
-        function passwordvalidation(password) {
-            let passwordworks = false;
-            //check for password over 8 character and less than 56. a-z, A-Z, One uppercase, one number.
-            if(rePass.test(password) === true) {
-               passwordworks = true;
-            } else {
-               passwordworks = false;
-            }
-            return passwordworks;
-        }
-
-        function passwordconfirm(password, confirmpassword) {
-            let passwordequality = false;
-            //check if passwords are the same
-            if(password === confirmpassword) {
-                passwordequality = true;
-            } else {
-                passwordequality = false;
-            }
-            return passwordequality;
-        }
-        
-        const phoneconfirm = () => {
-            if (this.phone && document.getElementById('phonein')) {
-                if (this.phone.current && document.getElementById('phonein').value) {
-                    let number = this.phone.current.getNumber(document.getElementById('phonein').value,intlTelInputUtils.numberFormat.E164);
-                    if (number.charAt(0) != '+') {
-                        return false;
-                    }
-                    return true;
+        try {
+            function emailvalidation(email) {
+                let emailworks = false;
+                //check for proper email
+                if (reEmail.test(email) === true) {
+                    emailworks = true;
+                } else {
+                    emailworks = false;
                 }
+                return emailworks;
             }
-            return false;
-        }
 
-        let username = this.refs.username.value;
-        let email = this.refs.regemail.value;
-        let password = this.refs.regpw.value;
-        let confirmpassword = this.refs.regpw2.value;
-        let gooduser = usernamevalidation(username);
-        let goodemail = emailvalidation(email);
-        let goodpassreg = passwordvalidation(password);
-        let goodpassconfirm = passwordconfirm(password, confirmpassword);
-        let goodphone = phoneconfirm();
+            function usernamevalidation(username) {
+                let usernameworks = false;
+                //check for proper username
+                if(reUsername.test(username) === true) {
+                usernameworks = true;
+                } else {
+                usernameworks = false;
+                }
+                return usernameworks;
+            }
 
-        if (!gooduser) {
-            e.preventDefault();
-            (document.getElementsByClassName('faulty-username')[0]).style.display = 'block';
-        } else {
-            (document.getElementsByClassName('faulty-username')[0]).style.display = 'none';
-        }
+            function passwordvalidation(password) {
+                let passwordworks = false;
+                //check for password over 8 character and less than 56. a-z, A-Z, One uppercase, one number.
+                if(rePass.test(password) === true) {
+                passwordworks = true;
+                } else {
+                passwordworks = false;
+                }
+                return passwordworks;
+            }
 
-        if (!goodemail) {
-            e.preventDefault();
-            (document.getElementsByClassName('faulty-email-register')[0]).style.display = 'block';
-        } else {
-            (document.getElementsByClassName('faulty-email-register')[0]).style.display = 'none';
-        }
+            function passwordconfirm(password, confirmpassword) {
+                let passwordequality = false;
+                //check if passwords are the same
+                if(password === confirmpassword) {
+                    passwordequality = true;
+                } else {
+                    passwordequality = false;
+                }
+                return passwordequality;
+            }
 
-        if (!goodpassreg) {
-            e.preventDefault();
-            (document.getElementsByClassName('faulty-pass-register')[0]).style.display = 'block';
-        } else {
-            (document.getElementsByClassName('faulty-pass-register')[0]).style.display = 'none';
-        }
+            let username = this.username.current.value;
+            let email = this.regemail.current.value;
+            let password = this.regpw.current.value;
+            let confirmpassword = this.regpw2.current.value;
+            let gooduser = usernamevalidation(username);
+            let goodemail = emailvalidation(email);
+            let goodpassreg = passwordvalidation(password);
+            let goodpassconfirm = passwordconfirm(password, confirmpassword);
 
-        if (!goodpassconfirm) {
-            e.preventDefault();
-            (document.getElementsByClassName('faulty-confirmpass-register')[0]).style.display = 'block';
-        } else {
-            (document.getElementsByClassName('faulty-confirmpass-register')[0]).style.display = 'none';
-        }
-        
-        if (!goodphone) {
-            e.preventDefault();
-            (document.getElementsByClassName('faulty-phone-register')[0]).style.display = 'block';
-        } else {
-            (document.getElementsByClassName('faulty-phone-register')[0]).style.display = 'none';
+            if (!gooduser) {
+                e.preventDefault();
+                (document.getElementsByClassName('faulty-username')[0]).style.display = 'block';
+            } else {
+                (document.getElementsByClassName('faulty-username')[0]).style.display = 'none';
+            }
+
+            if (!goodemail) {
+                e.preventDefault();
+                (document.getElementsByClassName('faulty-email-register')[0]).style.display = 'block';
+            } else {
+                (document.getElementsByClassName('faulty-email-register')[0]).style.display = 'none';
+            }
+
+            if (!goodpassreg) {
+                e.preventDefault();
+                (document.getElementsByClassName('faulty-pass-register')[0]).style.display = 'block';
+            } else {
+                (document.getElementsByClassName('faulty-pass-register')[0]).style.display = 'none';
+            }
+
+            if (!goodpassconfirm) {
+                e.preventDefault();
+                (document.getElementsByClassName('faulty-confirmpass-register')[0]).style.display = 'block';
+            } else {
+                (document.getElementsByClassName('faulty-confirmpass-register')[0]).style.display = 'none';
+            }
+        } catch (err) {
+            this.props.setRegisterErr("The register form failed to retrieve registration inputs");
         }
     }
     
@@ -199,29 +181,12 @@ export default class Login extends Component {
     
     submitVerify = (e) => {
         let goodVerify = false;
-        let goodPhoneVerify = false;
         let goodEmailVerify = false;
+        let goodUsernameVerify = false;
         if (this.verify) {
             if (this.verify.current) {
                 if (this.verify.current.value) {
                     goodVerify = true;
-                }
-            }
-        }
-        
-        if (this.phoneVerify && document.getElementById('phoneverify')) {
-            if (this.phoneVerify.current && document.getElementById('phoneverify').value) {
-                let number = this.phoneVerify.current.getNumber(document.getElementById('phoneverify').value,intlTelInputUtils.numberFormat.E164);
-                if (number.charAt(0) != '+') {
-                    return false;
-                }
-                return true;
-            }
-        }
-        if (this.phoneVerify) {
-            if (this.phoneVerify.current) {
-                if (this.phoneVerify.current.value) {
-                    goodPhoneVerify = true;
                 }
             }
         }
@@ -233,6 +198,14 @@ export default class Login extends Component {
                 }
             }
         }
+
+        if (this.usernameVerify) {
+            if (this.usernameVerify.current) {
+                if (this.usernameVerify.current.value) {
+                    goodUsernameVerify = true;
+                }
+            }
+        }
         
         if (!goodEmailVerify) {
             e.preventDefault();
@@ -240,12 +213,12 @@ export default class Login extends Component {
         } else {
             document.getElementsByClassName('faulty-email-verification')[0].style.display = 'none';
         }
-        
-        if (!goodPhoneVerify) {
+
+        if (!goodUsernameVerify) {
             e.preventDefault();
-            document.getElementsByClassName('faulty-phone-verification')[0].style.display = 'block';
+            document.getElementsByClassName('faulty-username-verification')[0].style.display = 'block';
         } else {
-            document.getElementsByClassName('faulty-phone-verification')[0].style.display = 'none';
+            document.getElementsByClassName('faulty-username-verification')[0].style.display = 'none';
         }
         
         if (!goodVerify) {
@@ -257,16 +230,8 @@ export default class Login extends Component {
     }
     
     submitResetPass = async (e) => { 
-        let validPhone = false;
         let validEmail = false;
-        if (this.phoneReset && document.getElementById('phonein-reset-pass')) {
-            if (this.phoneReset.current && document.getElementById('phonein-reset-pass').value) {
-                let number = this.phoneReset.current.getNumber(document.getElementById('phonein-reset-pass').value,intlTelInputUtils.numberFormat.E164);
-                if (number.charAt(0) == '+') {
-                    validPhone = number;
-                }
-            }
-        }
+        let validUsername = false;
         if (this.resetPassEmail) {
             if (this.resetPassEmail.current) {
                 if (this.resetPassEmail.current.value) {
@@ -274,8 +239,15 @@ export default class Login extends Component {
                 }
             }
         }
-        if (validPhone && validEmail) {
-            let data = await this.props.submitResetPass(e, validPhone, validEmail);
+        if (this.resetPassUsername) {
+            if (this.resetPassUsername.current) {
+                if (this.resetPassUsername.current.value) {
+                    validUsername = this.resetPassUsername.current.value;
+                }
+            }
+        }
+        if (validEmail && validUsername) {
+            let data = await this.props.submitResetPass(e, validEmail, validUsername);
             this.setState({ resetPassUpdate: data });
         }
     }
@@ -307,18 +279,13 @@ export default class Login extends Component {
                         <input className="form-control" ref={this.resetPassEmail} id="resetpass-email" type="email" name="resetpass-email" placeholder="reset email"></input>
                     </div>
                     <div className="form-group">
-                        <IntlTelInput
-                        containerClassName="intl-tel-input"
-                        inputClassName="form-control"
-                        fieldName="intl-input"
-                        ref={this.phoneReset} fieldId="phonein-reset-pass" name="phonein-reset-pass" placeholder="reset phone #"
-                        />
+                        <input className="form-control" ref={this.resetPassUsername} id="resetpass-username" type="text" name="resetpass-username" placeholder="reset username"></input>
                     </div>
                     {
                         this.state.resetPassUpdate ? <div className="resetpassstatus">{this.state.resetPassUpdate}</div> : <div></div>
                     }
                     {
-                        this.state.resetPassUpdate != "Success! You'll get a text on your phone if you have an account with us" ? <button className="btn btn-primary reset-passbtn red-btn" type="submit" onClick={(e) => {this.submitResetPass(e)}}>reset password</button> : <div></div>
+                        this.state.resetPassUpdate != "Success! You'll get a email if you have an account with us" ? <button className="btn btn-primary reset-passbtn red-btn" type="submit" onClick={(e) => {this.submitResetPass(e)}}>reset password</button> : <div></div>
                     }
                 </div>
                 <form className="loginform" refs='loginform' onSubmit={this.props.fetchlogin} noValidate="novalidate">
@@ -338,30 +305,21 @@ export default class Login extends Component {
                     : <div></div>
                     }
                 </form>
-                <form className="registerform" onSubmit={(e) => {this.props.fetchregister(e, this.phone)}} noValidate="novalidate">
+                <form className="registerform" onSubmit={(e) => {this.props.fetchregister(e)}} noValidate="novalidate">
                     <div className="form-group">
-                        <input className="form-control" ref='username' id="username" type="text" name="username" placeholder="username"></input>
+                        <input className="form-control" ref={this.username} id="username" type="text" name="username" placeholder="username"></input>
                         <div id='registerusernameerrorcontainer'><div className='form-error faulty-username' style={{display: 'none'}}>username must be between 5 and 22 characters. may contain periods</div></div>
                     </div>
                     <div className="form-group">
-                        <input className="form-control" ref='regemail' id="regemail" type="email" name="regemail" placeholder="email"></input>
+                        <input className="form-control" ref={this.regemail} id="regemail" type="email" name="regemail" placeholder="email"></input>
                         <div id='registeremailerrorcontainer'><div className='form-error faulty-email-register' style={{display: 'none'}}>please enter a valid email</div></div>
                     </div>
                     <div className="form-group">
-                        <IntlTelInput
-                        containerClassName="intl-tel-input"
-                        inputClassName="form-control"
-                        fieldName="intl-input"
-                        ref={this.phone} fieldId="phonein" name="phonein" placeholder="phone #"
-                        />
-                        <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-phone-register' style={{display: 'none'}}>registration requires a valid phone number. Please make sure to select your country</div></div>
-                    </div>
-                    <div className="form-group">
-                        <input className="form-control" ref='regpw' id="regpw" type="password" name="regpassword" placeholder="password"></input>
+                        <input className="form-control" ref={this.regpw} id="regpw" type="password" name="regpassword" placeholder="password"></input>
                         <div id='registerpwerrorcontainer'><div className='form-error faulty-pass-register' style={{display: 'none'}}>password must be between 8-56 characters, have 1 uppercase, 1 lowercase and a number</div></div>
                     </div>
                     <div className="form-group">
-                        <input className="form-control" ref='regpw2' id="regpw2" type="password" name="confirmPassword" placeholder="confirm password"></input>
+                        <input className="form-control" ref={this.regpw2} id="regpw2" type="password" name="confirmPassword" placeholder="confirm password"></input>
                         <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-confirmpass-register' style={{display: 'none'}}>passwords are not the same</div></div>
                     </div>
                     <button className="btn btn-primary registerbtn red-btn" type="submit" onClick={this.submitRegister}>sign up</button>
@@ -378,20 +336,17 @@ export default class Login extends Component {
                     }
                 </form>
                 <div className="info-blurb-2 verifyform select" onClick={(e) => {this.openVerification(e)}}>I already registered. I need to verify my account</div>
-                <form className={this.state.verificationIn ? "registerform verification-height" : "registerform verification-height verification-height-zero"} onSubmit={(e) => {this.props.fetchVerify(e, this.verify, this.phoneVerify, this.emailVerify)}} noValidate="novalidate">
+                <form className={this.state.verificationIn ? "registerform verification-height" : "registerform verification-height verification-height-zero"} onSubmit={(e) => {this.props.fetchVerify(e, this.verify, this.emailVerify, this.usernameVerify)}} noValidate="novalidate">
                     <div className="form-group">
                         <input className="form-control" ref={this.emailVerify} id="emailverify" type="text" name="emailverify" placeholder="email"></input>
-                        <div id='registerusernameerrorcontainer'><div className='form-error faulty-email-verification' style={{display: 'none'}}>you must enter your email. We do this so that even if someone maliciously uses your phone number you can still activate your account with your email</div></div>
+                        <div id='registerusernameerrorcontainer'>
+                            <div className='form-error faulty-email-verification' style={{display: 'none'}}>you must enter your email.</div>
+                        </div>
                     </div>
                     <div className="form-group">
-                        <IntlTelInput
-                        containerClassName="intl-tel-input"
-                        inputClassName="form-control"
-                        fieldName="intl-input-verify"
-                        ref={this.phoneVerify} fieldId="phoneverify" name="phoneinverify" placeholder="phone #"
-                        />
+                        <input className="form-control" ref={this.usernameVerify} id="usernameverify" type="text" name="usernameverify" placeholder="username"></input>
                         <div id='registerusernameerrorcontainer'>
-                            <div className='form-error faulty-phone-verification' style={{display: 'none'}}>you need to input your phone number</div>
+                            <div className='form-error faulty-username-verification' style={{display: 'none'}}>you must enter your username.</div>
                         </div>
                     </div>
                     <div className="form-group">

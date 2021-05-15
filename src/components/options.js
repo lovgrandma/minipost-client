@@ -8,10 +8,14 @@ import keys from '../keys/stripecred.js';
 import amex from '../static/cc/amex.svg'; import mastercard from '../static/cc/mastercard.svg'; import visa from '../static/cc/visa.svg'; 
 import corsdefault from '../cors.js';
 
+import IntlTelInput from 'react-intl-tel-input';
+import 'react-intl-tel-input/dist/main.css';
+
 import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import currentshopurl from '../shopurl';
 const stripePromise = loadStripe(keys.livekey);
+
 
 export default class Options extends Component {
     constructor() {
@@ -26,6 +30,7 @@ export default class Options extends Component {
         this.shippingCityRef = React.createRef();
         this.shippingStateRef = React.createRef();
         this.shippingZipRef = React.createRef();
+        this.phoneVerify = React.createRef();
     }
 
     componentDidMount = async () => {
@@ -145,6 +150,21 @@ export default class Options extends Component {
                 return false;
             }
         }
+    }
+
+    phoneconfirm = () => {
+        if (this.phone && document.getElementById('phonein')) {
+            if (this.phone.current && document.getElementById('phonein').value) {
+                let number = this.phone.current.getNumber(document.getElementById('phonein').value,intlTelInputUtils.numberFormat.E164);
+                if (number.charAt(0) != '+') {
+                    // number is value
+                    return false;
+                }
+                return true;
+            }
+        }
+        
+        return false;
     }
     
     uploadThumbnailS3 = async () => {
@@ -456,7 +476,17 @@ export default class Options extends Component {
                         <div className="grey-out">********</div><button className="btn upload-button">Change password</button>
                     </div>
                     <div className="key-and-value">
-                        <div className="grey-out">{this.state.phone}</div><button className="btn upload-button">Change phone number</button>
+                        <div className="grey-out">
+                            <div className="form-group">
+                                <IntlTelInput
+                                containerClassName="intl-tel-input"
+                                inputClassName="form-control"
+                                fieldName="intl-input"
+                                ref={this.phone} fieldId="phonein" name="phonein" placeholder="phone #"
+                                />
+                                <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-phone-register' style={{display: 'none'}}>registration requires a valid phone number. Please make sure to select your country</div></div>
+                            </div>
+                        </div><button className="btn upload-button">Change phone number</button>
                     </div>
                     <div className="key-and-value">
                         <div className="grey-out">{this.state.shippingData}</div><button className="btn upload-button" onClick={(e) => {this.openShipping(e)}}>{this.state.openportal == 'shipping' ? "Minimize shipping info" : "Manage shipping info"}</button>
