@@ -1,17 +1,9 @@
 import React, { Component } from 'react';
-import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
-} from 'react-router-dom';
 import currentshopurl from '../shopurl.js';
 import Product from './product.js'; import ShippingClassSetup from './shippingclasssetup.js'; import ImageUploadSelection from './partial/image-upload-selection.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 
-import { cookies, socket } from '../App.js';
+import { cookies } from '../App.js';
 
 export default class Shop extends Component {
     constructor(props) {

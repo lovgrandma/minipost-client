@@ -1,9 +1,8 @@
 import React, { Component } from 'react';
-import { cookies, socket } from '../App.js';
+import { cookies } from '../App.js';
 import {
     Link
 } from 'react-router-dom';
-import parseBody from '../methods/htmlparser.js';
 import greythumb from '../static/greythumb.jpg';
 import { convertDate, returnLink, returnProfile } from '../methods/utility.js';
 

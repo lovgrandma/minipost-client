@@ -1,5 +1,4 @@
-import React, {Component} from 'react';
-import history from '../methods/history.js';
+import React, { Component } from 'react';
 
 // Searchform within navbar
 export default class SearchForm extends Component {

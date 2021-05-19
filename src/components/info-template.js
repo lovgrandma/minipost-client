@@ -65,7 +65,7 @@ export default class InfoTemplate extends Component {
             <div className='info-template'>
                {
                     this.state.pageContent ? parseBody(this.state.pageContent) : null
-                }
+               }
             </div>
         )
     }

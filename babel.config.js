@@ -24,6 +24,7 @@ module.exports = {
                 "importSource": "react" // defaults to react
             }
         ],
-        ["transform-react-jsx"]
+        ["transform-react-jsx"],
+        ["@loadable/babel-plugin"]
     ]
 };

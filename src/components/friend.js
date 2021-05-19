@@ -1,12 +1,8 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
 import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
+    NavLink
 } from 'react-router-dom';
-import { cookies, socket, bumpEvent, EventEmitter } from '../App.js';
+import { cookies, socket, bumpEvent } from '../App.js';
 import { get } from '../methods/utility.js';
 import dummyavatar from '../static/greyavatar.jpg';
 

@@ -1,14 +1,10 @@
 import React, { Component } from 'react';
 import SearchForm from './searchform.js';
 import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
+    NavLink
 } from 'react-router-dom';
-import logo from '../static/minireel-dot-com-3.svg'; import heart from '../static/heart.svg'; import history from '../static/history.svg'; import notifications from '../static/notifications.svg'; import profile from '../static/profile.svg'; import upload from '../static/upload.svg'; import greyavatar from '../static/greyavatar.jpg';
+import greyavatar from '../static/greyavatar.jpg';
 import { showMoreOptions, hideOptions, resetOpenMenus } from '../methods/context.js';
-import $ from 'jquery';
 
 // Nav bar with appropriate links to likes, history, minireel home, search film bar, notifications, friends & upload.
 export default class Navbar extends Component {

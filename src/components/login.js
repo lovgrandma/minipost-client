@@ -22,6 +22,7 @@ export default class Login extends Component {
         this.regemail = React.createRef();
         this.regpw = React.createRef();
         this.regpw2 = React.createRef();
+        this.googleSignIn = React.createRef();
     }
 
     componentDidMount() {
@@ -33,6 +34,21 @@ export default class Login extends Component {
             }, 200);
         } else {
             document.querySelector(".register-text").classList.add("register-text-stale", "text-fadein");
+        }
+        this.attemptGoogleSignInBtnLoad();
+    }
+
+    attemptGoogleSignInBtnLoad() {
+        try {
+            if (this.googleSignIn.current) {
+                google.accounts.id.renderButton(this.googleSignIn.current, {
+                    theme: 'outline',
+                    size: 'medium',
+                    logo_alignment: 'center'
+                });
+            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -269,14 +285,14 @@ export default class Login extends Component {
     render() {
         return (
             <div>
-                <div className="minireel-logo-center">
+                <div className="minipost-logo-center">
                     <img className="minipost-register-logo-notext" src={minipostAppLogoNoText} alt="Minireel" draggable="false"></img>
                     <p className="register-text">Watch together</p>
                 </div>
                 <div className={this.state.overlay ? "overlay resetform" : "overlay overlay-hidden resetform"}>
                     <div className="info-blurb-3-thick dark-grey">Reset your password using the form below</div>
                     <div className="form-group">
-                        <input className="form-control" ref={this.resetPassEmail} id="resetpass-email" type="email" name="resetpass-email" placeholder="reset email"></input>
+                        <input className="form-control" ref={this.resetPassEmail} id="resetpass-email" type="email" name="resetpass-email" placeholder="email"></input>
                     </div>
                     <div className="form-group">
                         <input className="form-control" ref={this.resetPassUsername} id="resetpass-username" type="text" name="resetpass-username" placeholder="reset username"></input>
@@ -289,6 +305,7 @@ export default class Login extends Component {
                     }
                 </div>
                 <form className="loginform" refs='loginform' onSubmit={this.props.fetchlogin} noValidate="novalidate">
+                    <p className="weight600">Login</p>
                     <div className="form-group">
                         <input className="form-control" ref='email' id="email" type="email" name="email" placeholder="email"></input>
                         <div id='loginerrorcontainer'><div className='form-error faulty-email' style={{display: 'none'}}>please enter a valid email</div></div>
@@ -305,7 +322,13 @@ export default class Login extends Component {
                     : <div></div>
                     }
                 </form>
+                <div className="third-party-sign-in bottom-thin-dotted">
+                    <div className="google-sign-in-btn-container">
+                        <div className="g_id_signin google-sign-in-btn" ref={this.googleSignIn} data-size="medium" data-logo_alignment="center" data-theme="outline"></div>
+                    </div>
+                </div>
                 <form className="registerform" onSubmit={(e) => {this.props.fetchregister(e)}} noValidate="novalidate">
+                    <p className="weight600">Register</p>
                     <div className="form-group">
                         <input className="form-control" ref={this.username} id="username" type="text" name="username" placeholder="username"></input>
                         <div id='registerusernameerrorcontainer'><div className='form-error faulty-username' style={{display: 'none'}}>username must be between 5 and 22 characters. may contain periods</div></div>

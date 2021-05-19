@@ -261,7 +261,6 @@ html {
 
 body {
     font-family: 'Open Sans', sans-serif;
-
     line-height: 1.2;
 }
 
@@ -303,6 +302,30 @@ button {
     line-height: 0;
     display: block;
     padding: 0;
+}
+
+.third-party-sign-in {
+    text-align: center;
+}
+
+.third-party-sign-in > div {
+    margin-bottom: 15px;
+}
+
+.google-sign-in-btn-container {
+    align-items: center;
+    align-content: center;
+}
+
+.google-sign-in-btn {
+    text-align: center;
+    text-align: -webkit-center;
+    max-width: 195px;
+    margin: 0 auto;
+}
+
+.google-sign-in-btn * {
+    max-width: 195px !important;
 }
 
 .flex {
@@ -1162,7 +1185,7 @@ ul li {
 
 .minireel-logo-center {
     text-align: center;
-    margin-bottom: 17.5%;
+    margin-bottom: 5%;
 }
 
 .register-year {
@@ -1188,6 +1211,7 @@ ul li {
     padding: 5px;
     border-radius: 10px;
     font-weight: 600;
+    border: 1px solid #b1b1b1;
 }
 
 .form-control {
@@ -1204,7 +1228,11 @@ ul li {
 }
 
 .resetform {
-    border-bottom: dotted 3px gray;
+    border-bottom: dotted 1px gray;
+}
+
+.bottom-thin-dotted {
+    border-bottom: dotted 1px gray;
 }
 
 label {
@@ -1381,6 +1409,7 @@ label {
 
 .videodash {
     max-width: 2280px;
+    margin: 0 auto;
 }
 
 .videodash-recommended-header {
@@ -2148,6 +2177,7 @@ label {
     padding-bottom: 8px;
     vertical-align: middle;
     align-items: center;
+    gap: 5px;
 }
 
 .video-stats-videopage {
@@ -5322,6 +5352,10 @@ a code:hover {
     margin-bottom: 5px;
 }
 
+.options-payment-gateway .intl-tel-input.allow-dropdown input {
+    max-height: 24px;
+}
+
 .key-and-value .btn {
     margin-bottom: 0;
 }
@@ -5517,7 +5551,7 @@ a code:hover {
 }
 
 .social-portal-login-prompt {
-    margin-bottom: 5px;
+    margin-bottom: 10px;
     vertical-align: middle;
     line-height: normal;
     border-radius: 15px;
@@ -5704,4 +5738,58 @@ button.profile-menu-link:hover {
 .react-select-add-country-container .react-select__menu,
 .react-select-add-country-container .react-select__menu-list {
     max-height: 145px;
+}
+
+.username-choice {
+    position: fixed;
+    padding: 2.5px;
+    top: -100%;
+    left: 50%;
+    width: -webkit-fill-available;
+    transform: translateX(-50%) translateY(-50%);
+    max-width: 600px;
+    max-height: 200px;
+    object-fit: contain;
+    padding: 25px;
+    border-radius: 15px;
+    z-index: 10;
+    background: white;
+    transition: 200ms;
+}
+
+.username-choice-hidden {
+    top: -100%;
+}
+
+.username-choice-visible {
+    top: 50%;
+}
+
+.username-choice h5 {
+    margin-bottom: 15px;
+}
+
+.select-username-container {
+    text-align: center;
+    display: flex;
+    gap: 5px;
+    justify-content: center;
+}
+
+.select-username-container input {
+    border: 1px solid grey;
+    vertical-align: middle;
+    border-radius: 2.5px;
+}
+
+.cancel-select-username {
+    position: fixed;
+    right: 25px;
+    top: 25px;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+.third-party-margin-username {
+    margin-bottom: 10px !important;
 }

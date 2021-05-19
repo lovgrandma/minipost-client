@@ -1,16 +1,9 @@
 import React, {Component} from 'react';
 import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
+    NavLink
 } from 'react-router-dom';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import Videos from './videos.js'; import ArticlePreview from './articlepreview.js'; import Shop from './shop.js';
 import currentrooturl from '../url';

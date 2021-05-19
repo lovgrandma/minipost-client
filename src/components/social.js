@@ -1,9 +1,14 @@
-import React from 'react';
-import Request from './request.js'; import Friend from './friend.js'; import SearchedUserResults from './searcheduserresults.js'; import NonFriendConversation from './nonfriendconversation.js'; import Sidebarfooter from './sidebarfooter.js';
+import React, { lazy, Suspense } from 'react';
 import angleDoubleLeft from '../static/angle-double-left-solid.svg'; import friendswhite from '../static/friendsWhite.svg'; import nonFriendsWhite from '../static/nonFriendsWhite.svg';
 import {
     Link
 } from 'react-router-dom';
+
+const NonFriendConversation = lazy(() => import('./nonfriendconversation.js'));
+const Friend = lazy(() => import('./friend.js'));
+const Sidebarfooter = lazy(() => import('./sidebarfooter.js'));
+const SearchedUserResults = lazy(() => import('./searcheduserresults.js'));
+const Request = lazy(() => import('./request.js'));
 
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 
@@ -53,13 +58,15 @@ export default function Social(props) { // social prop sp1
                         props.pendingfriendrequests.map ?
                             props.pendingfriendrequests.map(function(request, index) {
                             return (
-                                <Request
-                                userrequest={request.username}
-                                acceptfriendrequest={props.acceptfriendrequest}
-                                revokefriendrequest={props.revokefriendrequest}
-                                key={childCounter}
-                                index={childCounter++}
-                                />
+                                <Suspense fallback={<div className="fallback-loading"></div>}>
+                                    <Request
+                                    userrequest={request.username}
+                                    acceptfriendrequest={props.acceptfriendrequest}
+                                    revokefriendrequest={props.revokefriendrequest}
+                                    key={childCounter}
+                                    index={childCounter++}
+                                    />
+                                </Suspense>
                             )
                         })
                     : <div></div> : <div></div>
@@ -137,19 +144,21 @@ export default function Social(props) { // social prop sp1
                                 }
 
                                 return (
-                                    <SearchedUserResults searcheduser={searcheduser.username}
-                                    searchtotal={props.searchusers[0].length}
-                                    key={childCounter}
-                                    index={childCounter++}
-                                    sendfriendrequest={props.sendfriendrequest}
-                                    acceptfriendrequest={props.acceptfriendrequest}
-                                    revokefriendrequest={props.revokefriendrequest}
-                                    alreadypending={alreadypending}
-                                    requestwaiting={requestwaiting}
-                                    alreadyfriends={alreadyfriends}
-                                    yourself={yourself}
-                                    beginchat={props.beginchat}
-                                    />
+                                    <Suspense fallback={<div className="fallback-loading"></div>}>
+                                        <SearchedUserResults searcheduser={searcheduser.username}
+                                        searchtotal={props.searchusers[0].length}
+                                        key={childCounter}
+                                        index={childCounter++}
+                                        sendfriendrequest={props.sendfriendrequest}
+                                        acceptfriendrequest={props.acceptfriendrequest}
+                                        revokefriendrequest={props.revokefriendrequest}
+                                        alreadypending={alreadypending}
+                                        requestwaiting={requestwaiting}
+                                        alreadyfriends={alreadyfriends}
+                                        yourself={yourself}
+                                        beginchat={props.beginchat}
+                                        />
+                                    </Suspense>
                                 )
 
                             })
@@ -195,26 +204,28 @@ export default function Social(props) { // social prop sp1
                             }
 
                             return (
-                                <Friend username={props.username}
-                                friend={friend.username}
-                                friendstotal={props.friends.length}
-                                cloud={props.cloud}
-                                avatarurl = {friend.avatarurl}
-                                key={childCounter}
-                                index={childCounter++}
-                                conversation = {convo}
-                                beginchat={props.beginchat}
-                                revokefriendrequest={props.revokefriendrequest}
-                                friendchatopen={props.friendchatopen}
-                                updatefriendchatopen={props.updatefriendchatopen}
-                                typing={typing}
-                                bump={props.bump}
-                                requestTogetherSession={props.requestTogetherSession}
-                                waitingTogetherConfirm={props.waitingTogetherConfirm}
-                                waitingSessions={props.waitingSessions}
-                                acceptTogetherSession={props.acceptTogetherSession}
-                                togetherToken={props.togetherToken}
-                                />
+                                <Suspense fallback={<div className="fallback-loading"></div>}>
+                                    <Friend username={props.username}
+                                    friend={friend.username}
+                                    friendstotal={props.friends.length}
+                                    cloud={props.cloud}
+                                    avatarurl = {friend.avatarurl}
+                                    key={childCounter}
+                                    index={childCounter++}
+                                    conversation = {convo}
+                                    beginchat={props.beginchat}
+                                    revokefriendrequest={props.revokefriendrequest}
+                                    friendchatopen={props.friendchatopen}
+                                    updatefriendchatopen={props.updatefriendchatopen}
+                                    typing={typing}
+                                    bump={props.bump}
+                                    requestTogetherSession={props.requestTogetherSession}
+                                    waitingTogetherConfirm={props.waitingTogetherConfirm}
+                                    waitingSessions={props.waitingSessions}
+                                    acceptTogetherSession={props.acceptTogetherSession}
+                                    togetherToken={props.togetherToken}
+                                    />
+                                </Suspense>
                             )
                         })
                     : <div></div>
@@ -248,28 +259,32 @@ export default function Social(props) { // social prop sp1
 
                             if (!conversationOfFriends()) { // if this conversation has a user that is not listed in friends list
                                  return (
-                                    <NonFriendConversation username={props.username}
-                                     otheruserchatopen={props.otheruserchatopen}
-                                     key={childCounter}
-                                     index={childCounter++}
-                                     conversation={conversation}
-                                     updateotheruserchatopen={props.updateotheruserchatopen}
-                                     beginchat={props.beginchat}
-                                     pendingfriendrequests={props.pendingfriendrequests}
-                                     acceptfriendrequest={props.acceptfriendrequest}
-                                     revokefriendrequest={props.revokefriendrequest}
-                                     fetchusers={props.fetchusers}
-                                     searchforminput={props.searchforminput}
-                                     />
+                                    <Suspense fallback={<div className="fallback-loading"></div>}>
+                                        <NonFriendConversation username={props.username}
+                                        otheruserchatopen={props.otheruserchatopen}
+                                        key={childCounter}
+                                        index={childCounter++}
+                                        conversation={conversation}
+                                        updateotheruserchatopen={props.updateotheruserchatopen}
+                                        beginchat={props.beginchat}
+                                        pendingfriendrequests={props.pendingfriendrequests}
+                                        acceptfriendrequest={props.acceptfriendrequest}
+                                        revokefriendrequest={props.revokefriendrequest}
+                                        fetchusers={props.fetchusers}
+                                        searchforminput={props.searchforminput}
+                                        />
+                                    </Suspense>
                                  )
                             }
                         }) : <div></div>
                     :<div></div>
                 }
             </div>
-            <Sidebarfooter username={props.username}
-            logout={props.fetchlogout}
-            />
+            <Suspense fallback={<div className="fallback-loading"></div>}>
+                <Sidebarfooter username={props.username}
+                logout={props.fetchlogout}
+                />
+            </Suspense>
         </div>
     )
 }

@@ -65,10 +65,15 @@ export const addOneProductToCart = async (product, userShippingData) => {
         let username = cookies.get('loggedIn');
         let hash = cookies.get('hash');
         let self = true;
-        if (username && !userShippingData.hasOwnProperty("country")) {
+        if (username && !userShippingData) {
+            return {
+                error: "Please add shipping data to your account before adding products. Click here to update your shipping info. If you've already updated your shipping data and you're seeing this message please refresh",
+                action: "shipping data input"
+            }
+        } else if (username && !userShippingData.hasOwnProperty("country")) {
             // User is logged in but their shipping data is not set
             return {
-                error: "Please add shipping data to your account before adding products. Click here to update your shipping info",
+                error: "Please add shipping data to your account before adding products. Click here to update your shipping info. If you've already updated your shipping data and you're seeing this message please refresh",
                 action: "shipping data input"
             }
         }

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { cookies, socket } from '../App.js';
+import { cookies } from '../App.js';
 import {
     Link
 } from 'react-router-dom';
@@ -11,9 +11,9 @@ import corsdefault from '../cors.js';
 export default class Results extends Component {
     constructor(props) {
         super(props);
-        this.state = { content: [], query: "", loaded: false
-
-                     }
+        this.state = { 
+            content: [], query: "", loaded: false
+        }
     }
 
     componentDidMount() {

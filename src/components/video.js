@@ -1,6 +1,5 @@
-import React, { Component } from 'react';
-import RelatedPanel from './relatedpanel.js';
-import SocialVideoMeta from './socialvideometa.js';
+import React, { Component, Suspense } from 'react';
+import loadable from '@loadable/component';
 import {
     NavLink,
     Link
@@ -27,6 +26,9 @@ const EventEmitter = require('events');
 const shakaAddonButtons = require('../addons/shaka/addonbuttons.js');
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
+
+const RelatedPanel = loadable(() => import('./relatedpanel.js'));
+const SocialVideoMeta = loadable(() => import('./socialvideometa.js'));
 
 export default class Video extends Component {
     constructor(props) {
@@ -679,9 +681,13 @@ export default class Video extends Component {
                 let manifestUri = manifest;
 
                 // Before a video plays, you must check if an advertisement must run or not, whether or not (how much) ads must run within the video or at the end after completing. Ad played 10 minutes ago or user watched 5 videos since?
-                let adRun = await this.props.playlist.checkAdSetup();
+                let adRun = null;
+                let vidsWatched = 0;
+                if (this.props.playlist) {
+                    adRun = await this.props.playlist.checkAdSetup();
+                    vidsWatched = this.props.playlist.playlistVidsWatched;
+                }
                 let xMinutesAgo = new Date().getTime() - 1000*60*14; // 14 minutes ago
-                let vidsWatched = this.props.playlist.playlistVidsWatched;
 
                 this.determineIfAdStartOrAdEndWaiting(adRun, xMinutesAgo, vidsWatched);
                 // Return array of times to play ad on this video. store. This will be retrieved from server from original fetch video data request
@@ -1326,7 +1332,9 @@ export default class Video extends Component {
                                 : null : null
                             }
                         </div>
-                        <SocialVideoMeta friendsWatched={this.state.friendsWatched} cloud={this.state.cloud} />
+                        <Suspense fallback={<div className="fallback-loading"></div>}>
+                            <SocialVideoMeta friendsWatched={this.state.friendsWatched} cloud={this.state.cloud} />
+                        </Suspense>
                         <div className='responses'>responses</div>
                         <div className={this.state.articleResponses ? this.state.articleResponses.length > 0 ? "articles-bar" : "articles-bar hidden no-margin-no-padding" : "articles-bar hidden no-margin-no-padding"}>
                             <div className='article-container-header'>{this.state.articleResponses ? this.state.articleResponses.length > 0 ? "Articles" : null : null}</div>
@@ -1414,19 +1422,23 @@ export default class Video extends Component {
                                 </div>
                             </div>
                         </div>
-                        <RelatedPanel content={this.state.mpd}
-                            contentType='video'
-                            title={this.state.title}
-                            cloud={this.state.cloud}
-                            secondary={true}
-                            />
+                        <Suspense fallback={<div className="fallback-loading"></div>}>
+                            <RelatedPanel content={this.state.mpd}
+                                contentType='video'
+                                title={this.state.title}
+                                cloud={this.state.cloud}
+                                secondary={true}
+                                />
+                        </Suspense>
                     </div>
                 </div>
-                <RelatedPanel content={this.state.mpd}
-                    contentType='video'
-                    title={this.state.title}
-                    cloud={this.state.cloud}
-                    />
+                <Suspense fallback={<div className="fallback-loading"></div>}>
+                    <RelatedPanel content={this.state.mpd}
+                        contentType='video'
+                        title={this.state.title}
+                        cloud={this.state.cloud}
+                        />
+                </Suspense>
             </div>
         )
     }

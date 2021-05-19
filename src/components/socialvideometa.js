@@ -1,9 +1,6 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
+    NavLink
 } from 'react-router-dom';
 import dummyavatar from '../static/greyavatar.jpg';
 

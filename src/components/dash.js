@@ -3,7 +3,8 @@
 @author Jesse Thompson
 Appends videos to user dash */
 
-import React, { Component } from 'react';
+import React, { Component, Suspense } from 'react';
+import loadable from '@loadable/component';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url.js';
@@ -13,6 +14,8 @@ import {
 } from 'react-bootstrap';
 import { cookies, localEvents } from '../App.js';
 import corsdefault from '../cors.js';
+
+const DashHello = loadable(() => import('./dynamic/dash-hello.js'));
 
 export default class Dash extends Component {
     constructor(props) {
@@ -118,7 +121,6 @@ export default class Dash extends Component {
                 }
             }
             let hash = cookies.get('hash');
-            console.log(username, hash);
             fetch(currentrooturl + 'm/serveVideos', {
                 method: "POST",
                 headers: {
@@ -204,6 +206,9 @@ export default class Dash extends Component {
                     !this.props.username && !this.state.closeSocialPrompt ? <div className="flex flex-start social-portal-login-prompt"><div className="material-icons arrow-back-login" onClick={(e) => {this.eventEmitOpenSideBar(e)}}>arrow_back</div><div className="info-blurb" onClick={(e) => {this.eventEmitOpenSideBar(e)}}>You're not logged in, to log in click on the bar on the left to open the social portal</div><div className="social-portal-times" onClick={(e)=>{this.setCloseSocialPrompt(e)}}>&times;</div></div>
                     : null
                 }
+                <Suspense fallback={<div className="fallback-loading"></div>}>
+                    <DashHello {...this.props} cloud={this.props.cloud} />
+                </Suspense>
                 <h5 className="videodash-recommended-header">Recommended</h5>
                 <div className='flex-grid videogrid'>
                     {

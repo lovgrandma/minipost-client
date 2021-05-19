@@ -1,22 +1,14 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
 import currentrooturl from '../url';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import {
-    BrowserRouter,
-    Route,
     NavLink,
     Link
 } from 'react-router-dom';
-import io from "socket.io-client";
-import {v4 as uuidv4 } from 'uuid';
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
 import { setReplyData } from '../methods/responses.js';

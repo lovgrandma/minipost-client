@@ -1,32 +1,26 @@
-import React, { Component } from 'react';
+/* global google */
+import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import axios from 'axios';
+import loadable from '@loadable/component';
 import csshake from 'csshake';
-import Login from './components/login.js'; import Sidebarfooter from './components/sidebarfooter.js'; import SearchForm from './components/searchform.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import SearchedUserResults from './components/searcheduserresults.js'; import NonFriendConversation from './components/nonfriendconversation.js'; import Request from './components/request.js'; import Dash from './components/dash.js'; import Videos from './components/videos.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Friend from './components/friend.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Social from './components/social.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js';
-import { Switch } from 'react-router';
+import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js';
 import {
-    BrowserRouter,
-    Route,
-    NavLink
+    Route
 } from 'react-router-dom';
-import { instanceOf } from 'prop-types';
 import Cookies from 'universal-cookie';
-import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import close from './static/close.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg';
+import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg';
 import { updateNotif } from './methods/history.js';
 import './videoplayer.css';
 import 'shaka-player/dist/controls.css';
 
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import $ from 'jquery';
 import lzw from './compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
 import { hideOptions } from './methods/context.js';
+import jwt_decode from 'jwt-decode';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
@@ -51,6 +45,9 @@ const cookies = new Cookies();
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
+const Login = loadable(() => import('./components/login.js'));
+const Social = loadable(() => import('./components/social.js'));
+
 
 // Main Application file
 
@@ -64,7 +61,7 @@ class Socialbar extends Component { // Main social entry point sb1
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null, verifyerror: null,
                       friendsopen: true, nonfriendsopen: false,
-                      response: false, endpoint: proxyurl,
+                      response: false, endpoint: proxyurl, googleSignInError: '', usernameChoicePortal: false,
                       typing: [], darkmode: false, verifyinfo: "", useravatar: ""
                      }
         
@@ -75,6 +72,7 @@ class Socialbar extends Component { // Main social entry point sb1
         this.sidebar = React.createRef();
         this.sidebarx = React.createRef();
         this.sidebarcontainer = React.createRef();
+        this.usernameChoiceSelect = React.createRef();
     }
     
     componentDidMount(e) {
@@ -92,6 +90,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (this.props.cloud) {
             //this.props.setCloud();
         }
+        this.setupGoogleSignIn();
         localEvents.on("openSideBar", () => { this.openSideBar() });
     };
         
@@ -451,50 +450,55 @@ class Socialbar extends Component { // Main social entry point sb1
     * @return {none}
     */
     fetchlogin = (e) => {
-        e.preventDefault();
-        let email = document.getElementById('email').value;
-        let password = document.getElementById("pw").value;
-        fetch(currentrooturl + 'm/login', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            mode: 'cors',
-            credentials: corsdefault,
-            body: JSON.stringify({
-                email, password
+        try {
+            e.preventDefault();
+            this.setGoogleSignInErrorState();
+            let email = document.getElementById('email').value;
+            let password = document.getElementById("pw").value;
+            fetch(currentrooturl + 'm/login', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                mode: 'cors',
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    email, password
+                })
             })
-        })
-        .then((response) => {
-            return response.json(); // Parsed data
-        })
-        .then((data) => {
-            this.setState({ registererror: null });
-            this.setState({ loginerror: null });
-            if (data.querystatus== "loggedin" && data.username && data.hash) {
-                cookies.set('hash', data.hash); // Set hash first as features do not run without hash
-                cookies.set('loggedIn', data.username);
-            }
-            if (data.error) {
-                console.log(data.error);
-                console.log(data.type);
-                this.setState({ loginerror: {error: data.error, type: data.type }});
-            }
-            return data;
-        })
-        .then((data) => {
-            if (cookies.get('loggedIn')) {
-                this.getfriends();
-                this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
-            }
-            if (data.querystatus == "loggedin") {
-                this.props.updateLogin(data.username);
-            }
-        })
-        .catch(error => { 
-            console.log(error);
-        })
+            .then((response) => {
+                return response.json(); // Parsed data
+            })
+            .then((data) => {
+                this.setState({ registererror: null });
+                this.setState({ loginerror: null });
+                if (data.querystatus== "loggedin" && data.username && data.hash) {
+                    cookies.set('hash', data.hash); // Set hash first as features do not run without hash
+                    cookies.set('loggedIn', data.username);
+                }
+                if (data.error) {
+                    console.log(data.error);
+                    console.log(data.type);
+                    this.setState({ loginerror: {error: data.error, type: data.type }});
+                }
+                return data;
+            })
+            .then((data) => {
+                if (cookies.get('loggedIn')) {
+                    this.getfriends();
+                    this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+                }
+                if (data.querystatus == "loggedin") {
+                    this.props.updateLogin(data.username);
+                }
+            })
+            .catch(error => { 
+                console.log(error);
+            })
+        } catch (err) {
+             // Fail silently
+        }
     }
 
     /**
@@ -508,6 +512,7 @@ class Socialbar extends Component { // Main social entry point sb1
         try {
             this.setState({ registererror: null });
             this.setState({ loginerror: null });
+            this.setGoogleSignInErrorState();
             let username = document.getElementById("username").value;
             let regemail = document.getElementById("regemail").value;
             let self = true;
@@ -553,76 +558,87 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     fetchVerify = (e, verif, email, username) => {
-        e.preventDefault(e);
-        if (verif && email && username) {
-            if (verif.current && email.current && username.current) {
-                if (verif.current.value && email.current.value && username.current.value) {
-                    const verification = verif.current.value;
-                    const emailVal = email.current.value;
-                    const usernameVal = username.current.value;
-                    fetch(currentrooturl + 'm/verify', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: corsdefault,
-                        body: JSON.stringify({
-                            verification, emailVal, usernameVal
+        try {
+            e.preventDefault(e);
+            this.setGoogleSignInErrorState();
+            if (verif && email && username) {
+                if (verif.current && email.current && username.current) {
+                    if (verif.current.value && email.current.value && username.current.value) {
+                        const verification = verif.current.value;
+                        const emailVal = email.current.value;
+                        const usernameVal = username.current.value;
+                        fetch(currentrooturl + 'm/verify', {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: corsdefault,
+                            body: JSON.stringify({
+                                verification, emailVal, usernameVal
+                            })
                         })
-                    })
-                    .then((response) => {
-                        return response.json(); // Parsed data
-                    })
-                    .then((data) => {
-                        if (data.querystatus== "loggedin" && data.username ) {
-                            cookies.set('hash', data.hash); // Set hash first as features do not run without hash
-                            cookies.set('loggedIn', data.username);
-                            this.setState({ isLoggedIn: data.user });
-                            this.setState({ verifyerror: null });
-                        }
-                        if (data.error) {
-                            this.setState({ verifyerror: {error: data.error, type: data.type }});
-                        }
-                        return data;
-                    })
-                    .then((data) => {
-                        if (cookies.get('loggedIn') && data.querystatus) {
-                            this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
-                            this.props.updateLogin(data.username);
-                        }
-                        this.getfriends();
-                        return data;
-                    })
-                    .catch(error => { console.log(error); })
+                        .then((response) => {
+                            return response.json(); // Parsed data
+                        })
+                        .then((data) => {
+                            if (data.querystatus== "loggedin" && data.username ) {
+                                cookies.set('hash', data.hash); // Set hash first as features do not run without hash
+                                cookies.set('loggedIn', data.username);
+                                this.setState({ isLoggedIn: data.user });
+                                this.setState({ verifyerror: null });
+                            }
+                            if (data.error) {
+                                this.setState({ verifyerror: {error: data.error, type: data.type }});
+                            }
+                            return data;
+                        })
+                        .then((data) => {
+                            if (cookies.get('loggedIn') && data.querystatus) {
+                                this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+                                this.props.updateLogin(data.username);
+                            }
+                            this.getfriends();
+                            return data;
+                        })
+                        .catch(error => { console.log(error); })
+                    }
                 }
             }
+        } catch (err) {
+            // Fail silently
         }
     }
 
     fetchlogout(e) {
-        cookies.remove('loggedIn', { path: '/' });
-        cookies.remove('user', { path: '/' });
-        cookies.remove('hash', { path: '/' });
-        fetch(currentrooturl + 'm/logout', {
-                method: "GET",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: corsdefault
-            })
-            .then(function(response) {
-                return response.json(); // You parse the data into a useable format using `.json()`
-            })
-            .then(function(data) { // `data` is the parsed version of the JSON returned from the above endpoint.
-                this.setState({ isLoggedIn: "",
-                              friends: [] });
-                this.props.history.push('/');
-                return data;
-            })
-            .catch(error => { console.log(error);
-            })
+        try {
+            cookies.remove('loggedIn', { path: '/' });
+            cookies.remove('user', { path: '/' });
+            cookies.remove('hash', { path: '/' });
+            this.setGoogleSignInErrorState();
+            fetch(currentrooturl + 'm/logout', {
+                    method: "GET",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault
+                })
+                .then(function(response) {
+                    return response.json(); // You parse the data into a useable format using `.json()`
+                })
+                .then(function(data) { // `data` is the parsed version of the JSON returned from the above endpoint.
+                    this.signOutThirdParty(); // Will logout of third party apps
+                    this.setState({ isLoggedIn: "",
+                                friends: [] });
+                    this.props.history.push('/');
+                    return data;
+                })
+                .catch(error => { console.log(error);
+                })
+        } catch (err) {
+            // Fail silently
+        }
     }
     
     closeSideBar() {
@@ -1245,19 +1261,181 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    // Covers sign out for both google and apple id
+    signOutThirdParty = () => {
+        try {
+            google.accounts.id.disableAutoSelect(); // Will ensure signout with google
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    setGoogleSignInErrorState(data = null) {
+        this.setState({ googleSignInError: "" });
+    }
+
+    onOneTapSignedInGoogle = async (googleResponse, proposedUsername = null) => {
+        try {
+            this.setState({ googleSignInError: null });
+            if (googleResponse) {
+                const decodedToken = jwt_decode(googleResponse.credential);
+                // make request to server to check if account has been created with user google email, if no? Ask user to choose username with slide in portal. 
+                // Logout (this.signOutThirdParty) everytime error is recieved even if asking to choose new username, as long as user does not have username they are officially not signed in
+                // Once they have a good username retain sign in session, do not call this.signOutThirdParty
+                return await fetch(currentrooturl + 'm/logingoogle', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        googleResponse, decodedToken, proposedUsername
+                    })
+                })
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((data) => {
+                    console.log(data);
+                    if (data) {
+                        if (data.error || !data.user) {
+                            this.signOutThirdParty(); // Not valid sign up yet, signout again until issues resolved
+                            cookies.remove('loggedIn', { path: '/' });
+                            cookies.remove('user', { path: '/' });
+                            cookies.remove('hash', { path: '/' });
+                            if (data.error == "Requires unique username" || data.error == "Proposed username not available" || data.error == "Choose a username to continue on Minipost" ) {
+                                if (data.data) {
+                                    this.setState({ googleData: data.data, usernameChoicePortal: true, googleSignInError: data.error });
+                                } else {
+                                    this.setState({ googleSignInError: "Failed to sign in with google" });
+                                }   
+                                // Open new username input portal or Bump once if already open (bad/nonunique username)
+                            } else {
+                                this.setState({ googleSignInError: "Failed to sign in with google" });
+                            }
+                        } else {
+                            // if no error then success, log user in with google credentials and assign username as loggedIn cookie
+                            this.setState({ googleData: null, usernameChoicePortal: false });
+                            cookies.set('hash', data.hash );
+                            cookies.set('loggedIn', data.user.username);
+                            return data.user.username;
+                        }
+                    } else {
+                        return false;
+                    }
+                })
+                .then((username) => {
+                    if (username) {
+                        this.getfriends();
+                        this.setState({ isLoggedIn: (cookies.get('loggedIn'))});
+                        this.props.updateLogin(username);
+                    }
+                    return false;
+                })
+                .catch((err) => {
+                    this.signOutThirdParty();
+                    return false;
+                });
+            } else {
+                this.setState({ googleSignInError: "Failed to sign in with google" });
+            }
+        } catch (err) {
+            this.signOutThirdParty();
+            this.setState({ googleSignInError: "Failed to sign in with google" });
+        }
+    }
+
+    trySelectUsername(e, type = "google") {
+        try {
+            if (this.usernameChoiceSelect) {
+                if (type == "google") {
+                    if (this.usernameChoiceSelect.current && this.state.googleData) {
+                        if (this.usernameChoiceSelect.current.value) {
+                            return this.onOneTapSignedInGoogle(this.state.googleData, this.usernameChoiceSelect.current.value);
+                        }
+                    }
+                }
+            } 
+            return false;
+        } catch (err) {
+            console.log(err);
+            return false;
+        }
+    }
+
+    setupGoogleSignIn = () => {
+        this.setGoogleSignInErrorState();
+        // this.signOutThirdParty();
+        function tryLoadGoogle() {
+            const script = document.createElement('script');
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.onload = buildGoogleSignOn();
+            script.async = true;
+            document.querySelector('body').appendChild(script);
+        }
+
+        let buildGoogleSignOn = () => {
+            google.accounts.id.initialize({
+                client_id: '169701902623-9a74mqcbqr38uj87qm8tm3190cicaa7m.apps.googleusercontent.com',
+                callback: this.onOneTapSignedInGoogle
+            });
+            if (!cookies.get('loggedIn')) { // Prompt user to login only if they are not logged in. If the user is logged in then there is no point in asking them to sign in
+                google.accounts.id.prompt(notification => {
+                    console.log('on prompt notification', notification);
+                });
+            }
+        }
+
+        try {
+            // Average expiry for google sign in seems to be 5 days
+            if (!google) {
+                tryLoadGoogle();
+            } else {
+                buildGoogleSignOn();
+            }
+        } catch (err) {
+            // Sometimes google doesn't load immediately
+        }
+    }
+    
+    cancelNewThirdPartyUser() {
+        try {
+            this.setState({ googleData: null, usernameChoicePortal: false });
+            this.signOutThirdParty();
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
         let sidebar;
         
         const isLoggedIn = this.state.isLoggedIn;
         if (!isLoggedIn) {
-            sidebar = <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} setRegisterErr={this.setRegisterErr} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar}
+            sidebar = 
+            <Suspense fallback={<div className="fallback-loading"></div>}>
+                <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} setRegisterErr={this.setRegisterErr} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar}
             submitResetPass={this.submitResetPass} resetPassData={this.state.resetPassData} />
+            </Suspense>
         } else {
-            sidebar = <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump={this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />
+            sidebar = 
+            <Suspense fallback={<div className="fallback-loading"></div>}>
+                <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump={this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />
+            </Suspense>
         }
             
         return (
             <div ref={this.sidebarcontainer}>
+                <div className={this.state.usernameChoicePortal ? "username-choice grey-out username-choice-visible" : "username-choice grey-out username-choice-hidden"}>
+                    <h5>Select a username for your account:</h5>
+                    <div className={this.state.googleSignInError ? "err-status err-status-active third-party-margin-username" : "err-status err-status-hidden third-party-margin-username"}>{this.state.googleSignInError}</div>
+                    <div className="select-username-container">
+                        <input type="text" placeholder="Username" ref={this.usernameChoiceSelect}></input>
+                        <Button className="submit-new-username-btn" onClick={(e) => {this.trySelectUsername(e, "google")}}>Choose</Button>
+                    </div>
+                    <div className="cancel-select-username" onClick={(e) => {this.cancelNewThirdPartyUser()}}>&times;</div>
+                </div>
                 <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} togetherToken={this.props.togetherToken} sendCloseTogetherSession={this.props.sendCloseTogetherSession} useravatar={this.state.useravatar} cloud={this.props.cloud} />
                 <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
                     {
@@ -1342,8 +1520,7 @@ class App extends Component {
             this.doLogout();
         }
     }
-    
-    
+
     /**
     * Determines if user is authenticated or not and logs out, signals to prevent further authenticated operations on client
     *
@@ -1351,15 +1528,20 @@ class App extends Component {
     * @return {Boolean} True for good, false for user has been logged out, disauthenticated, prevent further operations
     */
     checkAndConfirmAuthentication = (data) => {
-        if (data) {
-            if (data.action) {
-                if (data.action == "logout") {
-                    this.doLogout();
-                    return false;
+        try {
+            if (data) {
+                if (data.action) {
+                    if (data.action == "logout") {
+                        this.doLogout();
+                        google.accounts.id.disableAutoSelect(); // Will ensure signout with google
+                        return false;
+                    }
                 }
             }
+            return true;
+        } catch (err) {
+            return true;
         }
-        return true;
     }
     
     doLogout = () => {
@@ -1387,30 +1569,30 @@ class App extends Component {
     */
     fetchCloudUrl = async () => {
         return await fetch(currentrooturl + 'm/fetchcloudfronturl', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: corsdefault,
-                    body: JSON.stringify({
-                        
-                    })
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    
                 })
-                .then((response) => {
-                    return response.json();
-                })
-                .then((data) => {
-                    if (data) {
-                        if (data.querystatus != 'err') {
-                            this.setCloud(data.querystatus);
-                            return data.querystatus;
-                        }
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((data) => {
+                if (data) {
+                    if (data.querystatus != 'err') {
+                        this.setCloud(data.querystatus);
+                        return data.querystatus;
                     }
-                })
-                .catch((err) => {
-                    // Fail silently  
-                });
+                }
+            })
+            .catch((err) => {
+                // Fail silently  
+            });
     }
 
     updateLogin = (username) => {
@@ -1574,22 +1756,30 @@ class App extends Component {
     
     // Will recover together session from refresh and create ping interval check
     createTogetherPingInterval = (togetherToken = null) => {
-        if (cookies.get('loggedIn')) {
-            if (cookies.get('togetherToken') || togetherToken) {
-                if (cookies.get('togetherToken')) {
-                    togetherToken = cookies.get('togetherToken');
-                }
-                this.setState({ togetherToken: togetherToken });
-                let intervalTogetherToken = togetherToken;
-                if (togetherToken.lastping > new Date().getTime() - 1000*60 ) {
-                    let interval = setInterval(() => {
-                        if (this.state.togetherToken.lastping) {
-                            if (this.state.togetherToken.lastping > new Date().getTime() - 1000*60 && socket) {
-                                intervalTogetherToken.from = cookies.get('loggedIn');
-                                try {
-                                    socket.emit('marcoCheck', intervalTogetherToken);
-                                } catch (err) {
-                                    // Socket was undefined
+        try {
+            if (cookies.get('loggedIn')) {
+                if (cookies.get('togetherToken') || togetherToken) {
+                    if (cookies.get('togetherToken')) {
+                        togetherToken = cookies.get('togetherToken');
+                    }
+                    this.setState({ togetherToken: togetherToken });
+                    let intervalTogetherToken = togetherToken;
+                    if (togetherToken.lastping > new Date().getTime() - 1000*60 ) {
+                        let interval = setInterval(() => {
+                            if (this.state.togetherToken.lastping) {
+                                if (this.state.togetherToken.lastping > new Date().getTime() - 1000*60 && socket) {
+                                    intervalTogetherToken.from = cookies.get('loggedIn');
+                                    try {
+                                        socket.emit('marcoCheck', intervalTogetherToken);
+                                    } catch (err) {
+                                        // Socket was undefined
+                                    }
+                                } else {
+                                    cookies.remove('togetherToken');
+                                    if (this.state.togetherInterval) {
+                                        clearInterval(this.state.togetherInterval);
+                                    }
+                                    this.setState({ togetherToken: null });
                                 }
                             } else {
                                 cookies.remove('togetherToken');
@@ -1598,24 +1788,20 @@ class App extends Component {
                                 }
                                 this.setState({ togetherToken: null });
                             }
-                        } else {
-                            cookies.remove('togetherToken');
-                            if (this.state.togetherInterval) {
-                                clearInterval(this.state.togetherInterval);
-                            }
-                            this.setState({ togetherToken: null });
+                        }, 10000, intervalTogetherToken, socket);
+                        this.setState({ togetherInterval: interval });
+                    } else {
+                        cookies.remove('togetherToken');
+                        if (this.state.togetherInterval) {
+                            clearInterval(this.state.togetherInterval);
                         }
-                    }, 10000, intervalTogetherToken, socket);
-                    this.setState({ togetherInterval: interval });
-                } else {
-                    cookies.remove('togetherToken');
-                    if (this.state.togetherInterval) {
-                        clearInterval(this.state.togetherInterval);
+                        this.setState({ togetherToken: null });
                     }
-                    this.setState({ togetherToken: null });
                 }
             }
-        }
+        } catch (err) {
+            return; // Fail silently
+        }  
     }
     
     updateLastPing = (data) => {
@@ -1710,7 +1896,6 @@ class App extends Component {
     }
     
     sendImpression = (data) => {
-        console.log(cookies.get('loggedIn'), data);
         if (socket) {
             socket.emit('sendImpression', data);
         }
@@ -1783,7 +1968,7 @@ class App extends Component {
                             <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/options' render={(props) => (
-                            <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} getfriends={this.getfriends} />
                         )}/>
                         <Route path='/upload' render={(props) => (
                             <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />

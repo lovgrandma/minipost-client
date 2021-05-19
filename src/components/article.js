@@ -1,7 +1,5 @@
 import React, {Component} from 'react';
 import {
-    BrowserRouter,
-    Route,
     NavLink,
     Link
 } from 'react-router-dom';

@@ -1,24 +1,11 @@
 import React, { Component, useMemo } from 'react';
-import {
-    BrowserRouter,
-    Route,
-    NavLink,
-    Link
-} from 'react-router-dom';
 import Select from 'react-select';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Dropdown,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import countryList from 'react-select-country-list';
 import currentshopurl from '../shopurl.js';
-import Product from './product.js'; import ShippingClassSetup from './shippingclasssetup.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 
 import { cookies, socket } from '../App.js';

@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import angleDoubleLeft from '../static/angle-double-left-solid.svg'; import circlemenulight from '../static/circlemenulight.svg'; import profile from '../static/profile.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import subscribe from '../static/subscribe.svg'; import heart from '../static/heart.svg';
+import circlemenulight from '../static/circlemenulight.svg'; import profile from '../static/profile.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import subscribe from '../static/subscribe.svg'; import heart from '../static/heart.svg';
 import TextareaAutosize from 'react-textarea-autosize'; import sendarrow from '../static/sendarrow.svg'; import chatblack from '../static/chat-black.svg';
 
 export default class SearchedUserResults extends Component { // search user component sup1

@@ -1,14 +1,16 @@
 import React, { Component } from 'react';
+import loadable from '@loadable/component';
 import currentrooturl from '../url.js';
 import {
     Button
 } from 'react-bootstrap';
-import Videos from './videos.js';
-import ArticlePreview from './articlepreview.js';
 import { resolveString, checkAtBottom, shuffleArray, getNumber } from '../methods/utility.js';
 import placeholderRelated from '../placeholder/relatedobjects.js';
 import $ from 'jquery';
 import corsdefault from '../cors.js';
+
+const ArticlePreview = loadable(() => import('./articlepreview.js'));
+const Videos = loadable(() => import('./videos.js'));
 
 export default class RelatedPanel extends Component {
     constructor(props) {

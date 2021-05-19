@@ -1,13 +1,7 @@
 import React, { Component } from 'react';
-import ReactDOM from 'react-dom';
-import { cookies, socket } from '../App.js';
 import {
-    BrowserRouter,
-    Route,
-    NavLink,
     Link
 } from 'react-router-dom';
-import parseBody from '../methods/htmlparser.js';
 import currentrooturl from '../url.js';
 import { convertDate } from '../methods/utility.js';
 import greythumb from '../static/greythumb.jpg';

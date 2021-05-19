@@ -1,23 +1,17 @@
 import React, { Component } from 'react';
-import { CarouselProvider, Slider, Slide, ButtonBack, ButtonNext, Image, Dot, ImageWithZoom } from 'pure-react-carousel';
+import { CarouselProvider, Slider, Slide, Image, Dot, ImageWithZoom } from 'pure-react-carousel';
 import {
     NavLink
 } from 'react-router-dom';
 import 'pure-react-carousel/dist/react-carousel.es.css';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Dropdown,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import Checkout from './checkout.js';
 import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowCircleLeft, faArrowCircleRight, faCartPlus, faShoppingCart } from '@fortawesome/free-solid-svg-icons';
 import { cookies } from '../App.js';
 import { checkoutNowWithCurrentCartItems, prepareCheckoutWithCurrentCartItems, addOneProductToCart } from '../methods/ecommerce.js';
 

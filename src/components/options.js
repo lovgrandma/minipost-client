@@ -398,6 +398,7 @@ export default class Options extends Component {
             .then((result) => {
                 if (result.data && result.querystatus) {
                     this.setState({ shippingSuccess: result.querystatus });
+                    this.props.getfriends(); // Refresh and get new shipping data
                 } else if (result.error) {
                     this.setState({ shippingError: result.error });
                 }
@@ -477,15 +478,12 @@ export default class Options extends Component {
                     </div>
                     <div className="key-and-value">
                         <div className="grey-out">
-                            <div className="form-group">
-                                <IntlTelInput
-                                containerClassName="intl-tel-input"
-                                inputClassName="form-control"
-                                fieldName="intl-input"
-                                ref={this.phone} fieldId="phonein" name="phonein" placeholder="phone #"
-                                />
-                                <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-phone-register' style={{display: 'none'}}>registration requires a valid phone number. Please make sure to select your country</div></div>
-                            </div>
+                            <IntlTelInput
+                            containerClassName="intl-tel-input"
+                            inputClassName="form-control"
+                            fieldName="intl-input"
+                            ref={this.phone} fieldId="phonein" name="phonein" placeholder="phone #"
+                            />
                         </div><button className="btn upload-button">Change phone number</button>
                     </div>
                     <div className="key-and-value">

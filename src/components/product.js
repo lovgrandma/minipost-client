@@ -10,10 +10,9 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
-import { faEdit, faEllipsisH, faPlus, faSave, faTrashAlt, faCopy, faArrowCircleUp } from '@fortawesome/free-solid-svg-icons';
+import { faEdit, faPlus, faSave, faTrashAlt, faCopy, faArrowCircleUp } from '@fortawesome/free-solid-svg-icons';
 
 import { cookies } from '../App.js';
-import { debounce } from '../methods/utility.js';
 
 export default class Product extends Component {
     constructor(props) {

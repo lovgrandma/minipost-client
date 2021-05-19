@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import currentrooturl from '../url';
 import CKEditor from '@ckeditor/ckeditor5-react';
 import ckEditor from 'ckeditor5-custom-build';

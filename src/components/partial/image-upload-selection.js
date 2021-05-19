@@ -3,7 +3,6 @@ import { cookies } from '../../App.js';
 import {
     Button
 } from 'react-bootstrap';
-import { Callbacks } from "jquery";
 
 export default class ImageUploadSelection extends Component {
     constructor(props) {

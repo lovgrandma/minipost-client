@@ -1,11 +1,6 @@
 import React, { Component } from 'react';
 import {
-    Form,
-    FormGroup,
-    FormControl,
-    Button,
-    Dropdown,
-    Col, Grid, Row, Clearfix,
+    Button
 } from 'react-bootstrap';
 import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
@@ -201,7 +196,6 @@ export default class Checkout extends Component {
             let productIndex = e.target.getAttribute("index");
             let productCopy = this.state.cartData[productIndex];
             let data = await updateSingleShippingOnProduct(productCopy, newShippingRule);
-            console.log(data);
             if (data) {
                 this.setCachedCartState();
                 this.setState({ busy: false });

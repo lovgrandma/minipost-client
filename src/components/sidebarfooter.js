@@ -12,10 +12,6 @@ export default class sidebarfooter extends Component {
 
         }
     }
-    
-    componentDidMount() {
-        
-    }
 
     render() {
         let logoutDiv;
