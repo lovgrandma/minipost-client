@@ -1,4 +1,4 @@
-import React, { Component } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import { CarouselProvider, Slider, Slide, Image, Dot, ImageWithZoom } from 'pure-react-carousel';
 import {
     NavLink
@@ -7,13 +7,14 @@ import 'pure-react-carousel/dist/react-carousel.es.css';
 import {
     Button
 } from 'react-bootstrap';
-import Checkout from './checkout.js';
 import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cookies } from '../App.js';
 import { checkoutNowWithCurrentCartItems, prepareCheckoutWithCurrentCartItems, addOneProductToCart } from '../methods/ecommerce.js';
+
+const Checkout = lazy(() => import('./checkout.js'));
 
 export default class ProductSinglePage extends Component {
     constructor(props) {
@@ -458,7 +459,9 @@ export default class ProductSinglePage extends Component {
                         </div>
                     </div>
                     <div className="single-product-page-action">
-                        <Checkout {...this.props} fullCheckout={false} cloud={this.state.cloud} iteration={this.state.iteration} />
+                        <Suspense fallback={<div className="fallback-loading"></div>}>
+                            <Checkout {...this.props} fullCheckout={false} cloud={this.state.cloud} iteration={this.state.iteration} />
+                        </Suspense>
                     </div>
                 </div>
             </div>

@@ -1,13 +1,13 @@
 import React, { Component } from 'react';
-import Cookies from 'universal-cookie';
 import Sidebarfooter from './sidebarfooter.js';
 import minipostAppLogoNoText from '../static/MinipostLogo2021-Q1-smaller.svg';
+import { cookies } from '../App.js';
 
 const reEmail = /^(([^<>()\[\]\\.,;:\s@"]+(\.[^<>()\[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
 const rePass = /^(?=.*\d)(?=.*[a-zA-Z])[0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*]{8,56}$/; // More accepting 0-9a-zA-Z\-~`!@#$%^&*()\+_=|\]\[{}:;'"\/><,.*
 // Old pass regex /^(?=.*\d)(?=.*[a-z])(?=.*[A-Z])[0-9a-zA-Z]{8,56}$/;
 const reUsername = /^[a-z0-9.]{5,22}$/;
-const cookies = new Cookies();
+
 // Login & register if { user: logged out }
 export default class Login extends Component {
     constructor(props) {
@@ -35,7 +35,16 @@ export default class Login extends Component {
         } else {
             document.querySelector(".register-text").classList.add("register-text-stale", "text-fadein");
         }
-        this.attemptGoogleSignInBtnLoad();
+        if (google) {
+            this.attemptGoogleSignInBtnLoad();
+        }
+        setTimeout(() => {
+            try {
+                this.attemptGoogleSignInBtnLoad();
+            } catch (err) {
+                // Fail silently
+            }
+        })
     }
 
     attemptGoogleSignInBtnLoad() {

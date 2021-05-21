@@ -1,5 +1,4 @@
-import React, { Component } from 'react';
-import loadable from '@loadable/component';
+import React, { Component, lazy, Suspense } from 'react';
 import currentrooturl from '../url.js';
 import {
     Button
@@ -9,8 +8,8 @@ import placeholderRelated from '../placeholder/relatedobjects.js';
 import $ from 'jquery';
 import corsdefault from '../cors.js';
 
-const ArticlePreview = loadable(() => import('./articlepreview.js'));
-const Videos = loadable(() => import('./videos.js'));
+const ArticlePreview = lazy(() => import('./articlepreview.js'));
+const Videos = lazy(() => import('./videos.js'));
 
 export default class RelatedPanel extends Component {
     constructor(props) {
@@ -38,10 +37,6 @@ export default class RelatedPanel extends Component {
 
     componentDidCatchError(error, errorInfo) {
         console.log(error);
-    }
-
-    componentWillUnmount() {
-        
     }
     
     handleMouseDown() {
@@ -164,39 +159,45 @@ export default class RelatedPanel extends Component {
                 {
                     this.state.relatedContent.length > 0 ? this.state.relatedContent.map((content, index) =>
                         content._fields[0].properties.mpd ?
-                            <Videos mpd={content._fields[0].properties.mpd.toString()}
-                            title={content._fields[0].properties.title}
-                            description={content._fields[0].properties.description}
-                            thumbnailUrl={content._fields[0].properties.thumbnailUrl}
-                            author={resolveString(content._fields[0].properties.author)}
-                            published={resolveString(content._fields[0].properties.publishDate)}
-                            views={getNumber(content._fields[0].properties.views)}
-                            articles={content._fields[0].properties.articles}
-                            tags={content._fields[0].properties.tags}
-                            cloud={this.props.cloud}
-                            related={true}
-                            key={index}
-                            index={index}
-                            />
-                        : <ArticlePreview title={content._fields[0].properties.title}
-                            author={content._fields[0].properties.author}
-                            body={content._fields[0].properties.body}
-                            id={content._fields[0].properties.id}
-                            reads={content._fields[0].properties.reads}
-                            published={resolveString(content._fields[0].properties.publishDate)}
-                            key={index}
-                            related={true}
-                            />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Videos mpd={content._fields[0].properties.mpd.toString()}
+                                title={content._fields[0].properties.title}
+                                description={content._fields[0].properties.description}
+                                thumbnailUrl={content._fields[0].properties.thumbnailUrl}
+                                author={resolveString(content._fields[0].properties.author)}
+                                published={resolveString(content._fields[0].properties.publishDate)}
+                                views={getNumber(content._fields[0].properties.views)}
+                                articles={content._fields[0].properties.articles}
+                                tags={content._fields[0].properties.tags}
+                                cloud={this.props.cloud}
+                                related={true}
+                                key={index}
+                                index={index}
+                                />
+                            </Suspense>
+                        : <Suspense fallback={<div className="fallback-loading"></div>}>
+                            <ArticlePreview title={content._fields[0].properties.title}
+                                author={content._fields[0].properties.author}
+                                body={content._fields[0].properties.body}
+                                id={content._fields[0].properties.id}
+                                reads={content._fields[0].properties.reads}
+                                published={resolveString(content._fields[0].properties.publishDate)}
+                                key={index}
+                                related={true}
+                                />
+                            </Suspense>
                          )
                     : placeholderRelated.map((content, index) => 
-                        <Videos title={content.title}
-                        author={content.author}
-                        views={content.views}
-                        published={content.published}
-                        placeholder={true}
-                        related={true}
-                        key={index}
-                        />
+                        <Suspense fallback={<div className="fallback-loading"></div>}>
+                            <Videos title={content.title}
+                            author={content.author}
+                            views={content.views}
+                            published={content.published}
+                            placeholder={true}
+                            related={true}
+                            key={index}
+                            />
+                        </Suspense>
                     )
                 }
                 {

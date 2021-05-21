@@ -1,9 +1,8 @@
-import React, {Component} from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import {
     NavLink,
     Link
 } from 'react-router-dom';
-import RelatedPanel from './relatedpanel.js';
 import currentrooturl from '../url';
 import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -18,6 +17,8 @@ import dummyavatar from '../static/greyavatar.jpg';
 import { cookies } from '../App.js';
 import { setResponseUrl } from '../methods/responses.js';
 import corsdefault from '../cors.js';
+
+const RelatedPanel = lazy(() => import('./relatedpanel.js'));
 
 export default class Article extends Component {
     constructor(props) {
@@ -383,11 +384,13 @@ export default class Article extends Component {
                     </div>
                 </div>
                 <div className="responses">Related</div>
-                <RelatedPanel content={this.state.id}
-                            contentType='article'
-                            title={this.state.title}
-                            cloud={this.state.cloud}
-                            />
+                <Suspense fallback={<div className="fallback-loading"></div>}>
+                    <RelatedPanel content={this.state.id}
+                        contentType='article'
+                        title={this.state.title}
+                        cloud={this.state.cloud}
+                        />
+                </Suspense>
             </div>
         )
     }

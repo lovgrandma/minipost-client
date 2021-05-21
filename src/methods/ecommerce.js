@@ -11,7 +11,6 @@ import corsdefault from '../cors.js';
  * Fulfill payment using Stripe. Charge account, pay 92% to business. 8% to Minipost. Record payment on ledger
  */
 export const checkoutNowWithCurrentCartItems = async function(e) {
-    console.log("checkout!")
     try {
         if (cookies.get('loggedIn') && cookies.get('hash')) {
             let username = cookies.get('loggedIn');
@@ -20,7 +19,10 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
             let checkCC = true;
             let getNewCart = true;
             let cachedCart = getCachedCart();
-            console.log("processcomplete")
+            let checkoutTruths = null;
+            if (this.state.checkoutTruths) {
+                checkoutTruths = this.state.checkoutTruths;
+            }
             return await fetch(currentshopurl + 's/processcompletecheckout', {
                 method: "POST",
                 headers: {
@@ -29,7 +31,7 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    username, hash, self, checkCC, getNewCart, cachedCart
+                    username, hash, self, checkCC, getNewCart, cachedCart, checkoutTruths
                 })
             })
             .then((response) => {
@@ -119,7 +121,7 @@ export const addOneProductToCart = async (product, userShippingData) => {
  * Will be used to removing cart product values and setting to a specific quantity for many or 1 products
  * @param {Object[]} products
  */
-export const setQuantityOfProducts = async (products) => {
+export const setQuantityOfProducts = async function(products) {
     if (cookies.get("loggedIn")) {
         let username = cookies.get('loggedIn');
         let hash = cookies.get('hash');
@@ -139,9 +141,15 @@ export const setQuantityOfProducts = async (products) => {
             return response.json();
         })
         .then((result) => {
+            console.log(result);
             if (result.data) {
                 if (result.cart) {
                     updateCachedCart(result.cart); // Necessarily updates local cart to get new cart values on checkout reload data
+                }
+                if (result.data[0].hasOwnProperty("changedQuantity")) { // Making sure we have the right type of data
+                    this.setState({ updateExceptions: result.data });
+                } else {
+                    this.setState({ updateExceptions: null })
                 }
                 return result;
             }
@@ -151,13 +159,17 @@ export const setQuantityOfProducts = async (products) => {
             }
         })
         .catch((err) => {
+            console.log(err);
             return {
                 data: null,
                 error: "did not complete"
             }
         });
     } else {
-
+        return {
+            data: null,
+            error: "did not complete"
+        }
     }
 }
 
@@ -215,5 +227,18 @@ export const updateSingleShippingOnProduct = async (productData, shippingRule) =
         })
     } else {
         return false;
+    }
+}
+
+/**
+ * User is logging out. Delete cart session
+ */
+export const deleteCachedCart = () => {
+    try {
+        console.log(window.localStorage);
+        window.localStorage.removeItem("cachedcart");
+    } catch (err) {
+        console.log(err);
+        // Fail silently
     }
 }

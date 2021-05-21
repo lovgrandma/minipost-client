@@ -9,7 +9,6 @@ import './style/player.css';
 import './style/page.css';
 import './style/shop.css';
 import App from './App';
-import SearchForm from './App';
 import registerServiceWorker from './registerServiceWorker';
 import history from './methods/history.js';
 import 'bootstrap/dist/css/bootstrap.css';

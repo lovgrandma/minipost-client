@@ -1,5 +1,4 @@
-import React, { Component, Suspense } from 'react';
-import loadable from '@loadable/component';
+import React, { Component, Suspense, lazy } from 'react';
 import {
     NavLink,
     Link
@@ -27,8 +26,8 @@ const shakaAddonButtons = require('../addons/shaka/addonbuttons.js');
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
-const RelatedPanel = loadable(() => import('./relatedpanel.js'));
-const SocialVideoMeta = loadable(() => import('./socialvideometa.js'));
+const RelatedPanel = lazy(() => import('./relatedpanel.js'));
+const SocialVideoMeta = lazy(() => import('./socialvideometa.js'));
 
 export default class Video extends Component {
     constructor(props) {

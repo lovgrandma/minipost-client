@@ -9,7 +9,7 @@ export default class DashHello extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            pageContent: null
+            pageContent: null, pageJs: null, pageTyped: null
         }
     }
 
@@ -19,6 +19,7 @@ export default class DashHello extends Component {
 
     fetchPageContent() {
         try {
+            this.trySetTyped();
             fetch(currentrooturl + 'm/fetchdashhello', {
                     method: "POST",
                     headers: {
@@ -56,7 +57,6 @@ export default class DashHello extends Component {
 
     trySetScript(pageScript) {
         try {
-            console.log(pageScript);
             const script = document.createElement('script');
             script.text = eval(pageScript);
             script.async = true;
@@ -64,6 +64,13 @@ export default class DashHello extends Component {
         } catch (err) {
             // Fail silently
         }
+    }
+
+    trySetTyped() {
+        const script = document.createElement('script');
+        script.src = "https://cdn.jsdelivr.net/npm/typed.js@2.0.12";
+        script.async = true;
+        document.getElementsByClassName('dashHello')[0].appendChild(script);
     }
 
     render() {

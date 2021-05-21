@@ -1,4 +1,4 @@
-import React, {Component} from 'react';
+import React, { Component } from 'react';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
 import { get } from '../methods/utility.js';
@@ -15,7 +15,6 @@ import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js
 import { loadStripe } from '@stripe/stripe-js';
 import currentshopurl from '../shopurl';
 const stripePromise = loadStripe(keys.livekey);
-
 
 export default class Options extends Component {
     constructor() {

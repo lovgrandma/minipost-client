@@ -14,7 +14,7 @@ export default class Checkout extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            error: "", cartData: [], wishListData: null
+            error: "", cartData: [], wishListData: null, updateExceptions: null
         }
         this.debounceUpdateQuantity = this.debounceUpdateQuantity.bind(this);
     }
@@ -257,7 +257,7 @@ export default class Checkout extends Component {
                     }
                 }
                 if (toChange.length > 0) {
-                    let complete = await setQuantityOfProducts(toChange);
+                    let complete = await setQuantityOfProducts.call(this, toChange);
                     if (complete) {
                         if (complete.error) {
                             this.setState({ error: complete.error });
@@ -278,6 +278,30 @@ export default class Checkout extends Component {
     }
 
     debounceUpdateQuantity = debounce(() => this.doUpdateProductQuantity(), 5000);
+
+    // Visually displays an exception for an update on quantity or deletes it if parameter for deleteException passed
+    checkException(item, deleteException = false) {
+        try {
+            if (this.state.updateExceptions) {
+                for (let i = 0; i < this.state.updateExceptions.length; i++) {
+                    if (this.state.updateExceptions[i].changedQuantity) {
+                        if (item.name == this.state.updateExceptions[i].product.name && item.option == this.state.updateExceptions[i].product.option && item.style == this.state.updateExceptions[i].product.style) {
+                            if (deleteException) {
+                                let temp = this.state.updateExceptions;
+                                temp.splice(i, 1);
+                                this.setState({ updateExceptions: temp });
+                            } else {
+                                return true;
+                            }
+                        }
+                    }
+                }
+            }
+            return false;
+        } catch (err) {
+            return false; // Fail silently
+        }
+    }
 
     render() {
         return (
@@ -379,6 +403,11 @@ export default class Checkout extends Component {
                                                             <div className="social-portal-times times-checkout-button" index={index} onClick={(e) => {this.setQuantityToNoneDelete(e)}}>&times;</div>
                                                         </div>
                                                     </div>
+                                                    {
+                                                        this.checkException(item) ?
+                                                            <div className="err-status prompt-basic-s2 err-status-wide margin-top-5" onClick={(e) => {this.checkException(item, true)}}>We had to adjust the quantity since the amount you want is more than the seller has in stock</div>
+                                                            : null
+                                                    }
                                                 </div>
                                                 {
                                                     this.props.fullCheckout ?

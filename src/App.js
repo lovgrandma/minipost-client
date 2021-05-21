@@ -3,7 +3,7 @@ import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import loadable from '@loadable/component';
 import csshake from 'csshake';
-import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import Video from './components/video.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js';
+import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js';
 import {
     Route
 } from 'react-router-dom';
@@ -29,7 +29,7 @@ import proxyurl from './proxy.js';
 import corsdefault from './cors.js';
 import { Playlist } from './class/playlist.js';
 import { Together } from './class/together.js';
-import { updateCachedCart } from './methods/ecommerce.js';
+import { updateCachedCart, deleteCachedCart } from './methods/ecommerce.js';
 
 import { debounce, deepEquals, arraysEqual, getPath, get } from './methods/utility.js';
 
@@ -45,8 +45,9 @@ const cookies = new Cookies();
 const typingRegex = /([a-z0-9.]*);([^]*);(.*)/; // regular expression for reading 'typing' emits
 const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
-const Login = loadable(() => import('./components/login.js'));
-const Social = loadable(() => import('./components/social.js'));
+const Login = lazy(() => import('./components/login.js'));
+const Social = lazy(() => import('./components/social.js'));
+const Video = lazy(() => import('./components/video.js'));
 
 
 // Main Application file
@@ -615,6 +616,7 @@ class Socialbar extends Component { // Main social entry point sb1
             cookies.remove('loggedIn', { path: '/' });
             cookies.remove('user', { path: '/' });
             cookies.remove('hash', { path: '/' });
+            deleteCachedCart();
             this.setGoogleSignInErrorState();
             fetch(currentrooturl + 'm/logout', {
                     method: "GET",
@@ -627,16 +629,20 @@ class Socialbar extends Component { // Main social entry point sb1
                 .then(function(response) {
                     return response.json(); // You parse the data into a useable format using `.json()`
                 })
-                .then(function(data) { // `data` is the parsed version of the JSON returned from the above endpoint.
+                .then((data) => { // `data` is the parsed version of the JSON returned from the above endpoint.
                     this.signOutThirdParty(); // Will logout of third party apps
                     this.setState({ isLoggedIn: "",
                                 friends: [] });
-                    this.props.history.push('/');
                     return data;
                 })
-                .catch(error => { console.log(error);
+                .then((data) => {
+                    this.props.history.push('/');
+                })
+                .catch(error => { 
+                    console.log(error);
                 })
         } catch (err) {
+            console.log(err);
             // Fail silently
         }
     }
@@ -1271,7 +1277,7 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     setGoogleSignInErrorState(data = null) {
-        this.setState({ googleSignInError: "" });
+        this.setState({ googleSignInError: data });
     }
 
     onOneTapSignedInGoogle = async (googleResponse, proposedUsername = null) => {
@@ -1359,7 +1365,6 @@ class Socialbar extends Component { // Main social entry point sb1
             } 
             return false;
         } catch (err) {
-            console.log(err);
             return false;
         }
     }
@@ -1376,14 +1381,18 @@ class Socialbar extends Component { // Main social entry point sb1
         }
 
         let buildGoogleSignOn = () => {
-            google.accounts.id.initialize({
-                client_id: '169701902623-9a74mqcbqr38uj87qm8tm3190cicaa7m.apps.googleusercontent.com',
-                callback: this.onOneTapSignedInGoogle
-            });
-            if (!cookies.get('loggedIn')) { // Prompt user to login only if they are not logged in. If the user is logged in then there is no point in asking them to sign in
-                google.accounts.id.prompt(notification => {
-                    console.log('on prompt notification', notification);
+            try {
+                google.accounts.id.initialize({
+                    client_id: '169701902623-9a74mqcbqr38uj87qm8tm3190cicaa7m.apps.googleusercontent.com',
+                    callback: this.onOneTapSignedInGoogle
                 });
+                if (!cookies.get('loggedIn')) { // Prompt user to login only if they are not logged in. If the user is logged in then there is no point in asking them to sign in
+                    google.accounts.id.prompt(notification => {
+                        console.log('on prompt notification', notification);
+                    });
+                }
+            } catch (err) {
+                // Google not defined
             }
         }
 
@@ -1415,8 +1424,7 @@ class Socialbar extends Component { // Main social entry point sb1
         if (!isLoggedIn) {
             sidebar = 
             <Suspense fallback={<div className="fallback-loading"></div>}>
-                <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} setRegisterErr={this.setRegisterErr} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar}
-            submitResetPass={this.submitResetPass} resetPassData={this.state.resetPassData} />
+                <Login fetchlogin={this.fetchlogin} fetchregister={this.fetchregister} loginerror={this.state.loginerror} verifyinfo={this.state.verifyinfo} registererror={this.state.registererror} setRegisterErr={this.setRegisterErr} fetchVerify={this.fetchVerify} verifyerror={this.state.verifyerror} toggleSideBar={this.toggleSideBar} submitResetPass={this.submitResetPass} resetPassData={this.state.resetPassData} tryLoadGoogle={this.tryLoadGoogle} />
             </Suspense>
         } else {
             sidebar = 
@@ -1941,16 +1949,22 @@ class App extends Component {
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
                         )}/>
                         <Route path='/watch?v=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            </Suspense>
                         )}/>
                         <Route path='/watch?va=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            </Suspense>
                         )}/>
                         <Route path='/read?a=:articleId' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/watch' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            </Suspense>
                         )}/>
                         <Route path='/read' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />

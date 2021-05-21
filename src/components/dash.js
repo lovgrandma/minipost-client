@@ -3,8 +3,7 @@
 @author Jesse Thompson
 Appends videos to user dash */
 
-import React, { Component, Suspense } from 'react';
-import loadable from '@loadable/component';
+import React, { Component, Suspense, lazy } from 'react';
 import Videos from './videos.js';
 import ArticlePreview from './articlepreview.js';
 import currentrooturl from '../url.js';
@@ -15,7 +14,7 @@ import {
 import { cookies, localEvents } from '../App.js';
 import corsdefault from '../cors.js';
 
-const DashHello = loadable(() => import('./dynamic/dash-hello.js'));
+const DashHello = lazy(() => import('./dynamic/dash-hello.js'));
 
 export default class Dash extends Component {
     constructor(props) {
