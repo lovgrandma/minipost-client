@@ -12,6 +12,10 @@ import corsdefault from '../cors.js';
  */
 export const checkoutNowWithCurrentCartItems = async function(e) {
     try {
+        this.setState({ busy: true });
+        setTimeout(() => {
+            this.setState({ busy: false });
+        }, 25000);
         if (cookies.get('loggedIn') && cookies.get('hash')) {
             let username = cookies.get('loggedIn');
             let hash = cookies.get('hash');
@@ -37,16 +41,34 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
             .then((response) => {
                 return response.json();
             })
-            .then((result) => {
+            .then(async (result) => {
+                this.setState({ busy: false });
                 console.log(result); // if success push user to completed checkout page
-                return true;
+                if (result) {
+                    if (result.orderRecord) {
+                        if (result.orderRecord.paymentFulfilled) {
+                            await emptyCachedCartItems(); // Empty cached cart items as well. User just completed the purchase
+                            this.setState({ cartData: [], checkoutTruths: {} }, () => {
+                                this.props.history.push('/order?o=' + result.orderRecord._id); // redirect user to receipt page
+                            }); // Set stateful user cart to empty
+                        }
+                    }
+                }
+                return result;
             })
+            .catch((err) => {
+                this.setState({ checkoutError: "Failed to complete cart checkout" }); // Failed silently
+                this.setState({ busy: false });
+                return false;
+            });
         } else {
             this.setState({ checkoutError: "Failed to complete cart checkout" }); // Failed silently
+            this.setState({ busy: false });
             return false;
         }
     } catch (err) {
         this.setState({ checkoutError: "Failed to complete cart checkout" }); // Failed silently
+        this.setState({ busy: false });
         return false;
     }
 }
@@ -235,10 +257,37 @@ export const updateSingleShippingOnProduct = async (productData, shippingRule) =
  */
 export const deleteCachedCart = () => {
     try {
-        console.log(window.localStorage);
         window.localStorage.removeItem("cachedcart");
     } catch (err) {
         console.log(err);
         // Fail silently
+    }
+}
+
+export const emptyCachedCartItems = () => {
+    try {
+        let temp = JSON.parse(window.localStorage.getItem('cachedcart'));
+        temp.items = [];
+        window.localStorage.setItem('cachedcart', JSON.stringify(temp));
+        return temp;
+    } catch (err) {
+        return false; // fail silently
+    }
+}
+
+export const formatAPrice = function(number, ensureToFixed = true) {
+    try {
+        if (number) {
+            var nf = new Intl.NumberFormat("en-US", {
+                minimumFractionDigits: 2,
+                maximumFractionDigits: 2,
+                style: 'currency',
+                currency: 'USD'
+            });
+            return nf.format(number);
+        }
+        return null;
+    } catch (err) {
+        return number;
     }
 }

@@ -195,6 +195,10 @@ h5 {
     margin: 0 auto;
 }
 
+.margin-left-auto {
+    margin-left: auto;
+}
+
 .max-width-350 {
     max-width: 350px;
 }
@@ -339,6 +343,11 @@ button {
 
 .flex-start {
     justify-content: flex-start;
+}
+
+.user-page-container {
+    max-width: 1800px;
+    margin: 0 auto;
 }
 
 .flex-profile {
@@ -637,7 +646,6 @@ input[type="search"] {
     border-style: solid;
     border-width: 1px;
     border-color: transparent;
-
 }
 
 .flex-end {
@@ -930,6 +938,7 @@ ul li {
     padding: 5.5px 0;
     display: inline-block;
     border-bottom-left-radius: 5px;
+    margin-right: 3px;
 }
 
 .minimize-dash:hover {
@@ -2891,6 +2900,12 @@ label {
     overflow-x:hidden;
 }
 
+.search-users-results-holder {
+    padding: 2px 5px;
+    border-radius: 7.5px;
+    border: 2px solid #e4e4e4;
+}
+
 .clearfix:before,
 .clearfix:after {
     content: ".";
@@ -2917,7 +2932,6 @@ label {
 .search-users-results-container::-webkit-scrollbar-thumb {
     margin-top: 10px;
     background-color: #bababa;
-    outline: 1px solid slategrey;
     border-radius: 5px 5px 5px 5px;
 }
 
@@ -2974,7 +2988,7 @@ label {
 
 .following-prefix {
     font-size: 0.95em;
-    font-weight: 400;
+    font-weight: 500;
 }
 
 .following-channel {
@@ -3191,6 +3205,20 @@ label {
     margin: 0 3px;
 }
 
+.search-user-profile,
+.search-profile-bump-container > div,
+.search-profile-bump-container > span,
+.searched-user-message {
+    max-height: 17px;
+    overflow-y: hidden;
+    width: max-content;
+}
+
+.search-users-relative-div .request-and-block-container > div,
+.search-users-relative-div .request-and-block-container > span {
+    text-align: center;
+}
+
 .search-user-bump {
     color: black;
     background-color: rgb(148, 217, 169);
@@ -3383,7 +3411,8 @@ label {
     height: 14px;
 }
 
-.minimize-icon {
+.minimize-icon,
+.reset-pan-icon {
     transition: 200ms;
     margin: 0 6px;
     padding-bottom: 2px;
@@ -3397,7 +3426,8 @@ label {
 }
 
 .circle-menu-icon:hover,
-.minimize-icon:hover {
+.minimize-icon:hover,
+.reset-pan-icon:hover {
     cursor:pointer;
 }
 
@@ -3786,7 +3816,7 @@ If user only has one friend, styling wont apply */
 }
 
 /* Visibility of loading css anim that blocks new requests while old fetch request still running. Triggered by .spinner-search-holder-visible class */
-.search-users-results-container-opened .spinner-search-holder-visible {
+.se7earch-users-results-container-opened .spinner-search-holder-visible {
     visibility: visible;
     opacity: 1;
 }
@@ -5797,3 +5827,51 @@ button.profile-menu-link:hover {
 .third-party-margin-username {
     margin-bottom: 10px !important;
 }
+
+/* Experimental Drag */
+
+.chat-overflow .sidebar,
+.chat-overflow .friendchatcontainer {
+    overflow: visible;
+}
+
+.chat-overflow .sidebarxopen {
+    z-index: 3;
+}
+
+.reset-icon-default-position:hover {
+    cursor: default;
+}
+
+.opacity-0 {
+    opacity: 0;
+}
+
+.opacity-1 {
+    opacity: 1;
+}
+
+.friend-single-dragging .friend,
+.friend-single-dragging .friend-single {
+    border: 3px solid #e0e0e0;
+}
+
+.friend-single-dragging {
+    position: absolute;
+}
+
+.friend-container {
+    min-width: 269px;
+}
+
+/* Remove X from search */
+
+/* clears the 'X' from Internet Explorer */
+input[type=search]::-ms-clear {  display: none; width : 0; height: 0; }
+input[type=search]::-ms-reveal {  display: none; width : 0; height: 0; }
+
+/* clears the 'X' from Chrome */
+input[type="search"]::-webkit-search-decoration,
+input[type="search"]::-webkit-search-cancel-button,
+input[type="search"]::-webkit-search-results-button,
+input[type="search"]::-webkit-search-results-decoration { display: none; }

@@ -26,25 +26,29 @@ export default class Login extends Component {
     }
 
     componentDidMount() {
-        if (!cookies.get('welcome')) { // Welcome on first website load
-            document.querySelector(".register-text").classList.add("register-text-invis");
-            setTimeout(() => {
-                document.querySelector(".register-text").classList.add("register-text-transition", "text-fadein");
-                cookies.set('welcome', 'true', { path: '/', sameSite: true, signed: true });
-            }, 200);
-        } else {
-            document.querySelector(".register-text").classList.add("register-text-stale", "text-fadein");
-        }
-        if (google) {
-            this.attemptGoogleSignInBtnLoad();
-        }
-        setTimeout(() => {
-            try {
-                this.attemptGoogleSignInBtnLoad();
-            } catch (err) {
-                // Fail silently
+        try {
+            if (!cookies.get('welcome')) { // Welcome on first website load
+                document.querySelector(".register-text").classList.add("register-text-invis");
+                setTimeout(() => {
+                    document.querySelector(".register-text").classList.add("register-text-transition", "text-fadein");
+                    cookies.set('welcome', 'true', { path: '/', sameSite: true, signed: true });
+                }, 200);
+            } else {
+                document.querySelector(".register-text").classList.add("register-text-stale", "text-fadein");
             }
-        })
+            if (google) {
+                this.attemptGoogleSignInBtnLoad();
+            }
+            setTimeout(() => {
+                try {
+                    this.attemptGoogleSignInBtnLoad();
+                } catch (err) {
+                    // Fail silently
+                }
+            });
+        } catch (err) {
+            // Google did not load
+        }
     }
 
     attemptGoogleSignInBtnLoad() {

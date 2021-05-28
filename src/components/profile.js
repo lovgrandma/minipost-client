@@ -174,7 +174,7 @@ export default class Profile extends Component {
             pageData = profileData;
         }
         return (
-            <div>
+            <div className="user-page-container">
                 <div className="flex-profile main-profile-header">
                     <img className="profileavatar" src={this.state.cloud + "/av/" + this.state.avatarurl}></img>
                     <div>
@@ -201,7 +201,7 @@ export default class Profile extends Component {
                         this.state.shop && this.state.username ? 
                             <div className="profile-menu">
                                 <NavLink exact to={"/profile?p=" + this.state.username}>
-                                    <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "")}}>Profile</Button>
+                                    <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "")}}>Published</Button>
                                 </NavLink>
                                 <NavLink exact to={"/shop?s=" + this.state.username}>
                                     <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "shop")}}>Shop</Button>

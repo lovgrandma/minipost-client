@@ -3,7 +3,7 @@ import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import loadable from '@loadable/component';
 import csshake from 'csshake';
-import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js';
+import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js';
 import {
     Route
 } from 'react-router-dom';
@@ -126,7 +126,7 @@ class Socialbar extends Component { // Main social entry point sb1
             }
         }
     }
-    
+
     openSocket = async () => {
         // Socket entry point. Creates connection with server in order to respond to connections.
         // Creates event listeners and updates to initial current data
@@ -1417,6 +1417,33 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
+    setChatOverflowVisible = (show = true, disabled, index = -1) => {
+        try {
+            if (this.sidebarcontainer) {
+                if (this.sidebarcontainer.current) {
+                    if (show && !disabled) {
+                        this.sidebarcontainer.current.classList.add("chat-overflow");
+                    } else {
+                        try {
+                            let draggingEntities = document.getElementsByClassName("dragging-entity");
+                            for (let i = 0; i < draggingEntities.length; i++) {
+                                if (draggingEntities[i].classList.contains('opacity-1') && index != i) {
+                                    return; // Some friend chats still not reset. Cannot reset overflow views
+                                }
+                            }
+                            this.sidebarcontainer.current.classList.remove("chat-overflow"); 
+                        } catch (err) {
+                            console.log(err);
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            console.log(err);
+            // Fail silently
+        }
+    }
+
     render() {
         let sidebar;
         
@@ -1429,7 +1456,7 @@ class Socialbar extends Component { // Main social entry point sb1
         } else {
             sidebar = 
             <Suspense fallback={<div className="fallback-loading"></div>}>
-                <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump={this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} />
+                <Social username={this.state.isLoggedIn} friends={this.state.friends} fetchlogout={this.fetchlogout} conversations={this.state.conversations} pendinghidden={this.state.showpendingrequests} debouncefetchusers={this.debouncefetchusers} fetchusers={this.fetchusers} limitedsearch={this.limitedsearch} searchforminput={this.searchforminput} searchformclear={this.searchformclear} debouncefetchpendingrequests={this.debouncependingrequests} fetchuserpreventsubmit={this.fetchuserpreventsubmit} searchusers={this.state.searchusers} sendfriendrequest={this.sendfriendrequest} revokefriendrequest={this.revokefriendrequest} toggleSideBar={this.toggleSideBar} showfollowing={this.showfollowing} showingfollows={this.state.showingfollows} follow={this.props.follow} following={this.state.following} getpendingrequests={this.getpendingrequests} pendingfriendrequests={this.state.pendingfriendrequests} acceptfriendrequest={this.acceptfriendrequest} beginchat={this.beginchat} friendchatopen={this.state.friendchatopen} otheruserchatopen={this.state.otheruserchatopen} updatefriendchatopen={this.updatefriendchatopen} updateotheruserchatopen={this.updateotheruserchatopen} friendsopen={this.state.friendsopen} friendsSocialToggle={this.friendsSocialToggle} nonfriendsopen={this.state.nonfriendsopen} cloud={this.props.cloud} typing = {this.state.typing} bump={this.bump} requestTogetherSession={this.props.requestTogetherSession} waitingTogetherConfirm={this.props.waitingTogetherConfirm} waitingSessions={this.props.waitingSessions} acceptTogetherSession={this.props.acceptTogetherSession} togetherToken={this.props.togetherToken} setChatOverflowVisible={this.setChatOverflowVisible} dragDisabled={this.props.dragDisabled} cloud={this.props.cloud} />
             </Suspense>
         }
             
@@ -1478,7 +1505,7 @@ class App extends Component {
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
                         moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null, friendConvoMirror: null, typingMirror: [],
-                        shipping: {}
+                        shipping: {}, dragDisabled: false
                      };
         this.playlist = null;
         this.together = null;
@@ -1526,6 +1553,20 @@ class App extends Component {
         this.createTogetherPingInterval();
         if (!cookies.get('hash')) {
             this.doLogout();
+        }
+        this.checkDragDisabled();
+    }
+
+    checkDragDisabled = () => {
+        try {
+            let dragDisabled = cookies.get('dragDisabled');
+            if (dragDisabled == 'true') {
+                this.setState({ dragDisabled: true });
+            }  else {
+                this.setState({ dragDisabled: false });
+            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -1939,7 +1980,7 @@ class App extends Component {
         let isCheckoutPage = this.resolveIsCheckoutPage();
         return (
             <div className={isCheckoutPage ? "App checkout-page" : "App"} onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} />
                 <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
@@ -1982,7 +2023,7 @@ class App extends Component {
                             <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/options' render={(props) => (
-                            <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} getfriends={this.getfriends} />
+                            <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} getfriends={this.getfriends} dragDisabled={this.state.dragDisabled} checkDragDisabled={this.checkDragDisabled} username={this.state.isLoggedIn} />
                         )}/>
                         <Route path='/upload' render={(props) => (
                             <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
@@ -2025,6 +2066,15 @@ class App extends Component {
                         )}/>
                         <Route path='/checkout' render={(props) => (
                             <Checkout {...props} fullCheckout={true} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />
+                        )}/>
+                        <Route path='/orders' render={(props) => (
+                            <Orders {...props} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                        )}/>
+                        <Route path='/order' render={(props) => (
+                            <Order {...props} key={getPath()} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                        )}/>
+                        <Route path='/order?o=:orderId' render={(props) => (
+                            <Order {...props} key={getPath()} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                     </div>
                 </div>

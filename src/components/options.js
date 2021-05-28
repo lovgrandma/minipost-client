@@ -19,7 +19,7 @@ const stripePromise = loadStripe(keys.livekey);
 export default class Options extends Component {
     constructor() {
         super();
-        this.state = { username: "", avatarurl: '', uploadavatarbusy: false, ccbusy: false, shippingData: null, email: '', phone: '###-###-####', cclastfourdigits: "-------------", cctype: '', openportal: '', err: "", client_secret: null, countries: [], shippingError: "", shippingSuccess: "" }
+        this.state = { username: "", avatarurl: '', uploadavatarbusy: false, ccbusy: false, shippingData: null, email: '', phone: '###-###-####', cclastfourdigits: "-------------", cctype: '', openportal: '', err: "", client_secret: null, countries: [], shippingError: "", shippingSuccess: "", dragDisabledOption: false }
         this.upload = React.createRef();
         this.cc_name = React.createRef();
         this.countryDestinationShippingSelectRef = React.createRef();
@@ -30,6 +30,7 @@ export default class Options extends Component {
         this.shippingStateRef = React.createRef();
         this.shippingZipRef = React.createRef();
         this.phoneVerify = React.createRef();
+        this.dragDisabledOptionRef = React.createRef();
     }
 
     componentDidMount = async () => {
@@ -40,6 +41,16 @@ export default class Options extends Component {
             this.buildCountriesOptions();
         } catch (err) {
             // Component unmounted
+        }
+    }
+
+    componentDidUpdate(prevProps) {
+        this.props.username != prevProps.username ? this.setState({ username: this.props.username }) : null;
+    }
+
+    getDraggable() {
+        if (this.props.hasOwnProperty("dragDisabled")) {
+            this.setState({ dragDisabled: this.props.dragDisabled });
         }
     }
 
@@ -76,6 +87,7 @@ export default class Options extends Component {
                 })
                 .then((result) => {
                     if (result) {
+                        console.log(result);
                         let authenticated = this.props.checkAndConfirmAuthentication(result);
                         if (authenticated) {
                             if (result.avatarurl) {
@@ -83,6 +95,14 @@ export default class Options extends Component {
                             }
                             if (result.email) {
                                 this.setState({ email: result.email });
+                            }
+                            if (result.shop) {
+                                this.setState({ shopId: result.shop });
+                            }
+                            if (result.expressLink) {
+                                if (result.expressLink.url) {
+                                    this.setState({ expressLink: result.expressLink.url });
+                                }
                             }
                         }
                     }
@@ -232,6 +252,14 @@ export default class Options extends Component {
     openShipping = (e) => {
         if (this.state.openportal != "shipping") {
             this.setState({ openportal: "shipping" });
+        } else {
+            this.setState({ openportal: "" });
+        }
+    }
+
+    openShop = (e) => {
+        if (this.state.openportal != "shop") {
+            this.setState({ openportal: "shop" });
         } else {
             this.setState({ openportal: "" });
         }
@@ -452,6 +480,19 @@ export default class Options extends Component {
             // Fail silently
         }
     }
+
+    updateDraggableConvo = (e) => {
+        console.log(e.target);
+        console.log(e.target.checked);
+        if (e.target.checked) {
+            cookies.set('dragDisabled', true);
+            this.dragDisabledOptionRef.current.checked = true;
+        } else {
+            cookies.set('dragDisabled', false);
+            this.dragDisabledOptionRef.current.checked = false;
+        }
+        this.props.checkDragDisabled();
+    }
     
     render() {
         return (
@@ -470,7 +511,10 @@ export default class Options extends Component {
                 <div className="options-payment-gateway">
                     <h3 className="prompt-basic background-color-header">Membership &amp; Billing</h3>
                     <div className="key-and-value">
-                        <div className="grey-out">{this.state.email}</div><div>email</div>
+                        <div className="grey-out"><input type="checkbox" checked={this.props.dragDisabled} ref={this.dragDisabledOptionRef} onChange={(e) => {this.updateDraggableConvo(e)}}></input></div><div className="weight500 prompt-basic">Disable Draggable Conversations</div>
+                    </div>
+                    <div className="key-and-value">
+                        <div className="grey-out">{this.state.email}</div><div className="weight500 prompt-basic">email</div>
                     </div>
                     <div className="key-and-value">
                         <div className="grey-out">********</div><button className="btn upload-button">Change password</button>
@@ -575,8 +619,23 @@ export default class Options extends Component {
                         </div>
                     </div>
                     <div className="key-and-value">
-                        <div className="grey-out"></div><a href="#" className="prompt-basic btn upload-button">See order history</a>
+                        <div className="grey-out"></div>
+                        <button className="prompt-basic btn upload-button">See order history</button>
                     </div>
+                    {
+                        this.state.shopId ?
+                            <div>
+                                <div className="key-and-value">
+                                    <div className="grey-out"></div>
+                                    <button className="prompt-basic btn upload-button" onClick={(e)=> {this.openShop(e)}}>Shop payment details</button>
+                                </div>
+                                <div className={this.state.openportal == 'shop' ? 'portal portal-open' : 'portal'}>
+                                    <h3 className="prompt-basic background-color-header">You'll want to update the banking information for your business in order to get paid. Click the button below to set up your payment information with Stripe</h3>
+                                    <a href={this.state.expressLink} class="stripe-connect"><span>Connect with</span></a>
+                                </div>
+                            </div>
+                            : null
+                    }
                 </div>
             </div>
         )

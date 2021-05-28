@@ -99,7 +99,7 @@ export default function Social(props) { // social prop sp1
                 </form>
             </div>
             <div className='search-users-results-container'>
-                <div>
+                <div className="search-users-results-holder">
                     {
                     props.searchusers ?
                         props.searchusers[0] ?
@@ -146,6 +146,7 @@ export default function Social(props) { // social prop sp1
                                 return (
                                     <Suspense fallback={<div className="fallback-loading"></div>}>
                                         <SearchedUserResults searcheduser={searcheduser.username}
+                                        avatarurl={searcheduser.avatarurl}
                                         searchtotal={props.searchusers[0].length}
                                         key={childCounter}
                                         index={childCounter++}
@@ -157,6 +158,7 @@ export default function Social(props) { // social prop sp1
                                         alreadyfriends={alreadyfriends}
                                         yourself={yourself}
                                         beginchat={props.beginchat}
+                                        cloud={props.cloud}
                                         />
                                     </Suspense>
                                 )
@@ -224,6 +226,8 @@ export default function Social(props) { // social prop sp1
                                     waitingSessions={props.waitingSessions}
                                     acceptTogetherSession={props.acceptTogetherSession}
                                     togetherToken={props.togetherToken}
+                                    setChatOverflowVisible={props.setChatOverflowVisible}
+                                    dragDisabled={props.dragDisabled}
                                     />
                                 </Suspense>
                             )

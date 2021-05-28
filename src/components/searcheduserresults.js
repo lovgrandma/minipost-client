@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import circlemenulight from '../static/circlemenulight.svg'; import profile from '../static/profile.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import subscribe from '../static/subscribe.svg'; import heart from '../static/heart.svg';
+import circlemenulight from '../static/circlemenulight.svg'; import profile from '../static/profile.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import subscribe from '../static/subscribe.svg'; import heart from '../static/heart.svg'; import greyavatar from '../static/greyavatar.jpg';
 import TextareaAutosize from 'react-textarea-autosize'; import sendarrow from '../static/sendarrow.svg'; import chatblack from '../static/chat-black.svg';
 
 export default class SearchedUserResults extends Component { // search user component sup1
@@ -35,7 +35,6 @@ export default class SearchedUserResults extends Component { // search user comp
     }
 
     openchatinput = (e) => {
-        console.log(this.props.searchtotal);
         for (let i = 0; i < this.props.searchtotal; i++) { // Check other chatforms and remove
             if (document.getElementsByClassName('search-chat-form')[i]) {
                 document.getElementsByClassName('search-chat-form')[i].classList.remove('search-chat-form-open');
@@ -81,7 +80,7 @@ export default class SearchedUserResults extends Component { // search user comp
             this.props.yourself() ?
             <div className='searched-user-div'>
                 <div className='searched-user-username-container'>
-                    <img className="searched-user-avatar" src={require("../static/bobby.jpg")}></img>
+                    <img className="searched-user-avatar" src={this.props.cloud && this.props.avatarurl ? this.props.cloud + "/av/" + this.props.avatarurl : greyavatar}></img>
                     <div className='searched-user-username'>{this.props.searcheduser}</div>
                     <div className="search-chat-form"></div>
                     <div className="search-textarea-chat-autosize"></div>
@@ -98,7 +97,7 @@ export default class SearchedUserResults extends Component { // search user comp
                 </div>
                 <div className='searched-user-div'>
                     <div className='searched-user-username-container'>
-                        <img className="searched-user-avatar" src={require("../static/bobby.jpg")}></img>
+                        <img className="searched-user-avatar" src={this.props.cloud && this.props.avatarurl ? this.props.cloud + "/av/" + this.props.avatarurl : greyavatar}></img>
                         <div className='searched-user-username'>{this.props.searcheduser}</div>
                         <div className='search-user-dropdown search-user-dropdown-search'>
                             <img className="circle-menu-icon" src={circlemenulight} alt="circlemenu"></img>

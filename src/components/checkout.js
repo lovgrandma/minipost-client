@@ -6,7 +6,7 @@ import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCube } from '@fortawesome/free-solid-svg-icons';
-import { prepareCheckoutWithCurrentCartItems, checkoutNowWithCurrentCartItems, getCachedCart, setQuantityOfProducts, updateSingleShippingOnProduct } from '../methods/ecommerce.js';
+import { prepareCheckoutWithCurrentCartItems, checkoutNowWithCurrentCartItems, getCachedCart, setQuantityOfProducts, updateSingleShippingOnProduct, formatAPrice } from '../methods/ecommerce.js';
 import { cookies } from '../App.js';
 import { debounce } from '../methods/utility.js';
 
@@ -77,64 +77,47 @@ export default class Checkout extends Component {
             let username = cookies.get('loggedIn');
             let hash = cookies.get('hash');
             let self = true;
+            let cachedCart = null;
             if (this.state.cachedCart) {
-                let cachedCart = this.state.cachedCart;
-                fetch(currentshopurl + "s/getimagesandtitlesforcartproducts", {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: corsdefault,
-                    body: JSON.stringify({
-                        username, hash, self, cachedCart, getNewCart
-                    })
+                cachedCart = this.state.cachedCart;
+            }
+            fetch(currentshopurl + "s/getimagesandtitlesforcartproducts", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, hash, self, cachedCart, getNewCart
                 })
-                .then((response) => {
-                    return response.json();
-                })
-                .then((result) => {
-                    if (result.hasOwnProperty("error")) {
-                        this.setState({ error: result.error });
-                    } else {
-                        if (result.hasOwnProperty("data")) {
-                            if (result.data.hasOwnProperty("items")) {
-                                this.setState({ cartData: [] }); // You need to set cartData arr to empty to ensure uncontrolled quantities are reloaded in correct sectors
-                                this.setState({ cartData: result.data.items });
-                            }
-                            if (result.data.hasOwnProperty("wishList")) {
-                                this.setState({ wishListData: [] });
-                                this.setState({ wishListData: result.data.wishList });
-                            }
-                            if (result.data.hasOwnProperty("checkoutTruths")) {
-                                this.setState({ checkoutTruths: result.data.checkoutTruths });
-                            }
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                if (result.hasOwnProperty("error")) {
+                    this.setState({ error: result.error });
+                } else {
+                    if (result.hasOwnProperty("data")) {
+                        if (result.data.hasOwnProperty("items")) {
+                            this.setState({ cartData: [] }); // You need to set cartData arr to empty to ensure uncontrolled quantities are reloaded in correct sectors
+                            this.setState({ cartData: result.data.items });
+                            this.setState({ cachedCart: result.data.items });
+                        }
+                        if (result.data.hasOwnProperty("wishList")) {
+                            this.setState({ wishListData: [] });
+                            this.setState({ wishListData: result.data.wishList });
+                        }
+                        if (result.data.hasOwnProperty("checkoutTruths")) {
+                            this.setState({ checkoutTruths: result.data.checkoutTruths });
                         }
                     }
-                })
-                .catch((err) => {
-                    return false;
-                })
-            } else {
+                }
+            })
+            .catch((err) => {
                 return false;
-            }
-        }
-    }
-
-    formatAPrice(number, ensureToFixed = true) {
-        try {
-            if (number) {
-                var nf = new Intl.NumberFormat("en-US", {
-                    minimumFractionDigits: 2,
-                    maximumFractionDigits: 2,
-                    style: 'currency',
-                    currency: 'USD'
-                });
-                return nf.format(number);
-            }
-            return null;
-        } catch (err) {
-            return number;
+            });
         }
     }
 
@@ -145,7 +128,7 @@ export default class Checkout extends Component {
                     if (this.state.checkoutTruths) {
                         if (this.state.checkoutTruths.hasOwnProperty("totals")) {
                             if (this.state.checkoutTruths.totals.hasOwnProperty("total")) {
-                                return this.formatAPrice(this.state.checkoutTruths.totals.total)
+                                return formatAPrice(this.state.checkoutTruths.totals.total)
                             }
                         }
                     }
@@ -154,7 +137,7 @@ export default class Checkout extends Component {
                     if (this.state.checkoutTruths) {
                         if (this.state.checkoutTruths.hasOwnProperty("totals")) {
                             if (this.state.checkoutTruths.totals.hasOwnProperty("products")) {
-                                return this.formatAPrice(this.state.checkoutTruths.totals.products)
+                                return formatAPrice(this.state.checkoutTruths.totals.products)
                             }
                         }
                     }
@@ -163,7 +146,7 @@ export default class Checkout extends Component {
                     if (this.state.checkoutTruths) {
                         if (this.state.checkoutTruths.hasOwnProperty("totals")) {
                             if (this.state.checkoutTruths.totals.hasOwnProperty("shipping")) {
-                                return this.formatAPrice(this.state.checkoutTruths.totals.shipping)
+                                return formatAPrice(this.state.checkoutTruths.totals.shipping)
                             }
                         }
                     }
@@ -412,11 +395,11 @@ export default class Checkout extends Component {
                                                 {
                                                     this.props.fullCheckout ?
                                                         <div className="fullcheckout-meta-data">
-                                                            <div className="checkout-product-individual-price weight700">{item.price ? this.formatAPrice(item.price) : null}</div>
+                                                            <div className="checkout-product-individual-price weight700">{item.price ? formatAPrice(item.price) : null}</div>
                                                             <div>
                                                                 <div className="checkout-subtotal-quantity-block"><FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" />&nbsp;{item.quantity}</div>
                                                                 <div className="checkout-subtotal-text grey-out">Subtotal:</div>
-                                                                <div className="checkout-product-individual-subtotal weight700">{item.calculatedTotal ? this.formatAPrice(item.calculatedTotal) : null}</div>
+                                                                <div className="checkout-product-individual-subtotal weight700">{item.calculatedTotal ? formatAPrice(item.calculatedTotal) : null}</div>
                                                             </div>
                                                         </div>
                                                         : null
@@ -444,7 +427,7 @@ export default class Checkout extends Component {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.products ?
                                         <tr className="totals-label-and-price">
                                             <td><div className="grey-out weight600">Products:&nbsp;</div></td>
-                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.products)}</h5></td>
+                                            <td><h5>{formatAPrice(this.state.checkoutTruths.totals.products)}</h5></td>
                                         </tr>
                                         : null : null : null
                                 }
@@ -452,15 +435,15 @@ export default class Checkout extends Component {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.shipping ?
                                         <tr className="totals-label-and-price">
                                             <td><div className="grey-out weight600">Shipping:&nbsp;</div></td>
-                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.shipping)}</h5></td>
+                                            <td><h5>{formatAPrice(this.state.checkoutTruths.totals.shipping)}</h5></td>
                                         </tr>
                                         : null : null : null
                                 }
                                 {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.total ?
                                         <tr className="totals-label-and-price">
-                                            <td><div className="grey-out weight600">Cart Subtotal:&nbsp;</div></td>
-                                            <td><h3>{this.formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
+                                            <td><div className="grey-out weight600">CheckoutTotal:&nbsp;</div></td>
+                                            <td><h3>{formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
                                         </tr>
                                         : null : null : null
                                 }
@@ -487,7 +470,7 @@ export default class Checkout extends Component {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.products ?
                                         <tr className="totals-label-and-price">
                                             <td><div className="grey-out weight600">Products:&nbsp;</div></td>
-                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.products)}</h5></td>
+                                            <td><h5>{formatAPrice(this.state.checkoutTruths.totals.products)}</h5></td>
                                         </tr>
                                         : null : null : null
                                 }
@@ -495,7 +478,7 @@ export default class Checkout extends Component {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.shipping ?
                                         <tr className="totals-label-and-price">
                                             <td><div className="grey-out weight600">Shipping:&nbsp;</div></td>
-                                            <td><h5>{this.formatAPrice(this.state.checkoutTruths.totals.shipping)}</h5></td>
+                                            <td><h5>{formatAPrice(this.state.checkoutTruths.totals.shipping)}</h5></td>
                                         </tr>
                                         : null : null : null
                                 }
@@ -503,7 +486,7 @@ export default class Checkout extends Component {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.total ?
                                         <tr className="totals-label-and-price">
                                             <td><div className="grey-out weight600">Cart Subtotal:&nbsp;</div></td>
-                                            <td><h3>{this.formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
+                                            <td><h3>{formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
                                         </tr>
                                         : null : null : null
                                 }

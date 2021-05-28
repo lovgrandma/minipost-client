@@ -5,8 +5,10 @@ import {
 import { cookies, socket, bumpEvent } from '../App.js';
 import { get } from '../methods/utility.js';
 import dummyavatar from '../static/greyavatar.jpg';
+import Draggable from 'react-draggable';
+import { debounce } from '../methods/utility.js';
 
-import profile from '../static/profile.svg'; import chatblack from '../static/chat-black.svg'; import minimize from '../static/minimize.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import sendarrow from '../static/sendarrow.svg'; import circlemenulight from '../static/circlemenulight.svg';
+import profile from '../static/profile.svg'; import chatblack from '../static/chat-black.svg'; import minimize from '../static/minimize.svg'; import play from '../static/play.svg'; import pointingfinger from '../static/pointingfinger.svg'; import sendarrow from '../static/sendarrow.svg'; import circlemenulight from '../static/circlemenulight.svg'; import reset from '../static/reset.svg';
 
 import lzw from '../compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
@@ -21,15 +23,16 @@ let shakeRunning = 0;
 export default class Friend extends Component { // friend component fc1
     constructor(props) {
             super(props);
+            this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
+                chatlength: 0, typingOld: null, morechats: false, chatlimit: 100, socketOn: true, dragging: false, resetting: false }
             this.inputRef = React.createRef();
             this.scrollRef = React.createRef();
             this.typingRef = React.createRef();
             this.shakeRef = React.createRef();
             this.bumpBtnRef = React.createRef();
             this.watchBtnRef = React.createRef();
+            this.draggableEntity = React.createRef();
             this.handleChange = this.handleChange.bind(this);
-            this.state = { removeprompt: false, blockprompt: false,  reportprompt: false, chatinput: false,
-                chatlength: 0, typingOld: null, morechats: false, chatlimit: 100, socketOn: true }
         }
 
     componentDidMount() {
@@ -75,14 +78,6 @@ export default class Friend extends Component { // friend component fc1
                 }
             }
         })
-    }
-
-    componentWillUnmount() {
-
-    }
-
-    componentWillUpdate() {
-
     }
 
     componentDidUpdate(prevProps, prevState) {
@@ -324,21 +319,23 @@ export default class Friend extends Component { // friend component fc1
 
     openchatinput = (e, minimize) => {
         try {
-            // Runs method in social component. If user clicks on bump or profile, do not open chat submit
-            let room;
-            if (this.props.conversation) {
-                room = this.props.conversation._id;
-            }
-            if (e.target.classList.contains("minimize-icon")) {
-                this.props.updatefriendchatopen(e, null);
-            } else {
-                this.props.updatefriendchatopen(e, this.props.friend, room );
-            }
-            if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
-                this.scrollRef.current.scrollBy({
-                    top: this.scrollRef.current.scrollHeight,
-                    behavior: "smooth"
-                });
+            if (!this.state.dragging) {
+                // Runs method in social component. If user clicks on bump or profile, do not open chat submit
+                let room;
+                if (this.props.conversation) {
+                    room = this.props.conversation._id;
+                }
+                if (e.target.classList.contains("minimize-icon")) {
+                    this.props.updatefriendchatopen(e, null);
+                } else {
+                    this.props.updatefriendchatopen(e, this.props.friend, room );
+                }
+                if (e.target.classList.contains("searched-user-message")) { // When user clicks on message, scroll down chat
+                    this.scrollRef.current.scrollBy({
+                        top: this.scrollRef.current.scrollHeight,
+                        behavior: "smooth"
+                    });
+                }
             }
         } catch (err) {
 
@@ -402,15 +399,6 @@ export default class Friend extends Component { // friend component fc1
         }
     }
     
-    returnAvatar = () => {
-        if (this.props.avatarurl && this.props.cloud) {
-            if (this.props.avatarurl.length > 0 && this.props.cloud.length > 0) {
-                return this.props.cloud + "/av/" + this.props.avatarurl;
-            }
-        }
-        return dummyavatar;
-    }
-    
     resolveWatchRequest = (e) => {
         if (this.props.conversation) {
             if (this.props.waitingSessions.indexOf(this.props.friend) < 0) {
@@ -432,6 +420,63 @@ export default class Friend extends Component { // friend component fc1
         return false;
     }
 
+    returnDraggable() {
+        this.setState({ resetting: true, dragging: false });
+        this.props.setChatOverflowVisible(false, this.props.dragDisabled, this.props.index);
+        this.draggableEntity.current.state.x = 0;
+        this.draggableEntity.current.state.y = 0;
+        this.debounceResettingEnd();
+    }
+
+    checkDraggedState = () => {
+        try {
+            if (this.draggableEntity) {
+                if (this.draggableEntity.current) {
+                    if (this.draggableEntity.current.state) {
+                        if (this.draggableEntity.current.state.x != 0 && this.draggableEntity.current.state.y != 0) {
+                            this.setState({ dragged: true });
+                        } else {
+                            this.setState({ dragged: false });
+                        }
+                    }
+                }
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    handleDrag = () => {
+        try {
+            this.props.setChatOverflowVisible(true, this.props.dragDisabled);
+            this.checkDraggedState();
+            if (!this.state.dragging) {
+                this.setState({ dragging: true });
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    handleStop = () => {
+        this.checkDraggedState();
+        if (this.state.dragging) {
+            let pry = 50; // Snap Proximity y
+            let prx = 50; // Snap Proximity x
+            if (this.draggableEntity.current.state.x > -1 * prx && this.draggableEntity.current.state.x < prx &&
+                this.draggableEntity.current.state.y > -1 * pry && this.draggableEntity.current.state.y < pry) {
+                this.draggableEntity.current.state.x = 0;
+                this.draggableEntity.current.state.y = 0;
+                this.setState({ dragged: false });
+            }
+            this.setState({ dragging: false });
+        }
+    }
+
+    debounceResettingEnd = debounce(() => { this.setState({ resetting: false }); this.checkDraggedState(); }, 50);
+
+    debounceStop = debounce(() => this.handleStop(), 150);
+
     render() {
         let conversationid;
         if (this) {
@@ -444,14 +489,21 @@ export default class Friend extends Component { // friend component fc1
             }
         }
         return (
-            <div className="friend-container" ref={this.shakeRef}>
-                <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={!this.state.chatinput ? (e) => {this.openchatinput(e)} : null }>
+            <Draggable 
+            ref={this.draggableEntity}
+            onDrag={this.handleDrag}
+            onStop={this.debounceStop}
+            disabled={this.props.dragDisabled}
+            >
+            <div className={this.state.dragged ? "friend-container friend-single-dragging" : "friend-container"}>
+                <div className={this.props.friendstotal == 1 ? "friend-single" : "friend"} onClick={!this.state.chatinput ? (e) => {this.openchatinput(e)} : null } ref={this.shakeRef}>
                     <div className={this.props.friendchatopen === this.props.friend ? 'searched-user-username-container username-container-open' : 'searched-user-username-container'}>
                         <NavLink exact to={"/profile?p=" + this.props.friend} className="to-profile-link-btn">
-                            <img className="friendavatar" src={this.returnAvatar()}></img>
+                            <img className="friendavatar" src={this.props.cloud && this.props.avatarurl ? this.props.cloud.length > 0 && this.props.cloud.length > 0 ? this.props.cloud + "/av/" + this.props.avatarurl : dummyavatar : dummyavatar}></img>
                         </NavLink>
                         <div className="friendname">{this.props.friend}</div>
                         <div className="min-menu">
+                            <img className={this.state.dragged ? "dragging-entity reset-pan-icon handle opacity-1" : "dragging-entity reset-pan-icon handle reset-icon-default-position opacity-0"} draggable="false" onClick={(e) => {this.returnDraggable()}} src={reset} alt="reset chat"></img>
                             <img className={this.state.chatinput ? "minimize-icon" : "minimize-icon invisible"} src={minimize} onClick={(e) => {this.openchatinput(e, true)}} alt="circlemenu"></img>
                             <div className='search-user-dropdown'>
                                 <img className="circle-menu-icon prevent-open-toggle" src={circlemenulight} alt="circlemenu"></img>
@@ -596,6 +648,7 @@ export default class Friend extends Component { // friend component fc1
                     <div className='content-divider-thin'>&nbsp;</div>
                 </div>
             </div>
+            </Draggable>
         )
     }
 }
