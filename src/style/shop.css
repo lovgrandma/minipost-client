@@ -1660,9 +1660,22 @@ Button.transaction-button-checkout:hover {
 
 .placement-settings {
     max-width: 180px;
+    background-color: white;
+    border-radius: 15px;
+    padding: 10px;
 }
 
-.placement-setting-inputs {
+.placement-setting-inputs input,
+.placement-setting-inputs select {
     border-radius: 2.5px;
     border: 1px solid grey;
+}
+
+.placement-setting-inputs input {
+    width: 40px;
+}
+
+.placement-input-flex {
+    gap: 2px;
+    justify-content: unset;
 }

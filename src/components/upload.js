@@ -1044,28 +1044,29 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    resolveSingleImg(product) {
-        try {
-            if (product.images[0].url && this.props.cloud) {
-                return this.props.cloud + "/" + product.images[0].url;
-            }
-        } catch (err) {
-            return greyproduct;
-        }
-    }
-
+    // Will allow user to add products from their list to product placement for the current video
     addProductToPlacement(e, product) {
         try {
             if (this.state.productData) { // User must have products in order to add product to placement data. If no products user has no products or they are not allowed to add placement data
                 let temp = this.state.placementData ? this.state.placementData : [];
-                temp.push({
-                    id: product.id,
-                    name: product.name,
-                    startTime: null,
-                    endTime: null,
-                    placement: "right"
-                });
-                this.setState({ placementData: temp });
+                if (temp.length < 3) { // Cannot add more than 3 products
+                    let doChange = true;
+                    for (let i = 0; i < temp.length; i++) {
+                        if (temp[i].id == product.id) {
+                            doChange = false;
+                        }
+                    }
+                    if (doChange) {
+                        temp.push({
+                            id: product.id,
+                            name: product.name,
+                            startTime: null,
+                            endTime: null,
+                            placement: "right"
+                        });
+                        this.setState({ placementData: temp });
+                    }
+                }
             }
         } catch (err) {
             // Fail silently
@@ -1073,7 +1074,17 @@ export default class Upload extends Component { // ulc upload component
     }
 
     removeProductFromPlacement(e, product) {
-
+        try {
+            let temp  = this.state.placementData ? this.state.placementData : [];
+            for (let i = 0; i < temp.length; i++) {
+                if (temp[i].id == product.id) {
+                    temp.splice(i, 1);
+                }
+            }
+            this.setState({ placementData: temp });
+        } catch (err) {
+            // Fail silently
+        }
     }
 
     // Must add thumbnail option in input section
@@ -1176,14 +1187,14 @@ export default class Upload extends Component { // ulc upload component
                                 <div className="upload-placement-main-container margin-bottom-25">
                                     <h5>Product Placement</h5>
                                     <div className="info-blurb-max margin-bottom-10">You can place your own products in your video so that users can buy and sell products within the context of your playing video</div>
-                                    <div className="upload-placement-container flex">
+                                    <div className="upload-placement-container flex margin-bottom-10">
                                         {
                                             this.state.productData.map((product) =>
                                                 <div className="upload-placement-product">
                                                     <div className="upload-placement-product-meta">
                                                         <div className="prompt-basic-s3 grey-out">{product.id}</div>
                                                         <div className="prompt-basic-s weight600">{product.name}</div>
-                                                        <div className="upload-product-placement-img"><img src={this.resolveSingleImg(product)}></img></div>
+                                                        <div className="upload-product-placement-img"><img src={product.images ? product.images[0] ? product.images[0].url && this.props.cloud ? this.props.cloud + "/" + product.images[0].url : greyproduct : greyproduct : greyproduct}></img></div>
                                                     </div>
                                                     <div className="flex space-around margin-bottom-10">
                                                         <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.addProductToPlacement(e, product)}}>Add</button>
@@ -1205,22 +1216,22 @@ export default class Upload extends Component { // ulc upload component
                                                         <div className="margin-bottom-10 placement-setting-inputs">
                                                             <div>
                                                                 <label className="medium-data-text grey-out weight600">Start Time:</label>
-                                                                <div className="flex">
-                                                                    <input type="number" id="placement-hr-start" name="placement-hr-start" min="0" max="12" placeholder="00"></input>
+                                                                <div className="flex placement-input-flex">
+                                                                    <input type="number" id="placement-hr-start" name="placement-hr-start" min="0" max="48" placeholder="00"></input>
                                                                     <span>:</span>
                                                                     <input type="number" id="placement-min-start" name="placement-min-start" min="0" max="59" placeholder="00"></input>
                                                                     <span>:</span>
-                                                                    <input type="number" id="placement-sec-start" name="placement-sec-start" min="0" max="60" placeholder="00"></input>
+                                                                    <input type="number" id="placement-sec-start" name="placement-sec-start" min="0" max="59" placeholder="00"></input>
                                                                 </div>
                                                             </div>
                                                             <div>
                                                                 <label className="medium-data-text grey-out weight600">End Time:</label>
-                                                                <div className="flex">
-                                                                    <input type="number" id="placement-hr-end" name="placement-hr-end" min="0" max="12" placeholder="00"></input>
+                                                                <div className="flex placement-input-flex">
+                                                                    <input type="number" id="placement-hr-end" name="placement-hr-end" min="0" max="48" placeholder="00"></input>
                                                                     <span>:</span>
                                                                     <input type="number" id="placement-min-end" name="placement-min-end" min="0" max="59" placeholder="00"></input>
                                                                     <span>:</span>
-                                                                    <input type="number" id="placement-sec-end" name="placement-sec-end" min="0" max="60" placeholder="00"></input>
+                                                                    <input type="number" id="placement-sec-end" name="placement-sec-end" min="0" max="59" placeholder="00"></input>
                                                                 </div>
                                                             </div>
                                                             <label className="medium-data-text grey-out weight600">Screen Placement:</label>
