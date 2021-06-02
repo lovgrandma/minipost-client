@@ -107,7 +107,7 @@ export default class ArticlePreview extends Component {
                         : null
                     }
                     <Link to={this.linkToArticle()}>
-                        <div className="article-preview-title">{this.props.title}</div>
+                        <div className="article-preview-title"><span className="tiny-read-label">{this.props.id && this.props.published ? "read" : null}</span><span>&nbsp;&nbsp;</span><span className="article-preview-title-span">{this.props.title}</span></div>
                     </Link>
                     {
                         this.props.edit ?
@@ -128,7 +128,7 @@ export default class ArticlePreview extends Component {
                         <div className={this.props.edit || this.props.viewProfile ? "article-preview-body-edit" : "article-preview-body"}>{this.state.body}</div>
                     </Link>
                     <span className="dash-video-bar">
-                        <NavLink exact to={"/profile?p=" + this.props.author}><p className='video-author'>{this.props.author}</p></NavLink>
+                        <NavLink exact to={"/profile?p=" + this.props.author}><p className='video-author grey-out'>{this.props.author}</p></NavLink>
                         <div className="dash-video-bar-stats">
                             <p className='video-views'>{this.props.reads} {this.props.title ? this.props.views == 1 ? "read" : "reads" : null}</p>
                             <span>&nbsp;{this.props.title ? "•" : null}&nbsp;</span>

@@ -145,6 +145,10 @@ h5 {
     font-size: 0.7em;
 }
 
+.prompt-basic-s3 {
+    font-size: 0.65em;
+}
+
 .grey-out, .grey-out a {
     color: grey;
     transition: 200ms;
@@ -339,6 +343,10 @@ button {
 .flex {
     display: flex;
     justify-content: space-between;
+}
+
+.space-around {
+    justify-content: space-around;
 }
 
 .flex-start {
@@ -659,6 +667,10 @@ input[type="search"] {
     flex-direction: row;
 }
 
+.main-brand-logo-navbar {
+    place-content: center;
+}
+
 @media (max-width: 840px) {
     .brand {
         width: 60%;
@@ -677,6 +689,14 @@ input[type="search"] {
 
 .flex-grow2 {
     flex-grow: 2;
+}
+
+.flex-grow3 {
+    flex-grow: 3;
+}
+
+.flex-grow4 {
+    flex-grow: 4;
 }
 
 .nowrap {
@@ -838,6 +858,7 @@ ul li {
 .btn-desc-conf-menu {
     flex-direction: column;
     display: flex !important;
+    font-size: 14px;
 }
 
 .btn-desc > a {
@@ -948,6 +969,7 @@ ul li {
 .dash-logged-out {
     display: flex;
     justify-self: end;
+    margin-right: 0px;
 }
 
 .sidebarimg {
@@ -1469,7 +1491,7 @@ label {
 }
 
 .main-video-container {
-    flex-shrink: 2;
+    flex-shrink: 1000;
     max-width: 1340px;
 }
 
@@ -1772,6 +1794,11 @@ label {
   color: rgb(155, 155, 155);
 }
 
+.videocontainer-related .video-author, 
+.article-container-related .video-author {
+    font-size: 0.82em;
+}
+
 .video-author, .video-author-videopage {
     font-weight: 600 !important;
     padding-left: 0 !important;
@@ -1852,6 +1879,14 @@ label {
 .profile-content .dash-video-bar-stats > span, 
 .profile-content .dash-video-bar-stats > p {
     padding-bottom: 0;
+}
+
+.profile-content .article-preview-title {
+    max-height: 2.5em;
+}
+
+.profile-content figure {
+    max-height: 125px;
 }
 
 .videothumb {
@@ -2967,6 +3002,12 @@ label {
     margin: 0.22em 0 0.22em 0;
 }
 
+.searched-user-username-container .friendname {
+    max-width: 125px;
+    overflow: hidden;
+    display: inline-block;
+}
+
 .user-request-container {
     background-color: #ebebeb;
     border-radius: 10px;
@@ -3900,6 +3941,12 @@ If user only has one friend, styling wont apply */
     max-width: 700px;
 }
 
+.info-blurb-max {
+    font-size: 0.75em;
+    transition: 200ms;
+    color: grey;
+}
+
 .info-blurb-2 {
     font-size: 0.8em;
     color: black;
@@ -4560,6 +4607,14 @@ textarea:focus {
     margin:0 0 0.2rem;
 }
 
+.article-container-dash figcaption {
+    font-size: 0.7rem;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    text-align: center;
+    color: rgb(92, 92, 92);
+}
+
 .article-container-dash .article-preview-body {
 /*    max-height: 238.328px;*/
     transition: 200ms;
@@ -4811,13 +4866,13 @@ a code:hover {
 }
 
 .videocontainer-related .dash-video-details-container {
-    width: 250px;
+    width: 200px;
     max-height: 110px;
     padding-left: 10px;
 }
 
 .videocontainer-related .mainvideotitle {
-    font-size: 16px;
+    font-size: 0.9rem;
     line-height: 16px;
     margin-bottom: 2px;
     max-width: 220px;
@@ -4984,18 +5039,20 @@ a code:hover {
     
     .relatedpanel .col .videocontainer {
         display: flex;
+        gap: 10px;
     }
     
     .videocontainer-related .mainvideotitle {
         max-width: 100%;
     }
     #videocontainer {
-        padding-left: 0;
+        padding-left: 4px;
     }
     
     .relatedpanel .col {
-        padding: 0;
+        padding: 0 !important;
     }
+    
     .video-details {
         padding-right: 10px;
     }
@@ -5120,11 +5177,11 @@ a code:hover {
 }
 
 .sidebar-isopen + .maindashcontainer .mainvideotitle {
-    font-size: 14px;
+    font-size: 0.9rem;
 }
 
 .sidebar-isopen + .maindashcontainer .article-container .article-preview-title {
-    font-size: 16px;
+    font-size: 1rem;
 }
 
 .thumbnail-upload-container {
@@ -5177,7 +5234,7 @@ a code:hover {
 }
 
 .article-preview-title {
-    font-size: 18px;
+    font-size: 1rem;
     line-height: 16px;
     margin-bottom: 4px;
     line-height: 1em;
@@ -5358,7 +5415,6 @@ a code:hover {
         width: 98.4%;
     }
 }
-
 /*
 @media (min-width: 600px) and (max-width: 1300px) {
     .sidebar-isopen .navbtnsright {
@@ -5875,3 +5931,20 @@ input[type="search"]::-webkit-search-decoration,
 input[type="search"]::-webkit-search-cancel-button,
 input[type="search"]::-webkit-search-results-button,
 input[type="search"]::-webkit-search-results-decoration { display: none; }
+
+.tiny-read-label {
+    border-radius: 15px;
+    background-color: #bbbbbb;
+    color: white;
+    display: inline-block;
+    padding: 0px 6px;
+    font-size: 0.72rem;
+    font-family: 'Open Sans', Arial;
+    display: inline-block;
+    vertical-align: text-top;
+    line-height: 1.5;
+}
+
+.article-preview-title-span {
+    line-height: 1.2;
+}

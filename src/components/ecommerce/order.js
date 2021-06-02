@@ -9,7 +9,7 @@ export default class Order extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            orderId: ""
+            orderId: "", shops: null, orderInfo: null, totals: null, cardData: null, convertedTime: null
         }
     }
 
@@ -28,7 +28,7 @@ export default class Order extends Component {
             this.setState({ busy: true });
             setTimeout(() => {
                 this.setState({ busy: false });
-            }, 25000);
+            }, 15000); // 15 second timeout
             if (cookies.get('loggedIn') && cookies.get('hash')) {
                 let username = cookies.get('loggedIn');
                 let hash = cookies.get('hash');
@@ -49,6 +49,7 @@ export default class Order extends Component {
                     return response.json();
                 })
                 .then((result) => {
+                    this.setState({ busy: false });
                     console.log(result);
                     if (result.data.shops && result.data.orderInfo) {
                         this.setState({ shops: result.data.shops, orderInfo: result.data.orderInfo });
@@ -63,8 +64,6 @@ export default class Order extends Component {
                     } else {
                         throw new Error;
                     }
-                    this.setState({ busy: false });
-
                 })
                 .catch((err) => {
                     this.setState({ busy: false });
@@ -95,7 +94,7 @@ export default class Order extends Component {
                                                 this.state.orderInfo.map((item) => 
                                                     item.shopId == shop.id ?
                                                         <tr className="flex product-receipt-data margin-bottom-5 align-center">
-                                                            <td className="prompt-basic-s weight600">{item.name}</td>
+                                                            <td className="prompt-basic-s weight600"><span>{item.name}</span><span className="grey-out">&nbsp;{item.quantity > 1 ? "x" + item.quantity : null}</span></td>
                                                             <td className="flex align-center">
                                                                 <span className="prompt-basic-s grey-out">Total:&nbsp;</span>
                                                                 <div className="prompt-basic-s receipt-total-light-bg weight600">{formatAPrice(item.calculatedTotal)}</div>&nbsp;
@@ -110,7 +109,7 @@ export default class Order extends Component {
                                     : null
                             }
                         </div>
-                        <div>
+                        <div className="margin-bottom-10">
                             <table className="totals-container margin-left-auto">
                                 <tr className="totals-label-and-price prompt-basic-s">
                                     <td className="grey-out weight600">Subtotal:&nbsp;</td>

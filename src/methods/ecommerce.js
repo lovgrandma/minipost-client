@@ -49,7 +49,7 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
                         if (result.orderRecord.paymentFulfilled) {
                             await emptyCachedCartItems(); // Empty cached cart items as well. User just completed the purchase
                             this.setState({ cartData: [], checkoutTruths: {} }, () => {
-                                this.props.history.push('/order?o=' + result.orderRecord._id); // redirect user to receipt page
+                                this.props.history.push('/order?o=' + result.orderRecord.id); // redirect user to receipt page
                             }); // Set stateful user cart to empty
                         }
                     }
@@ -289,5 +289,114 @@ export const formatAPrice = function(number, ensureToFixed = true) {
         return null;
     } catch (err) {
         return number;
+    }
+}
+
+export const resolveOrderDesc = function(order, i) {
+    try {
+        let orders = [];
+        let orderString = "";
+        let more = false;
+        for (let i = 0; i < order.cart.length; i++) {
+            if (orders.length < 3) {
+                if (orders.indexOf(order.cart[i].name) == -1) {
+                    orders.push(order.cart[i].name);
+                }
+            } else {
+                if (orders.indexOf(order.cart[i].name) == -1) {
+                    more = true;
+                }
+                break;
+            }
+        }
+        for (let i = 0; i < orders.length; i++) {
+            if (i < orders.length - 1) {
+                orderString += orders[i] + ", ";
+            } else {
+                orderString += orders[i];
+            }
+        }
+        if (more) {
+            return orderString + "..";
+        }
+        return orderString;
+    } catch (err) {
+        console.log(err);
+        return "Order Numbered #" + i;
+    }
+}
+
+export const resolveTotal = function(order) {
+    try {
+        return formatAPrice(order.totals.total);
+    } catch (err) {
+        return "Click to see order total";
+    }
+}
+
+export const resolveOrderId = function(order) {
+    try {
+        return order.id;
+    } catch (err) {
+        return null;
+    }
+}
+
+export const sendToOrderReceipt = function(order) {
+    try {
+        this.props.history.push("/order?o=" + order.id);
+    } catch (err) {
+        return false;
+    }
+}
+
+export const resolveOrderShops = function(order) {
+    try {
+        let shops = [];
+        let shopsString = "";
+        let more = "";
+        for (let i = 0; i < order.shops.length; i++) {
+            if (shops.length < 3) {
+                if (shops.indexOf(order.shops[i].name) == -1) {
+                    shops.push(order.shops[i].name);
+                }
+            } else {
+                if (shops.indexOf(order.shops[i].name) == -1) {
+                    more = "..";
+                }
+                break;
+            }
+        }
+        for (let i = 0; i < shops.length; i++) {
+            if (i < shops.length -1) {
+                shopsString += shops[i] + ", ";
+            } else {
+                shopsString += shops[i];
+            }
+        }
+        if (shopsString.length > 0) {
+            return "sold by " + shopsString + more;
+        } else {
+            return "";
+        }
+    } catch (err) {
+        return null;
+    }
+}
+
+export const redirectManageShopOrders = function() {
+    try {
+        this.props.history.push('/manageorders');
+    } catch (err) {
+        return null;
+    }
+}
+
+export const formatAFee = function(numerator, denominator) {
+    try {
+        let dif = denominator - numerator;
+        return ((dif / denominator) * 100).toFixed(1) + "%";
+    } catch (err) {
+        return null;
     }
 }

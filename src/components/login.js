@@ -300,7 +300,7 @@ export default class Login extends Component {
             <div>
                 <div className="minipost-logo-center">
                     <img className="minipost-register-logo-notext" src={minipostAppLogoNoText} alt="Minireel" draggable="false"></img>
-                    <p className="register-text">Watch together</p>
+                    <p className="register-text">Be together</p>
                 </div>
                 <div className={this.state.overlay ? "overlay resetform" : "overlay overlay-hidden resetform"}>
                     <div className="info-blurb-3-thick dark-grey">Reset your password using the form below</div>

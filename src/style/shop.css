@@ -1419,7 +1419,7 @@ Button.transaction-button-checkout:hover {
     left: 0;
     transition: 150ms;
     top: -200%;
-    background-color: rgb(202, 202, 202, .5);
+    background-color: rgb(202, 202, 202, 0.9);
 }
 
 .cover-on {
@@ -1442,9 +1442,32 @@ Button.transaction-button-checkout:hover {
     display: none;
 }
 
-.checkout-page .maindashwide {
-    padding-left: 0 !important;
+.checkout-page .maindash {
+    padding-left: 0;
 }
+
+@media (max-width: 1560px) {
+    .checkout-page .maindash {
+        padding-left: 25px !important;
+    }
+}
+
+@media (max-width: 640px) {
+    .checkout-page .maindash {
+        padding-left: 5px;
+    }
+}
+
+.checkout-page .maindashwide {
+    padding-left: 25px !important;
+}
+
+@media (max-width: 640px) {
+    .checkout-page .maindashwide {
+        padding-left: 5px !important;
+    }
+}
+
 
 .checkout-page .sidebar-open {
     width: 0;
@@ -1538,8 +1561,108 @@ Button.transaction-button-checkout:hover {
     padding: 0 5px;
 }
 
+.product-receipt-data-orders-pg {
+    padding-left: 0;
+}
+
 .receipt-total-light-bg {
     background-color: #f1f1f1;
     padding: 0 5px;
     border-radius: 5px;
+}
+
+.order-orders-page {
+    padding: 3.5px 5px;
+    display: inline;
+    padding-left: 0;
+}
+
+.orders-page-table {
+    background-color: #ececec;
+    border-radius: 5px;
+    display: block;
+    padding: 5px 10px;
+    border: 1px solid rgba(158, 158, 158, 0);
+    transition: 100ms;
+}
+
+.orders-page-table:hover {
+    border: 1px solid rgb(182, 182, 182);
+}
+
+.orders-page-order-id {
+    background-color: #cecece;
+    width: fit-content;
+    padding: 0.5px 7.5px;
+    border-radius: 5px;
+}
+
+.shop-manage-totals-label-price td {
+    padding: 0 5px;
+}
+
+.shop-manage-totals-label-price td:last-child {
+    padding-right: 0;
+}
+
+.shop-manage-totals-payout-container tr {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+.total-payout-label {
+    background-color: #f4f4f4;
+    padding: 2.5px 20px;
+    border-radius: 15px;
+}
+
+/* Upload video page placement edit data */
+
+.upload-placement-main-container {
+    background-color: #f5f5f5;
+    padding: 10px;
+    border-radius: 15px;
+}
+
+.upload-placement-container {
+    overflow-x: scroll;
+    gap: 7.5px;
+    justify-content: start;
+}
+
+.upload-product-placement-img {
+    max-height: 180px;
+    overflow: hidden;
+    margin-bottom: 5px;
+}
+
+.upload-product-placement-img img {
+    width: 140px;
+    height: 180px;
+    object-fit: cover;
+}
+
+.upload-placement-product-meta {
+    max-width: 140px;
+    overflow: hidden;
+}
+
+.upload-placement-product-meta-settings {
+    max-width: 180px;
+}
+
+.upload-placement-product-meta div {
+    word-wrap: break-word;
+    white-space: pre;
+    overflow-wrap: anywhere;
+}
+
+.placement-settings {
+    max-width: 180px;
+}
+
+.placement-setting-inputs {
+    border-radius: 2.5px;
+    border: 1px solid grey;
 }

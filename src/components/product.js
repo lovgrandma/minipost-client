@@ -730,7 +730,13 @@ export default class Product extends Component {
         // if product valid, add to cart, dont redirect anywhere
     }
 
-    goBuy() {
+    goBuy(cartChoice) {
+        console.log(cartChoice);
+        if (cartChoice == "See Details") { // If see details, not able to add to cart must go to product page first
+            this.props.history.push("/product?p=" + this.props.id);
+        } else {
+            // try add to cart and redirect to checkout page, if failure go product page
+        }
         // if product valid, go checkout, else go product page
     }
 
@@ -929,7 +935,7 @@ export default class Product extends Component {
                                         }
                                     </div>
                                     <div>
-                                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space" onClick={(e)=>{this.goBuy()}}>Buy Now</Button>
+                                        <Button className="transaction-button transaction-button-checkout btn-center cart-button-space" onClick={(e)=>{this.goBuy(cartChoice)}}>Buy Now</Button>
                                     </div>
                                 </div>
                             </div>

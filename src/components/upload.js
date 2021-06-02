@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import Cookies from 'universal-cookie';
 import axios from 'axios';
 import currentrooturl from '../url';
+import currentshopurl from '../shopurl.js';
 import {
     Button
 } from 'react-bootstrap';
@@ -13,6 +14,7 @@ import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
 import { setReplyData } from '../methods/responses.js';
 import corsdefault from '../cors.js';
+import greyproduct from '../static/greyproduct.jpg';
 
 const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -23,7 +25,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true, shopData: null, productData: null, placementData: null
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -110,6 +112,9 @@ export default class Upload extends Component { // ulc upload component
                         }
                         if (this.props.location.props.thumbnailUrl) {
                             this.setState({ thumbnailUrl: this.props.location.props.thumbnailUrl });
+                        }
+                        if (this.props.location.props.shopOwner) {
+                            this.getShopProductInfo(); // If user editing video owns a shop allow them to add product info
                         }
                     }
                 }
@@ -468,6 +473,9 @@ export default class Upload extends Component { // ulc upload component
                     console.log(data);
                     let authenticated = this.props.checkAndConfirmAuthentication(data);
                     if (authenticated) {
+                        if (data.shopOwner) {
+                            this.getShopProductInfo();
+                        }
                         if (data.advertiser) {
                             this.setState({ advertiser: data.advertiser });
                         }
@@ -484,7 +492,6 @@ export default class Upload extends Component { // ulc upload component
                                 this.setState({ placeholderDesc: data.description });
                             }
                             if (data.tags && data.tags != undefined) {
-                                console.log(data.tags);
                                 if (data.tags.length > 0) {
                                     if (data.tags[0] != "") {
                                         console.log(data.tags);
@@ -539,6 +546,46 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    /**
+     * Will retrieve shop product information if state to shopOwner is true
+     */
+    getShopProductInfo() {
+        if (cookies.get('loggedIn') && cookies.get('hash')) {
+            let username = cookies.get('loggedIn');
+            let hash = cookies.get('hash');
+            let self = true;
+            let videoId = this.state.videoId ? this.state.videoId : null;
+            fetch(currentshopurl + "s/getproductsforvideoplacement", {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    username, hash, self, videoId
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                console.log(result);
+                if (result.data) {
+                    if (result.data.productData) {
+                        this.setState({ productData: result.data.productData });
+                    }
+                    if (result.data.placementData) {
+                        this.setState({ placementData: result.data.placementData });
+                    }
+                }
+            })
+            .catch((err) => {
+                return false;
+            });
+        }
+    }
+
     getSocket = (i, interval) => { // Manually returns socket from main component to ensure socket communication during upload
         return new Promise(resolve => {
             setTimeout(() => {
@@ -559,7 +606,7 @@ export default class Upload extends Component { // ulc upload component
         // Check browser support
         if (shaka.Player.isBrowserSupported()) {
             if (!manifest) {
-                manifest = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd';
+                manifest = 'https://storage.googleapis.com/shaka-demo-assets/angel-one/dash.mpd'; // Eventually if no manifest cause failure to load and just load technical difficulties image instead of this vdieo
             }
             let manifestUri = manifest;
 
@@ -997,6 +1044,38 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
+    resolveSingleImg(product) {
+        try {
+            if (product.images[0].url && this.props.cloud) {
+                return this.props.cloud + "/" + product.images[0].url;
+            }
+        } catch (err) {
+            return greyproduct;
+        }
+    }
+
+    addProductToPlacement(e, product) {
+        try {
+            if (this.state.productData) { // User must have products in order to add product to placement data. If no products user has no products or they are not allowed to add placement data
+                let temp = this.state.placementData ? this.state.placementData : [];
+                temp.push({
+                    id: product.id,
+                    name: product.name,
+                    startTime: null,
+                    endTime: null,
+                    placement: "right"
+                });
+                this.setState({ placementData: temp });
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    removeProductFromPlacement(e, product) {
+
+    }
+
     // Must add thumbnail option in input section
     render() {
         return (
@@ -1092,6 +1171,72 @@ export default class Upload extends Component { // ulc upload component
                             <label htmlFor="nudity-no">No</label>
                             <div className="info-blurb">Please be candid with us on whether or not there is nudity in your video. We allow nudity on minipost within reason. Efforts to post restricted content on minipost can result in your account receiving strikes or account termination.<br /><NavLink exact to="/guidelines">See our guidelines for more info</NavLink></div>
                         </form>
+                        {
+                            this.state.productData ?
+                                <div className="upload-placement-main-container margin-bottom-25">
+                                    <h5>Product Placement</h5>
+                                    <div className="info-blurb-max margin-bottom-10">You can place your own products in your video so that users can buy and sell products within the context of your playing video</div>
+                                    <div className="upload-placement-container flex">
+                                        {
+                                            this.state.productData.map((product) =>
+                                                <div className="upload-placement-product">
+                                                    <div className="upload-placement-product-meta">
+                                                        <div className="prompt-basic-s3 grey-out">{product.id}</div>
+                                                        <div className="prompt-basic-s weight600">{product.name}</div>
+                                                        <div className="upload-product-placement-img"><img src={this.resolveSingleImg(product)}></img></div>
+                                                    </div>
+                                                    <div className="flex space-around margin-bottom-10">
+                                                        <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.addProductToPlacement(e, product)}}>Add</button>
+                                                        <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.removeProductFromPlacement(e, product)}}>Remove</button>
+                                                    </div>
+                                                </div>
+                                            )
+                                        }
+                                    </div>
+                                    <div className="upload-placement-added-products flex">
+                                        {
+                                            this.state.placementData ?
+                                                this.state.placementData.map((product) =>
+                                                    <div className="placement-settings">
+                                                        <div className="upload-placement-product-meta upload-placement-product-meta-settings">
+                                                            <div className="prompt-basic-s3 grey-out">{product.id}</div>
+                                                            <div className="prompt-basic-s weight600">{product.name}</div>
+                                                        </div>
+                                                        <div className="margin-bottom-10 placement-setting-inputs">
+                                                            <div>
+                                                                <label className="medium-data-text grey-out weight600">Start Time:</label>
+                                                                <div className="flex">
+                                                                    <input type="number" id="placement-hr-start" name="placement-hr-start" min="0" max="12" placeholder="00"></input>
+                                                                    <span>:</span>
+                                                                    <input type="number" id="placement-min-start" name="placement-min-start" min="0" max="59" placeholder="00"></input>
+                                                                    <span>:</span>
+                                                                    <input type="number" id="placement-sec-start" name="placement-sec-start" min="0" max="60" placeholder="00"></input>
+                                                                </div>
+                                                            </div>
+                                                            <div>
+                                                                <label className="medium-data-text grey-out weight600">End Time:</label>
+                                                                <div className="flex">
+                                                                    <input type="number" id="placement-hr-end" name="placement-hr-end" min="0" max="12" placeholder="00"></input>
+                                                                    <span>:</span>
+                                                                    <input type="number" id="placement-min-end" name="placement-min-end" min="0" max="59" placeholder="00"></input>
+                                                                    <span>:</span>
+                                                                    <input type="number" id="placement-sec-end" name="placement-sec-end" min="0" max="60" placeholder="00"></input>
+                                                                </div>
+                                                            </div>
+                                                            <label className="medium-data-text grey-out weight600">Screen Placement:</label>
+                                                            <select id="screen-placement" name="screen-placement">
+                                                                <option value="left">Left</option>
+                                                                <option value="right">Right</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                )
+                                                : null
+                                        }
+                                    </div>
+                                </div>
+                                : null
+                        }
                         <div className={this.props.edit ? "prompt-basic-s grey-out margin-bottom-5" : "hidden"}>{this.props.edit ? "If you've made changes that you don\'t want to save you can just leave this page and nothing will be changed. Otherwise you can revise your changes and click the button below" : null}</div>
                         <Button className={this.state.progress >= 100 && this.state.videoId != "" && this.state.publishing == false && this.state.published === false ? "publish-button publish-video red-btn" : "publish-button publish-video publish-video-hidden"} onClick={this.updateRecord}>{!this.props.edit ? "Publish" : "Update"}</Button>
                     </div>

@@ -1015,7 +1015,7 @@ export default class Video extends Component {
                                 this.setState({ skipTime: 5 - Math.floor(totalTime) });
                             }
                             // console.log(totalTime, this.videoComponent.current.duration);
-                            let watchedTimeInc = 45;
+                            let watchedTimeInc = 20;
                             let percentageInc = 0.25;
                             // Users must watch either x seconds of an ad or x percentage for it to constitute a "view". This is sensitive as this determines what advertisers pay to minipost and also how authors are compensated as a result.
                             if (this.state.adPlaying) {
@@ -1163,12 +1163,25 @@ export default class Video extends Component {
         }
     }
 
+    resolveThumbnailSafely() {
+        try {
+            if (this.state.cloud && this.state.thumbnail) {
+                return this.state.cloud + "/" + this.state.thumbnail;
+            } else {
+                return minipostpreviewbanner;
+            }
+        } catch (err) {
+            return minipostpreviewbanner;
+        }
+    }
+
     render() {
         let styles = {
             height: { height: this.resolvePlaceholderHeight() + "px"},
             maxheight: {maxHeight: '100%' },
             minHeight: {minHeight: '100%' }
         };
+        let currPoster = this.resolveThumbnailSafely();
         return (
             <div className="video-page-flex">
             <div id='videocontainer' className='main-video-container'>
@@ -1232,12 +1245,14 @@ export default class Video extends Component {
                         </form>
                     </div>
                     <div className="hide-seek">&nbsp;</div>
-                    <video className="shaka-video"
-                    ref={this.videoComponent}
-                    poster={minipostpreviewbanner}
-                    style={Object.assign(styles.height, styles.maxheight)}
-                    playsinline
-                    />
+                    <div className="lead-video-container">
+                        <video className="shaka-video"
+                        ref={this.videoComponent}
+                        poster={currPoster}
+                        style={Object.assign(styles.height, styles.maxheight)}
+                        playsinline
+                        />
+                    </div>
                 </div>
                 <div className="video-stats-and-related-container">
                     <div className="video-stats-container">

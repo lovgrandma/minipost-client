@@ -7,6 +7,7 @@ import Select from 'react-select';
 import keys from '../keys/stripecred.js';
 import amex from '../static/cc/amex.svg'; import mastercard from '../static/cc/mastercard.svg'; import visa from '../static/cc/visa.svg'; 
 import corsdefault from '../cors.js';
+import { redirectManageShopOrders } from '../methods/ecommerce.js';
 
 import IntlTelInput from 'react-intl-tel-input';
 import 'react-intl-tel-input/dist/main.css';
@@ -257,7 +258,7 @@ export default class Options extends Component {
         }
     }
 
-    openShop = (e) => {
+    openShopPayment = (e) => {
         if (this.state.openportal != "shop") {
             this.setState({ openportal: "shop" });
         } else {
@@ -625,13 +626,17 @@ export default class Options extends Component {
                     {
                         this.state.shopId ?
                             <div>
-                                <div className="key-and-value">
+                                <div className="key-and-value margin-bottom-5">
                                     <div className="grey-out"></div>
-                                    <button className="prompt-basic btn upload-button" onClick={(e)=> {this.openShop(e)}}>Shop payment details</button>
+                                    <button className="prompt-basic btn upload-button" onClick={(e)=> {this.openShopPayment(e)}}>Shop payment details</button>
                                 </div>
                                 <div className={this.state.openportal == 'shop' ? 'portal portal-open' : 'portal'}>
                                     <h3 className="prompt-basic background-color-header">You'll want to update the banking information for your business in order to get paid. Click the button below to set up your payment information with Stripe</h3>
                                     <a href={this.state.expressLink} class="stripe-connect"><span>Connect with</span></a>
+                                </div>
+                                <div className="key-and-value">
+                                    <div className="grey-out"></div>
+                                    <button className="prompt-basic btn upload-button" onClick={(e)=> {redirectManageShopOrders.call(this)}}>Manage shop customer orders</button>
                                 </div>
                             </div>
                             : null

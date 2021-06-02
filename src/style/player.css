@@ -41,6 +41,13 @@
     max-height: 82.5vh;
     width: 100%;
     transition: 50ms;
+ }
+
+.lead-video-container {
+    margin: 0 auto;
+    width: 100%;
+    display: flex;
+    max-height: 82.5vh;
 }
 
 .chat-btn {
@@ -48,7 +55,8 @@
 }
 
 @media all and (display-mode: fullscreen) {
-    .shaka-video {
+    .shaka-video,
+    .lead-video-container {
         max-height: 100vh;
     }
     
@@ -230,7 +238,7 @@
     opacity: 0;
 }
 
-.cover > video {
+.cover .lead-video-container > video {
     object-fit: cover;
 }
 

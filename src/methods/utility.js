@@ -166,7 +166,6 @@ export let roundTime = function(time) {
     } else {
         return time;
     }
-    return time;
 }
 
 export const roundNumber = function(number) {

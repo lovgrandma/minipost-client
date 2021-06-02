@@ -15,7 +15,7 @@ import corsdefault from '../cors.js';
 export default class Profile extends Component {
     constructor() {
         super();
-        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "", page: "", shop: null, shippingClasses: [] }
+        this.state = { username: "", avatarurl: "", content: [], videosUploaded: 0, totalVideoViews: 0, totalReads: 0, following: 0, followers: 0, about: "", page: "", shop: null, shippingClasses: [], shopOwner: false }
     }
 
     componentDidMount = async () => {
@@ -74,7 +74,7 @@ export default class Profile extends Component {
                             } else {
                                 result.shop.shippingClasses = [];
                             }
-                            this.setState({ shop: result.shop, shippingClasses: result.shop.shippingClasses });
+                            this.setState({ shop: result.shop, shippingClasses: result.shop.shippingClasses, shopOwner: true });
                         }
                         if (result.totalviews) {
                             this.setState({ totalVideoViews: result.totalviews });
@@ -143,6 +143,7 @@ export default class Profile extends Component {
                                             index={index}
                                             edit={editable.call(this)}
                                             ad={isAd(record)}
+                                            shopOwner={this.state.shopOwner}
                                             />
                                         : <ArticlePreview title={record.title}
                                             author={record.author}

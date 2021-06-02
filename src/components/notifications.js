@@ -7,7 +7,6 @@ import { convertDate } from '../methods/utility.js';
 import greythumb from '../static/greythumb.jpg';
 import corsdefault from '../cors.js';
 
-
 export default class Notifications extends Component {
     constructor(props) {
         super(props);
