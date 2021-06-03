@@ -13,6 +13,7 @@ import {
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
 import { setReplyData } from '../methods/responses.js';
+import { debounce } from '../methods/utility.js';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
 
@@ -25,7 +26,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true, shopData: null, productData: null, placementData: null
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true, shopData: null, productData: null, placementData: null, placementError: null
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -51,6 +52,7 @@ export default class Upload extends Component { // ulc upload component
             whileYoureGone: 'When your video is converting you can visit other pages and watch videos, we\'ll take care of this while you\'re gone',
             copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our guidelines'
         }
+        this.debounceUpdateProductPlacement = this.debounceUpdateProductPlacement.bind(this);
     }
 
     componentDidMount = async() => {
@@ -576,7 +578,10 @@ export default class Upload extends Component { // ulc upload component
                         this.setState({ productData: result.data.productData });
                     }
                     if (result.data.placementData) {
-                        this.setState({ placementData: result.data.placementData });
+                        if (JSON.parse(result.data.placementData)) {
+                            let a = JSON.parse(result.data.placementData); 
+                            this.setState({ placementData: a });
+                        }
                     }
                 }
             })
@@ -887,6 +892,16 @@ export default class Upload extends Component { // ulc upload component
                 data.append('responseType', responseType);
                 data.append('extension', 'jpeg');
                 data.append('hash', cookies.get('hash'));
+                if (this.state.placementData) { // If user has placement data, do validation on front end before publish
+                    if (this.state.placementData.length > 0) {
+                        if (this.updateProductPlacementAll()) {
+                            data.append('productPlacement', JSON.stringify(this.state.placementData));
+                        } else {
+                            this.setState({ publishing: false });
+                            return false;
+                        }
+                    }
+                }
                 if (adData) { // if user is creating an advertisement. Forward the appropriate data
                     data.append('startDate', adData.startDate);
                     data.append('endDate', adData.endDate);
@@ -926,7 +941,7 @@ export default class Upload extends Component { // ulc upload component
                     try {
                         if (this) {
                             if (this.state) {
-                                this.setState({ currentErr: "video failed to publish "});
+                                this.setState({ currentErr: "video failed to publish ", publishing: false });
                             }
                         }
                     } catch (err) {
@@ -1060,9 +1075,9 @@ export default class Upload extends Component { // ulc upload component
                         temp.push({
                             id: product.id,
                             name: product.name,
-                            startTime: null,
-                            endTime: null,
-                            placement: "right"
+                            start: null,
+                            end: null,
+                            position: "right"
                         });
                         this.setState({ placementData: temp });
                     }
@@ -1086,6 +1101,161 @@ export default class Upload extends Component { // ulc upload component
             // Fail silently
         }
     }
+
+    forceTwoPlaces(id) {
+        let dataIndex = [...document.getElementsByClassName('placement-hr-start')].map(function(el) { return el.getAttribute('product') }).indexOf(id);
+        let data = [];
+        data.push(document.getElementsByClassName('placement-hr-start')[dataIndex]);
+        data.push(document.getElementsByClassName('placement-min-start')[dataIndex]);
+        data.push(document.getElementsByClassName('placement-sec-start')[dataIndex]);
+        data.push(document.getElementsByClassName('placement-hr-end')[dataIndex]);
+        data.push(document.getElementsByClassName('placement-min-end')[dataIndex]);
+        data.push(document.getElementsByClassName('placement-sec-end')[dataIndex]);
+        function pad(num, hr = false) {
+            if (hr) {
+                return num > 48 ? 48 : num; // Allow videos to be 48 hours long
+            }
+            return num > 59 ? 59 : num;
+        }
+        for (let i = 0; i < data.length; i++) {
+            if (data[i].classList.contains("placement-hr-start") || data[i].classList.contains("placement-hr-end")) {
+                data[i].value = pad(data[i].value, true);
+            } else {
+                data[i].value = pad(data[i].value);
+            }
+        }
+    }
+
+    // Will determine if product placement for all products is valid
+    updateProductPlacementAll() {
+        let placements = this.state.placementData;
+        for (let i = 0; i < placements.length; i++) {
+            let result = this.doUpdateProductPlacement(placements[i].id);
+            if (!result) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    doUpdateProductPlacement(id) {
+        try {
+            this.setState({ placementError: null });
+            let dataIndex = [...document.getElementsByClassName('placement-hr-start')].map(function(el) { return el.getAttribute('product') }).indexOf(id);
+            let startHr = document.getElementsByClassName('placement-hr-start')[dataIndex].value;
+            let startMin = document.getElementsByClassName('placement-min-start')[dataIndex].value;
+            let startSec = document.getElementsByClassName('placement-sec-start')[dataIndex].value;
+            let endHr = document.getElementsByClassName('placement-hr-end')[dataIndex].value;
+            let endMin = document.getElementsByClassName('placement-min-end')[dataIndex].value;
+            let endSec = document.getElementsByClassName('placement-sec-end')[dataIndex].value;
+            let start = Number(startHr * 60 * 60) + Number(startMin * 60) + Number(startSec);
+            let end = Number(endHr * 60 * 60) + Number(endMin * 60) + Number(endSec);
+            console.log(startHr, startMin);
+            let startString = startMin && startSec ? startHr && startMin && startSec? `${startHr}:${startMin}:${startSec}` : `${startMin}:${startSec}` : `${startSec}`;
+            let endString = endMin && endSec ? endHr && endMin && endSec ? `${endHr}:${endMin}:${endSec}` : `${endMin}:${endSec}` : `${endSec}`;
+            console.log(start, end);
+            console.log(startString, endString);
+            // In order to evaluate times, allow user to implement both start and end before updating max or valid intervals (not overlapping with other products)
+            function resetStart() {
+                document.getElementsByClassName('placement-hr-start')[dataIndex].value = null;
+                document.getElementsByClassName('placement-min-start')[dataIndex].value = null;
+                document.getElementsByClassName('placement-sec-start')[dataIndex].value = "00";
+            }
+            function resetEnd() {
+                document.getElementsByClassName('placement-hr-end')[dataIndex].value = null;
+                document.getElementsByClassName('placement-min-end')[dataIndex].value = null;
+                document.getElementsByClassName('placement-sec-end')[dataIndex].value = "00";
+            }
+            if (start == 0) {
+                this.setState({ placementError: "Start time for all product placements should begin after 0 seconds"});
+                resetStart();
+                return false;
+            } else if (end < 2) {
+                this.setState({ placementError: "End time for all product placements should begin after 1 second"});
+                resetEnd();
+                return false;
+            }
+            if (start && end) {
+                if (start == end) {
+                    this.setState({ placementError: "The start time for product placement cannot be the same as end time. Doesn't really make sense"});
+                    resetEnd();
+                    return false;
+                }
+                if (start > end) { // We have a problem. Start of a product placement interval cannot be greater than the end
+                    resetEnd();
+                    this.setState({ placementError: "The start time of your product placement cannot be greater than the end time"});
+                    return false;
+                }
+                if (this.videoComponent) {
+                    if (this.videoComponent.current) {
+                        if (this.videoComponent.current.duration) {
+                            // Check if for some reason the user set one of the placement times past the duration of the video itself
+                            let curDur = this.videoComponent.current.duration;
+                            if (start > curDur || end > curDur) {
+                                if (start > curDur) {
+                                    resetStart();
+                                }
+                                if (end > curDur) {
+                                    resetEnd();
+                                }
+                                this.setState({ placementError: "Your product placement can only occur during video playtime duration"});
+                                return false;
+                            }
+                        }
+                    }
+                }
+                // Check to see if product placement collides with other product placement timelines
+                let placementData = this.state.placementData;
+                let match = -1;
+                for (let i = 0; i < placementData.length; i++) {
+                    if (placementData[i].id == id) {
+                        match = i;
+                    } else {
+                        if (typeof placementData[i].start == 'number' && typeof placementData[i].end == 'number') { // Type of number, good to compare. Defaults to null
+                            // Cannot start another placement within the time of another
+                            if (start <= placementData[i].end && start >= placementData[i].start) {
+                                resetStart();
+                                this.setState({ placementError: "Product placement times cannot overlap with your other placements"});
+                                return false;
+                            }
+                            if (end >= placementData[i].start && end <= placementData[i].end) {
+                                resetEnd();
+                                this.setState({ placementError: "Product placement times cannot overlap with your other placements"});
+                                return false;
+                            }
+                        }
+                    }
+                }
+                if (match > -1) {
+                    placementData[match].start = start;
+                    placementData[match].end = end;
+                    this.setState({ placementData: placementData });
+                }
+                return true;
+            }
+        } catch (err) {
+            console.log(err);
+            // Fail silently
+        }
+    }
+
+    changeScreenPosition(e, id) {
+        try {
+            let placementData = this.state.placementData;
+            let position = e.target.value;
+            for (let i = 0; i < placementData.length; i++) {
+                if (placementData[i].id == id) {
+                    placementData[i].position = position;
+                    break;
+                }
+            }
+            this.setState({ placementData: placementData });
+        } catch (err) {
+            return false;
+        }
+    }
+    
+    debounceUpdateProductPlacement = debounce((id) => this.updateProductPlacementAll(), 7500);
 
     // Must add thumbnail option in input section
     render() {
@@ -1184,68 +1354,71 @@ export default class Upload extends Component { // ulc upload component
                         </form>
                         {
                             this.state.productData ?
-                                <div className="upload-placement-main-container margin-bottom-25">
-                                    <h5>Product Placement</h5>
-                                    <div className="info-blurb-max margin-bottom-10">You can place your own products in your video so that users can buy and sell products within the context of your playing video</div>
-                                    <div className="upload-placement-container flex margin-bottom-10">
-                                        {
-                                            this.state.productData.map((product) =>
-                                                <div className="upload-placement-product">
-                                                    <div className="upload-placement-product-meta">
-                                                        <div className="prompt-basic-s3 grey-out">{product.id}</div>
-                                                        <div className="prompt-basic-s weight600">{product.name}</div>
-                                                        <div className="upload-product-placement-img"><img src={product.images ? product.images[0] ? product.images[0].url && this.props.cloud ? this.props.cloud + "/" + product.images[0].url : greyproduct : greyproduct : greyproduct}></img></div>
-                                                    </div>
-                                                    <div className="flex space-around margin-bottom-10">
-                                                        <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.addProductToPlacement(e, product)}}>Add</button>
-                                                        <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.removeProductFromPlacement(e, product)}}>Remove</button>
-                                                    </div>
-                                                </div>
-                                            )
-                                        }
-                                    </div>
-                                    <div className="upload-placement-added-products flex">
-                                        {
-                                            this.state.placementData ?
-                                                this.state.placementData.map((product) =>
-                                                    <div className="placement-settings">
-                                                        <div className="upload-placement-product-meta upload-placement-product-meta-settings">
+                                this.state.productData.length > 0 ?
+                                    <div className="upload-placement-main-container margin-bottom-25">
+                                        <h5>Product Placement</h5>
+                                        <div className="info-blurb-max margin-bottom-10">You can place your own products in your video so that users can buy and sell products within the context of your playing video</div>
+                                        <div className="upload-placement-container flex margin-bottom-10">
+                                            {
+                                                this.state.productData.map((product) =>
+                                                    <div className="upload-placement-product">
+                                                        <div className="upload-placement-product-meta">
                                                             <div className="prompt-basic-s3 grey-out">{product.id}</div>
                                                             <div className="prompt-basic-s weight600">{product.name}</div>
+                                                            <div className="upload-product-placement-img"><img src={product.images ? product.images[0] ? product.images[0].url && this.props.cloud ? this.props.cloud + "/" + product.images[0].url : greyproduct : greyproduct : greyproduct}></img></div>
                                                         </div>
-                                                        <div className="margin-bottom-10 placement-setting-inputs">
-                                                            <div>
-                                                                <label className="medium-data-text grey-out weight600">Start Time:</label>
-                                                                <div className="flex placement-input-flex">
-                                                                    <input type="number" id="placement-hr-start" name="placement-hr-start" min="0" max="48" placeholder="00"></input>
-                                                                    <span>:</span>
-                                                                    <input type="number" id="placement-min-start" name="placement-min-start" min="0" max="59" placeholder="00"></input>
-                                                                    <span>:</span>
-                                                                    <input type="number" id="placement-sec-start" name="placement-sec-start" min="0" max="59" placeholder="00"></input>
-                                                                </div>
-                                                            </div>
-                                                            <div>
-                                                                <label className="medium-data-text grey-out weight600">End Time:</label>
-                                                                <div className="flex placement-input-flex">
-                                                                    <input type="number" id="placement-hr-end" name="placement-hr-end" min="0" max="48" placeholder="00"></input>
-                                                                    <span>:</span>
-                                                                    <input type="number" id="placement-min-end" name="placement-min-end" min="0" max="59" placeholder="00"></input>
-                                                                    <span>:</span>
-                                                                    <input type="number" id="placement-sec-end" name="placement-sec-end" min="0" max="59" placeholder="00"></input>
-                                                                </div>
-                                                            </div>
-                                                            <label className="medium-data-text grey-out weight600">Screen Placement:</label>
-                                                            <select id="screen-placement" name="screen-placement">
-                                                                <option value="left">Left</option>
-                                                                <option value="right">Right</option>
-                                                            </select>
+                                                        <div className="flex space-around margin-bottom-10">
+                                                            <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.addProductToPlacement(e, product)}}>Add</button>
+                                                            <button className="btn btn-default prompt-basic-s" onClick={(e) => {this.removeProductFromPlacement(e, product)}}>Remove</button>
                                                         </div>
                                                     </div>
                                                 )
-                                                : null
-                                        }
+                                            }
+                                        </div>
+                                        <div className="upload-placement-added-products flex">
+                                            {
+                                                this.state.placementData ?
+                                                    this.state.placementData.map((product) =>
+                                                        <div className="placement-settings">
+                                                            <div className="upload-placement-product-meta upload-placement-product-meta-settings">
+                                                                <div className="prompt-basic-s3 grey-out">{product.id}</div>
+                                                                <div className="prompt-basic-s weight600">{product.name}</div>
+                                                            </div>
+                                                            <div className="margin-bottom-10 placement-setting-inputs">
+                                                                <div>
+                                                                    <label className="product-placement-start-times medium-data-text grey-out weight600">Start Time:</label>
+                                                                    <div className="flex placement-input-flex">
+                                                                        <input type="number" id="placement-hr-start" className="placement-hr-start" name="placement-hr-start" min="0" max="48" placeholder="00" product={product.id} onBlur={(e) => {this.debounceUpdateProductPlacement(product.id)}} onChange={(e) => {this.forceTwoPlaces(product.id)}}></input>
+                                                                        <span>:</span>
+                                                                        <input type="number" id="placement-min-start" className="placement-min-start" name="placement-min-start" min="0" max="59" placeholder="00" product={product.id} onBlur={(e) => {this.debounceUpdateProductPlacement(product.id)}} onChange={(e) => {this.forceTwoPlaces(product.id)}}></input>
+                                                                        <span>:</span>
+                                                                        <input type="number" id="placement-sec-start" className="placement-sec-start" name="placement-sec-start" min="0" max="59" placeholder="00" defaultValue="00" product={product.id} onBlur={(e) => {this.debounceUpdateProductPlacement(product.id)}} onChange={(e) => {this.forceTwoPlaces(product.id)}}></input>
+                                                                    </div>
+                                                                </div>
+                                                                <div>
+                                                                    <label className="product-placement-end-times medium-data-text grey-out weight600">End Time:</label>
+                                                                    <div className="flex placement-input-flex" product={product.id}>
+                                                                        <input type="number" id="placement-hr-end" className="placement-hr-end" name="placement-hr-end" min="0" max="48" placeholder="00" product={product.id} onBlur={(e) => {this.debounceUpdateProductPlacement(product.id)}} onChange={(e) => {this.forceTwoPlaces(product.id)}}></input>
+                                                                        <span>:</span>
+                                                                        <input type="number" id="placement-min-end" className="placement-min-end" name="placement-min-end" min="0" max="59" placeholder="00" product={product.id} onBlur={(e) => {this.debounceUpdateProductPlacement(product.id)}} onChange={(e) => {this.forceTwoPlaces(product.id)}}></input>
+                                                                        <span>:</span>
+                                                                        <input type="number" id="placement-sec-end" className="placement-sec-end" name="placement-sec-end" min="0" max="59" placeholder="00" defaultValue="00" product={product.id} onBlur={(e) => {this.debounceUpdateProductPlacement(product.id)}} onChange={(e) => {this.forceTwoPlaces(product.id)}}></input>
+                                                                    </div>
+                                                                </div>
+                                                                <label className="medium-data-text grey-out weight600">Screen Position:</label>
+                                                                <select id="screen-placement" name="screen-placement" product={product.id} onChange={(e) => {this.changeScreenPosition(e, product.id)}}>
+                                                                    <option value="right">Right</option>
+                                                                    <option value="left">Left</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    )
+                                                    : null
+                                            }
+                                        </div>
+                                        <div className={this.state.placementError ? "upload-err-status err-status-wide margin-top-10" : ""}>{this.state.placementError}</div>
                                     </div>
-                                </div>
+                                    : null
                                 : null
                         }
                         <div className={this.props.edit ? "prompt-basic-s grey-out margin-bottom-5" : "hidden"}>{this.props.edit ? "If you've made changes that you don\'t want to save you can just leave this page and nothing will be changed. Otherwise you can revise your changes and click the button below" : null}</div>

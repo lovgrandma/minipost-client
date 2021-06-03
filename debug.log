@@ -12,3 +12,4 @@
 [0113/233806.046:ERROR:directory_reader_win.cc(43)] FindFirstFile: The system cannot find the path specified. (0x3)
 [0602/012130.783:ERROR:registration_protocol_win.cc(102)] CreateFile: The system cannot find the file specified. (0x2)
 [0602/012742.443:ERROR:registration_protocol_win.cc(102)] CreateFile: The system cannot find the file specified. (0x2)
+[0602/214338.660:ERROR:registration_protocol_win.cc(102)] CreateFile: The system cannot find the file specified. (0x2)

@@ -195,6 +195,10 @@ h5 {
     margin-top: 5px;
 }
 
+.margin-top-10 {
+    margin-top: 10px !important;
+}
+
 .margin0auto {
     margin: 0 auto;
 }
@@ -691,6 +695,10 @@ input[type="search"] {
     flex-grow: 2;
 }
 
+.flex-grow2-5 {
+    flex-grow: 2.5;
+}
+
 .flex-grow3 {
     flex-grow: 3;
 }
@@ -759,6 +767,12 @@ ul li {
     align-self: center;
     border-radius: 5px;
     display: inline-flex;
+ }
+
+@media (min-width: 640px) {
+    .navbar-avatar-link {
+        padding-left: 7.5px;
+    }
 }
 
 .favorites {
@@ -823,7 +837,7 @@ ul li {
 }
 
 .nav-loggedin-config {
-    margin-left: 10px;
+    margin-left: 15px;
 }
 
 .btn-default {
@@ -4414,7 +4428,8 @@ If user only has one friend, styling wont apply */
     max-width: 600px;
 }
 
-.article-err-status {
+.article-err-status,
+.err-status-wide {
     max-width: 100% !important;
 }
 

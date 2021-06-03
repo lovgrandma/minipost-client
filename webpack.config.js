@@ -16,6 +16,8 @@
  *
  */
 
+// Run: npm run-script serve
+
 // This contains all the exports to build the bundle.js file
 
 const path = require('path');

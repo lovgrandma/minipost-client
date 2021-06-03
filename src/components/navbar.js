@@ -135,7 +135,7 @@ export default class Navbar extends Component {
         return (
             <nav className="navbar navbar-default border-navigation">
                 <row className="nowrap">
-                <ul className={this.props.sidebarStatus == "open" ? "nav flex-grow3 nowrapbuttons navbtnsleft navbtnsleft-opened" : "nav flex-grow3 nowrapbuttons navbtnsleft"} ref={tag => (this.navBtnsLeft = tag)}>
+                <ul className={this.props.sidebarStatus == "open" ? "nav flex-grow2-5 nowrapbuttons navbtnsleft navbtnsleft-opened" : "nav flex-grow2-5 nowrapbuttons navbtnsleft"} ref={tag => (this.navBtnsLeft = tag)}>
                     <div className="nav-icon favorites material-icons" onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}}>favorite</div>
                     <div className="btn-desc btn-desc-saved">view videos you've saved</div>
                     <NavLink exact to="/history" className="hyperlink"><div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div></NavLink>
@@ -156,10 +156,6 @@ export default class Navbar extends Component {
                             <NavLink exact to="/notifications" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>notifications</NavLink>
                         </div>
                         <div className="btn-desc btn-desc-notif">check your notifications</div>
-                        <div className="nav-icon profile material-icons" onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>
-                            <NavLink exact to="/profile" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>person</NavLink>
-                        </div>
-                        <div className="btn-desc btn-desc-yourpro">your profile</div>
                         <div className="nav-icon upload material-icons publish-button-open-menu" onClick={(e)=>{showMoreOptions.call(this, e, "upload")}} onMouseOver={(e) => {this.hoverShow(e, "upload-prompt", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload-prompt", "exit")}}>publish</div>
                         <div className="btn-desc btn-desc-upload">upload content to minipost</div>
                         <div className="btn-desc btn-desc-upl" ref={tag => (this.uploadOptions = tag)}>
@@ -174,14 +170,15 @@ export default class Navbar extends Component {
                         {
                             this.props.username && this.props.cloud ?
                                 this.props.useravatar ?
-                                    <NavLink exact to="/profile" className="hyperlink navbar-avatar-link" onClick={(e)=> {resetOpenMenus.call(this)}}>
+                                    <NavLink exact to="/profile" className="hyperlink navbar-avatar-link" onClick={(e)=> {resetOpenMenus.call(this)}} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>
                                         <img src={this.props.cloud + "/av/" + this.props.useravatar} className="navbar-avatar"></img>
                                     </NavLink>
-                                    : <NavLink exact to="/profile" className="hyperlink navbar-avatar-link" onClick={(e)=> {resetOpenMenus.call(this)}}>
+                                    : <NavLink exact to="/profile" className="hyperlink navbar-avatar-link" onClick={(e)=> {resetOpenMenus.call(this)}} onMouseOver={(e) => {this.hoverShow(e, "profile", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "profile", "exit")}}>
                                         <img src={greyavatar} className="navbar-avatar"></img>
                                     </NavLink>
                                 : null
                         }
+                        <div className="btn-desc btn-desc-yourpro">your profile</div>
                         <div className="nav-loggedin-config nav-icon" onClick={(e)=>{showMoreOptions.call(this, e, "profile")}} onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>{this.props.username}</div>
                         <div className="btn-desc btn-desc-conf" onMouseOver={(e) => {this.hoverShow(e, "config", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "config", "exit")}}>change various user settings and preferences</div>
                         <div className="btn-desc btn-desc-conf-menu" ref={tag => (this.userOptions = tag)}>
