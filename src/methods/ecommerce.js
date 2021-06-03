@@ -400,3 +400,13 @@ export const formatAFee = function(numerator, denominator) {
         return null;
     }
 }
+
+export const orderShipped = function(order) {
+    try {
+        if (order.cart[0].shipped) {
+            
+        }
+    } catch (err) {
+        return false;
+    }
+}

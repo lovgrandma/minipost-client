@@ -1254,6 +1254,16 @@ export default class Upload extends Component { // ulc upload component
             return false;
         }
     }
+
+    calcTime(id, time) {
+        if (time == "hr") {
+            
+        } else if (time == "min") {
+
+        } else {
+
+        }
+    }
     
     debounceUpdateProductPlacement = debounce((id) => this.updateProductPlacementAll(), 7500);
 
