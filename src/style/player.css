@@ -461,3 +461,352 @@
     height: 500px;
     padding-bottom: 5px;
 }
+
+.shaka-controls-container {
+    z-index: 5;
+}
+
+.product-placement-margin-container {
+    margin: 10px;
+    overflow: hidden;
+}
+
+.overlay-interaction-container {
+    z-index: 10;
+    overflow: hidden;
+}
+
+.freeze-opaque {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    z-index: 2;
+    background-color: rgba(0, 0, 0, 0.3);
+}
+
+.freeze * {
+    z-index: 10;
+}
+
+.next-freeze-button {
+    position: absolute;
+    right: 2.3%;
+    bottom: 15%;
+    z-index: 15;
+}
+
+.placement-hide {
+    opacity: 0;
+}
+
+.product-placement-in-video,
+.placement-display-checkout-container-visible .placement-display-checkout {
+    width: 0;
+    position: absolute;
+    top: 5%;
+    right: 0%;
+    transition: 300ms;
+    visibility: hidden;
+    overflow: hidden;
+}
+
+.placement-visible {
+    opacity: 1;
+    background: rgb(255 255 255);
+    border-radius: 15px;
+    visibility: visible;
+}
+
+.product-placement-product-title {
+    font-size: 12px;
+    max-height: 15px;
+    overflow: hidden;
+}
+
+.product-placement-main-img {
+    width: 0;
+    max-height: 0;
+    object-fit: cover;
+    overflow: hidden;
+    border-radius: 5px;
+}
+
+
+.sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+.sidebar-isopen ~ .maindashcontainer .product-placement-main-img,
+.sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+    max-height: 75px;
+    width: 0;
+}
+
+.sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+.sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+    max-height: 160px;
+}
+
+.place-right,
+.placement-display-checkout-container-visible .place-right {
+    top: 5%;
+    right: 10%;
+}
+
+.action-go-checkout-buttons-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+    text-align: center;
+}
+
+.price-add-to-cart-container {
+    vertical-align: middle;
+    align-items: center;
+    flex-direction: column;
+}
+
+.sidebar-isopen ~ .maindashcontainer .transaction-button-container .transaction-button,
+.sidebar-isopen ~ .maindashcontainer .action-go-checkout-buttons-container .transaction-button {
+    max-height: 25px;
+    overflow: hidden;
+}
+
+@media (min-width: 540px) {
+    .product-placement-in-video,
+    .placement-display-checkout-container-visible .placement-display-checkout {
+        width: 70px;
+    }
+
+    .product-placement-main-img {
+        width: 50px;
+        max-height: 35px;
+        width: -webkit-fill-available;
+        display: block;
+    }
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        width: -webkit-fill-available;
+        display: block;
+    }
+}
+
+@media (min-width: 580px) {
+    .price-add-to-cart-container {
+        gap: 2.5px;
+    }
+
+    .product-placement-product-title {
+        font-size: 14px;
+    }
+
+    .place-right,
+    .placement-display-checkout-container-visible .place-right {
+        right: 10%;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .place-right,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .place-right {
+        right: 10%;
+    }
+
+    .product-placement-in-video,
+    .placement-display-checkout-container-visible .placement-display-checkout {
+        width: 120px;
+    }
+
+    .product-placement-main-img {
+        max-height: 75px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+        max-height: 220px;
+        width: 50px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        max-height: 75px;
+        display: none;
+    }
+}
+
+@media(min-width: 720px) {
+    .product-placement-product-title {
+        font-size: 16px;
+        max-height: 40px;
+    }
+    .place-right,
+    .placement-display-checkout-container-visible .place-right {
+        right: 7.5%;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .place-right,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .place-right {
+        right: 12.5%;
+    }
+
+    .product-placement-in-video {
+        width: 170px;
+    }
+
+    .product-placement-main-img {
+        max-height: 80px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+        max-height: 240px;
+        width: 100px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        max-height: 160px;
+        display: none;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-product-title {
+        max-height: 15px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .transaction-button-container .transaction-button,
+    .sidebar-isopen ~ .maindashcontainer .action-go-checkout-buttons-container .transaction-button {
+        max-height: 100%;
+        overflow: visible;
+    }
+    
+}
+
+@media(min-width: 860px) {
+    .price-add-to-cart-container {
+        flex-direction: row;
+        gap: 0;
+        margin-bottom: 3.5px;
+    }
+
+    .product-placement-product-title {
+        font-size: 16px;
+    }
+    .place-right,
+    .placement-display-checkout-container-visible .place-right {
+        right: 5%;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .place-right,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .place-right {
+        right: 10%;
+    }
+    
+    .product-placement-in-video,
+    .placement-display-checkout-container-visible .placement-display-checkout {
+        width: 200px;
+    }
+
+    .product-placement-main-img {
+        max-height: 120px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+        max-height: 200px;
+        width: 160px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        display: none;
+    }
+}
+
+@media(min-width: 1120px) {
+    .product-placement-product-title {
+        font-size: 16px;
+    }
+    .place-right,
+    .placement-display-checkout-container-visible .place-right {
+        right: 5%;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .place-right,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .place-right {
+        right: 5%;
+    }
+    
+    .product-placement-in-video,
+    .placement-display-checkout-container-visible .placement-display-checkout {
+        width: 220px;
+    }
+
+    .product-placement-main-img {
+        max-height: 240px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+        max-height: 380px;
+        width: 220px;
+    }
+
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        max-height: 160px;
+        display: block;
+    }
+}
+
+@media (min-width: 1276px) {
+    .product-placement-main-img {
+        max-height: 140px;
+    }
+}
+
+@media (min-width: 1336px) {
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        max-height: 100px;
+    }
+
+    .product-placement-main-img {
+        max-height: 220px;
+    }
+}
+
+@media (min-width: 1460px) {
+    .product-placement-main-img {
+        max-height: 240px;
+    }
+}
+
+@media (min-width: 1600px) {
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        max-height: 220px;
+    }
+    .product-placement-main-img {
+        max-height: 280px;
+    }
+}
+
+@media (min-width: 1800px) {
+    .sidebar-isopen ~ .maindashcontainer .product-placement-main-img {
+        max-height: 320px;
+    }
+    .sidebar-isopen ~ .maindashcontainer .product-placement-in-video,
+    .sidebar-isopen ~ .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
+        max-height: 480px;
+    }
+}
+
+.placement-display-checkout {
+    visibility: visible;
+    background-color: white;
+    border-radius: 15px;
+    position: absolute;
+}
+
+.product-placement-product-title {
+    color: white;
+    mix-blend-mode: difference;
+    overflow: hidden;
+}
+
+.placement-info-container .generic-success-hidden,
+.placement-info-container .err-status-hidden {
+    padding: 0;
+}
+
+.placement-display-checkout-container-visible .place-right {
+    visibility: visible;
+}

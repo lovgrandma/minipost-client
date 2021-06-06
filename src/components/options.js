@@ -483,8 +483,6 @@ export default class Options extends Component {
     }
 
     updateDraggableConvo = (e) => {
-        console.log(e.target);
-        console.log(e.target.checked);
         if (e.target.checked) {
             cookies.set('dragDisabled', true);
             this.dragDisabledOptionRef.current.checked = true;

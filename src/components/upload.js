@@ -581,6 +581,16 @@ export default class Upload extends Component { // ulc upload component
                         if (JSON.parse(result.data.placementData)) {
                             let a = JSON.parse(result.data.placementData); 
                             this.setState({ placementData: a });
+                            for (let i = 0; i < a.length; i++) {
+                                let [stHr, stMin, stSec] = this.calcTime(a[i].id, a[i].start);
+                                let [enHr, enMin, enSec] = this.calcTime(a[i].id, a[i].end);
+                                document.getElementsByClassName('placement-hr-start')[i].value = stHr;
+                                document.getElementsByClassName('placement-min-start')[i].value = stMin;
+                                document.getElementsByClassName('placement-sec-start')[i].value = stSec;
+                                document.getElementsByClassName('placement-hr-end')[i].value = enHr;
+                                document.getElementsByClassName('placement-min-end')[i].value = enMin;
+                                document.getElementsByClassName('placement-sec-end')[i].value = enSec;
+                            }
                         }
                     }
                 }
@@ -1256,12 +1266,14 @@ export default class Upload extends Component { // ulc upload component
     }
 
     calcTime(id, time) {
-        if (time == "hr") {
-            
-        } else if (time == "min") {
-
-        } else {
-
+        try {
+            let val = new Date(time * 1000).toISOString().substr(11, 8);
+            let hr = val.substring(0, 2);
+            let min = val.substring(3, 5);
+            let sec = val.substring(6, 8);
+            return [hr, min, sec];
+        } catch (err) {
+            return [0, 0, 0];
         }
     }
     

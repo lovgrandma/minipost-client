@@ -89,6 +89,7 @@ export const addOneProductToCart = async (product, userShippingData) => {
         let username = cookies.get('loggedIn');
         let hash = cookies.get('hash');
         let self = true;
+        console.log(product, userShippingData);
         if (username && !userShippingData) {
             return {
                 error: "Please add shipping data to your account before adding products. Click here to update your shipping info. If you've already updated your shipping data and you're seeing this message please refresh",

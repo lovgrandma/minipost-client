@@ -199,6 +199,18 @@ h5 {
     margin-top: 10px !important;
 }
 
+.margin-top-bottom-2-5 {
+    margin: 2.5px 0;
+}
+
+.margin-top-bottom-5 {
+    margin: 5px 0;
+}
+
+.margin-top-bottom-10 {
+    margin: 10px 0;
+}
+
 .margin0auto {
     margin: 0 auto;
 }
@@ -1385,6 +1397,14 @@ label {
 .grey-btn:hover {
     background: #818181 !important;
     box-shadow: 0 0 0 1px #969696 inset, 0 0 0 1px rgb(146 146 146 / 15%) inset, 1px 2px 0px 0px rgb(195 195 195 / 70%), 2px 1px 0px 0px rgb(132 132 132 / 40%), 1px 1px 0px 0px rgb(138 138 138 / 50%) !important;
+}
+
+.grey-dark-btn {
+    background: rgba(100, 100, 100, 0.4) !important;
+}
+
+.grey-dark-btn:hover {
+    background: rgba(100, 100, 100, 0.65) !important;
 }
 
 .flex-button-center {

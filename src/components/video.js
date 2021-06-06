@@ -3,6 +3,9 @@ import {
     NavLink,
     Link
 } from 'react-router-dom';
+import {
+    Button
+} from 'react-bootstrap';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
@@ -14,10 +17,12 @@ import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
+import dummyproduct from '../static/greyproduct.jpg';
 import { setResponseUrl } from '../methods/responses.js';
 import lzw from '../compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
+import { addOneProductToCart, checkoutNowWithCurrentCartItems, formatAPrice } from '../methods/ecommerce.js';
 
 import { cookies, socket } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -33,7 +38,8 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false, togglePlacementCheckout: false,
+            freeze: false, freezeData: null, interactInterval: "", productPlacement: null, livePlacement: null, livePlacementDisplay: false, productsAdded: []
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -43,6 +49,8 @@ export default class Video extends Component {
         this.inputRef = new React.createRef();
         this.scrollRef = new React.createRef();
         this.progress = new EventEmitter();
+        this.placementRef = new React.createRef();
+        this.placementCheckoutRef = new React.createRef();
         window.addEventListener('keydown', this.interceptEnter);
     }
 
@@ -89,22 +97,29 @@ export default class Video extends Component {
     }
 
     componentWillUnmount() {
-        // Untested. Supposed to remove event listeners from player when user leaves page
-        if (this.player) {
-            if (this.player.removeEventListener) {
-                this.player.removeEventListener('buffering');
-                this.player.removeEventListener('error');
+        try {
+            // Untested. Supposed to remove event listeners from player when user leaves page
+            if (this.player) {
+                if (this.player.removeEventListener) {
+                    this.player.removeEventListener('buffering');
+                    this.player.removeEventListener('error');
+                }
             }
-        }
-        this.endViewCountInterval;
-        if (document.getElementsByClassName('maindash')[0]) {
-            let maindash = document.getElementsByClassName('maindash')[0];
-            if (maindash) {
-                maindash.classList.remove('maindash-video-wide');
+            this.endViewCountInterval;
+            if (document.getElementsByClassName('maindash')[0]) {
+                let maindash = document.getElementsByClassName('maindash')[0];
+                if (maindash) {
+                    maindash.classList.remove('maindash-video-wide');
+                }
             }
-        }
-        if (this.state.scrollInterval) {
-            clearInterval(this.state.scrollInterval);
+            if (this.state.scrollInterval) {
+                clearInterval(this.state.scrollInterval);
+            }
+            if (this.state.interactInterval) {
+                clearInterval(this.state.interactInterval);
+            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -403,7 +418,22 @@ export default class Video extends Component {
                             } else if (key == "adUrl") {
                                 this.setState({ adLink: result.video.adUrl });
                             } else if (key == "dailyBudget") {
-                                this.setState({ adBudget: result.video.dailyBudget })
+                                this.setState({ adBudget: result.video.dailyBudget });
+                            } else if (key == "productPlacement") {
+                                try {
+                                    let temp = JSON.parse(result.video.productPlacement);
+                                    for (let i = 0; i < temp.length; i++) {
+                                        if (temp[i].images) {
+                                            temp[i].images = JSON.parse(temp[i].images);
+                                        }
+                                        if (temp[i].styles) {
+                                            temp[i].styles = JSON.parse(temp[i].styles);
+                                        }
+                                    }
+                                    this.setState({ productPlacement: temp });  
+                                } catch (err) {
+                                    // Fail silently
+                                }
                             } else if (value) {
                                 this.setState(setStateDynamic(key, value));
                             } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
@@ -662,12 +692,83 @@ export default class Video extends Component {
             }
         }
     }
+
+    buildInteractInterval() {
+        try {
+            if (this.state.interactInterval) {
+                clearInterval(this.state.interactInterval);
+            }
+            let productPlacement = this.state.productPlacement ? this.state.productPlacement : null;
+            let interactIntervalRef = setInterval(() => {
+                try {
+                    let curTime = this.videoComponent.current.currentTime;
+                    for (let i = 0; i < productPlacement.length; i++) {
+                        if (productPlacement[i].start <= curTime && productPlacement[i].end >= curTime) {
+                            if (this.state.livePlacement) {
+                                if (this.state.livePlacement.id) {
+                                    if (this.state.livePlacement.id != productPlacement[i].id ) {
+                                        this.setState({ livePlacement: productPlacement[i] }, () => {
+                                            setTimeout(() => {
+                                                this.setState({ livePlacementDisplay: true });
+                                            }, 200);
+                                        });
+                                        break;
+                                    }
+                                } else {
+                                    this.setState({ livePlacement: productPlacement[i] }, () => {
+                                        setTimeout(() => {
+                                            this.setState({ livePlacementDisplay: true });
+                                        }, 200);
+                                    });
+                                    break;
+                                }
+                            } else {
+                                this.setState({ livePlacement: productPlacement[i] }, () => {
+                                        setTimeout(() => {
+                                            this.setState({ livePlacementDisplay: true });
+                                        }, 200);
+                                });
+                                break;
+                            }
+                        } else {
+                            if (this.state.livePlacement) {
+                                if (this.state.livePlacement.id == productPlacement[i].id) {
+                                    this.placementRef.current.setAttribute("style", "opacity: 0 !important");
+                                    setTimeout(() => {
+                                        this.setState({ livePlacement: null }, () => {
+                                            setTimeout(() => {
+                                                this.setState({ livePlacementDisplay: false });
+                                                this.placementRef.current.removeAttribute("style");
+                                            }, 50);
+                                        });
+                                    }, 200);
+                                }
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.log(err);
+                }
+            }, 1000);
+            this.setState({ interactInterval: interactIntervalRef });
+        } catch (err) {
+            try {
+                if (this.state.interactInterval) {
+                    clearInterval(this.state.interactInterval);
+                }
+            } catch (err) {
+                // Fail silently
+            }
+            console.log(err);
+        }
+    }
     
     /* Initialize player and player error handlers */
     initPlayer = async(manifest, playEndAd = false, serveAd = null) => {
         try {
             this.setState({ mpdCloudAddress: manifest });
             this.setState({ skipTime: 5 });
+            this.buildInteractInterval();
             // Install polyfills to patch browser incompatibilies
             shaka.polyfill.installAll();
             encryptionSchemePolyfills.install();
@@ -770,6 +871,9 @@ export default class Video extends Component {
                     });
                     // Ensures that check counted interval is functioning 
                     video.addEventListener('playing', (event) => {
+                        if (this.state.freeze) {
+                            this.setState({ freeze: false });
+                        }
                         if (this.videoComponent) {
                             this.viewCountedInterval();    
                         }
@@ -961,19 +1065,24 @@ export default class Video extends Component {
                     this.loadPage(); // Load next video, should be normal video if enough time didn't elapse, else it will be ad
                 });
             } else if (this.state.adEnd) { // normal video was playing, try to play end ad if there is an end ad
-                let detached = await this.player.detach();
-                this.player.destroy();
-                if (document.getElementsByClassName('shaka-controls-container')) {
-                    if (document.getElementsByClassName('shaka-controls-container')[0]) {
-                        document.getElementsByClassName('shaka-controls-container')[0].remove();
+                if (this.state.freeze) {
+                    this.setState({ freeze: false });
+                    let detached = await this.player.detach();
+                    this.player.destroy();
+                    if (document.getElementsByClassName('shaka-controls-container')) {
+                        if (document.getElementsByClassName('shaka-controls-container')[0]) {
+                            document.getElementsByClassName('shaka-controls-container')[0].remove();
+                        }
                     }
-                }
-                if (document.getElementsByClassName('shaka-spinner-container')) {
-                    if (document.getElementsByClassName('shaka-spinner-container')[0]) {
-                        document.getElementsByClassName('shaka-spinner-container')[0].remove();
+                    if (document.getElementsByClassName('shaka-spinner-container')) {
+                        if (document.getElementsByClassName('shaka-spinner-container')[0]) {
+                            document.getElementsByClassName('shaka-spinner-container')[0].remove();
+                        }
                     }
+                    this.loadPage(false, true); // Will load end ad if there is one, always update window.location.href to next playlist video so after the end ad it will automatically load the next playlist item
+                } else {
+                    this.setState({ freeze: true });
                 }
-                this.loadPage(false, true); // Will load end ad if there is one, always update window.location.href to next playlist video so after the end ad it will automatically load the next playlist item
             }
         }
     }
@@ -1175,6 +1284,104 @@ export default class Video extends Component {
         }
     }
 
+    resolveLivePlacementPrice() {
+        try {
+            if (this.state.livePlacement.styles.length == 1) {
+                return formatAPrice(this.state.livePlacement.styles[0].options[0].price);
+            }
+        } catch (err) {
+            return null;
+        }
+    }
+
+    resolveSingleProductBuyChoice() {
+        try {
+            if (this.state.livePlacement) {
+                if (this.state.livePlacement.styles.length == 1 && this.state.livePlacement.styles[0].options.length == 1) {
+                    return "Add To Cart";
+                }
+            }
+            return "See Details";
+        } catch (err) {
+            return "See Details";
+        }
+    }
+
+    async addToCart() {
+        try {
+            this.setState({ placementError: "" });
+            if (this.state.livePlacement.styles.length == 1 && this.state.livePlacement.styles[0].options.length == 1) {
+                let userShippingData = this.props.userShippingData;
+                if (this.state.livePlacement) {
+                    let tempProduct = this.state.livePlacement;
+                    let temp = this.state.productsAdded;
+                    if (temp.indexOf(tempProduct.id) == -1) { // Ensures that product is not added twice between See Details & Buy Now
+                        tempProduct.style = tempProduct.styles[0].descriptor;
+                        tempProduct.option = tempProduct.styles[0].options[0].descriptor;
+                        let data = await addOneProductToCart(tempProduct, userShippingData);
+                        if (data.error) {
+                            throw new Error;
+                        } else {
+                            this.setState({ placementSuccess: "Added to cart" });
+                            temp.push(tempProduct.id);
+                            this.setState({ productsAdded: temp });
+                        }
+                    }
+                }
+            } else {
+                this.props.history.push("/product?p=" + this.state.livePlacement.id);
+            }
+        } catch (err) {
+            this.setState({ placementError: "Was not able to add product to cart"});
+        }
+    }
+
+    async goBuy() {
+        try {
+            this.setState({ placementError: "" });
+            if (this.state.livePlacement.styles.length == 1 && this.state.livePlacement.styles[0].options.length == 1) {
+                let userShippingData = this.props.userShippingData;
+                if (this.state.livePlacement) {
+                    let tempProduct = this.state.livePlacement;
+                    let temp = this.state.productsAdded;
+                    if (temp.indexOf(tempProduct.id) == -1) {
+                        tempProduct.style = tempProduct.styles[0].descriptor;
+                        tempProduct.option = tempProduct.styles[0].options[0].descriptor;
+                        let data = await addOneProductToCart(tempProduct, userShippingData);
+                        if (data.error) {
+                            throw new Error;
+                        } else {
+                            this.setState({ placementSuccess: "Added to cart" });
+                            temp.push(tempProduct.id);
+                            this.setState({ productsAdded: temp });
+                            this.togglePlacementCheckoutState();
+                        }
+                    }
+                }
+            } else {
+                this.props.history.push("/product?p=" + this.state.livePlacement.id);
+            }
+        } catch (err) {
+            console.log(err);
+            this.setState({ placementError: "Was not able to checkout products"});
+        }
+    }
+
+    togglePlacementCheckoutState() {
+        try {
+            if (!this.state.togglePlacementCheckout) {
+                let fullHeight = this.placementRef.current.offsetHeight;
+                this.setState({ togglePlacementCheckout: true }); // Show mini checkout module
+                this.placementCheckoutRef.current.style.height = fullHeight + "px";
+            } else {
+                this.placementCheckoutRef.current.style.height = "0px";
+                this.setState({ togglePlacementCheckout: false }); 
+            }
+        } catch (err) {
+            return false;
+        }
+    }
+
     render() {
         let styles = {
             height: { height: this.resolvePlaceholderHeight() + "px"},
@@ -1182,10 +1389,26 @@ export default class Video extends Component {
             minHeight: {minHeight: '100%' }
         };
         let currPoster = this.resolveThumbnailSafely();
+        let livePlacementPrice = this.resolveLivePlacementPrice();
+        let buyChoice = this.resolveSingleProductBuyChoice();
         return (
             <div className="video-page-flex">
             <div id='videocontainer' className='main-video-container'>
                 <div className={this.state.adPlaying ? "video-container shaka-video-container ad-playing" : "video-container shaka-video-container"} ref={this.videoContainer}>
+                    {
+                        this.state.freeze ?
+                            <button className={this.state.freeze ? "btn upload-button grey-dark-btn next-freeze-button hidden-visible" : "btn upload-button grey-dark-btn next-freeze-button hidden"} onClick={(e) => {this.endOfVideoPlay()}}>next &#10144;</button>
+                            : null
+                    }
+                    <div className={this.state.freeze ? "freeze freeze-opaque" : "freeze"}>
+                        {
+                            this.state.freezeData ?
+                                this.state.freezeData.visible ?
+                                    <div></div>
+                                    : null
+                                : null
+                        }
+                    </div>
                     <div className="video-over-player-details">
                         <div className="video-over-player-title">{this.state.adPlaying ? this.state.adTitle : this.state.title }</div>
                         <div className="video-over-player-author">{this.state.adPlaying ? this.state.adAuthor : this.state.author}</div>
@@ -1246,6 +1469,53 @@ export default class Video extends Component {
                     </div>
                     <div className="hide-seek">&nbsp;</div>
                     <div className="lead-video-container">
+                        <div className="overlay-interaction-container">
+                            {
+                                this.state.cloud ?
+                                    <div className={this.state.livePlacementDisplay ? "placement-container-visibility placement-container-visibility-true" : "placement-container-visibility"}>
+                                        <div className={!this.state.togglePlacementCheckout ? "placement-display-product placement-display-product-visible" : "placement-display-product placement-display-product-hidden"}>
+                                            <div className={this.state.livePlacement ? this.state.livePlacement.position && this.state.livePlacementDisplay ? this.state.livePlacement.position == "right" && this.state.livePlacementDisplay ? "product-placement-in-video place-right placement-visible" : "product-placement-in-video place-left placement-visible" : "product-placement-in-video place-right placement-visible" : "product-placement-in-video placement-hide"} ref={this.placementRef}>
+                                                <div className="product-placement-margin-container">
+                                                    <h5 className="product-placement-product-title">{this.state.livePlacement ? this.state.livePlacement.name ? this.state.livePlacement.name : null : null}</h5>
+                                                    <div>
+                                                        <img src={this.state.livePlacement ? this.state.livePlacement.images ? this.state.livePlacement.images[0] ? this.state.livePlacement.images[0].url ? this.state.cloud + "/" + this.state.livePlacement.images[0].url : dummyproduct : dummyproduct : dummyproduct : dummyproduct} className="product-placement-main-img"></img>
+                                                    </div>
+                                                    <div className={livePlacementPrice ? "price-add-to-cart-container margin-top-bottom-2-5 flex" : ""}>
+                                                        <div className="weight600 placement-price-display">{livePlacementPrice}</div>
+                                                        <div className="transaction-button-pad">
+                                                            <div className="transaction-button-container" onClick={(e)=>{this.addToCart()}}>
+                                                                <Button className="transaction-button transaction-button-add-cart btn-center cart-button-space">{buyChoice}</Button>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="action-go-checkout-buttons-container">
+                                                        <div>
+                                                            <Button className="transaction-button transaction-button-checkout btn-center cart-button-space placement-action-buy-button" onClick={(e)=>{this.goBuy()}}>Buy Now</Button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div className={this.state.placementSuccess || this.state.placementError ? "placement-info-container placement-info-container-visible" : "placement-info-container"}>
+                                                    <div className={this.state.placementSuccess ? this.state.placementSuccess.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>{this.state.placementSuccess}</div>
+                                                    <div className={this.state.placementError ? this.state.placementError.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.placementError}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div className={this.state.togglePlacementCheckout ? "placement-display-checkout-container placement-display-checkout-container-visible" : "placement-display-checkout-container"}>
+                                            <div className={this.state.livePlacement ? this.state.livePlacement.position ? this.state.livePlacement.position == "right" ? "placement-display-checkout place-right" : "placement-display-checkout place-left" : "placement-display-checkout place-right" : "placement-display-checkout" } ref={this.placementCheckoutRef}>
+                                                <div className="flex mini-checkout-clear-container">
+                                                    <p className="weight600 prompt-basic-s mini-checkout-header">Checkout</p>
+                                                    <span className="clear" onClick={(e) => {this.togglePlacementCheckoutState()}} title="Clear">&times;</span>
+                                                </div>
+                                                <div className={this.state.placementSuccess || this.state.placementError ? "placement-info-container placement-info-container-visible" : "placement-info-container"}>
+                                                    <div className={this.state.placementSuccess ? this.state.placementSuccess.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>{this.state.placementSuccess}</div>
+                                                    <div className={this.state.placementError ? this.state.placementError.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.placementError}</div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    : null
+                            }
+                        </div>
                         <video className="shaka-video"
                         ref={this.videoComponent}
                         poster={currPoster}
