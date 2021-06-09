@@ -11,6 +11,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
 import { faEdit, faPlus, faSave, faTrashAlt, faCopy, faArrowCircleUp } from '@fortawesome/free-solid-svg-icons';
+import { addOneProductToCart } from '../methods/ecommerce.js';
 
 import { cookies } from '../App.js';
 
@@ -18,7 +19,7 @@ export default class Product extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            shippingClassButton: "Set", currentStyle: 0, currentOption: 0, error: ""
+            shippingClassButton: "Set", currentStyle: 0, currentOption: 0, error: "", addProductInfo: null, addedOnce: false
         }
         this.shippingClassDropdownRef = new React.createRef();
         this.productOptionsSelectContainerRef = new React.createRef();
@@ -461,7 +462,7 @@ export default class Product extends Component {
     sendProductToServerAndSave = async (product) => {
         try {
             if (product) {
-                let newImages = this.resolveNewImages(); // This will be images that have yet to be uploaded for local dummy product
+                let newImages = this.resolveNewImages(); // This will be images that have yet to be uploaded for local product
                 let owner = this.props.owner; // Owner of the shop to identify the shop
                 let username = cookies.get("loggedIn"); // Name of the authenticated employee, by default the shop owner
                 let hash = cookies.get("hash"); // Hash for protected route
@@ -469,10 +470,17 @@ export default class Product extends Component {
                 let imgNames = [];
                 const formData = new FormData();
                 formData.append('product', JSON.stringify(product));
-                newImages.forEach(img=>{
+                newImages.forEach(img=> {
                     formData.append("image", img.file); // Will store files for temp upload to server
                     imgNames.push(img.name); // in order stores name for file
                 });
+                try {
+                    if (this.props.deletions.get(this.props.index)) {
+                        formData.append("deletions", JSON.stringify(this.props.deletions.get(this.props.index)));
+                    }
+                } catch (err) {
+                    // Fail silently
+                }
                 formData.append("imgNames", JSON.stringify(imgNames)); // in order stores name for file
                 formData.append('owner', owner);
                 formData.append('username', username);
@@ -512,7 +520,7 @@ export default class Product extends Component {
     resolveNewImages = () => {
         try {
             let imgArr = [];
-            if (this.props.index == "dummy" && this.props.tempImgData) {
+            if (this.props.tempImgData) {
                 imgArr = this.props.tempImgData; // Get local image data
             }
             return imgArr;
@@ -721,21 +729,86 @@ export default class Product extends Component {
      * If redirect is true, always redirect after attempt adding to cart (Should be true when user clicks "Buy Now" but should be false when user clicks "Add To Cart")
      * @param {Boolean} redirect 
      */
-    addToCart(page = "") {
-        // if page is "product" dont add to cart, always go to page
-        if (page == "product") {
+    async addToCart(page = "") {
+        try {
+            // if page is "product" dont add to cart, always go to page
+            if (page == "product" || this.state.addedOnce) {
+                this.props.history.push("/product?p=" + this.props.id);
+                return;
+            }
+            if (this.props.styles.length == 1 && this.props.styles[0].options.length == 1) {
+                this.setState({ busy: true });
+                let userShippingData = this.props.userShippingData;
+                let tempProduct = {
+                    id: this.props.id,
+                    images: this.props.images,
+                    name: this.props.name,
+                    shipping: this.props.shipping,
+                    shopId: this.props.shop.id,
+                    styles: this.props.styles,
+                    style: this.props.styles[0].descriptor,
+                    option: this.props.styles[0].options[0].descriptor
+                }
+                let data = await addOneProductToCart(tempProduct, userShippingData);
+                this.setState({ busy: false });
+                if (!data) {
+                    this.props.history.push("/product?p=" + this.props.id);
+                } else if (data.error) {
+                    this.props.history.push("/product?p=" + this.props.id);
+                } else {
+                    this.setState({ addProductInfo: "Added to cart", addedOnce: true }); // AddedOnce will be used to ensure that products are not added twice
+                }
+            } else {
+                this.props.history.push("/product?p=" + this.props.id);
+            }
+        } catch (err) {
+            this.setState({ busy: false });
             this.props.history.push("/product?p=" + this.props.id);
         }
         // if product invalid, dont add to cart, always go product page
         // if product valid, add to cart, dont redirect anywhere
     }
 
-    goBuy(cartChoice) {
-        console.log(cartChoice);
-        if (cartChoice == "See Details") { // If see details, not able to add to cart must go to product page first
-            this.props.history.push("/product?p=" + this.props.id);
-        } else {
-            // try add to cart and redirect to checkout page, if failure go product page
+    async goBuy(cartChoice) {
+        try {
+            if (this.state.addedOnce) {
+                this.props.history.push("/checkout");
+                return;
+            }
+            if (cartChoice == "See Details") { // If see details, not able to add to cart must go to product page first
+                this.props.history.push("/product?p=" + this.props.id);
+            } else {
+                if (this.props.styles.length == 1 && this.props.styles[0].options.length == 1) {
+                    this.setState({ busy: true });
+                    let userShippingData = this.props.userShippingData;
+                    let tempProduct = {
+                        id: this.props.id,
+                        images: this.props.images,
+                        name: this.props.name,
+                        shipping: this.props.shipping,
+                        shopId: this.props.shop.id,
+                        styles: this.props.styles,
+                        style: this.props.styles[0].descriptor,
+                        option: this.props.styles[0].options[0].descriptor
+                    }
+                    let data = await addOneProductToCart(tempProduct, userShippingData);
+                    this.setState({ busy: false });
+                    if (!data) {
+                        this.props.history.push("/product?p=" + this.props.id);
+                    } else if(data.error) {
+                        this.props.history.push("/product?p=" + this.props.id);
+                        throw new Error;
+                    } else {
+                        this.props.history.push("/checkout");
+                    }
+                } else {
+                    this.props.history.push("/product?p=" + this.props.id);
+                }
+                // try add to cart and redirect to checkout page, if failure go product page
+            }
+        } catch (err) {
+            this.setState({ busy: false });
+            this.props.history.push("/checkout");
         }
         // if product valid, go checkout, else go product page
     }
@@ -753,6 +826,7 @@ export default class Product extends Component {
         let cartChoice = this.resolveOnlyOneChoice();
         return (
             <div className="product-list-single shop-col">
+                <div className={this.state.busy ? "cover-page cover-on" : "cover-page cover-off"}></div>
                 <div className="product-list-meta-container">
                     <div className="product-list-img-container">
                         <NavLink exact to={"/product?p=" + this.props.id}>
@@ -937,6 +1011,11 @@ export default class Product extends Component {
                                     <div>
                                         <Button className="transaction-button transaction-button-checkout btn-center cart-button-space" onClick={(e)=>{this.goBuy(cartChoice)}}>Buy Now</Button>
                                     </div>
+                                    {
+                                        this.state.addProductInfo ?
+                                            <div className="generic-success generic-success-active">{this.state.addProductInfo}</div>
+                                            : null
+                                    }
                                 </div>
                             </div>
                     }

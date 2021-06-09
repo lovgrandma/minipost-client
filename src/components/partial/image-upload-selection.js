@@ -35,28 +35,45 @@ export default class ImageUploadSelection extends Component {
      * Will determine how image upload is handled based on index
      */
     handleImgUpload = () => {
-        this.setState({ currSelectedImg: -1 });
-        if (this.props.editing == "dummy") {
-            this.clearAll();
-            if (this.uploadFiles.current) {
-                if (this.uploadFiles.current.files) {
-                    let cachedImages = this.state.waitingFiles;
-                    let tempImgData = [];
-                    for (let i = 0; i < this.uploadFiles.current.files.length; i++) {
-                        cachedImages.push(this.uploadFiles.current.files[i]);
-                        let url = URL.createObjectURL(this.uploadFiles.current.files[i]); 
-                        tempImgData.push({name: "", url: url, file: this.uploadFiles.current.files[i]});
-                        this.tryLoadCacheImg(i, url);
-                        if (i > 8) {
-                            break; // Only allow 10 images
+        try {
+            this.setState({ currSelectedImg: -1 });
+            if (this.props.editing == "dummy") {
+                this.clearAll();
+                if (this.uploadFiles.current) {
+                    if (this.uploadFiles.current.files) {
+                        let cachedImages = this.state.waitingFiles;
+                        let tempImgData = [];
+                        for (let i = 0; i < this.uploadFiles.current.files.length; i++) {
+                            cachedImages.push(this.uploadFiles.current.files[i]);
+                            let url = URL.createObjectURL(this.uploadFiles.current.files[i]); 
+                            tempImgData.push({name: "", url: url, file: this.uploadFiles.current.files[i]});
+                            if (i > 8) {
+                                break; // Only allow 10 images
+                            }
                         }
+                        this.setState({ waitingFiles: cachedImages});
+                        this.props.sendTempImgData(tempImgData);
                     }
-                    this.setState({ waitingFiles: cachedImages});
-                    this.props.sendTempImgData(tempImgData);
                 }
+            } else {
+                // Upload all new images immediately to s3 and save on product record
+                const maxTotalNewImages = 10 - this.props.images.length;
+                let cachedImages = this.state.waitingFiles;
+                let tempImgData = [];
+                for (let i = 0; i < maxTotalNewImages && i < this.uploadFiles.current.files.length; i++) {
+                    cachedImages.push(this.uploadFiles.current.files[i]);
+                    let url = URL.createObjectURL(this.uploadFiles.current.files[i]);
+                    tempImgData.push({ name: "", url: url, file: this.uploadFiles.current.files[i]});
+                    this.tryLoadCacheImg(i, url);
+                    if ( i > 8) {
+                        break;
+                    }
+                }
+                this.setState({ waitingFiles: cachedImages });
+                this.props.sendTempImgData(tempImgData);
             }
-        } else {
-            // Upload all new images immediately to s3 and save on product record
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -157,6 +174,28 @@ export default class ImageUploadSelection extends Component {
         }
     }
 
+    deleteThisImg = (e) => {
+        try {
+            if (this.props.deletions && this.props.editing != "dummy") {
+                let tempDeletions = this.props.deletions;
+                let index = this.props.editing;
+                let match = false;
+                if (tempDeletions.has(index)) {
+                    let tempData = tempDeletions.get(index);
+                    if (tempData.indexOf(this.props.images[this.state.currSelectedImg].url) == -1) {
+                        tempData.push(this.props.images[this.state.currSelectedImg].url);
+                        tempDeletions.set(index, tempData);
+                    }
+                } else {
+                    tempDeletions.set(index, [ this.props.images[this.state.currSelectedImg].url ]);
+                }
+                this.props.setDeletions(tempDeletions);
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
         return (
             <div>
@@ -172,6 +211,14 @@ export default class ImageUploadSelection extends Component {
                         {
                             this.props.editing == "dummy" ?
                                 <div className="info-blurb">These images are for a new product so when you close this page remember to save this new product in order to upload the images to Minishops. Right now these images are only cached locally until the product is officially created. This only applies to images for products that don't already exist in the database</div>
+                                : null
+                        }
+                        {
+                            this.props.editing != "dummy" && this.state.currSelectedImg > -1 ?
+                                <div>
+                                    <div><Button onClick={(e) => {this.deleteThisImg(e)}} className="delete-product-img-button prompt-basic-s2 grey-btn margin-bottom-5">Mark image for deletion</Button></div>
+                                    <div className="prompt-basic-s2 grey-out">Click this button to mark the currently selected image for deletion. In order to finalize all deletes you'll need to save the product after you close this page</div>
+                                </div>
                                 : null
                         }
                     </div>

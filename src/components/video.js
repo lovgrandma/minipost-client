@@ -24,7 +24,7 @@ import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 import { addOneProductToCart, checkoutNowWithCurrentCartItems, formatAPrice } from '../methods/ecommerce.js';
 
-import { cookies, socket } from '../App.js';
+import { cookies, socket, localEvents } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 const shakaAddonButtons = require('../addons/shaka/addonbuttons.js');
@@ -33,12 +33,13 @@ const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
 const RelatedPanel = lazy(() => import('./relatedpanel.js'));
 const SocialVideoMeta = lazy(() => import('./socialvideometa.js'));
+const Checkout = lazy(() => import('./checkout.js'));
 
 export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false, togglePlacementCheckout: false,
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false, togglePlacementCheckout: false, completeOrderId: null,
             freeze: false, freezeData: null, interactInterval: "", productPlacement: null, livePlacement: null, livePlacementDisplay: false, productsAdded: []
         }
         this.videoContainer = new React.createRef();
@@ -51,6 +52,7 @@ export default class Video extends Component {
         this.progress = new EventEmitter();
         this.placementRef = new React.createRef();
         this.placementCheckoutRef = new React.createRef();
+        this.miniCheckoutContainer = new React.createRef();
         window.addEventListener('keydown', this.interceptEnter);
     }
 
@@ -84,8 +86,8 @@ export default class Video extends Component {
                 this.setState({ fullscreen: false });
             }
         });
-        document.onmousedown = () => { this.setState({ mousedown: true })};
-        document.onmouseup = () => { this.setState({ mousedown: false })};
+        document.onmousedown = () => { this.setState({ mousedown: true }) };
+        document.onmouseup = () => { this.setState({ mousedown: false }) };
         if (setInterval) {
             try {
                 let scrollInterval = setInterval(this.quickScroll, 1000);
@@ -94,6 +96,8 @@ export default class Video extends Component {
                 // setInterval is not a function for some reason
             }
         }
+        localEvents.on('orderFailed', (data) => this.orderFailed(data));
+        localEvents.on('orderComplete', (data) => this.orderComplete(data));
     }
 
     componentWillUnmount() {
@@ -118,17 +122,30 @@ export default class Video extends Component {
             if (this.state.interactInterval) {
                 clearInterval(this.state.interactInterval);
             }
+            localEvents.removeListener('orderFailed');
+            localEvents.removeListener('orderComplete');
         } catch (err) {
             // Fail silently
         }
     }
 
-    ComponentWillUpdate() {
-        
+    orderFailed(data) {
+        try {
+            this.setState({ placementSuccess: null, placementError: "Failed to complete" });
+        } catch (err) {
+            // Fail silently
+        }
     }
 
-    ComponentDidUpdate(prevProps, prevState) {
-        
+    orderComplete(data) {
+        try {
+            this.setState({ placementError: null, placementSuccess: `Your order was completed. See order` });
+            if (data) {
+                this.setState({ completeOrderId: data });
+            }
+        } catch (err) {
+            // Fail silently
+        }
     }
     
     quickScroll = () => {
@@ -710,6 +727,7 @@ export default class Video extends Component {
                                         this.setState({ livePlacement: productPlacement[i] }, () => {
                                             setTimeout(() => {
                                                 this.setState({ livePlacementDisplay: true });
+                                                this.setState({ placementSuccess: null }); // Different product loading but no wait inbetween. Remove placement success info
                                             }, 200);
                                         });
                                         break;
@@ -733,15 +751,13 @@ export default class Video extends Component {
                         } else {
                             if (this.state.livePlacement) {
                                 if (this.state.livePlacement.id == productPlacement[i].id) {
-                                    this.placementRef.current.setAttribute("style", "opacity: 0 !important");
                                     setTimeout(() => {
-                                        this.setState({ livePlacement: null }, () => {
+                                        this.setState({ livePlacementDisplay: false }, () => { // Do placement set state in reverse here to ensure smooth transition out
                                             setTimeout(() => {
-                                                this.setState({ livePlacementDisplay: false });
-                                                this.placementRef.current.removeAttribute("style");
-                                            }, 50);
+                                                this.setState({ livePlacement: null, placementSuccess: null });
+                                            }, 200);
                                         });
-                                    }, 200);
+                                    }, 50);
                                 }
                             }
                         }
@@ -1312,10 +1328,10 @@ export default class Video extends Component {
             this.setState({ placementError: "" });
             if (this.state.livePlacement.styles.length == 1 && this.state.livePlacement.styles[0].options.length == 1) {
                 let userShippingData = this.props.userShippingData;
+                let productsAdded = this.state.productsAdded;
                 if (this.state.livePlacement) {
                     let tempProduct = this.state.livePlacement;
-                    let temp = this.state.productsAdded;
-                    if (temp.indexOf(tempProduct.id) == -1) { // Ensures that product is not added twice between See Details & Buy Now
+                    if (productsAdded.indexOf(tempProduct.id) == -1) { // Ensures that product is not added twice between See Details & Buy Now
                         tempProduct.style = tempProduct.styles[0].descriptor;
                         tempProduct.option = tempProduct.styles[0].options[0].descriptor;
                         let data = await addOneProductToCart(tempProduct, userShippingData);
@@ -1323,9 +1339,13 @@ export default class Video extends Component {
                             throw new Error;
                         } else {
                             this.setState({ placementSuccess: "Added to cart" });
-                            temp.push(tempProduct.id);
-                            this.setState({ productsAdded: temp });
+                            productsAdded.push(tempProduct.id);
+                            this.setState({ productsAdded: productsAdded });
                         }
+                    } else {
+                         // The following will run if the user has already just purchased this product in the context of the current video playback
+                        this.setState({ placementSuccess: "Added to cart" });
+                        this.togglePlacementCheckoutState();
                     }
                 }
             } else {
@@ -1341,10 +1361,10 @@ export default class Video extends Component {
             this.setState({ placementError: "" });
             if (this.state.livePlacement.styles.length == 1 && this.state.livePlacement.styles[0].options.length == 1) {
                 let userShippingData = this.props.userShippingData;
+                let productsAdded = this.state.productsAdded;
                 if (this.state.livePlacement) {
                     let tempProduct = this.state.livePlacement;
-                    let temp = this.state.productsAdded;
-                    if (temp.indexOf(tempProduct.id) == -1) {
+                    if (productsAdded.indexOf(tempProduct.id) == -1) {
                         tempProduct.style = tempProduct.styles[0].descriptor;
                         tempProduct.option = tempProduct.styles[0].options[0].descriptor;
                         let data = await addOneProductToCart(tempProduct, userShippingData);
@@ -1352,10 +1372,13 @@ export default class Video extends Component {
                             throw new Error;
                         } else {
                             this.setState({ placementSuccess: "Added to cart" });
-                            temp.push(tempProduct.id);
-                            this.setState({ productsAdded: temp });
+                            productsAdded.push(tempProduct.id);
+                            this.setState({ productsAdded: productsAdded });
                             this.togglePlacementCheckoutState();
                         }
+                    } else {
+                        this.setState({ placementSuccess: "Added to cart" });
+                        this.togglePlacementCheckoutState();
                     }
                 }
             } else {
@@ -1373,9 +1396,19 @@ export default class Video extends Component {
                 let fullHeight = this.placementRef.current.offsetHeight;
                 this.setState({ togglePlacementCheckout: true }); // Show mini checkout module
                 this.placementCheckoutRef.current.style.height = fullHeight + "px";
+                this.miniCheckoutContainer.current.style.overflowY = "auto";
+                this.miniCheckoutContainer.current.style.overflowX = "hidden";
+                this.miniCheckoutContainer.current.style.maxHeight = (Number(fullHeight) - 60) + "px";
+                this.miniCheckoutContainer.current.style.marginBottom = "5px";
+                this.miniCheckoutContainer.current.style.paddingRight = "5px";
             } else {
                 this.placementCheckoutRef.current.style.height = "0px";
                 this.setState({ togglePlacementCheckout: false }); 
+                this.miniCheckoutContainer.current.style.overflowY = "hidden";
+                this.miniCheckoutContainer.current.style.overflowX = "hidden";
+                this.miniCheckoutContainer.current.style.maxHeight = "auto"
+                this.miniCheckoutContainer.current.style.marginBottom = "0px";
+                this.miniCheckoutContainer.current.style.paddingRight = "0px";
             }
         } catch (err) {
             return false;
@@ -1495,7 +1528,15 @@ export default class Video extends Component {
                                                     </div>
                                                 </div>
                                                 <div className={this.state.placementSuccess || this.state.placementError ? "placement-info-container placement-info-container-visible" : "placement-info-container"}>
-                                                    <div className={this.state.placementSuccess ? this.state.placementSuccess.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>{this.state.placementSuccess}</div>
+                                                    <div className={this.state.placementSuccess ? this.state.placementSuccess.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>
+                                                        {
+                                                            this.state.completeOrderId && this.state.placementSuccess == "Your order was completed. See order" ?
+                                                                <Link to={{
+                                                                    pathname: `/order?o=${this.state.completeOrderId}`
+                                                                }}>{this.state.placementSuccess}</Link>
+                                                                : this.state.placementSuccess
+                                                        }
+                                                        </div>
                                                     <div className={this.state.placementError ? this.state.placementError.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.placementError}</div>
                                                 </div>
                                             </div>
@@ -1506,8 +1547,23 @@ export default class Video extends Component {
                                                     <p className="weight600 prompt-basic-s mini-checkout-header">Checkout</p>
                                                     <span className="clear" onClick={(e) => {this.togglePlacementCheckoutState()}} title="Clear">&times;</span>
                                                 </div>
+                                                <div ref={this.miniCheckoutContainer} className="mini-checkout-video-container">
+                                                    {
+                                                        this.state.togglePlacementCheckout ?
+                                                            <Checkout {...this.props} fullCheckout={true} minifiedCheckout={true} cloud={this.props.cloud} setCloud={this.props.setCloud} fetchCloudUrl={this.props.fetchCloudUrl} />
+                                                            : null
+                                                    }
+                                                </div>
                                                 <div className={this.state.placementSuccess || this.state.placementError ? "placement-info-container placement-info-container-visible" : "placement-info-container"}>
-                                                    <div className={this.state.placementSuccess ? this.state.placementSuccess.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>{this.state.placementSuccess}</div>
+                                                    <div className={this.state.placementSuccess ? this.state.placementSuccess.length > 0 ? "generic-success generic-success-active" : "generic-success generic-success-hidden" : "generic-success generic-success-hidden"}>
+                                                        {
+                                                            this.state.completeOrderId ?
+                                                                <Link to={{
+                                                                    pathname: `/order?o=${this.state.completeOrderId}`
+                                                                }}>{this.state.placementSuccess}</Link>
+                                                                : <div>{this.state.placementSuccess}</div>
+                                                        }
+                                                    </div>
                                                     <div className={this.state.placementError ? this.state.placementError.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.placementError}</div>
                                                 </div>
                                             </div>

@@ -3966,6 +3966,7 @@ If user only has one friend, styling wont apply */
 .canvas-thumbnail-preview {
     border: 1px solid grey;
     margin-bottom: 10px;
+    background-color: black;
 }
 
 .info-blurb, .info-blurb-2 {

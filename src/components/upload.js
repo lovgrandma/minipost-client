@@ -1028,17 +1028,33 @@ export default class Upload extends Component { // ulc upload component
                 if (this.thumbnailpreview.current) {
                     this.thumbnailpreview.current.width = 320;
                     this.thumbnailpreview.current.height = 180;
-                    let ctx = this.thumbnailpreview.current.getContext('2d');
+                    let ctx = this.thumbnailpreview.current.getContext('2d'); // Canvas
                     if (url && url != "undefined") { // Will set thumbnail to current video image if edited video to preserve same thumbnail if user does not change
                         let img = new Image;
                         img.crossOrigin = "Use-Credentials";
                         let cloudUrl = this.props.cloud + "/" + url + ".jpeg";
                         img.src = cloudUrl;
                         img.onload = () => {
-                            ctx.drawImage(img, 0, 0, 320, 180);
+                            try {
+                                let calcAsp = this.videoComponent.current.videoHeight / 180;
+                                let calcHeight = this.videoComponent.current.videoHeight / calcAsp;
+                                let calcWidth = this.videoComponent.current.videoWidth / calcAsp;
+                                let xOffset = (320 - calcWidth) / 2;
+                                let yOffset = (180 - calcHeight) / 2;
+                                ctx.drawImage(this.videoComponent.current, xOffset, yOffset, calcWidth, calcHeight);
+                            } catch (err) {
+                                console.log(err);
+                            }
                         }
                     } else {
-                        ctx.drawImage(this.videoComponent.current, 0, 0, 320, 180);
+                        if (this.videoComponent.current) {
+                            let calcAsp = this.videoComponent.current.videoHeight / 180;
+                            let calcHeight = this.videoComponent.current.videoHeight / calcAsp;
+                            let calcWidth = this.videoComponent.current.videoWidth / calcAsp;
+                            let xOffset = (320 - calcWidth) / 2;
+                            let yOffset = (180 - calcHeight) / 2;
+                            ctx.drawImage(this.videoComponent.current, xOffset, yOffset, calcWidth, calcHeight);
+                        }
                     }
                     let totalData = 0;
                     for (let i = 0; i < 500; i++) {

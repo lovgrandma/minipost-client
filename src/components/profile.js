@@ -170,6 +170,7 @@ export default class Profile extends Component {
                             edit={editable.call(this)}
                             updateShippingClasses={this.updateShippingClasses}
                             cloud={this.state.cloud}
+                            userShippingData={this.props.userShippingData}
                         />
         } else {
             pageData = profileData;

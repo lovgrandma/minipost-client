@@ -246,7 +246,6 @@ class Socialbar extends Component { // Main social entry point sb1
 
     setTyping = (data) => {
         // let typeData = data.match(typingRegex);
-        console.log(data);
         let user = data.match(typingRegex)[1]; // user
         let content = data.match(typingRegex)[2]; // content
         let room = data.match(typingRegex)[3]; // room
@@ -413,8 +412,8 @@ class Socialbar extends Component { // Main social entry point sb1
     * @returns {String status || Boolean} Will return whether or not submitReset successfully happened or failed or false
     * communicating false non-action.
     */
-    submitResetPass = async (e, email, username) => {
-        if (email && username) {
+    submitResetPass = async (e, email) => {
+        if (email) {
             return await fetch(currentrooturl + 'm/submitresetpass', {
                 method: "POST",
                 headers: {
@@ -424,7 +423,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 mode: 'cors',
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    email, username
+                    email
                 })
             })
             .then((response) => {
@@ -2004,17 +2003,17 @@ class App extends Component {
                         )}/>
                         <Route path='/watch' render={(props) => (
                             <Suspense fallback={<div className="fallback-loading"></div>}>
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                             </Suspense>
                         )}/>
                         <Route path='/read' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/shop?s=:username' render={(props) => (
-                            <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/shop' render={(props) => (
-                            <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/product' render={(props) => (
                             <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
@@ -2038,10 +2037,10 @@ class App extends Component {
                             <WriteArticle {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/profile?p=:username' render={(props) => (
-                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/profile' render={(props) => (
-                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} />
+                            <Profile {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/edit?v=:videoId' render={(props) => (
                             <Upload {...props} key={getPath()} edit={true} cloud={this.state.cloud} isLoggedIn={this.state.isLoggedIn} updateUploadStatus={this.updateUploadStatus} uploadStatus={this.state.uploadStatus} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
@@ -2061,8 +2060,11 @@ class App extends Component {
                         <Route path='/about' render={(props) => (
                           <InfoTemplate {...props} />
                         )}/>
-                        <Route path='/passwordreset?u=:passwordresetsecret' render={(props) => (
-                           <ResetPass {...props} />                                  
+                        <Route path='/resetpass' render={(props) => (
+                           <ResetPass {...props} />                             
+                        )}/>
+                        <Route path='/resetpass?a=:secret' render={(props) => (
+                           <ResetPass {...props} />                              
                         )}/>
                         <Route path='/checkout' render={(props) => (
                             <Checkout {...props} fullCheckout={true} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} />

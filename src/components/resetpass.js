@@ -11,6 +11,7 @@ export default class ResetPass extends Component {
         }
         this.pass = React.createRef();
         this.passConfirm = React.createRef();
+        this.email = React.createRef();
     }
     
     submitConfirmPassReset = (e) => {
@@ -19,6 +20,7 @@ export default class ResetPass extends Component {
         let checkPassConfirm = false;
         let checkPassMatch = false;
         let goodPass = false;
+        let goodEmail = false;
         
         if (this.pass) {
             if (this.pass.current) {
@@ -53,9 +55,17 @@ export default class ResetPass extends Component {
                 }
             }
         }
-        if (checkPass && checkPassConfirm && checkPassMatch && goodPass) {
+        if (this.email) {
+            if (this.email.current) {
+                if (this.email.current.value) {
+                    goodEmail = true;
+                }
+            }
+        }
+        if (checkPass && checkPassConfirm && checkPassMatch && goodPass && goodEmail) {
             let newPass = this.pass.current.value;
             let data = window.location.href;
+            let email = this.email.current.value;
             fetch(currentrooturl + 'm/submitconfirmpassreset', {
                 method: "POST",
                 headers: {
@@ -64,7 +74,7 @@ export default class ResetPass extends Component {
                 },
                 credentials: corsdefault,
                 body: JSON.stringify({
-                    newPass, data
+                    newPass, email, data
                 })
             })
             .then(function(response) {
@@ -86,6 +96,9 @@ export default class ResetPass extends Component {
                 <div className="page-header-text">Reset password</div>
                 <div className="form-group reset-password-container">
                     <form className="reset-password-center" novalidate>
+                        <div className="form-group">
+                            <input className="form-control" ref={this.email} id="pw" type="email" name="email" placeholder="email"></input>
+                        </div>
                         <p className="prompt-basic">Type in your new password below.</p>
                         <div className="form-group">
                             <input className="form-control" ref={this.pass} id="pw" type="password" name="password" placeholder="password"></input>

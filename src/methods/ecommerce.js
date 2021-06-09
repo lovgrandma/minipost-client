@@ -1,4 +1,4 @@
-import { cookies } from '../App.js';
+import { cookies, localEvents } from '../App.js';
 import currentrooturl from '../url.js';
 import currentshopurl from '../shopurl.js';
 import corsdefault from '../cors.js';
@@ -45,11 +45,21 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
                 this.setState({ busy: false });
                 console.log(result); // if success push user to completed checkout page
                 if (result) {
+                    if (result.error) {
+                        localEvents.emit('orderFailed', result.error);
+                        this.setState({ checkoutError: result.error }); // Failed silently
+                        this.setState({ busy: false });
+                        return false;
+                    }
                     if (result.orderRecord) {
                         if (result.orderRecord.paymentFulfilled) {
                             await emptyCachedCartItems(); // Empty cached cart items as well. User just completed the purchase
                             this.setState({ cartData: [], checkoutTruths: {} }, () => {
-                                this.props.history.push('/order?o=' + result.orderRecord.id); // redirect user to receipt page
+                                if (!this.props.minifiedCheckout) {
+                                    this.props.history.push('/order?o=' + result.orderRecord.id); // redirect user to receipt page
+                                } else {
+                                    localEvents.emit('orderComplete', result.orderRecord.id);
+                                }
                             }); // Set stateful user cart to empty
                         }
                     }
@@ -57,7 +67,9 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
                 return result;
             })
             .catch((err) => {
-                this.setState({ checkoutError: "Failed to complete cart checkout" }); // Failed silently
+                const basicErr = "Failed to complete cart checkout";
+                localEvents.emit('orderFailed', basicErr);
+                this.setState({ checkoutError: basicErr }); // Failed silently
                 this.setState({ busy: false });
                 return false;
             });

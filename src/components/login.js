@@ -260,7 +260,6 @@ export default class Login extends Component {
     
     submitResetPass = async (e) => { 
         let validEmail = false;
-        let validUsername = false;
         if (this.resetPassEmail) {
             if (this.resetPassEmail.current) {
                 if (this.resetPassEmail.current.value) {
@@ -268,15 +267,8 @@ export default class Login extends Component {
                 }
             }
         }
-        if (this.resetPassUsername) {
-            if (this.resetPassUsername.current) {
-                if (this.resetPassUsername.current.value) {
-                    validUsername = this.resetPassUsername.current.value;
-                }
-            }
-        }
-        if (validEmail && validUsername) {
-            let data = await this.props.submitResetPass(e, validEmail, validUsername);
+        if (validEmail) {
+            let data = await this.props.submitResetPass(e, validEmail);
             this.setState({ resetPassUpdate: data });
         }
     }
@@ -306,9 +298,6 @@ export default class Login extends Component {
                     <div className="info-blurb-3-thick dark-grey">Reset your password using the form below</div>
                     <div className="form-group">
                         <input className="form-control" ref={this.resetPassEmail} id="resetpass-email" type="email" name="resetpass-email" placeholder="email"></input>
-                    </div>
-                    <div className="form-group">
-                        <input className="form-control" ref={this.resetPassUsername} id="resetpass-username" type="text" name="resetpass-username" placeholder="reset username"></input>
                     </div>
                     {
                         this.state.resetPassUpdate ? <div className="resetpassstatus">{this.state.resetPassUpdate}</div> : <div></div>

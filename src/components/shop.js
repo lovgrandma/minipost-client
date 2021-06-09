@@ -9,7 +9,7 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: "", error: ""
+            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: "", error: "", deletions: new Map()
         }
     }
 
@@ -267,6 +267,14 @@ export default class Shop extends Component {
         }
     }
 
+    setDeletions(deletions) {
+        try {
+            this.setState({ deletions: deletions });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
         let currImages = this.resolveCurrentImages();
         return (
@@ -290,7 +298,8 @@ export default class Shop extends Component {
                                     toggleImagePortal={this.toggleImagePortal} 
                                     sendTempImgData={this.sendTempImgData}
                                     searchAndUpdateImgName={this.searchAndUpdateImgName}
-                                    tempImgData={this.state.tempImgData} />
+                                    tempImgData={this.state.tempImgData}
+                                    deletions={this.state.deletions} />
                                 </div>
                             </div>
                             : null
@@ -298,7 +307,8 @@ export default class Shop extends Component {
                     {
                         this.state.products ?
                             this.state.products.map((product, index) => 
-                                <Product {...this.props} name={product.name}
+                                <Product {...this.props} dummy={false}
+                                name={product.name}
                                 desc={product.description}
                                 images={product.images}
                                 styles={product.styles}
@@ -316,7 +326,10 @@ export default class Shop extends Component {
                                 index={index}
                                 key={index}
                                 owner={this.props.owner}
+                                tempImgData={this.state.tempImgData}
                                 cloud={this.state.cloud}
+                                userShippingData={this.props.userShippingData}
+                                deletions={this.state.deletions}
                                 />
                             )
                             : null
@@ -342,6 +355,7 @@ export default class Shop extends Component {
                             index="dummy"
                             owner={this.props.owner}
                             tempImgData={this.state.tempImgData}
+                            userShippingData={this.props.userShippingData}
                             />
                             : null
                     }

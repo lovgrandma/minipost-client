@@ -499,6 +499,10 @@
     opacity: 0;
 }
 
+.product-placement-in-video {
+    transition: 200ms;
+}
+
 .product-placement-in-video,
 .placement-display-checkout-container-visible .placement-display-checkout {
     width: 0;
@@ -512,9 +516,31 @@
 
 .placement-visible {
     opacity: 1;
-    background: rgb(255 255 255);
+    background: rgba(255, 255, 255, 0);
     border-radius: 15px;
     visibility: visible;
+}
+
+.placement-visible img,
+.placement-visible .placement-price-display,
+.placement-visible Button,
+.placement-visible .generic-success-active,
+.placement-visible .err-status-active,
+.placement-visible .transaction-button-container {
+    opacity: 0.7;
+}
+
+.placement-visible:hover {
+    background: rgba(255, 255, 255, 1);
+}
+
+.placement-visible:hover img,
+.placement-visible:hover .placement-price-display,
+.placement-visible:hover Button,
+.placement-visible:hover .generic-success-active,
+.placement-visible:hover .err-status-active,
+.placement-visible:hover .transaction-button-container {
+    opacity: 1;
 }
 
 .product-placement-product-title {
@@ -662,7 +688,7 @@
     }
 
     .sidebar-isopen ~ .maindashcontainer .product-placement-product-title {
-        max-height: 15px;
+        max-height: 22px;
     }
 
     .sidebar-isopen ~ .maindashcontainer .transaction-button-container .transaction-button,
@@ -791,9 +817,33 @@
 
 .placement-display-checkout {
     visibility: visible;
-    background-color: white;
+    background-color: rgba(256, 256, 256, 0);
     border-radius: 15px;
     position: absolute;
+}
+
+.placement-display-checkout img,
+.placement-display-checkout Button,
+.placement-display-checkout .checkout-product-flex-container-minified,
+.placement-display-checkout .product-options-select-dropdown,
+.placement-display-checkout .generic-success-active,
+.placement-display-checkout .err-status-active,
+.placement-display-checkout .transaction-button-container {
+    opacity: 0.7;
+}
+
+.placement-display-checkout:hover {
+    background-color: rgba(256, 256, 256, 1);
+}
+
+.placement-display-checkout:hover img,
+.placement-display-checkout:hover Button,
+.placement-display-checkout:hover .checkout-product-flex-container-minified,
+.placement-display-checkout:hover .product-options-select-dropdown,
+.placement-display-checkout:hover .generic-success-active,
+.placement-display-checkout:hover .err-status-active,
+.placement-display-checkout:hover .transaction-button-container {
+    opacity: 1 !important;
 }
 
 .product-placement-product-title {

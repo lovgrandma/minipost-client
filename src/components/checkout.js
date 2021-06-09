@@ -288,7 +288,7 @@ export default class Checkout extends Component {
 
     render() {
         return (
-            <div className={this.props.fullCheckout ? "fullcheckout-flex max-width-1600 margin0auto" : ""}>
+            <div className={this.props.fullCheckout && !this.props.minifiedCheckout ? "fullcheckout-flex max-width-1600 margin0auto" : this.props.minfiedCheckout ? "minicheckout-flex margin0auto" : ""}>
                 <div className={this.state.busy ? "cover-page cover-on" : "cover-page cover-off"}></div>
                 <div className="checkout-products-and-btn-container">
                     {
@@ -299,7 +299,7 @@ export default class Checkout extends Component {
                     <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.error}</div>
                     <div>
                         {
-                            this.props.fullCheckout ?
+                            this.props.fullCheckout && !this.props.minifiedCheckout ?
                                 <h3>Your Cart</h3>
                                 : null
                         }
@@ -308,96 +308,110 @@ export default class Checkout extends Component {
                                 this.state.cartData ?
                                     this.state.cartData.length > 0 ?
                                         this.state.cartData.map((item, index) => 
-                                            <div className="checkout-product-flex-container">
-                                                <div>
-                                                    <img src={this.props.cloud ? this.props.cloud + "/" + item.image : ""} className="checkout-image-min"></img>
-                                                </div>
-                                                <div className="checkout-product-container">
-                                                    <div className="checkout-product-name">{item.name}</div>
-                                                    {
-                                                        this.props.fullCheckout ?
-                                                            <div className="checkout-product-shop">
-                                                                {this.resolveShopName(item)}
-                                                            </div>
-                                                            : null
-                                                    }
-                                                    {
-                                                        this.props.fullCheckout ?
-                                                            <div className="checkout-product-full-product-data-container">
-                                                                <div className="shipping-methods-container">
-                                                                    <span className="weight600 grey-out shipping-label-text-checkout">shipping class:</span>
-                                                                    <div>
-                                                                        {
-                                                                            item.validShippingClassesForUser ?
-                                                                                item.validShippingClassesForUser.classes ?
-                                                                                    item.validShippingClassesForUser.classes.length > 0 ?
-                                                                                        <select name="product-options-select-container" id="product-options-select-container" className="product-options-select-dropdown" defaultValue={item.shippingClass.shippingRule} index={index} onChange={(e) => {this.changeShippingClass(e, item)}}>
-                                                                                            {
-                                                                                                item.validShippingClassesForUser ?
-                                                                                                    item.validShippingClassesForUser.classes ?
-                                                                                                            this.resolveShippingOptions(item.validShippingClassesForUser.classes, item)
-                                                                                                        : null 
-                                                                                                    : null
-                                                                                            }
-                                                                                        </select>
-                                                                                        : <p className="err-status prompt-basic-s2 no-shipping-err">Unfortunately, this product does not ship to your country</p>
+                                            <div className={!this.props.minifiedCheckout ? "checkout-product-flex-container" : "checkout-product-flex-container checkout-product-flex-container-minified"}>
+                                                <div className={!this.props.minifiedCheckout ? "flex checkout-product-image-and-title-container" : "flex checkout-product-image-and-title-container flex checkout-product-image-and-title-container-mini"}>
+                                                    <div>
+                                                        <img src={this.props.cloud ? this.props.cloud + "/" + item.image : ""} className="checkout-image-min"></img>
+                                                    </div>
+                                                    <div className="checkout-product-container">
+                                                        <div className="checkout-product-name">{item.name}</div>
+                                                        {
+                                                            this.props.fullCheckout ?
+                                                                <div className="checkout-product-shop">
+                                                                    {this.resolveShopName(item)}
+                                                                </div>
+                                                                : null
+                                                        }
+                                                        {
+                                                            this.props.fullCheckout ?
+                                                                <div className="checkout-product-full-product-data-container">
+                                                                    <div className="shipping-methods-container">
+                                                                        <span className="weight600 grey-out shipping-label-text-checkout">{this.props.minifiedCheckout ? "shipping:" : "shipping class:"}</span>
+                                                                        <div>
+                                                                            {
+                                                                                item.validShippingClassesForUser ?
+                                                                                    item.validShippingClassesForUser.classes ?
+                                                                                        item.validShippingClassesForUser.classes.length > 0 ?
+                                                                                            <select name="product-options-select-container" id="product-options-select-container" className="product-options-select-dropdown" defaultValue={item.shippingClass.shippingRule} index={index} onChange={(e) => {this.changeShippingClass(e, item)}}>
+                                                                                                {
+                                                                                                    item.validShippingClassesForUser ?
+                                                                                                        item.validShippingClassesForUser.classes ?
+                                                                                                                this.resolveShippingOptions(item.validShippingClassesForUser.classes, item)
+                                                                                                            : null 
+                                                                                                        : null
+                                                                                                }
+                                                                                            </select>
+                                                                                            : <p className="err-status prompt-basic-s2 no-shipping-err">Unfortunately, this product does not ship to your country</p>
+                                                                                        : null
                                                                                     : null
-                                                                                : null
-                                                                        }
+                                                                            }
+                                                                        </div>
                                                                     </div>
                                                                 </div>
-                                                            </div>
-                                                            : null
-                                                    }
-                                                    <div className="checkout-product-meta-data-container">
-                                                        <div className="checkout-product-flex-data-container">
-                                                            {
-                                                                item.style ?
-                                                                    <div className="checkout-product-style">{item.style}</div>
-                                                                    : null
-                                                            }
-                                                            {
-                                                                item.style && item.option ?
-                                                                    <span>|</span>
-                                                                    : null
-                                                            }
-                                                            {
-                                                                item.option ?
-                                                                    <div className="checkout-product-option grey-out">{item.option}</div>
-                                                                    : null
-                                                            }
-                                                            {
-                                                                item.quantity ?
-                                                                    this.props.fullCheckout ?
-                                                                        <div className="checkout-product-quantity checkout-product-quantity-min-checkout">
-                                                                            <span className="grey-out"><FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" /></span>
-                                                                            <div className="align-vert"><input className="checkout-quantity-dropdown checkout-quantity-dropdown-full" type="number" id="quantity" name="quantity" min="0" max="1000000" defaultValue={item.quantity} onChange={(e) => {this.debounceUpdateQuantity()}}></input></div>
-                                                                        </div>
-                                                                        : item.quantity > 1 ?
+                                                                : null
+                                                        }
+                                                        <div className="checkout-product-meta-data-container">
+                                                            <div className="checkout-product-flex-data-container">
+                                                                {
+                                                                    item.style ?
+                                                                        <div className="checkout-product-style">{item.style}</div>
+                                                                        : null
+                                                                }
+                                                                {
+                                                                    item.style && item.option ?
+                                                                        <span>|</span>
+                                                                        : null
+                                                                }
+                                                                {
+                                                                    item.option ?
+                                                                        <div className="checkout-product-option grey-out">{item.option}</div>
+                                                                        : null
+                                                                }
+                                                                {
+                                                                    item.quantity ?
+                                                                        this.props.fullCheckout ?
                                                                             <div className="checkout-product-quantity checkout-product-quantity-min-checkout">
-                                                                                <FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" />
-                                                                                <div>{item.quantity}</div>
+                                                                                <span className="grey-out"><FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" /></span>
+                                                                                <div className="align-vert"><input className="checkout-quantity-dropdown checkout-quantity-dropdown-full" type="number" id="quantity" name="quantity" min="0" max="1000000" defaultValue={item.quantity} onChange={(e) => {this.debounceUpdateQuantity()}}></input></div>
                                                                             </div>
-                                                                            : null
-                                                                    : null
-                                                            }
+                                                                            : item.quantity > 1 ?
+                                                                                <div className="checkout-product-quantity checkout-product-quantity-min-checkout">
+                                                                                    <FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" />
+                                                                                    <div>{item.quantity}</div>
+                                                                                </div>
+                                                                                : null
+                                                                        : null
+                                                                }
+                                                            </div>
+                                                            <div>
+                                                                {
+                                                                    this.props.fullCheckout ?
+                                                                        <div className="social-portal-times times-checkout-button" index={index} onClick={(e) => {this.setQuantityToNoneDelete(e)}}>&times;</div>
+                                                                        : null
+                                                                }
+                                                            </div>
                                                         </div>
-                                                        <div>
-                                                            <div className="social-portal-times times-checkout-button" index={index} onClick={(e) => {this.setQuantityToNoneDelete(e)}}>&times;</div>
-                                                        </div>
+                                                        {
+                                                            this.checkException(item) ?
+                                                                <div className="err-status prompt-basic-s2 err-status-wide margin-top-5" onClick={(e) => {this.checkException(item, true)}}>We had to adjust the quantity since the amount you want is more than the seller has in stock</div>
+                                                                : null
+                                                        }
                                                     </div>
-                                                    {
-                                                        this.checkException(item) ?
-                                                            <div className="err-status prompt-basic-s2 err-status-wide margin-top-5" onClick={(e) => {this.checkException(item, true)}}>We had to adjust the quantity since the amount you want is more than the seller has in stock</div>
-                                                            : null
-                                                    }
                                                 </div>
                                                 {
                                                     this.props.fullCheckout ?
                                                         <div className="fullcheckout-meta-data">
-                                                            <div className="checkout-product-individual-price weight700">{item.price ? formatAPrice(item.price) : null}</div>
+                                                            {
+                                                                !this.props.minifiedCheckout ?
+                                                                    <div className="checkout-product-individual-price weight700">{item.price ? formatAPrice(item.price) : null}</div>
+                                                                    : null
+                                                            }
                                                             <div>
-                                                                <div className="checkout-subtotal-quantity-block"><FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" />&nbsp;{item.quantity}</div>
+                                                                {
+                                                                    !this.props.minifiedCheckout ?
+                                                                        <div className="checkout-subtotal-quantity-block"><FontAwesomeIcon className="edit-interact" icon={faCube} color={ '#919191' } alt="edit" />&nbsp;{item.quantity}</div>
+                                                                        : null
+                                                                }
                                                                 <div className="checkout-subtotal-text grey-out">Subtotal:</div>
                                                                 <div className="checkout-product-individual-subtotal weight700">{item.calculatedTotal ? formatAPrice(item.calculatedTotal) : null}</div>
                                                             </div>
@@ -420,7 +434,7 @@ export default class Checkout extends Component {
                                 : null
                         }
                     </div>
-                    <div className="checkout-totals-container-padding">
+                    <div className={!this.props.minifiedCheckout ? "checkout-totals-container-padding" : "checkout-totals-container-padding checkout-totals-container-mini"}>
                         { this.props.fullCheckout ?
                             <table className="totals-container">
                                 {
@@ -442,7 +456,7 @@ export default class Checkout extends Component {
                                 {
                                     this.state.checkoutTruths ? this.state.checkoutTruths.totals ? this.state.checkoutTruths.totals.total ?
                                         <tr className="totals-label-and-price">
-                                            <td><div className="grey-out weight600">CheckoutTotal:&nbsp;</div></td>
+                                            <td><div className="grey-out weight600">Total:&nbsp;</div></td>
                                             <td><h3>{formatAPrice(this.state.checkoutTruths.totals.total)}</h3></td>
                                         </tr>
                                         : null : null : null
@@ -463,7 +477,7 @@ export default class Checkout extends Component {
                     </div>
                 </div>
                 {
-                    this.props.fullCheckout ?
+                    this.props.fullCheckout && !this.props.minifiedCheckout ?
                         <div className="checkout-place-order-container">
                             <table className="totals-container totals-container-place-order">
                                 {
