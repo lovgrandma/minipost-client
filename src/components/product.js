@@ -470,7 +470,9 @@ export default class Product extends Component {
                 let imgNames = [];
                 const formData = new FormData();
                 formData.append('product', JSON.stringify(product));
+                console.log(newImages);
                 newImages.forEach(img=> {
+                    console.log(img);
                     formData.append("image", img.file); // Will store files for temp upload to server
                     imgNames.push(img.name); // in order stores name for file
                 });
@@ -487,7 +489,6 @@ export default class Product extends Component {
                 formData.append('username', username);
                 formData.append('hash', hash);
                 formData.append('self', self);
-                console.log(formData);
                 return await fetch(currentshopurl + "s/savesingleproducttoshop", {
                     method: "POST",
                     credentials: corsdefault,
@@ -521,11 +522,8 @@ export default class Product extends Component {
      */
     resolveNewImages = () => {
         try {
-            let imgArr = [];
-            console.log(this.props.tempImgData);
             return this.props.tempImgData; // Get local image data
         } catch (err) {
-            console.log(err);
              return [];
         }
     }
