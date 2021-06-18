@@ -474,6 +474,7 @@ export default class Product extends Component {
                     formData.append("image", img.file); // Will store files for temp upload to server
                     imgNames.push(img.name); // in order stores name for file
                 });
+                console.log(imgNames);
                 try {
                     if (this.props.deletions.get(this.props.index)) {
                         formData.append("deletions", JSON.stringify(this.props.deletions.get(this.props.index)));
@@ -486,6 +487,7 @@ export default class Product extends Component {
                 formData.append('username', username);
                 formData.append('hash', hash);
                 formData.append('self', self);
+                console.log(formData);
                 return await fetch(currentshopurl + "s/savesingleproducttoshop", {
                     method: "POST",
                     credentials: corsdefault,
