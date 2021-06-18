@@ -36,16 +36,7 @@ export default class Login extends Component {
             } else {
                 document.querySelector(".register-text").classList.add("register-text-stale", "text-fadein");
             }
-            if (google) {
-                this.attemptGoogleSignInBtnLoad();
-            }
-            setTimeout(() => {
-                try {
-                    this.attemptGoogleSignInBtnLoad();
-                } catch (err) {
-                    // Fail silently
-                }
-            });
+            this.attemptGoogleSignInBtnLoad();
         } catch (err) {
             // Google did not load
         }
@@ -53,13 +44,11 @@ export default class Login extends Component {
 
     attemptGoogleSignInBtnLoad() {
         try {
-            if (this.googleSignIn.current) {
-                google.accounts.id.renderButton(this.googleSignIn.current, {
-                    theme: 'outline',
-                    size: 'medium',
-                    logo_alignment: 'center'
-                });
-            }
+            google.accounts.id.renderButton(this.googleSignIn.current, {
+                theme: 'outline',
+                size: 'medium',
+                logo_alignment: 'center'
+            });
         } catch (err) {
             // Fail silently
         }

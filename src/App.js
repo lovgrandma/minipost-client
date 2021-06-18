@@ -3,7 +3,7 @@ import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import loadable from '@loadable/component';
 import csshake from 'csshake';
-import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; 
+import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js';
 import {
     Route
 } from 'react-router-dom';
@@ -61,7 +61,7 @@ class Socialbar extends Component { // Main social entry point sb1
                       showingpendingrequests: "hidden", pendingfriendrequests: null, following: [],
                       friendchatopen: null, otheruserchatopen: null,
                       loginerror: null, registererror: null, verifyerror: null,
-                      friendsopen: true, nonfriendsopen: false,
+                      friendsopen: true, nonfriendsopen: false, adminCheck: false,
                       response: false, endpoint: proxyurl, googleSignInError: '', usernameChoicePortal: false,
                       typing: [], darkmode: false, verifyinfo: "", useravatar: ""
                      }
@@ -93,6 +93,7 @@ class Socialbar extends Component { // Main social entry point sb1
         }
         this.setupGoogleSignIn();
         localEvents.on("openSideBar", () => { this.openSideBar() });
+        this.checkAdmin();
     };
         
     componentDidUpdate(e, prevState, prevProps) {
@@ -241,6 +242,16 @@ class Socialbar extends Component { // Main social entry point sb1
             opensocket.then(() => {
 
             });
+        }
+    }
+
+    checkAdmin() {
+        try {
+            if (cookies.get('adminCheck')) {
+                this.setState({ adminCheck: true });
+            }
+        } catch (err) {
+            // fail silently
         }
     }
 
@@ -471,8 +482,13 @@ class Socialbar extends Component { // Main social entry point sb1
                 return response.json(); // Parsed data
             })
             .then((data) => {
+                console.log(data);
                 this.setState({ registererror: null });
                 this.setState({ loginerror: null });
+                if (data.admin) {
+                    cookies.set('adminCheck', true);
+                    this.setState({ adminCheck: true });
+                }
                 if (data.querystatus== "loggedin" && data.username && data.hash) {
                     cookies.set('hash', data.hash); // Set hash first as features do not run without hash
                     cookies.set('loggedIn', data.username);
@@ -615,6 +631,7 @@ class Socialbar extends Component { // Main social entry point sb1
             cookies.remove('loggedIn', { path: '/' });
             cookies.remove('user', { path: '/' });
             cookies.remove('hash', { path: '/' });
+            cookies.remove('adminCheck', { path: '/' });
             deleteCachedCart();
             this.setGoogleSignInErrorState();
             fetch(currentrooturl + 'm/logout', {
@@ -1320,6 +1337,10 @@ class Socialbar extends Component { // Main social entry point sb1
                                 this.setState({ googleSignInError: "Failed to sign in with google" });
                             }
                         } else {
+                            if (data.admin) {
+                                cookies.set('adminCheck', true);
+                                this.setState({ adminCheck: true });
+                            }
                             // if no error then success, log user in with google credentials and assign username as loggedIn cookie
                             this.setState({ googleData: null, usernameChoicePortal: false });
                             cookies.set('hash', data.hash );
@@ -1370,12 +1391,10 @@ class Socialbar extends Component { // Main social entry point sb1
 
     setupGoogleSignIn = () => {
         this.setGoogleSignInErrorState();
-        // this.signOutThirdParty();
+        // Do not make google load script async. It will fail
         function tryLoadGoogle() {
             const script = document.createElement('script');
             script.src = 'https://accounts.google.com/gsi/client';
-            script.onload = buildGoogleSignOn();
-            script.async = true;
             document.querySelector('body').appendChild(script);
         }
 
@@ -1396,6 +1415,7 @@ class Socialbar extends Component { // Main social entry point sb1
         }
 
         try {
+            console.log(google);
             // Average expiry for google sign in seems to be 5 days
             if (!google) {
                 tryLoadGoogle();
@@ -1470,7 +1490,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     </div>
                     <div className="cancel-select-username" onClick={(e) => {this.cancelNewThirdPartyUser()}}>&times;</div>
                 </div>
-                <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} togetherToken={this.props.togetherToken} sendCloseTogetherSession={this.props.sendCloseTogetherSession} useravatar={this.state.useravatar} cloud={this.props.cloud} />
+                <Navbar username={this.state.isLoggedIn} sidebarStatus={this.props.sidebarStatus} fetchlogout={this.fetchlogout} togetherToken={this.props.togetherToken} sendCloseTogetherSession={this.props.sendCloseTogetherSession} useravatar={this.state.useravatar} cloud={this.props.cloud} adminCheck={this.state.adminCheck} />
                 <div className={this.props.sidebarStatus == 'open' ? "sidebar sidebar-open" : "sidebar"} ref={this.sidebar}>
                     {
                         !isLoggedIn ? 
@@ -2080,6 +2100,9 @@ class App extends Component {
                         )}/>
                         <Route path='/manageorders' render={(props) => (
                             <ShopOrders {...props} key={getPath()} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                        )}/>
+                        <Route path='/adminoptions' render={(props) => (
+                            <AdminOptions {...props} key={getPath()} />
                         )}/>
                     </div>
                 </div>

@@ -185,6 +185,11 @@ export default class Navbar extends Component {
                             <NavLink exact to="/profile" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>profile</NavLink>
                             <NavLink exact to="/orders" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>orders</NavLink>
                             <NavLink exact to="/options" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>options</NavLink>
+                            {
+                                this.props.adminCheck ?
+                                    <NavLink exact to="/adminoptions" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>admin</NavLink>
+                                    : null
+                            }
                             <a href="/" onClick={(e)=> {resetOpenMenus.call(this); this.props.fetchlogout()}} className="hyperlink">logout</a>
                         </div>
                     </ul>

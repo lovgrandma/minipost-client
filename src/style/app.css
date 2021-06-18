@@ -227,6 +227,10 @@ h5 {
     max-width: 1600px;
 }
 
+.border-radius-5 {
+    border-radius: 5;
+}
+
 .dropdown-menu a {
     text-decoration: none;
     color: #696969;
@@ -359,6 +363,11 @@ button {
 .flex {
     display: flex;
     justify-content: space-between;
+}
+
+.flex-column {
+    display: flex;
+    flex-direction: column;
 }
 
 .space-around {
