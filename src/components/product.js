@@ -522,6 +522,7 @@ export default class Product extends Component {
     resolveNewImages = () => {
         try {
             let imgArr = [];
+            console.log(this.props.tempImgData);
             if (this.props.tempImgData) {
                 imgArr = this.props.tempImgData; // Get local image data
             }
