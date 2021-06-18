@@ -79,7 +79,6 @@ module.exports = {
         namedChunks: true,
         removeAvailableModules: true,
         flagIncludedChunks: true,
-        occurrenceOrder: false,
         usedExports: true,
         concatenateModules: true,
         sideEffects: false, // <----- in prod defaults to true if left blank
