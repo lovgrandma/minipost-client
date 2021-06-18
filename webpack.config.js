@@ -75,8 +75,6 @@ module.exports = {
     mode: 'production', // Can be set to development or production. Webpack will minify code and strip warnings
     optimization: {
         minimize: true,
-        namedModules: true,
-        namedChunks: true,
         removeAvailableModules: true,
         flagIncludedChunks: true,
         usedExports: true,
