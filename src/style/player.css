@@ -552,7 +552,7 @@
 .product-placement-main-img {
     width: 0;
     max-height: 0;
-    object-fit: cover;
+    object-fit: contain;
     overflow: hidden;
     border-radius: 5px;
 }
