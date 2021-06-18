@@ -72,5 +72,16 @@ module.exports = {
             process: 'process/browser'
         })        
     ],
-    mode: 'production' // Can be set to development or production. Webpack will minify code and strip warnings
+    mode: 'production', // Can be set to development or production. Webpack will minify code and strip warnings
+    optimization: {
+        minimize: true,
+        namedModules: true,
+        namedChunks: true,
+        removeAvailableModules: true,
+        flagIncludedChunks: true,
+        occurrenceOrder: false,
+        usedExports: true,
+        concatenateModules: true,
+        sideEffects: false, // <----- in prod defaults to true if left blank
+    }
 }
