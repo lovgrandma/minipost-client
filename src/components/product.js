@@ -473,7 +473,7 @@ export default class Product extends Component {
                 console.log(newImages);
                 newImages.forEach(img=> {
                     console.log(img);
-                    formData.append("image", img.file); // Will store files for temp upload to server
+                    formData.append("image", img.url, img.file.name); // Will store files for temp upload to server
                     imgNames.push(img.name); // in order stores name for file
                 });
                 console.log(imgNames);
@@ -522,10 +522,8 @@ export default class Product extends Component {
      */
     resolveNewImages = () => {
         try {
-            console.log(this.props.tempImgData);
             return this.props.tempImgData; // Get local image data
         } catch (err) {
-            console.log(err);
             return [];
         }
     }
