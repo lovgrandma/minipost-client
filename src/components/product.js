@@ -527,6 +527,7 @@ export default class Product extends Component {
             }
             return imgArr;
         } catch (err) {
+            console.log(err);
             return [];
         }
     }
