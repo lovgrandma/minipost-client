@@ -232,6 +232,7 @@ export default class Shop extends Component {
     }
 
     sendTempImgData = (data) => {
+        console.log(data);
         this.setState({ tempImgData: data });
     }
 

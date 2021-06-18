@@ -523,13 +523,10 @@ export default class Product extends Component {
         try {
             let imgArr = [];
             console.log(this.props.tempImgData);
-            if (this.props.tempImgData) {
-                imgArr = this.props.tempImgData; // Get local image data
-            }
-            return imgArr;
+            return this.props.tempImgData; // Get local image data
         } catch (err) {
             console.log(err);
-            return [];
+             return [];
         }
     }
 
