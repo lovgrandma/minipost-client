@@ -470,7 +470,6 @@ export default class Product extends Component {
                 let imgNames = [];
                 const formData = new FormData();
                 formData.append('product', JSON.stringify(product));
-                console.log(newImages);
                 newImages.forEach(img=> {
                     console.log(img);
                     formData.append("image", img.url, img.file.name); // Will store files for temp upload to server
@@ -504,12 +503,14 @@ export default class Product extends Component {
                     console.log(result);
                 })
                 .catch((err) => {
+                    console.log(err);
                     this.setState({ error: "An error occured while uploading the product"}); // Saving product failed
                 })
             } else {
                 this.setState({ error: "An error occured while saving the product"}); // Saving product failed
             }
         } catch (err) {
+            console.log(err);
             this.setState({ error: "An error occured while saving the product"}); // Saving product failed
         }
     }
