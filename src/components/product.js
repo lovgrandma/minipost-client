@@ -472,7 +472,7 @@ export default class Product extends Component {
                 formData.append('product', JSON.stringify(product));
                 newImages.forEach(img=> {
                     console.log(img);
-                    formData.append("image", img.url, img.file.name); // Will store files for temp upload to server
+                    formData.append("image", img.file); // Will store files for temp upload to server
                     imgNames.push(img.name); // in order stores name for file
                 });
                 console.log(imgNames);
