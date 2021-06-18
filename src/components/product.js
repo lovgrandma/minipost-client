@@ -522,9 +522,11 @@ export default class Product extends Component {
      */
     resolveNewImages = () => {
         try {
+            console.log(this.props.tempImgData);
             return this.props.tempImgData; // Get local image data
         } catch (err) {
-             return [];
+            console.log(err);
+            return [];
         }
     }
 
