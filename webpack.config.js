@@ -20,6 +20,16 @@
 
 // This contains all the exports to build the bundle.js file
 
+//// Extra optimization options: 
+// optimization: {
+//     minimize: true,
+//     removeAvailableModules: true,
+//     flagIncludedChunks: true,
+//     usedExports: true,
+//     concatenateModules: true,
+//     sideEffects: false, // <----- in prod defaults to true if left blank
+// }
+
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
@@ -31,7 +41,8 @@ module.exports = {
     output: {
         path: path.resolve(__dirname, 'dist'),
         publicPath: '/',
-        filename: 'index_bundle.js' // This will be the created bundle file that webpack creates for react to use in production
+        filename: 'index_bundle.js?t=' + new Date().getTime(), // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
+        clean: true
     },
     module: {
         rules: [
@@ -72,13 +83,5 @@ module.exports = {
             process: 'process/browser'
         })        
     ],
-    mode: 'production', // Can be set to development or production. Webpack will minify code and strip warnings
-    optimization: {
-        minimize: true,
-        removeAvailableModules: true,
-        flagIncludedChunks: true,
-        usedExports: true,
-        concatenateModules: true,
-        sideEffects: false, // <----- in prod defaults to true if left blank
-    }
+    mode: 'production' // Can be set to development or production. Webpack will minify code and strip warnings
 }
