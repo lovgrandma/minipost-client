@@ -10,8 +10,6 @@ import {
 import Cookies from 'universal-cookie';
 import sidebarcloseimg from './static/sidebarclose.svg';  import sidebaropenimg from './static/sidebaropen.svg'; import angleDoubleLeft from './static/angle-double-left-solid.svg';
 import { updateNotif } from './methods/history.js';
-import './videoplayer.css';
-import 'shaka-player/dist/controls.css';
 
 import {
     Button

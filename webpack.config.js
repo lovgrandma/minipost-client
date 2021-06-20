@@ -30,18 +30,35 @@
 //     sideEffects: false, // <----- in prod defaults to true if left blank
 // }
 
+// output: {
+//     path: path.resolve(__dirname, 'dist'),
+//     publicPath: '/',
+//     filename: 'index_bundle.js?t=' + new Date().getTime(), // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
+//     clean: true
+// },
+
+// {
+//     test: /\.css$/i, use: [ 'style-loader', 'css-loader' ]
+// },
+
+// Showing unique time at end of index bundle on load dev
+// ｣: wait until bundle finished: /917.index_bundle.js?t=1624143218453
+// i ｢wdm｣: wait until bundle finished: /src/static/angle-double-left-solid.svg
+// i ｢wdm｣: wait until bundle finished: /src/static/friendsWhite.svg
+
+
 const path = require('path');
 const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const regeneratorRuntime = require("regenerator-runtime");
-
+const MiniCssExtractPlugin = require('mini-css-extract-plugin');
 
 module.exports = {
     entry: "./src/index.js", // The entry point for the application
     output: {
         path: path.resolve(__dirname, 'dist'),
         publicPath: '/',
-        filename: 'index_bundle.js?t=' + new Date().getTime(), // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
+        filename: '[name].[contenthash].js', // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
         clean: true
     },
     module: {
