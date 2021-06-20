@@ -46,6 +46,10 @@
 // i ｢wdm｣: wait until bundle finished: /src/static/angle-double-left-solid.svg
 // i ｢wdm｣: wait until bundle finished: /src/static/friendsWhite.svg
 
+// Remove clean: true from output because:
+// When redeploying, on rebuilding the app bundles make sure NOT to clean the output folder with previous chunk files, because users that already have the app loaded will try to fetch previous chunk files that will not exist anymore.
+
+// Best thing to do is to have an app version tracking (using AJAX and read from db or dynamic config file) and when the app detects a newer version, message the user about it and ask them to reload the page.
 
 const path = require('path');
 const webpack = require('webpack');
@@ -57,9 +61,8 @@ module.exports = {
     entry: "./src/index.js", // The entry point for the application
     output: {
         path: path.resolve(__dirname, 'dist'),
-        publicPath: '/',
-        filename: '[name].[contenthash].js', // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
-        clean: true
+        publicPath: path.resolve(__dirname, 'dist'), // Used to be "/" Sometimes get chunk load error
+        filename: '[name].[contenthash].js' // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
     },
     module: {
         rules: [
