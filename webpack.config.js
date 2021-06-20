@@ -61,7 +61,7 @@ module.exports = {
     entry: "./src/index.js", // The entry point for the application
     output: {
         path: path.resolve(__dirname, 'dist'),
-        publicPath: path.resolve(__dirname, 'dist'), // Used to be "/" Sometimes get chunk load error
+        publicPath: '/', // Used to be "/" Sometimes get chunk load error
         filename: '[name].[contenthash].js' // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
     },
     module: {
