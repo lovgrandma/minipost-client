@@ -6,6 +6,7 @@ import {
 import {
     Button
 } from 'react-bootstrap';
+import { Helmet } from 'react-helmet';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
@@ -866,24 +867,32 @@ export default class Video extends Component {
 
                     // Ensures buffering spinner is never indefinitely spinning
                     player.addEventListener('buffering', (event) => {
-                        setTimeout((event) => {
-                            if (player.isBuffering()) {
-                                if (document.getElementsByClassName("shaka-spinner")[0]) {
-                                    document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
-                                    setTimeout(() => {
-                                        if (!player.isBuffering()) {
-                                            if (document.getElementsByClassName("shaka-spinner")[0]) {
-                                                document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                                            }
+                        try {
+                            setTimeout((event) => {
+                                if (player.isBuffering()) {
+                                    if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                        document.getElementsByClassName("shaka-spinner")[0].classList.remove("hidden");
+                                        try {
+                                            setTimeout(() => {
+                                                if (!player.isBuffering()) {
+                                                    if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                                        document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                                    }
+                                                }
+                                            }, 10000);
+                                        } catch (err) {
+                                            // Fail silently
                                         }
-                                    }, 10000);
+                                    }
+                                } else {
+                                    if (document.getElementsByClassName("shaka-spinner")[0]) {
+                                        document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
+                                    }
                                 }
-                            } else {
-                                if (document.getElementsByClassName("shaka-spinner")[0]) {
-                                    document.getElementsByClassName("shaka-spinner")[0].classList.add("hidden");
-                                }
-                            }
-                        }, 1000);
+                            }, 1000);
+                        } catch (err) {
+                            // Fail silently
+                        }
                     });
                     // Ensures that check counted interval is functioning 
                     video.addEventListener('playing', (event) => {
@@ -1426,70 +1435,73 @@ export default class Video extends Component {
         let buyChoice = this.resolveSingleProductBuyChoice();
         return (
             <div className="video-page-flex">
-            <div id='videocontainer' className='main-video-container'>
-                <div className={this.state.adPlaying ? "video-container shaka-video-container ad-playing" : "video-container shaka-video-container"} ref={this.videoContainer}>
-                    {
-                        this.state.freeze ?
-                            <button className={this.state.freeze ? "btn upload-button grey-dark-btn next-freeze-button hidden-visible" : "btn upload-button grey-dark-btn next-freeze-button hidden"} onClick={(e) => {this.endOfVideoPlay()}}>next &#10144;</button>
-                            : null
-                    }
-                    <div className={this.state.freeze ? "freeze freeze-opaque" : "freeze"}>
+                <Helmet>
+                    <title>{this.state.title}</title>
+                    <meta name="description" content={this.state.description} />
+                </Helmet>
+                <div id='videocontainer' className='main-video-container'>
+                    <div className={this.state.adPlaying ? "video-container shaka-video-container ad-playing" : "video-container shaka-video-container"} ref={this.videoContainer}>
                         {
-                            this.state.freezeData ?
-                                this.state.freezeData.visible ?
-                                    <div></div>
-                                    : null
+                            this.state.freeze ?
+                                <button className={this.state.freeze ? "btn upload-button grey-dark-btn next-freeze-button hidden-visible" : "btn upload-button grey-dark-btn next-freeze-button hidden"} onClick={(e) => {this.endOfVideoPlay()}}>next &#10144;</button>
                                 : null
                         }
-                    </div>
-                    <div className="video-over-player-details">
-                        <div className="video-over-player-title">{this.state.adPlaying ? this.state.adTitle : this.state.title }</div>
-                        <div className="video-over-player-author">{this.state.adPlaying ? this.state.adAuthor : this.state.author}</div>
-                        { 
-                            this.state.adLink ? 
-                                <a href={"https://" + this.state.adLink} target="_blank" onClick={(e) => {this.serveAdLink(e)}}><div className="video-over-player-ad-link">{this.state.adLink ? this.state.adLink : null }</div></a>
-                            : null
-                        }
-                    </div>
-                    {
-                        this.state.adPlaying ?
-                            <button className="skip-ad-button" onClick={(e) => {this.skipAd(e)}}>{this.state.skipTime < 6 && this.state.skipTime > 0 ? this.state.skipTime : "Skip"}</button>
-                            : null
-                    }
-                    <div className="fullscreen-video-chat-container friendchat-chat-container-open">
-                        <div className="fullscreen-video-chats" ref={this.scrollRef}>
+                        <div className={this.state.freeze ? "freeze freeze-opaque" : "freeze"}>
                             {
-                                this.props.friendConvoMirror ?
-                                    this.props.friendConvoMirror.log ?
-                                        this.props.friendConvoMirror.log.map((log, index) => {
-                                            if (index > this.props.friendConvoMirror.log.length - 100) {
-                                                if (log.author == this.props.username) {
-                                                    return (
-                                                        <div className='chat-log chat-log-user chat-log-open' key={index}>
-                                                            <div className='author-of-chat author-of-chat-user'>{log.author}</div>
-                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
-                                                                <div>{log.content}</div></div>
-                                                        </div>
-                                                    )
-                                                } else {
-                                                    return (
-                                                        <div className='chat-log chat-log-other chat-log-open' key={index}>
-                                                            <div className='author-of-chat author-of-chat-other'>{log.author}</div>
-                                                            <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
-                                                        </div>
-
-                                                    )
-                                                }
-                                            }
-                                        })
+                                this.state.freezeData ?
+                                    this.state.freezeData.visible ?
+                                        <div></div>
+                                        : null
                                     : null
+                            }
+                        </div>
+                        <div className="video-over-player-details">
+                            <div className="video-over-player-title">{this.state.adPlaying ? this.state.adTitle : this.state.title }</div>
+                            <div className="video-over-player-author">{this.state.adPlaying ? this.state.adAuthor : this.state.author}</div>
+                            { 
+                                this.state.adLink ? 
+                                    <a href={"https://" + this.state.adLink} target="_blank" onClick={(e) => {this.serveAdLink(e)}}><div className="video-over-player-ad-link">{this.state.adLink ? this.state.adLink : null }</div></a>
                                 : null
                             }
-                            <div className={this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2].length > 0 ? "chat-log chat-log-other typing-cell typing-cell-visible" : "chat-log chat-log-other typing-cell typing-cell" : "chat-log chat-log-other typing-cell"}
-                        ref={tag => (this.typingRef = tag)}>
-                            <div className='author-of-chat author-of-chat-other'>{ this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[1] : null }</div>
-                            <div className={ this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2].length < 35 ? 'content-of-chat' : 'content-of-chat typing-content-of-chat-long' : 'content-of-chat' }><div>{this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2] : null}</div></div>
                         </div>
+                        {
+                            this.state.adPlaying ?
+                                <button className="skip-ad-button" onClick={(e) => {this.skipAd(e)}}>{this.state.skipTime < 6 && this.state.skipTime > 0 ? this.state.skipTime : "Skip"}</button>
+                                : null
+                        }
+                        <div className="fullscreen-video-chat-container friendchat-chat-container-open">
+                            <div className="fullscreen-video-chats" ref={this.scrollRef}>
+                                {
+                                    this.props.friendConvoMirror ?
+                                        this.props.friendConvoMirror.log ?
+                                            this.props.friendConvoMirror.log.map((log, index) => {
+                                                if (index > this.props.friendConvoMirror.log.length - 100) {
+                                                    if (log.author == this.props.username) {
+                                                        return (
+                                                            <div className='chat-log chat-log-user chat-log-open' key={index}>
+                                                                <div className='author-of-chat author-of-chat-user'>{log.author}</div>
+                                                                <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}>
+                                                                    <div>{log.content}</div></div>
+                                                            </div>
+                                                        )
+                                                    } else {
+                                                        return (
+                                                            <div className='chat-log chat-log-other chat-log-open' key={index}>
+                                                                <div className='author-of-chat author-of-chat-other'>{log.author}</div>
+                                                                <div className={log.content.length < 35 ? 'content-of-chat' : 'content-of-chat content-of-chat-long'}><div>{log.content}</div></div>
+                                                            </div>
+                                                        )
+                                                    }
+                                                }
+                                            })
+                                        : null
+                                    : null
+                                }
+                            <div className={this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2].length > 0 ? "chat-log chat-log-other typing-cell typing-cell-visible" : "chat-log chat-log-other typing-cell typing-cell" : "chat-log chat-log-other typing-cell"}
+                            ref={tag => (this.typingRef = tag)}>
+                                <div className='author-of-chat author-of-chat-other'>{ this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[1] : null }</div>
+                                <div className={ this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2].length < 35 ? 'content-of-chat' : 'content-of-chat typing-content-of-chat-long' : 'content-of-chat' }><div>{this.resolveRelevantTyping(this.props.typingMirror) ? this.resolveRelevantTyping(this.props.typingMirror).match(typingRegex)[2] : null}</div></div>
+                            </div>
                         </div>
                         <form className="friend-chat-form friend-chat-form-closed friend-chat-form-open" onSubmit={this.interceptEnter}>
                             <span>

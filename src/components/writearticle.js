@@ -27,7 +27,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: "", editorDidNotLoad: false
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: "", editorDidNotLoad: false, draftInterval: false
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -99,6 +99,31 @@ export default class writeArticle extends Component {
     randomProperty(obj) {
         let keys = Object.keys(obj);
         return obj[ keys[ keys.length * Math.random() << 0]];
+    }
+
+    cacheDraftInterval() {
+        try {
+            if (window.localStorage.getItem("articledraft")) {
+                this.editor.setData(window.localStorage.getItem("articledraft"));
+            }
+            if (window.localStorage.getItem("articletitledraft")) {
+                this.titleIn.current._ref.value = window.localStorage.getItem("articletitledraft");
+            }
+            if (!this.state.draftInterval) {
+                let interval = setInterval(() => {
+                    let da = this.editor.getData();
+                    if (da.length > 0) {
+                        window.localStorage.setItem("articledraft", da);
+                    }
+                    let ti = this.titleIn.current._ref.value;
+                    window.localStorage.setItem("articletitledraft", ti);
+                }, 15000);
+                this.setState({ draftInterval: interval });
+            }
+        } catch (err) {
+            console.log(err);
+            // Fail silently
+        }
     }
 
     /** Runs when user loads page by clicking from another page. Will not function when page is loaded from direct link or reload */
@@ -327,6 +352,8 @@ export default class writeArticle extends Component {
                                 this.editor = editor;
                                 if (this.state.existingBody) {
                                     editor.setData(this.state.existingBody);
+                                } else {
+                                    this.cacheDraftInterval();
                                 }
                                 document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
                             } }

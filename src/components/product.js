@@ -500,7 +500,11 @@ export default class Product extends Component {
                     if (result.error) {
                         this.setState({ error: result.error }); // Saving product failed
                     }
-                    console.log(result);
+                    if (result.action) {
+                        if (result.action == "reload") {
+                            this.props.history.push("/shop?s=" + username);
+                        }
+                    }
                 })
                 .catch((err) => {
                     console.log(err);
@@ -529,8 +533,48 @@ export default class Product extends Component {
         }
     }
 
-    delProduct = (e) => {
-
+    delProduct = async (e) => {
+        try {
+            if (this.props.id && this.props.self) {
+                const productId = this.props.id;
+                const username = cookies.get('loggedIn');
+                const owner = this.props.owner;
+                const hash = cookies.get('hash');
+                const self = this.props.self;
+                if (username && hash) {
+                    return await fetch(currentshopurl + 's/archivesingleproductfromshop', {
+                        method: "POST",
+                        credentials: corsdefault,
+                        body: JSON.stringify({
+                            productId, username, hash, self, owner
+                        })
+                    })
+                    .then((response) => {
+                        return response.json();
+                    })
+                    .then((result) => {
+                        if (result) {
+                            if (result.error) {
+                                throw new Error;
+                            }
+                            console.log(result);
+                            this.props.history.push('/shops?s=' + username);
+                            return true;
+                        } else {
+                            throw new Error;
+                        }
+                    })
+                    .catch((err) => {
+                        this.setState({ error: "An error occured while deleting the product" });
+                        return false;
+                    })
+                } else {
+                    throw new Error;
+                }
+            }
+        } catch (err) {
+            this.setState({ error: "An error occured while deleting the product"}); // Delete product failed 
+        }
     }
 
     resolveDescriptor(value, type = "option") {

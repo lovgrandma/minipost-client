@@ -1292,6 +1292,14 @@ export default class Upload extends Component { // ulc upload component
             return [0, 0, 0];
         }
     }
+
+    clearAllPlacement(e) {
+        try {
+            this.setState({ placementData: [] });
+        } catch (err) {
+            // Fail silently
+        }
+    }
     
     debounceUpdateProductPlacement = debounce((id) => this.updateProductPlacementAll(), 7500);
 
@@ -1413,6 +1421,7 @@ export default class Upload extends Component { // ulc upload component
                                                 )
                                             }
                                         </div>
+                                        <button className="btn btn-default btn-ref prompt-basic-s2 margin-bottom-5" onClick={(e) => {this.clearAllPlacement(e)}}>Clear All Product Placement</button>
                                         <div className="upload-placement-added-products flex">
                                             {
                                                 this.state.placementData ?

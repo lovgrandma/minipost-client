@@ -1,9 +1,9 @@
 /* global google */
 import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import loadable from '@loadable/component';
+import Helmet from 'react-helmet';
 import csshake from 'csshake';
-import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js';
+import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js';
 import {
     Route
 } from 'react-router-dom';
@@ -45,8 +45,6 @@ const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
 const Login = lazy(() => import('./components/login.js'));
 const Social = lazy(() => import('./components/social.js'));
-const Video = lazy(() => import('./components/video.js'));
-
 
 // Main Application file
 
@@ -1997,6 +1995,10 @@ class App extends Component {
         let isCheckoutPage = this.resolveIsCheckoutPage();
         return (
             <div className={isCheckoutPage ? "App checkout-page" : "App"} onClick={(e)=>{hideOptions.call(this, e)}}>
+                <Helmet>
+                    <meta charSet="utf-8" />
+                    <title>Minipost</title>
+                </Helmet>
                 <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} />
                 <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>
@@ -2007,9 +2009,7 @@ class App extends Component {
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
                         )}/>
                         <Route path='/watch?v=:videoId' render={(props) => (
-                            <Suspense fallback={<div className="fallback-loading"></div>}>
-                                <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
-                            </Suspense>
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/watch?va=:videoId' render={(props) => (
                             <Suspense fallback={<div className="fallback-loading"></div>}>
