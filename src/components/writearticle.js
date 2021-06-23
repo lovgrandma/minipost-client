@@ -27,7 +27,7 @@ export default class writeArticle extends Component {
     constructor(props) {
         super(props)
         this.state = {
-            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: "", editorDidNotLoad: false, draftInterval: false
+            published: false, currentErr: "", textAreaHeight: 0, publishing: false, responseToMpd: "", responseToId: "", responseToTitle: "", responseToType: "", existingBody: "", editId: "", id: "", editorDidNotLoad: false, draftInterval: false, loadedFromExisting: false
         }
         this.placeholders = {
             somethingToSay: 'Got something to say? Write it here'
@@ -103,22 +103,25 @@ export default class writeArticle extends Component {
 
     cacheDraftInterval() {
         try {
-            if (window.localStorage.getItem("articledraft")) {
-                this.editor.setData(window.localStorage.getItem("articledraft"));
-            }
-            if (window.localStorage.getItem("articletitledraft")) {
-                this.titleIn.current._ref.value = window.localStorage.getItem("articletitledraft");
-            }
-            if (!this.state.draftInterval) {
-                let interval = setInterval(() => {
-                    let da = this.editor.getData();
-                    if (da.length > 0) {
-                        window.localStorage.setItem("articledraft", da);
-                    }
-                    let ti = this.titleIn.current._ref.value;
-                    window.localStorage.setItem("articletitledraft", ti);
-                }, 15000);
-                this.setState({ draftInterval: interval });
+            // Dont update cache if loading from existing article. Should not be called anyways since it is only called if there is no existing data on word processor anyways
+            if (!loadedFromExisting) {
+                if (window.localStorage.getItem("articledraft")) {
+                    this.editor.setData(window.localStorage.getItem("articledraft"));
+                }
+                if (window.localStorage.getItem("articletitledraft")) {
+                    this.titleIn.current._ref.value = window.localStorage.getItem("articletitledraft");
+                }
+                if (!this.state.draftInterval) {
+                    let interval = setInterval(() => {
+                        let da = this.editor.getData();
+                        if (da.length > 0) {
+                            window.localStorage.setItem("articledraft", da);
+                        }
+                        let ti = this.titleIn.current._ref.value;
+                        window.localStorage.setItem("articletitledraft", ti);
+                    }, 15000);
+                    this.setState({ draftInterval: interval });
+                }
             }
         } catch (err) {
             console.log(err);
@@ -253,8 +256,12 @@ export default class writeArticle extends Component {
                             if (data.querystatus == "article posted") {
                                 this.setState({ published: true });
                                 this.setState({ currentErr: "" });
+                                window.localStorage.setItem("articledraft", "");
+                                window.localStorage.setItem("articletitledraft", "");
                             } else if (data.querystatus == "you have already posted an article with this title") {
                                 this.setState({ currentErr: "You have already posted an article with this title" });
+                                window.localStorage.setItem("articledraft", "");
+                                window.localStorage.setItem("articletitledraft", "");
                             } else if (data.querystatus == "article updated") {
                                 this.setState({ published: true });
                                 this.setState({ currentErr: "" });
@@ -352,6 +359,7 @@ export default class writeArticle extends Component {
                                 this.editor = editor;
                                 if (this.state.existingBody) {
                                     editor.setData(this.state.existingBody);
+                                    this.setState({ loadedFromExisting: true });
                                 } else {
                                     this.cacheDraftInterval();
                                 }
