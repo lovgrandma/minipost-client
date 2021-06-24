@@ -47,7 +47,7 @@ export const checkoutNowWithCurrentCartItems = async function(e) {
                 if (result) {
                     if (result.error) {
                         localEvents.emit('orderFailed', result.error);
-                        this.setState({ checkoutError: result.error }); // Failed silently
+                        this.setState({ checkoutError: result.error, error: result.error }); // Failed silently
                         this.setState({ busy: false });
                         return false;
                     }

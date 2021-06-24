@@ -93,7 +93,12 @@ export default class writeArticle extends Component {
     }
 
     componentWillUnmount() {
-        window.removeEventListener("mousedown", this.handleClick);
+        try {
+            window.removeEventListener("mousedown", this.handleClick);
+            clearInterval(this.state.draftInterval);
+        } catch (err) {
+            // Fail silently
+        }
     }
 
     randomProperty(obj) {
