@@ -65,7 +65,8 @@ module.exports = {
         path: path.resolve(__dirname, 'dist'),
         publicPath: '/', 
         filename: '[name].[contenthash].js', // This will be the created bundle file that webpack creates for react to use in production changed from index_bundle.js to [hash].js
-        chunkFilename: '[id].[contenthash].js'
+        chunkFilename: '[id].[contenthash].js',
+        clean: true
     },
     module: {
         rules: [
