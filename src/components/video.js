@@ -720,51 +720,53 @@ export default class Video extends Component {
             let interactIntervalRef = setInterval(() => {
                 try {
                     let curTime = this.videoComponent.current.currentTime;
-                    for (let i = 0; i < productPlacement.length; i++) {
-                        if (productPlacement[i].start <= curTime && productPlacement[i].end >= curTime) {
-                            if (this.state.livePlacement) {
-                                if (this.state.livePlacement.id) {
-                                    if (this.state.livePlacement.id != productPlacement[i].id ) {
+                    if (productPlacement) {
+                        for (let i = 0; i < productPlacement.length; i++) {
+                            if (productPlacement[i].start <= curTime && productPlacement[i].end >= curTime) {
+                                if (this.state.livePlacement) {
+                                    if (this.state.livePlacement.id) {
+                                        if (this.state.livePlacement.id != productPlacement[i].id ) {
+                                            this.setState({ livePlacement: productPlacement[i] }, () => {
+                                                setTimeout(() => {
+                                                    this.setState({ livePlacementDisplay: true });
+                                                    this.setState({ placementSuccess: null }); // Different product loading but no wait inbetween. Remove placement success info
+                                                }, 200);
+                                            });
+                                            break;
+                                        }
+                                    } else {
                                         this.setState({ livePlacement: productPlacement[i] }, () => {
                                             setTimeout(() => {
                                                 this.setState({ livePlacementDisplay: true });
-                                                this.setState({ placementSuccess: null }); // Different product loading but no wait inbetween. Remove placement success info
                                             }, 200);
                                         });
                                         break;
                                     }
                                 } else {
                                     this.setState({ livePlacement: productPlacement[i] }, () => {
-                                        setTimeout(() => {
-                                            this.setState({ livePlacementDisplay: true });
-                                        }, 200);
+                                            setTimeout(() => {
+                                                this.setState({ livePlacementDisplay: true });
+                                            }, 200);
                                     });
                                     break;
                                 }
                             } else {
-                                this.setState({ livePlacement: productPlacement[i] }, () => {
+                                if (this.state.livePlacement) {
+                                    if (this.state.livePlacement.id == productPlacement[i].id) {
                                         setTimeout(() => {
-                                            this.setState({ livePlacementDisplay: true });
-                                        }, 200);
-                                });
-                                break;
-                            }
-                        } else {
-                            if (this.state.livePlacement) {
-                                if (this.state.livePlacement.id == productPlacement[i].id) {
-                                    setTimeout(() => {
-                                        this.setState({ livePlacementDisplay: false }, () => { // Do placement set state in reverse here to ensure smooth transition out
-                                            setTimeout(() => {
-                                                this.setState({ livePlacement: null, placementSuccess: null });
-                                            }, 200);
-                                        });
-                                    }, 50);
+                                            this.setState({ livePlacementDisplay: false }, () => { // Do placement set state in reverse here to ensure smooth transition out
+                                                setTimeout(() => {
+                                                    this.setState({ livePlacement: null, placementSuccess: null });
+                                                }, 200);
+                                            });
+                                        }, 50);
+                                    }
                                 }
                             }
                         }
                     }
                 } catch (err) {
-                    console.log(err);
+                    console.log(err); // Fail silently
                 }
             }, 1000);
             this.setState({ interactInterval: interactIntervalRef });
