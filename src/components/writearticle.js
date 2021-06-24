@@ -104,7 +104,7 @@ export default class writeArticle extends Component {
     cacheDraftInterval() {
         try {
             // Dont update cache if loading from existing article. Should not be called anyways since it is only called if there is no existing data on word processor anyways
-            if (!loadedFromExisting) {
+            if (!this.state.loadedFromExisting) {
                 if (window.localStorage.getItem("articledraft")) {
                     this.editor.setData(window.localStorage.getItem("articledraft"));
                 }
@@ -114,9 +114,7 @@ export default class writeArticle extends Component {
                 if (!this.state.draftInterval) {
                     let interval = setInterval(() => {
                         let da = this.editor.getData();
-                        if (da.length > 0) {
-                            window.localStorage.setItem("articledraft", da);
-                        }
+                        window.localStorage.setItem("articledraft", da);
                         let ti = this.titleIn.current._ref.value;
                         window.localStorage.setItem("articletitledraft", ti);
                     }, 15000);
@@ -355,15 +353,19 @@ export default class writeArticle extends Component {
                                 placeholder:this.randomProperty(this.placeholders)
                             }}
                             onInit={ editor => {
-                                // You can store the "editor" and use when it is needed.
-                                this.editor = editor;
-                                if (this.state.existingBody) {
-                                    editor.setData(this.state.existingBody);
-                                    this.setState({ loadedFromExisting: true });
-                                } else {
-                                    this.cacheDraftInterval();
+                                try {
+                                    // You can store the "editor" and use when it is needed.
+                                    this.editor = editor;
+                                    if (this.state.existingBody) {
+                                        editor.setData(this.state.existingBody);
+                                        this.setState({ loadedFromExisting: true });
+                                    } else {
+                                        this.cacheDraftInterval();
+                                    }
+                                    document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
+                                } catch (err) {
+                                    // Fail silently
                                 }
-                                document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "hidden";
                             } }
                             onChange={ ( event, editor ) => {
                                 const data = editor.getData();
@@ -373,7 +375,11 @@ export default class writeArticle extends Component {
                                 this.catchBlur(2);
                             } }
                             onFocus={ ( event, editor ) => {
-                                document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "visible";
+                                try {
+                                    document.getElementsByClassName('ck-sticky-panel__content')[0].style.visibility = "visible";
+                                } catch (err) {
+                                    // Fail silently
+                                }
                             } }
                         />
                         <div className={this.state.responseToTitle ? "response-title prompt-basic grey-out" : "hidden"}>Responding to <Link to={this.setResponseParentLink()}>{this.state.responseToTitle}</Link></div>

@@ -2,6 +2,7 @@ import currentrooturl from '../url.js';
 import $ from 'jquery';
 import { get } from './utility.js';
 import { cookies } from '../App.js';
+import parseBody from './htmlparser.js';
 
 export const setResponseToParentPath = function() {
     try {
@@ -352,5 +353,28 @@ export const interceptProfileMenuClick = function(page) {
         }
     } catch (err) {
         // Fail silently
+    }
+}
+
+export const resolveMeta = function(type) {
+    try {
+        switch (type) {
+            case "title":
+                return this.state.title;
+            case "description":
+                return this.state.description;
+            case "vThumbnail":
+                return this.state.cloud + "/" + this.state.thumbnail + ".jpeg";
+            case "url":
+                return window.location.href;
+            case "sitename":
+                return "Minipost";
+            case "body":
+                return parseBody(this.state.body).toString();
+            default:
+                return "";
+        }
+    } catch (err) {
+        return "";
     }
 }

@@ -13,7 +13,7 @@ import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@
 import minipostpreviewbanner from '../static/minipostbannerblacksmaller5.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
 import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
-import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions } from '../methods/context.js';
+import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions, resolveMeta } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
@@ -1436,8 +1436,17 @@ export default class Video extends Component {
         return (
             <div className="video-page-flex">
                 <Helmet>
-                    <title>{this.state.title}</title>
-                    <meta name="description" content={this.state.description} />
+                    <title>{resolveMeta.call(this, "title")}</title>
+                    <meta name="description" content={resolveMeta.call(this, "description")} />
+                    <meta name="robots" content="index, follow" />
+                    <meta property="og:type" content="video" />
+                    <meta property="og:title" content={resolveMeta.call(this, "title")} />
+                    <meta property="og:description" content={resolveMeta.call(this, "description")} />
+                    <meta property="og:image" content={resolveMeta.call(this, "vThumbnail")} />
+                    <meta property="og:url" content={resolveMeta.call(this, "url")} />
+                    <meta name="twitter:title" content={resolveMeta.call(this, "title")} />
+                    <meta name="twitter:description" content={resolveMeta.call(this, "description")} />
+                    <meta name="twitter:image" content={resolveMeta.call(this, "vThumbnail")} />
                 </Helmet>
                 <div id='videocontainer' className='main-video-container'>
                     <div className={this.state.adPlaying ? "video-container shaka-video-container ad-playing" : "video-container shaka-video-container"} ref={this.videoContainer}>
