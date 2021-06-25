@@ -973,7 +973,6 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     acceptfriendrequest = (e, friend, requests) => {
-        console.log("You are going become friends with " + friend);
         let username = this.state.isLoggedIn;
         let newfriend = friend;
         let hash = cookies.get('hash');
@@ -1315,7 +1314,6 @@ class Socialbar extends Component { // Main social entry point sb1
                     return response.json();
                 })
                 .then((data) => {
-                    console.log(data);
                     if (data) {
                         if (data.error || !data.user) {
                             this.signOutThirdParty(); // Not valid sign up yet, signout again until issues resolved
@@ -1402,7 +1400,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 });
                 if (!cookies.get('loggedIn')) { // Prompt user to login only if they are not logged in. If the user is logged in then there is no point in asking them to sign in
                     google.accounts.id.prompt(notification => {
-                        console.log('on prompt notification', notification);
+                        // console.log('on prompt notification', notification);
                     });
                 }
             } catch (err) {
@@ -1411,7 +1409,6 @@ class Socialbar extends Component { // Main social entry point sb1
         }
 
         try {
-            console.log(google);
             // Average expiry for google sign in seems to be 5 days
             if (!google) {
                 tryLoadGoogle();
