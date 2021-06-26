@@ -1,8 +1,7 @@
 /* global google */
-import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import Helmet from 'react-helmet';
-import csshake from 'csshake';
 import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js';
 import {
     Route
@@ -14,13 +13,10 @@ import { updateNotif } from './methods/history.js';
 import {
     Button
 } from 'react-bootstrap';
-import $ from 'jquery';
 import lzw from './compression/lzw.js';
-import TextareaAutosize from 'react-textarea-autosize';
 import { hideOptions } from './methods/context.js';
 import jwt_decode from 'jwt-decode';
 
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import io from "socket.io-client";
 import currentrooturl from './url.js';
 import proxyurl from './proxy.js';
@@ -29,7 +25,7 @@ import { Playlist } from './class/playlist.js';
 import { Together } from './class/together.js';
 import { updateCachedCart, deleteCachedCart } from './methods/ecommerce.js';
 
-import { debounce, deepEquals, arraysEqual, getPath, get } from './methods/utility.js';
+import { debounce, deepEquals, getPath } from './methods/utility.js';
 
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
