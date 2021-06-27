@@ -4,7 +4,7 @@ import {
     NavLink
 } from 'react-router-dom';
 import greyavatar from '../static/greyavatar.jpg';
-import { showMoreOptions, hideOptions, resetOpenMenus } from '../methods/context.js';
+import { showMoreOptions, resetOpenMenus } from '../methods/context.js';
 
 // Nav bar with appropriate links to likes, history, minireel home, search film bar, notifications, friends & upload.
 export default class Navbar extends Component {

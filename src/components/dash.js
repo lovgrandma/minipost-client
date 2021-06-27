@@ -61,20 +61,16 @@ export default class Dash extends Component {
 
     handleMouseDown() {
         try {
-            if (this) {
-                if (this.state) {
-                    if (checkAtBottom()) {
-                        if (!this.state.bottom) {
-                            this.setState({ bottom: true });
-                            if (this.state.dashVideos && !this.state.fetching) {
-                                this.fetchRecommendations();
-                            }
-                        }
-                    } else {
-                        if (this.state.bottom) {
-                            this.setState({ bottom: false });
-                        }
+            if (checkAtBottom()) {
+                if (!this.state.bottom) {
+                    this.setState({ bottom: true });
+                    if (this.state.dashVideos && !this.state.fetching) {
+                        this.fetchRecommendations();
                     }
+                }
+            } else {
+                if (this.state.bottom) {
+                    this.setState({ bottom: false });
                 }
             }
         } catch (err) {
@@ -106,18 +102,12 @@ export default class Dash extends Component {
                 self = true;
             }
             let append = [];
-            if (this.state) {
-                if (this.state.dashVideos && this.state.dashVideos[0]) {
-                    if (this.state.dashVideos[0]._fields) {
-                        if (this.state.dashVideos[0]._fields[0]) {
-                            if (this.state.dashVideos[0]._fields[0].properties) {
-                                if (this.state.dashVideos[0]._fields[0].properties.author) {
-                                    append = this.state.dashVideos;
-                                }
-                            }
-                        }
-                    }
+            try {
+                if (this.state.dashVideos[0]._fields[0].properties.author) {
+                    append = this.state.dashVideos;
                 }
+            } catch (err) {
+                // Fail silently
             }
             let hash = cookies.get('hash');
             fetch(currentrooturl + 'm/serveVideos', {
@@ -135,8 +125,6 @@ export default class Dash extends Component {
                 return response.json();
             })
             .then((data) => {
-                console.log("serve videos data" + data)
-                console.log(data);
                 let authentication = this.props.checkAndConfirmAuthentication(data);
                 if (authentication) {
                     if (!data.querystatus && Array.isArray(data.main)) {
@@ -156,10 +144,10 @@ export default class Dash extends Component {
                 // Error occured while making fetch request
             });
         } catch (err) {
-            if (this) {
-                if (this.state) {
-                    this.setState({ fetching: false });
-                }
+            try {
+                this.setState({ fetching: false });
+            } catch (err) {
+                // Fail silently
             }
         }
     }

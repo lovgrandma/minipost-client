@@ -3,9 +3,8 @@ import {
     NavLink,
     Link
 } from 'react-router-dom';
-import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { convertDate } from '../methods/utility.js';
-import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';
+import { showContentMenu, promptDeleteContent, tryDeleteContent } from '../methods/context.js';
 import parseBody from '../methods/htmlparser.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import Videos from './videos.js';

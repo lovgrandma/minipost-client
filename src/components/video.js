@@ -23,7 +23,7 @@ import { setResponseUrl } from '../methods/responses.js';
 import lzw from '../compression/lzw.js';
 import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
-import { addOneProductToCart, checkoutNowWithCurrentCartItems, formatAPrice } from '../methods/ecommerce.js';
+import { addOneProductToCart, formatAPrice } from '../methods/ecommerce.js';
 
 import { cookies, socket, localEvents } from '../App.js';
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
@@ -76,12 +76,7 @@ export default class Video extends Component {
             if (document.fullscreenElement) {
                 this.setState({ fullscreen: true });
                 if (this.scrollRef) {
-                    if (this.scrollRef.current) {
-                        this.scrollRef.current.scrollBy({
-                            top: 10000,
-                            behavior: "smooth"
-                        });
-                    }
+                    this.toTop();
                 }
             } else {
                 this.setState({ fullscreen: false });
@@ -138,6 +133,17 @@ export default class Video extends Component {
         }
     }
 
+    toTop() {
+        try {
+            this.scrollRef.current.scrollBy({
+                top: 10000,
+                behavior: "smooth"
+            });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     orderComplete(data) {
         try {
             this.setState({ placementError: null, placementSuccess: `Your order was completed. See order` });
@@ -151,12 +157,7 @@ export default class Video extends Component {
     
     quickScroll = () => {
         if (this.scrollRef && !this.state.mousedown) {
-            if (this.scrollRef.current) {
-                this.scrollRef.current.scrollBy({
-                    top: 10000,
-                    behavior: "smooth"
-                });
-            }
+            this.toTop();
         }
     }
 
@@ -208,12 +209,7 @@ export default class Video extends Component {
             let pullToBottom = (i) => {
                 setTimeout(() => {
                     if (this.scrollRef) {
-                        if (this.scrollRef.current) {
-                            this.scrollRef.current.scrollBy({
-                                top: 10000,
-                                behavior: "smooth"
-                            });
-                        }
+                        this.topTop();
                     }
                     i--;
                     if (i > 0) {
@@ -670,20 +666,20 @@ export default class Video extends Component {
     }
 
     checkTogetherHost = () => {
-        if (this) {
-            if (this.props) {
-                if (this.props.togetherToken) {
-                    if (this.props.togetherToken.host && cookies.get('loggedIn')) {
-                        if (this.props.togetherToken.host == cookies.get('loggedIn')) {
-                            return true; // Will play ad if host is choosing video
-                        }
+        try {
+            if (this.props.togetherToken) {
+                if (this.props.togetherToken.host && cookies.get('loggedIn')) {
+                    if (this.props.togetherToken.host == cookies.get('loggedIn')) {
+                        return true; // Will play ad if host is choosing video
                     }
-                } else {
-                    return true; // Will play ad if no togetherToken
                 }
+            } else {
+                return true; // Will play ad if no togetherToken
             }
+            return false; 
+        } catch (err) {
+            return false;
         }
-        return false; 
     }
 
     /**

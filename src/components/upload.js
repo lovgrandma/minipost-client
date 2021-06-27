@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import Cookies from 'universal-cookie';
+import { cookies } from '../App.js';
 import axios from 'axios';
 import currentrooturl from '../url';
 import currentshopurl from '../shopurl.js';
@@ -17,7 +17,6 @@ import { debounce } from '../methods/utility.js';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
 
-const cookies = new Cookies();
 const shaka = require('shaka-player/dist/shaka-player.ui.js');
 const EventEmitter = require('events');
 let socket;

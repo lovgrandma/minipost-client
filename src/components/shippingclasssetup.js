@@ -5,7 +5,6 @@ import {
 } from 'react-bootstrap';
 import countryList from 'react-select-country-list';
 import currentshopurl from '../shopurl.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import corsdefault from '../cors.js';
 
 import { cookies, socket } from '../App.js';

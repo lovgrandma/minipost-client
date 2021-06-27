@@ -58,6 +58,7 @@ const webpack = require('webpack');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const regeneratorRuntime = require("regenerator-runtime");
 const MiniCssExtractPlugin = require('mini-css-extract-plugin');
+const DuplicatePackageCheckerPlugin = require('duplicate-package-checker-webpack-plugin');
 
 module.exports = {
     entry: "./src/index.js", // The entry point for the application
@@ -105,7 +106,8 @@ module.exports = {
         }),
         new webpack.ProvidePlugin({
             process: 'process/browser'
-        })        
+        }),
+        new DuplicatePackageCheckerPlugin() // Dedupe similar packages  
     ],
     mode: 'production' // Can be set to development or production. Webpack will minify code and strip warnings
 }

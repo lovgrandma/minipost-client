@@ -7,7 +7,6 @@ import {
 } from 'react-bootstrap';
 import currentshopurl from '../shopurl.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import TextareaAutosize from 'react-textarea-autosize';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
 import { faEdit, faPlus, faSave, faTrashAlt, faCopy, faArrowCircleUp } from '@fortawesome/free-solid-svg-icons';
@@ -475,7 +474,6 @@ export default class Product extends Component {
                     formData.append("image", img.file); // Will store files for temp upload to server
                     imgNames.push(img.name); // in order stores name for file
                 });
-                console.log(imgNames);
                 try {
                     if (this.props.deletions.get(this.props.index)) {
                         formData.append("deletions", JSON.stringify(this.props.deletions.get(this.props.index)));
@@ -500,11 +498,7 @@ export default class Product extends Component {
                     if (result.error) {
                         this.setState({ error: result.error }); // Saving product failed
                     }
-                    if (result.action) {
-                        if (result.action == "reload") {
-                            this.props.history.push("/shop?s=" + username);
-                        }
-                    }
+                    window.location.reload();
                 })
                 .catch((err) => {
                     console.log(err);
@@ -553,12 +547,12 @@ export default class Product extends Component {
                         return response.json();
                     })
                     .then((result) => {
+                        console.log(result);
                         if (result) {
                             if (result.error) {
                                 throw new Error;
                             }
-                            console.log(result);
-                            this.props.history.push('/shops?s=' + username);
+                            window.location.reload();
                             return true;
                         } else {
                             throw new Error;
@@ -573,6 +567,7 @@ export default class Product extends Component {
                 }
             }
         } catch (err) {
+            console.log(err);
             this.setState({ error: "An error occured while deleting the product"}); // Delete product failed 
         }
     }

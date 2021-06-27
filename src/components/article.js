@@ -4,9 +4,8 @@ import {
     Link
 } from 'react-router-dom';
 import currentrooturl from '../url';
-import ReactHtmlParser, { processNodes, convertNodeToElement, htmlparser2 } from 'react-html-parser';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faReply, faEye } from '@fortawesome/free-solid-svg-icons';
+import { faThumbsUp, faThumbsDown, faBookOpen, faReply, faEye } from '@fortawesome/free-solid-svg-icons';
 import { Helmet } from 'react-helmet';
 import { roundTime, setStateDynamic, shortenTitle, convertDate, opposite } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions, resolveMeta } from '../methods/context.js';

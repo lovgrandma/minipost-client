@@ -421,26 +421,10 @@ export const checkToString = function(value) {
     }
 }
 
-//module.exports = {
-//    debounce: debounce,
-//    deepEquals: deepEquals,
-//    shuffleArray: shuffleArray,
-//    parseId: parseId,
-//    roundTime: roundTime,
-//    shortenTitle: shortenTitle,
-//    roundNumber: roundNumber,
-//    setStateDynamic: setStateDynamic,
-//    convertDate: convertDate,
-//    dataURItoBlob: dataURItoBlob,
-//    getPath: getPath,
-//    checkAtBottom: checkAtBottom,
-//    get: get,
-//    opposite: opposite,
-//    setData: setData,
-//    randomProperty: randomProperty,
-//    returnLink: returnLink,
-//    returnProfile: returnProfile,
-//    getNumber: getNumber,
-//    resolveString: resolveString,
-//    arraysEqual: arraysEqual
-//}
+export const resolveImgTitle = function(title) {
+    try {
+        return title.split("-") + " image";
+    } catch (err) {
+        return "";
+    }
+}

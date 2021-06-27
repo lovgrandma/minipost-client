@@ -6,7 +6,7 @@ import {
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import ArticlePreview from './articlepreview.js';
-import { convertDate, get } from '../methods/utility.js';
+import { convertDate, resolveImgTitle } from '../methods/utility.js';
 import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
@@ -19,13 +19,6 @@ export default class Videos extends Component {
         }
         this.articleContainer = React.createRef();
         this.titleDelete = React.createRef();
-    }
-
-    componentDidMount() {
-
-    }
-    componentDidUpdate() {
-
     }
 
     cutTitle(title) {
@@ -144,7 +137,7 @@ export default class Videos extends Component {
                         <Link to={this.editReturn()} onClick={(e)=>{this.checkPlaceholderClick(e)}}>
                             <div className="videothumb-holder">
                                 <div className="ad-overlay-profile">{this.props.ad ? "Ad" : ""}</div>
-                                <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()}></img>
+                                <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()} alt={resolveImgTitle(this.props.title)}></img>
                             </div>
                         </Link>
                         <div className="dash-video-details-container">

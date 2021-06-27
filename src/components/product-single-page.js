@@ -10,9 +10,8 @@ import {
 import corsdefault from '../cors.js';
 import currentshopurl from '../shopurl.js';
 import parseBody from '../methods/htmlparser.js';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cookies } from '../App.js';
-import { checkoutNowWithCurrentCartItems, prepareCheckoutWithCurrentCartItems, addOneProductToCart } from '../methods/ecommerce.js';
+import { addOneProductToCart } from '../methods/ecommerce.js';
 
 const Checkout = lazy(() => import('./checkout.js'));
 
