@@ -275,6 +275,34 @@ export default class Shop extends Component {
         }
     }
 
+    moveImg = (editing, index, dir) => {
+        console.log(editing, index, dir);
+        try {
+            let products = this.state.products;
+            let pro = products[editing];
+            if (dir == "left") {
+                if (index != 0) { // try move left
+                    let temp = pro.images[index -1];
+                    pro.images[index -1] = pro.images[index];
+                    pro.images[index] = temp;
+                    products[editing] = pro;
+                    this.setState({ products: products });
+                }
+            } else {
+                if (index != pro.images.length -1) { // try move right
+                    let temp = pro.images[index +1];
+                    pro.images[index +1] = pro.images[index];
+                    pro.images[index] = temp;
+                    products[editing] = pro;
+                    this.setState({ products: products });
+                }
+            }
+        } catch (err) {
+            console.log(err);
+            return false; // Fail silently
+        }
+    }
+
     render() {
         let currImages = this.resolveCurrentImages();
         return (
@@ -299,7 +327,9 @@ export default class Shop extends Component {
                                     sendTempImgData={this.sendTempImgData}
                                     searchAndUpdateImgName={this.searchAndUpdateImgName}
                                     tempImgData={this.state.tempImgData}
-                                    deletions={this.state.deletions} />
+                                    deletions={this.state.deletions}
+                                    moveImg={this.moveImg}
+                                    />
                                 </div>
                             </div>
                             : null

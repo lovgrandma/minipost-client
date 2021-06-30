@@ -1925,3 +1925,35 @@ Button.transaction-button-checkout:hover {
 .delete-product-img-button {
 
 }
+
+.cached-img-container {
+    position: relative;
+}
+
+.cached-img-container .mv-prd-image {
+    opacity: 0;
+    position: absolute;
+    transition: 200ms;
+    bottom: 5px;
+    border-radius: 15px;
+    background-color: rgba(180, 180, 180, 0);
+    padding-bottom: 5px;
+    padding: 0 3.5px 6px;
+    cursor: pointer;
+}
+
+.cached-img-container:hover .mv-prd-image {
+    opacity: 1;
+}
+
+.cached-img-container .mv-prd-image:hover {
+    background-color: rgba(180, 180, 180, 1);
+}
+
+.mv-prd-image-left {
+    left: 10px;
+}
+
+.mv-prd-image-right {
+    right: 10px;
+}

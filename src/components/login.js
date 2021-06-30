@@ -292,7 +292,7 @@ export default class Login extends Component {
                         this.state.resetPassUpdate ? <div className="resetpassstatus">{this.state.resetPassUpdate}</div> : <div></div>
                     }
                     {
-                        this.state.resetPassUpdate != "Success! You'll get a email if you have an account with us" ? <button className="btn btn-primary reset-passbtn red-btn" type="submit" onClick={(e) => {this.submitResetPass(e)}}>reset password</button> : <div></div>
+                        this.state.resetPassUpdate != "Success! You'll get a email if you have an account with us" ? <button className="btn reset-passbtn red-btn" type="submit" onClick={(e) => {this.submitResetPass(e)}}>reset password</button> : <div></div>
                     }
                 </div>
                 <form className="loginform" refs='loginform' onSubmit={this.props.fetchlogin} noValidate="novalidate">
@@ -306,7 +306,7 @@ export default class Login extends Component {
                         <div id='passerrorcontainer'><div className='form-error faulty-pass' style={{display: 'none'}}>password must be between 8-56 characters, have 1 uppercase, 1 lowercase and a number</div></div>
                         <a onClick={(e)=>{this.setOverlay(e)}} href="#" className="info-blurb-3">{this.state.overlay ? "Remembered your password?" : "Forgot your password?" }</a>
                     </div>
-                    <button className="btn btn-primary loginbtn red-btn" type="submit" onClick={this.submitLogin}>login</button>
+                    <button className="btn loginbtn red-btn" type="submit" onClick={this.submitLogin}>login</button>
                     { this.props.loginerror ?
                         this.props.loginerror.type == "login error" ? <div className="loginerror">{this.props.loginerror.error}</div>
                         : <div></div>
@@ -336,7 +336,7 @@ export default class Login extends Component {
                         <input className="form-control" ref={this.regpw2} id="regpw2" type="password" name="confirmPassword" placeholder="confirm password"></input>
                         <div id='registerconfirmpwerrorcontainer'><div className='form-error faulty-confirmpass-register' style={{display: 'none'}}>passwords are not the same</div></div>
                     </div>
-                    <button className="btn btn-primary registerbtn red-btn" type="submit" onClick={this.submitRegister}>sign up</button>
+                    <button className="btn registerbtn red-btn" type="submit" onClick={this.submitRegister}>sign up</button>
                     { 
                         this.props.registererror ?
                             this.props.registererror.type == "register error" ? 
@@ -369,7 +369,7 @@ export default class Login extends Component {
                             <div className='form-error faulty-verification' style={{display: 'none'}}>you need to input a verification code</div>
                         </div>
                     </div>
-                    <button className="btn btn-primary registerbtn red-btn" type="submit" onClick={this.submitVerify}>verify</button>
+                    <button className="btn registerbtn red-btn" type="submit" onClick={this.submitVerify}>verify</button>
                     { 
                         this.props.verifyerror ?
                             <div className="loginerror">{this.props.verifyerror.error}</div>

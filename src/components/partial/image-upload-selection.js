@@ -196,6 +196,14 @@ export default class ImageUploadSelection extends Component {
         }
     }
 
+    resolveMoveImg(e, index, dir = "left") {
+        try {
+            this.props.moveImg(this.props.editing, index, dir);
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
         return (
             <div>
@@ -227,7 +235,9 @@ export default class ImageUploadSelection extends Component {
                             this.props.images && this.props.editing != "dummy" ? 
                                 this.props.images.map((image, index) => 
                                     <span className="cached-img-container">
+                                        <div className="mv-prd-image mv-prd-image-left" onClick={(e) => {this.resolveMoveImg(e, index, "left")}}>👈</div>
                                         <img className={this.state.currSelectedImg == index ? "cached-img cached-img-selected cached-img" + index : "cached-img cached-img" + index} src={this.state.cloud + "/" + image.url} onClick={(e) => {this.setCurrSelectedImg(index)}} index={index} key={index} imgdata={image.url}></img>
+                                        <div className="mv-prd-image mv-prd-image-right" onClick={(e) => {this.resolveMoveImg(e, index, "right")}}>👉</div>
                                     </span>
                                 )
                                 : 
