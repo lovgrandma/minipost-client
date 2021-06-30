@@ -1569,8 +1569,11 @@ export default class Video extends Component {
                                                 <div ref={this.miniCheckoutContainer} className="mini-checkout-video-container">
                                                     {
                                                         this.state.togglePlacementCheckout ?
-                                                            <Checkout {...this.props} fullCheckout={true} minifiedCheckout={true} cloud={this.props.cloud} setCloud={this.props.setCloud} fetchCloudUrl={this.props.fetchCloudUrl} />
+                                                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                                                <Checkout {...this.props} fullCheckout={true} minifiedCheckout={true} cloud={this.props.cloud} setCloud={this.props.setCloud} fetchCloudUrl={this.props.fetchCloudUrl} />
+                                                            </Suspense>
                                                             : null
+                                                            
                                                     }
                                                 </div>
                                                 <div className={this.state.placementSuccess || this.state.placementError ? "placement-info-container placement-info-container-visible" : "placement-info-container"}>
