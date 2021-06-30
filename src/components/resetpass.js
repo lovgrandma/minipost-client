@@ -106,7 +106,7 @@ export default class ResetPass extends Component {
                         <div className="form-group">
                             <input className="form-control" ref={this.passConfirm} id="pw" type="password" name="password" placeholder="confirm password"></input>
                         </div>
-                        <button className="btn btn-primary loginbtn resetpass" type="submit" onClick={(e) => {this.submitConfirmPassReset(e)}}>reset password</button>
+                        <button className="btn loginbtn resetpass" type="submit" onClick={(e) => {this.submitConfirmPassReset(e)}}>reset password</button>
                         { 
                             this.state.status ? 
                                 <div className="resetpassstatus">{this.state.status}</div>
