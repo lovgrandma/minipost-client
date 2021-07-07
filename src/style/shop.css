@@ -866,6 +866,8 @@ Button.transaction-button-checkout:hover {
 
 .single-product-page-images-container {
     flex-grow: 1;
+    max-height: fit-content;
+    overflow-x: hidden;
 }
 
 .single-product-page-meta-container {
