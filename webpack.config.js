@@ -82,7 +82,26 @@ module.exports = {
                 }
             },
             {
-                test: /\.css$/i, use: [ 'style-loader', 'css-loader' ]
+                test: /\.css$/i, 
+                use: [ 
+                    'style-loader', 
+                    'css-loader',
+                    {
+                        loader: "postcss-loader",
+                        options: {
+                            postcssOptions: {
+                                plugins: [
+                                    [
+                                        "postcss-preset-env",
+                                        {
+                                        // Options
+                                        },
+                                    ],
+                                ],
+                            },
+                        },
+                    } 
+                ]
             },
             {
                 test: /\.(png|jpe?g|gif|svg|woff|woff2|eot|ttf|otf)$/i, 
