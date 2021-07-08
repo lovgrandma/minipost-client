@@ -925,7 +925,7 @@ Button.transaction-button-checkout:hover {
     overflow-y: auto;
     direction: rtl;
     padding-left: 3px;
-    height: -webkit-fill-available;
+    height: fit-content;
 }
 
 .single-product-page-meta-inputs-container {
