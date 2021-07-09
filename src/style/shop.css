@@ -919,13 +919,14 @@ Button.transaction-button-checkout:hover {
 .single-product-page-thumbnails {
     display: flex;
     flex-direction: column;
-    max-width: fit-content;
-    gap: 3px;
+    max-width: min-content;
+     gap: 3px;
     max-height: 629px;
     overflow-y: auto;
     direction: rtl;
     padding-left: 3px;
     height: auto;
+    width: -webkit-fill-available;
 }
 
 .single-product-page-meta-inputs-container {
