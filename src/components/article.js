@@ -231,32 +231,54 @@ export default class Article extends Component {
     }
     
     incrementRead = () => {
-        if (cookies.get('loggedIn') && this.state.id ) {
-            let username = cookies.get('loggedIn');
+        if (this.state.id) {
             let id = this.state.id;
-            let hash = cookies.get('hash');
-            let self = true;
-            fetch(currentrooturl + 'm/incrementread', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: corsdefault,
-                body: JSON.stringify({
-                    id, username, hash, self
+            if (cookies.get('loggedIn') && this.state.id ) {
+                let username = cookies.get('loggedIn');
+                let hash = cookies.get('hash');
+                let self = true;
+                fetch(currentrooturl + 'm/incrementread', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        id, username, hash, self
+                    })
                 })
-            })
-            .then((response) => {
-                return response.json();
-            })
-            .then((result) => {
-                console.log(result);
-                let authenticated = this.props.checkAndConfirmAuthentication(result);
-                if (result && authenticated) {
-                    this.setState({ reads: this.state.reads + 1 });
-                }
-            });
+                .then((response) => {
+                    return response.json();
+                })
+                .then((result) => {
+                    console.log(result);
+                    let authenticated = this.props.checkAndConfirmAuthentication(result);
+                    if (result && authenticated) {
+                        this.setState({ reads: this.state.reads + 1 });
+                    }
+                });
+            } else { // Anonymous read
+                fetch(currentrooturl + 'm/incrementread', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        id
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((result) => {
+                    if (result) {
+                        this.setState({ reads: this.state.reads + 1 });
+                    }
+                });
+            }
         }
     }
 
