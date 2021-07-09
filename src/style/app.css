@@ -4919,6 +4919,11 @@ a code:hover {
     display: flex;
 }
 
+.article-container-articlepage .relatedpanel .videocontainer-related {
+    flex-direction: column;
+    gap: 5px;
+}
+
 .relatedpanel-main .videocontainer-related .videothumb-holder {
     max-width: 200px;
 }
@@ -5466,6 +5471,7 @@ a code:hover {
 .article-container-articlepage .relatedpanel .col {
     padding: 5px;
 }
+
 @media (max-width: 900px) {
     .article-container-articlepage .relatedpanel .col {
         width: calc(98.4%/2);
