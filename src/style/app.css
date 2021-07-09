@@ -5487,7 +5487,7 @@ a code:hover {
     }
     .article-container-articlepage .relatedpanel .videothumb {
         max-height: 80px;
-        max-width: auto;
+        max-width: auto !important;
     }
     .article-container-articlepage .relatedpanel .videocontainer-related {
         flex-direction: row;
