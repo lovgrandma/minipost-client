@@ -5489,8 +5489,8 @@ a code:hover {
     .article-container-articlepage .relatedpanel .videocontainer-related {
         flex-direction: row;
     }
-    .article-container-articlepage .relatedpanel .col .videocontainer {
-        gap: 0px;
+    .article-container-articlepage .relatedpanel .videocontainer-related .dash-video-details-container {
+        padding-left: 0px;
     }
 }
 
