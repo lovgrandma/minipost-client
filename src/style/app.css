@@ -5484,10 +5484,13 @@ a code:hover {
         
     }
     .article-container-articlepage .relatedpanel .videothumb {
-        max-height: 160px;
+        max-height: 80px;
     }
     .article-container-articlepage .relatedpanel .videocontainer-related {
         flex-direction: row;
+    }
+    .article-container-articlepage .relatedpanel .col .videocontainer {
+        gap: 0px;
     }
 }
 
