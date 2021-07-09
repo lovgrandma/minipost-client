@@ -551,38 +551,70 @@ export default class Video extends Component {
                 startDate = this.state.startDate;
                 endDate = this.state.endDate;
             }
-            if (!dontInc && username) {
-                let hash = cookies.get('hash');
-                await fetch(currentrooturl + 'm/incrementview', {
-                    method: "POST",
-                    headers: {
-                        'Accept': 'application/json',
-                        'Content-Type': 'application/json'
-                    },
-                    credentials: corsdefault,
-                    body: JSON.stringify({
-                        mpd, username, ad, adBudget, startDate, endDate, hash, self
+            if (!dontInc) {
+                if (username) {
+                    let hash = cookies.get('hash');
+                    await fetch(currentrooturl + 'm/incrementview', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: corsdefault,
+                        body: JSON.stringify({
+                            mpd, username, ad, adBudget, startDate, endDate, hash, self
+                        })
                     })
-                })
-                .then(function(response) {
-                    return response.json();
-                })
-                .then((result) => {
-                    let authentication = this.props.checkAndConfirmAuthentication(result);
-                    if (result && authentication) {
-                        if (result.hasOwnProperty('increment')) {
-                            if (result.increment) {
-                                this.setState({ viewCounted: true });
-                                this.setState({ views: this.state.views+1 });
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then((result) => {
+                        let authentication = this.props.checkAndConfirmAuthentication(result);
+                        if (result && authentication) {
+                            if (result.hasOwnProperty('increment')) {
+                                if (result.increment) {
+                                    this.setState({ viewCounted: true });
+                                    this.setState({ views: this.state.views+1 });
+                                }
+                            }
+                            if (result.hasOwnProperty('playlist')) {
+                                if (result.playlist === false) {
+                                    this.props.playlist.buildPlaylist(true);
+                                }
                             }
                         }
-                        if (result.hasOwnProperty('playlist')) {
-                            if (result.playlist === false) {
-                                this.props.playlist.buildPlaylist(true);
+                    });
+                } else {
+                    await fetch(currentrooturl + 'm/incrementview', {
+                        method: "POST",
+                        headers: {
+                            'Accept': 'application/json',
+                            'Content-Type': 'application/json'
+                        },
+                        credentials: corsdefault,
+                        body: JSON.stringify({
+                            mpd, ad, adBudget, startDate, endDate
+                        })
+                    })
+                    .then(function(response) {
+                        return response.json();
+                    })
+                    .then((result) => {
+                        if (result) {
+                            if (result.hasOwnProperty('increment')) {
+                                if (result.increment) {
+                                    this.setState({ viewCounted: true });
+                                    this.setState({ views: this.state.views+1 });
+                                }
+                            }
+                            if (result.hasOwnProperty('playlist')) {
+                                if (result.playlist === false) {
+                                    this.props.playlist.buildPlaylist(true);
+                                }
                             }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
     }
