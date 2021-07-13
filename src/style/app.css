@@ -498,6 +498,15 @@ button {
     margin-bottom: 5px;
 }
 
+.profile-stats-container > div {
+    background-color: #bbbbbb;
+    padding: 2.5px 5px;
+    border-radius: 7.5px;
+    color: white;
+    font-weight: 600;
+    font-size: 0.75em;
+}
+
 .align-center {
     align-items: center;
 }
@@ -6040,4 +6049,53 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     background-color: #e8e8e8;
     border-radius: 15px;
     padding: 15px;
+}
+
+.whose-watching-container {
+    opacity: 0;
+    padding: 10px;
+    position: absolute;
+    display: flex;
+    gap: 12.5px;
+    transition: 200ms;
+    flex-wrap: wrap;
+}
+
+.videothumb-holder:hover .whose-watching-container {
+    opacity: 1;
+}
+
+.whose-watching-el {
+    position: relative;
+}
+
+.whose-watching-el > img {
+    width: 35px;
+    height: 35px;
+    object-fit: cover;
+    border-radius: 12.5px;
+    transition: 50ms;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.whose-watching-f-bubble {
+    position: absolute;
+    bottom: -30px;
+    background-color: rgba(255,255,255, 0.675);
+    padding: 5px;
+    z-index: 20;
+    border-radius: 7.5px;
+    font-size: 0.675em;
+    font-weight: 600;
+    opacity: 0;
+    transition: 200ms;
+
+}
+
+.whose-watching-el:hover > img + .whose-watching-f-bubble {
+    opacity: 1;
+}
+
+.whose-watching-el:hover > img {
+    border: 2px solid rgba(255,255,255, 0.4);
 }

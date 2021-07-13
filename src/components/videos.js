@@ -137,6 +137,20 @@ export default class Videos extends Component {
                         <Link to={this.editReturn()} onClick={(e)=>{this.checkPlaceholderClick(e)}}>
                             <div className="videothumb-holder">
                                 <div className="ad-overlay-profile">{this.props.ad ? "Ad" : ""}</div>
+                                <div class="whose-watching-container">
+                                {
+                                    this.props.friendsWatchingCopy ?
+                                        this.props.friendsWatchingCopy.map((friend, index) => 
+                                            friend.title == this.props.title && friend.id == this.props.mpd ?
+                                                <div class="whose-watching-el">
+                                                    <img src={this.props.cloud + "/av/" + friend.av}></img>
+                                                    <div class="whose-watching-f-bubble">{friend.f}</div>
+                                                </div>
+                                                : null
+                                        )
+                                        : null
+                                }
+                                </div>
                                 <img className={this.props.mpd ? this.props.mpd.length > 0 ? 'videothumb' : 'videothumb videothumb-placeholder' : 'videothumb videothumb-placeholder'} src={this.getThumb()} alt={resolveImgTitle(this.props.title)}></img>
                             </div>
                         </Link>

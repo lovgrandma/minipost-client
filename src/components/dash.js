@@ -215,6 +215,7 @@ export default class Dash extends Component {
                                         avatarUrl={content._fields[3]}
                                         cloud={this.props.cloud}
                                         sendWatch={this.props.sendWatch}
+                                        friendsWatchingCopy={this.props.friendsWatchingCopy}
                                         key={index}
                                         index={index}
                                         />

@@ -56,7 +56,7 @@ class Socialbar extends Component { // Main social entry point sb1
                       loginerror: null, registererror: null, verifyerror: null,
                       friendsopen: true, nonfriendsopen: false, adminCheck: false,
                       response: false, endpoint: proxyurl, googleSignInError: '', usernameChoicePortal: false,
-                      typing: [], darkmode: false, verifyinfo: "", useravatar: ""
+                      typing: [], darkmode: false, verifyinfo: "", useravatar: "", friendsWatching: []
                      }
         
        // this.getpendingrequests = this.getpendingrequests.bind(this);
@@ -132,7 +132,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 socket.on('connect', () => {
                     console.log("Connected to socket ∞¦∞");
                     setTimeout(() => {
-                        this.initializeLiveChat();
+                        this.initializeLiveChat(500, false); // Handles disconnects
                     }, 300);
                 });
                 socket.on("disconnect", () => {
@@ -221,7 +221,65 @@ class Socialbar extends Component { // Main social entry point sb1
                             this.props.doWatch(data);
                         }
                     }
-                })
+                });
+
+                // For passive ask watching to append who is watching what on dash page
+                socket.on('askWatching', data => {
+                    try {
+                        if (data.match(/(.*);(.*)/)[1] !== this.state.isLoggedIn) { // Not self
+                            if (window.location.href.match(/watch\?v=([0-9a-zA-Z]*)/)[1] && document.getElementsByClassName("watchpage-title")[0]) { // On watch page
+                                socket.emit('respondWatching', {
+                                    "for": data.match(/(.*);(.*)/)[1],
+                                    "who": this.state.isLoggedIn,
+                                    "title": document.getElementsByClassName("watchpage-title")[0].innerHTML,
+                                    "id": window.location.href.match(/watch\?v=([0-9a-zA-Z]*)/)[1],
+                                    "room": data.match(/(.*);(.*)/)[2]
+                                });
+                            }
+                        }
+                    } catch (err) {
+                        // Fail silently
+                    }
+                });
+
+                socket.on('getWatching', data => {
+                    try {
+                        if (data.for == this.state.isLoggedIn) {
+                            let f = this.state.friends.find(f => f.username == data.who);
+                            let av = f.avatarurl ? f.avatarurl : null;
+                            let match = false;
+                            for (let i = 0; i < this.state.friendsWatching.length; i++) {
+                                if (this.state.friendsWatching[i].f == data.who) {
+                                    match = i;
+                                    break;
+                                }
+                            }
+                            if (!match) {
+                                this.setState(prevState => ({
+                                    friendsWatching: [...prevState.friendsWatching, {
+                                        f: data.who,
+                                        title: data.title,
+                                        id: data.id,
+                                        av: av
+                                    }]
+                                }));
+                            } else {
+                                let t = this.state.friendsWatching;
+                                t[match] = {
+                                    f: data.who,
+                                    title: data.title,
+                                    id: data.id,
+                                    av: av
+                                };
+                                this.setState({ friendsWatching: t });
+                            }
+                            this.props.updateFriendsWatching(this.state.friendsWatching);
+                        }
+                    } catch (err) {
+                        console.log(err);
+                        // Fail silently
+                    }
+                });
 
                 socket.on('uploadErr', data => {
                     console.log("upload err:" + data);
@@ -302,12 +360,13 @@ class Socialbar extends Component { // Main social entry point sb1
         }
     }
 
-    initializeLiveChat = (delay = 500) => { // Sends request to server to join user to room
+    initializeLiveChat = (delay = 500, getFriendsWatching = true) => { // Sends request to server to join user to room
         if (socket) {
             if (this.state.convoIds && this.state.isLoggedIn) {
                 let obj = {
                     "ids": this.state.convoIds,
-                    "user": this.state.isLoggedIn
+                    "user": this.state.isLoggedIn,
+                    "getFriendsWatching": getFriendsWatching // This ensures not to ping other friends for what they're watching if reconnect initLiveChat, reduce calls
                 }
                 socket.emit('joinConvos', obj); // Joins user into convo rooms
                 this.joinUploadSession(); // Joins upload session if true
@@ -401,7 +460,7 @@ class Socialbar extends Component { // Main social entry point sb1
             let delay = 0;
             if (!socket) {
                 this.openSocket(); // open socket after friend conversations ran
-                delay = 500;
+                delay = 150;
             }
             setTimeout(() => {
                 this.initializeLiveChat();
@@ -542,11 +601,8 @@ class Socialbar extends Component { // Main social entry point sb1
                     return response.json(); // Parsed data
             })
             .then((data) => {
-                if (data.querystatus== "registered" && data.user ) {
+                if (data.querystatus == "registered" && data.user ) {
                     console.log(data);
-                    // cookies.set('loggedIn', data.user);
-                    // this.setState({ isLoggedIn: data.user });
-                    // this.getfriends();
                     // advise user to check phone to activate
                     this.setState({ verifyinfo: "You signed up! You must verify your account to login. Click the button below when you get your verification code"})
                 }
@@ -1005,7 +1061,9 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     /**
-    * Fetches both user friends and userconversations from server. Avoids running two fetch requests. Costly
+    * Fetches both user friends and userconversations from server. Avoids running two fetch requests. Is Costly.
+    * Again: Was updated to also get friend user conversations while getting friends so don't worry that get friend conversations is not being called.
+    * Now we can call build socket connection once instead of twice
     * 
     * @args {none}
     * @return {none}
@@ -1072,6 +1130,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 this.rebuildSocketConnection();
             })
             .catch(error => {
+                this.rebuildSocketConnection();
                 console.log(error);
             })
         }
@@ -1514,7 +1573,7 @@ class App extends Component {
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
                         moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null, friendConvoMirror: null, typingMirror: [],
-                        shipping: {}, dragDisabled: false
+                        shipping: {}, dragDisabled: false, friendsWatchingCopy: []
                      };
         this.playlist = null;
         this.together = null;
@@ -1984,6 +2043,10 @@ class App extends Component {
         this.setState({ userShippingData: shippingData });
     }
 
+    updateFriendsWatching = (data) => {
+        this.setState({ friendsWatchingCopy: data });
+    }
+
     render() {     
         let isShopPage = this.resolveIsShopPage();
         let isCheckoutPage = this.resolveIsCheckoutPage();
@@ -1995,11 +2058,11 @@ class App extends Component {
                     <meta name="description" content="Minipost llc © is an information &amp; entertainment media indexing environment for shared experiences." />
                     <meta name="robots" content="index, follow" />
                 </Helmet>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} updateFriendsWatching={this.updateFriendsWatching} />
                 <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
-                            <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
+                            <Dash {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} friendsWatchingCopy={this.state.friendsWatchingCopy} />
                         )}/>
                         <Route path='/search' render={(props) => (
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
