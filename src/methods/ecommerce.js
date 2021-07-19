@@ -425,8 +425,13 @@ export const orderShipped = function(order) {
 }
 
 export const sendVendorEmail = async function(business, email, body) {
-    console.log("send vendor email");
-    console.log(this);
+    try {
+        if (document.getElementsByClassName("bad-email")[0]) {
+            document.getElementsByClassName("bad-email")[0].remove();
+        }
+    } catch (err) {
+        // Fail silently
+    }
     let vbusinessname = document.getElementById("v-businessname").value;
     let vusername = document.getElementById("v-username").value;
     let vemail = document.getElementById("v-email").value;
@@ -449,7 +454,23 @@ export const sendVendorEmail = async function(business, email, body) {
         return response.json();
     })
     .then(async (result) => {
-        this.setState({ emailSent: true });
+        if (result) {
+            this.setState({ emailSent: true });
+            document.getElementById("v-businessname").setAttribute("disabled", "");
+            document.getElementById("v-username").setAttribute("disabled", "");
+            document.getElementById("v-email").setAttribute("disabled", "");
+            document.getElementById("v-body").setAttribute("disabled", "");
+            document.getElementById("sendvendoremailbtn").setAttribute("disabled", "");
+            let d = document.createElement("div");
+            d.innerHTML = "Vendor Application Sent. We will review your application promptly";
+            d.classList.add("prompt-basic", "prompt-highlight");
+            document.getElementsByClassName("vendor-application-container")[0].append(d);
+        } else {
+            let d = document.createElement("div");
+            d.innerHTML = "Failed to send Vendor Application Email. Please review your info and retry";
+            d.classList.add("prompt-basic", "prompt-highlight", "err-status", "bad-email");
+            document.getElementsByClassName("vendor-application-container")[0].append(d);
+        }
     })
     .catch((err) => {
         return false;

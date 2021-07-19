@@ -12,7 +12,7 @@ import { sendVendorEmail } from '../methods/ecommerce.js';
 export default class InfoTemplate extends Component {
     constructor(props) {
         super(props);
-        this.state = { pageContent: null };
+        this.state = { pageContent: null, emailSent: false };
     }
 
     componentDidMount() {
@@ -78,7 +78,7 @@ export default class InfoTemplate extends Component {
         }
     }
 
-    getContextSendVendorEmail() {
+    getContextSendVendorEmail = () => {
         sendVendorEmail.call(this);
     }
 
