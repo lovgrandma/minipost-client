@@ -1118,7 +1118,9 @@ class Socialbar extends Component { // Main social entry point sb1
                     for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
                         convoIds.push(data.conversations[i]._id);
                     }
-                    this.setState({ convoIds: convoIds });
+                    this.setState({ convoIds: convoIds }); // CRUCIAL TO SET THIS BEFORE BUILDING SOCKET
+                    // If this is not created before building socket then user will get no live chat. We Build Live chat WITH convoIds after this call. See next then block
+                    // If this is done properly then we will only call build socket connection once. Which is good, because emitting to sockets is expensive since were asking every other user what theyre watching for the "joinConvos" route
 
                     if (data.hasOwnProperty("useravatar")) {
                         this.setState({ useravatar: data.useravatar });
@@ -1127,7 +1129,7 @@ class Socialbar extends Component { // Main social entry point sb1
                 return data;
             })
             .then((data) => {
-                this.rebuildSocketConnection();
+                this.rebuildSocketConnection(); // Called AFTER building convoIds state
             })
             .catch(error => {
                 this.rebuildSocketConnection();
@@ -2131,6 +2133,9 @@ class App extends Component {
                             <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
                         )}/>
                         <Route path='/about' render={(props) => (
+                          <InfoTemplate {...props} />
+                        )}/>
+                        <Route path='/vendorapplication' render={(props) => (
                           <InfoTemplate {...props} />
                         )}/>
                         <Route path='/resetpass' render={(props) => (

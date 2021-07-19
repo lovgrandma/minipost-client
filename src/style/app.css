@@ -223,12 +223,44 @@ h5 {
     max-width: 350px;
 }
 
+.max-width-600 {
+    max-width: 600px;
+}
+
+.max-width-800 {
+    max-width: 800px;
+}
+
 .max-width-1600 {
     max-width: 1600px;
 }
 
+.gap5 {
+    gap: 5px;
+}
+
+.gap10 {
+    gap: 10px;
+}
+
 .border-radius-5 {
-    border-radius: 5;
+    border-radius: 5px;
+}
+
+.border-width-0 {
+    border-width: 0px;
+}
+
+.border-width-1 {
+    border-width: 1px;
+}
+
+.prompt-highlight {
+    line-height: 1.4em;
+    font-weight: 500;
+    background-color: #f3f3f3;
+    padding: 15px;
+    border-radius: 15px;
 }
 
 .dropdown-menu a {
@@ -663,7 +695,8 @@ button {
     }
 }
 
-.search-field {
+.search-field,
+.search-tracks {
     font-size: 0.95em;
     background-color: transparent;
     padding-left: 6px;
@@ -676,7 +709,16 @@ button {
     transition: 500ms;
 }
 
-.search-field:hover {
+.search-tracks {
+    width: -webkit-fill-available;
+}
+
+.search-tracks {
+    border-width: 0px;
+}
+
+.search-field:hover,
+.search-tracks:hover {
     background-color: rgba(50,50,50, 0.1);
 }
 
@@ -4079,10 +4121,16 @@ If user only has one friend, styling wont apply */
 }
 
 .choose-file,
-.upload-button {
+.upload-button,
+.edit-first {
     font-size: 14px;
     margin-bottom: 6px;
     font-weight: 500;
+}
+
+.edit-first {
+    transition: 200ms;
+    height: 23.5px;
 }
 
 .publish-video {
@@ -4097,7 +4145,8 @@ If user only has one friend, styling wont apply */
     margin-bottom: 8px;
 }
 
-.upload-button {
+.upload-button,
+.edit-first {
     display: block;
 }
 
@@ -4110,6 +4159,10 @@ If user only has one friend, styling wont apply */
 .upload-button-hidden,
 .choose-file-hidden {
     display: none;
+}
+
+.edit-first-hidden {
+    height: 0px;
 }
 
 .publish-video-hidden {
@@ -6098,4 +6151,9 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 
 .whose-watching-el:hover > img {
     border: 2px solid rgba(255,255,255, 0.4);
+}
+
+.btn-primary {
+    background-color: rgb(138, 138, 138);
+    border-color: rgb(138, 138, 138);
 }

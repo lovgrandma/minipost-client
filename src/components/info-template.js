@@ -6,8 +6,8 @@ Information page basic template */
 import React, { Component } from 'react';
 import currentrooturl from '../url.js';
 import parseBody from '../methods/htmlparser.js';
-import { cookies } from '../App.js';
 import corsdefault from '../cors.js';
+import { sendVendorEmail } from '../methods/ecommerce.js';
 
 export default class InfoTemplate extends Component {
     constructor(props) {
@@ -53,11 +53,33 @@ export default class InfoTemplate extends Component {
                             })
                             .then((result) => {
                                 this.setState({ pageContent: result });
+                                if (path == "/vendorapplication") {
+                                    this.attemptRegisterEmailListener();
+                                }
+                            })
+                            .catch((err) => {
+                                console.log(err);
                             });
                     }
                 }
             }
         }
+    }
+
+    attemptRegisterEmailListener(noRetry = false) {
+        try {
+            document.getElementById("sendvendoremailbtn").addEventListener("click", this.getContextSendVendorEmail);
+        } catch (err) {
+            if (!noRetry) {
+                setTimeout(() => {
+                    this.attemptRegisterEmailListener(true); // Ensure click send email registered as listener
+                }, 5000);
+            }
+        }
+    }
+
+    getContextSendVendorEmail() {
+        sendVendorEmail.call(this);
     }
 
     render() {

@@ -15,6 +15,9 @@ import 'react-intl-tel-input/dist/main.css';
 import { Elements, CardElement, ElementsConsumer } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 import currentshopurl from '../shopurl';
+import {
+    Link
+} from 'react-router-dom';
 const stripePromise = loadStripe(keys.livekey);
 
 export default class Options extends Component {
@@ -637,7 +640,10 @@ export default class Options extends Component {
                                     <button className="prompt-basic btn upload-button" onClick={(e)=> {redirectManageShopOrders.call(this)}}>Manage shop customer orders</button>
                                 </div>
                             </div>
-                            : null
+                            : <div>
+                                <p className="prompt-basic-s">To sell products on Minipost click the button below to fill out the form. All businesses must fill out the form with a company representative before being able to list products on Minipost</p>
+                                <Link to={{ pathname: `vendorapplication` }} className="red-btn btn prompt-basic-s">Apply To Become A Vendor</Link>
+                            </div>
                     }
                 </div>
             </div>

@@ -428,3 +428,48 @@ export const resolveImgTitle = function(title) {
         return "";
     }
 }
+
+export const calcTime = function(id, time) {
+    try {
+        let val = new Date(time * 1000).toISOString().substr(11, 8);
+        let hr = val.substring(0, 2);
+        let min = val.substring(3, 5);
+        let sec = val.substring(6, 8);
+        return [hr, min, sec];
+    } catch (err) {
+        return [0, 0, 0];
+    }
+}
+
+/* Returns the current date to show in preview */
+export const getCurrDate = function() {
+    let today = new Date();
+    let month = "";
+    switch (today.getMonth()) {
+        case 0: month = "january";
+            break;
+        case 1: month = "february";
+            break;
+        case 2: month = "march";
+            break;
+        case 3: month = "april";
+            break;
+        case 4: month = "may";
+            break;
+        case 5: month = "june";
+            break;
+        case 6: month = "july";
+            break;
+        case 7: month = "august";
+            break;
+        case 8: month = "september";
+            break;
+        case 9: month = "october";
+            break;
+        case 10: month = "november";
+            break;
+        case 0: month = "december";
+            break;
+    }
+    return month + " " + (today.getDate()) + ", " + today.getFullYear();
+}

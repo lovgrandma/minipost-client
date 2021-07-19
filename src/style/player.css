@@ -555,6 +555,7 @@
     object-fit: contain;
     overflow: hidden;
     border-radius: 5px;
+    margin: 0 auto;
 }
 
 
@@ -859,4 +860,119 @@
 
 .placement-display-checkout-container-visible .place-right {
     visibility: visible;
+}
+
+
+/* rawEdit Component */
+
+.editor-component {
+    width: 100%;
+    max-height: 600px;
+    background-color: black;
+    outline: none !important;
+}
+
+.search-tracks-container {
+    max-width: -webkit-fill-available;
+    gap: 10px;
+}
+
+.track-container {
+    position: relative;
+    width: 44%;
+}
+
+.track-container > #track-results {
+    bottom: -5px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 150px;
+    overflow-y: auto;
+    padding-right: 5px;
+ }
+
+.search-tracks {
+    margin-left: 0;
+    padding: 2.5px 15px;
+    padding-left: 2.5px;
+    margin-bottom: 5px;
+}
+
+.track-select {
+    background-color: #ececec;
+    padding: 2.5px 5px;
+    border-radius: 15px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.track-prompt {
+    color: darkgrey;
+}
+
+.track-selected {
+    font-size: 0.85em;
+    font-weight: 600;
+    padding-bottom: 5px;
+    display: flex;
+    gap: 5px;
+    align-items: center;
+}
+
+.track-select-title {
+    font-style: italic;
+}
+
+.search-track-btn {
+    font-size: 1.25em;
+    border-radius: 15px;
+    border-width: 0px;
+}
+
+.track1-seek-and-player-container {
+    display: flex;
+    align-items: center;
+    gap: 7.5px;
+}
+
+.track1-seekbar {
+    display: inline-block;
+    width: 100%;
+    cursor: pointer;
+    padding: 5px 0;
+    margin-top: -2.5px;
+    position: relative;
+}
+
+.track1-seekbar:after {
+    content:"";
+    display:block;
+    background:#c1c1c1;
+    width:100%;
+    height:5px;
+    border-radius: 15px;
+}
+
+.track1-marker1 {
+    position: absolute;
+    content:"";
+    display:block;
+    background:rgb(80, 80, 80);
+    width:12px;
+    height:8px;
+    border-radius: 15px;
+    bottom: 3.75px;
+}
+
+.track1-marker1:hover {
+    background:rgb(110, 110, 110);
+}
+
+.track-and-author-group {
+    display: inline-block;
+    background-color: #ececec;
+    border-radius: 15px;
+    padding: 2.5px 5px;
 }

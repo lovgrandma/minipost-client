@@ -25,6 +25,7 @@ export default class sidebarfooter extends Component {
                     <div className="sidebarfooter-list">
                         <div className="footeritem sidebarfooter"><Link to={{ pathname: `about`}}>About</Link></div>
                         <div className="footeritem sidebarfooter-advertise"><a href="#">Advertise</a></div>
+                        <div className="footeritem sidebar-footer"><Link to={{ pathname: `vendorapplication` }}>Vendor</Link></div>
                         <div className="footeritem sidebarfooter"><a href="#">Copyright</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Privacy</a></div>
                         <div className="footeritem sidebarfooter"><a href="#">Guidelines</a></div>

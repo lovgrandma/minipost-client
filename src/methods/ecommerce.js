@@ -423,3 +423,35 @@ export const orderShipped = function(order) {
         return false;
     }
 }
+
+export const sendVendorEmail = async function(business, email, body) {
+    console.log("send vendor email");
+    console.log(this);
+    let vbusinessname = document.getElementById("v-businessname").value;
+    let vusername = document.getElementById("v-username").value;
+    let vemail = document.getElementById("v-email").value;
+    let vbody = document.getElementById("v-body").value;
+    let username = cookies.get('loggedIn');
+    let hash = cookies.get('hash');
+    let self = true;
+    return await fetch(currentrooturl + 'm/sendvendoremail', {
+        method: "POST",
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        credentials: corsdefault,
+        body: JSON.stringify({
+            username, hash, self, vbusinessname, vusername, vemail, vbody
+        })
+    })
+    .then((response) => {
+        return response.json();
+    })
+    .then(async (result) => {
+        this.setState({ emailSent: true });
+    })
+    .catch((err) => {
+        return false;
+    });
+}
