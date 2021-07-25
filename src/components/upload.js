@@ -53,7 +53,6 @@ export default class Upload extends Component { // ulc upload component
             copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our guidelines'
         }
         this.debounceUpdateProductPlacement = this.debounceUpdateProductPlacement.bind(this);
-        this.debounceGetTracks = this.debounceGetTracks.bind(this);
     }
 
     componentDidMount = async() => {
