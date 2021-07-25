@@ -1,4 +1,5 @@
 import currentrooturl from '../url.js';
+import corsdefault from '../cors.js';
 import $ from 'jquery';
 import { get } from './utility.js';
 import { cookies } from '../App.js';
@@ -376,5 +377,190 @@ export const resolveMeta = function(type) {
         }
     } catch (err) {
         return "";
+    }
+}
+
+export const deleteProcessingVideo = async function() {
+    console.log("delete processing")
+    let username = cookies.get('loggedIn');
+    let hash = cookies.get('hash');
+    let self = true;
+    if (username && hash) {
+        let data = await fetch(currentrooturl + 'm/deleteprocessingvideo', {
+            method: "POST",
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            credentials: corsdefault,
+            body: JSON.stringify({
+                username, hash, self
+            })
+        })
+        .then((response) => {
+            return response.json(response);
+        })
+        .then((result) => {
+            return result;
+        })
+        .catch((err) => {
+            return err;
+        });
+        if (data) {
+            if (data.querystatus) {
+                window.location.reload(); // Will send user back to upload page after video deletion
+            }
+        }
+    }
+}
+
+export const submitSurvey = async function(e) {
+    try {
+        this.setState({ surveyErr: null });
+        let username = cookies.get('loggedIn');
+        let hash = cookies.get('hash');
+        let survey = this.state.survey;
+        let author = this.state.author;
+        if (username && hash && survey && author) {
+            return await fetch(currentrooturl + 'm/submitsurvey', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    username, hash, survey, author
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                if (result) {
+                    let surveys = window.localStorage.getItem('surveys') ? JSON.parse(window.localStorage.getItem('surveys')) : [];
+                    if (surveys.indexOf(this.state.mpd) < 0) {
+                        surveys.push(this.state.mpd);
+                        surveys = surveys.length > 1000 ? surveys.slice(0, 1000) : surveys; // Max completed recorded surveys on local storage
+                        surveys = JSON.stringify(surveys);
+                        window.localStorage.setItem('surveys', surveys);
+                        this.setState({ surveySubmitted: true });
+                    }
+                } else {
+                    this.setState({ surveyErr: "We weren't able to submit the survey. Please try a bit later." });
+                }
+            })
+            .catch((err) => {
+                this.setState({ surveyErr: "We weren't able to submit the survey. Please try a bit later." });
+                return false;
+            });
+        } else {
+            throw new Error;
+        }
+    } catch (err) {
+        this.setState({ surveyErr: "We weren't able to submit the survey. Please try a bit later." });
+        return false;
+    }
+}
+
+export const checkCompletedSurvey = async function(mpd) {
+    try {
+        let surveys = window.localStorage.getItem('surveys') ? JSON.parse(window.localStorage.getItem('surveys')) : [];
+        if (surveys.indexOf(mpd) < 0) {
+            return false;
+        } else {
+            return true;
+        }
+    } catch (err) {
+        return false;
+    }
+}
+
+export const updateA = async function(q, i, e) {
+    try {
+        let t = this.state.survey;
+        if (q.type == "checkbox") {
+            let c = document.getElementsByName(e.target.name);
+            let checked = [];
+            for (let i = 0; i < c.length; i++) {
+                if (c[i].checked) {
+                    checked.push(c[i].value);
+                }
+            }
+            t[i].a = checked;
+            this.setState({ survey: t });
+        } else {
+            t[i].a = e.target.value; // Recorded answer by user 
+            this.setState({ survey: t });
+        }
+    } catch (err) {
+        // Fail silently
+    }
+}
+
+export const subscribeMinipost = async function(e) {
+    try {
+        let email = this.email.current.value;
+        return await fetch(currentrooturl + 'm/subscribeminipost', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({
+                    email
+                })
+            })
+            .then((response) => {
+                return response.json();
+            })
+            .then((result) => {
+                if (result) {
+                    this.setState({ subscribed: true });
+                }
+            })
+            .catch((err) => {
+                return false;
+            });
+    } catch (err) {
+        return false;
+    }
+}
+
+export const unsubscribeMinipost = async function(email) {
+    try {
+        if (email) {
+            return await fetch(currentrooturl + 'm/unsubscribeminipost', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'same-origin',
+                    body: JSON.stringify({
+                        email
+                    })
+                })
+                .then((response) => {
+                    return response.json();
+                })
+                .then((result) => {
+                    if (result) {
+                        this.setState({ unsubscribed: true });
+                    } else {
+                        throw new Error;
+                    }
+                })
+                .catch((err) => {
+                    this.setState({ error: "We were unable to unsubscribe you. Contact us at admin@minipost.app" });
+                    return false;
+                });
+        } else {
+            throw new Error;
+        }
+    } catch (err) {
+        this.setState({ error: "We were unable to unsubscribe you. Contact us at admin@minipost.app" });
+        return false;
     }
 }

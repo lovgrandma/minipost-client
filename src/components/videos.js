@@ -6,7 +6,7 @@ import {
 import dummythumbnail from '../static/greythumb.jpg';
 import dummyavatar from '../static/greyavatar.jpg';
 import ArticlePreview from './articlepreview.js';
-import { convertDate, resolveImgTitle } from '../methods/utility.js';
+import { convertDate, resolveImgTitle, resolveSurvey, stringifySurvey } from '../methods/utility.js';
 import { showContentMenu, promptDeleteContent, tryDeleteContent, resolveViews } from '../methods/context.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEdit, faEllipsisH } from '@fortawesome/free-solid-svg-icons';
@@ -48,7 +48,8 @@ export default class Videos extends Component {
                 views: `${this.props.views}`,
                 published: `${this.props.published}`,
                 description: `${this.props.description}`,
-                tags: `${this.props.tags}`
+                tags: `${this.props.tags}`,
+                survey: `${stringifySurvey(this.props.survey)}`
             }
         }
     }
@@ -68,7 +69,8 @@ export default class Videos extends Component {
                 description: `${this.props.description}`,
                 tags: `${this.props.tags}`,
                 thumbnailUrl: `${this.props.thumbnailUrl}`,
-                shopOwner: `${this.props.shopOwner}`
+                shopOwner: `${this.props.shopOwner}`,
+                survey: `${stringifySurvey(this.props.survey)}`
             }
         }
     }
@@ -216,6 +218,7 @@ export default class Videos extends Component {
                                                         responseToTitle={this.props.title}
                                                         responseToType="video"
                                                         cloud={this.props.cloud}
+                                                        survey={resolveSurvey(this.props.survey)}
                                                         key={index}
                                                         />
                                                 ) : null : null}

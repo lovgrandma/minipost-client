@@ -13,7 +13,8 @@ import {
 import minipostpreviewbanner from '../static/minipostbannerblack.png';
 import { dataURItoBlob, get, randomProperty } from '../methods/utility.js';
 import { setReplyData } from '../methods/responses.js';
-import { debounce } from '../methods/utility.js';
+import { debounce, calcTime, getCurrDate } from '../methods/utility.js';
+import { deleteProcessingVideo } from '../methods/context.js';
 import corsdefault from '../cors.js';
 import greyproduct from '../static/greyproduct.jpg';
 
@@ -25,7 +26,7 @@ export default class Upload extends Component { // ulc upload component
     constructor(props) {
         super(props);
         this.state = {
-            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true, shopData: null, productData: null, placementData: null, placementError: null
+            progress: 0, videoPreview: "", tags: [], placeholderTitle: "", placeholderDesc: "", socket: null, dots: "", currentErr: "", videoId: '', beginUpload: false, publishing: false, dotInterval: "", uploadInfo: "", uploadInfoInterval: "", published: false, publishedAwait: false, publishedMpd: "", gettingUserVideos: false, responseToId: "", responseToMpd: "", responseToTitle: "", responseToType: "", thumbnailUrl: "", thumbnailLoaded: false, advertisement: false, dateEditable: true, costEditable: true, shopData: null, productData: null, placementData: null, placementError: null, survey: null
         }
         this.upload = React.createRef();
         this.progressBar = React.createRef();
@@ -52,6 +53,7 @@ export default class Upload extends Component { // ulc upload component
             copyright: 'We have a strict policy on posting stolen content. If you suspect your video does not satisfy Fair Use requirements, please revisit our guidelines'
         }
         this.debounceUpdateProductPlacement = this.debounceUpdateProductPlacement.bind(this);
+        this.debounceGetTracks = this.debounceGetTracks.bind(this);
     }
 
     componentDidMount = async() => {
@@ -117,6 +119,18 @@ export default class Upload extends Component { // ulc upload component
                         if (this.props.location.props.shopOwner) {
                             this.getShopProductInfo(); // If user editing video owns a shop allow them to add product info
                         }
+                        try {
+                            if (this.props.location.props.survey) {
+                                if (JSON.parse(this.props.location.props.survey)) {
+                                    let s = JSON.parse(this.props.location.props.survey);
+                                    if (Array.isArray(s)) {
+                                        this.setState({ survey: s });
+                                    }
+                                }
+                            }
+                        } catch (err) {
+                            // Fail silently
+                        }
                     }
                 }
             }
@@ -171,18 +185,6 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    componentWillUnmount = () => {
-        try {
-            if (this.player) {
-                if (this.player.detach) {
-                    this.player.detach();
-                }
-            }
-        } catch (err) {
-            // Fail silently
-        }
-    }
-
     setMsgInt() {
         try {
             this.state ? this.setState({uploadInfo: randomProperty(this.uploadMessages) }) : null
@@ -215,6 +217,11 @@ export default class Upload extends Component { // ulc upload component
     }
 
     componentWillUnmount() {
+        if (this.player) {
+            if (this.player.detach) {
+                this.player.detach();
+            }
+        }
         if (this.state) {
             if (this.state.dotInterval) {
                 if (this.state.dotInterval.length > 0) {
@@ -304,39 +311,6 @@ export default class Upload extends Component { // ulc upload component
                 this.setState({ placeholderDesc: this.descIn.current.value.replace(/br/g, "\n") })
             }
         }
-    }
-
-    /* Returns the current date to show in preview */
-    getDate() {
-        let today = new Date();
-        let month = "";
-        switch (today.getMonth()) {
-            case 0: month = "january";
-                break;
-            case 1: month = "february";
-                break;
-            case 2: month = "march";
-                break;
-            case 3: month = "april";
-                break;
-            case 4: month = "may";
-                break;
-            case 5: month = "june";
-                break;
-            case 6: month = "july";
-                break;
-            case 7: month = "august";
-                break;
-            case 8: month = "september";
-                break;
-            case 9: month = "october";
-                break;
-            case 10: month = "november";
-                break;
-            case 0: month = "december";
-                break;
-        }
-        return month + " " + (today.getDate()) + ", " + today.getFullYear();
     }
 
     tagInputFocus(e) {
@@ -495,10 +469,21 @@ export default class Upload extends Component { // ulc upload component
                             if (data.tags && data.tags != undefined) {
                                 if (data.tags.length > 0) {
                                     if (data.tags[0] != "") {
-                                        console.log(data.tags);
-                                        this.setState({ tags: data.tags });
+                                         this.setState({ tags: data.tags });
                                     }
                                 }
+                            }
+                            try {
+                                if (data.survey) {
+                                    if (JSON.parse(survey)) {
+                                        let s = JSON.parse(survey);
+                                        if (Array.isArray(s)) {
+                                            this.setState({ survey: s });
+                                        }
+                                    }
+                                }
+                            } catch (err) {
+                                // Fail silently
                             }
                             this.props.updateErrStatus("");
                             this.setMsgInt();
@@ -581,8 +566,8 @@ export default class Upload extends Component { // ulc upload component
                             let a = JSON.parse(result.data.placementData); 
                             this.setState({ placementData: a });
                             for (let i = 0; i < a.length; i++) {
-                                let [stHr, stMin, stSec] = this.calcTime(a[i].id, a[i].start);
-                                let [enHr, enMin, enSec] = this.calcTime(a[i].id, a[i].end);
+                                let [stHr, stMin, stSec] = calcTime(a[i].id, a[i].start);
+                                let [enHr, enMin, enSec] = calcTime(a[i].id, a[i].end);
                                 document.getElementsByClassName('placement-hr-start')[i].value = stHr;
                                 document.getElementsByClassName('placement-min-start')[i].value = stMin;
                                 document.getElementsByClassName('placement-sec-start')[i].value = stSec;
@@ -705,7 +690,7 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    uploadFileS3 = async (rerun) => {
+    uploadFileS3 = async (rerun, editFirst = false) => {
         let advertisement = false;
         if (get(this, "advertisementSwitch.current.checked")) {
             if (this.advertisementSwitch.current.checked) {
@@ -883,6 +868,19 @@ export default class Upload extends Component { // ulc upload component
                 } else if (this.state.responseToMpd) {
                     responseTo = this.state.responseToMpd;
                 }
+                let survey;
+                try {
+                    if (this.state.survey) {
+                        if (Array.isArray(this.state.survey)) {
+                            if (this.state.survey.length > 0) {
+                                survey = JSON.stringify(this.state.survey);
+                            }
+                        }
+                    }
+                } catch (err) {
+                    // Failed to apply survey, continue
+                }
+                console.log(survey);
                 const options = {
                     headers: {
                         'content-type': 'multipart/form-data'
@@ -900,6 +898,9 @@ export default class Upload extends Component { // ulc upload component
                 data.append('responseTo', responseTo);
                 data.append('responseType', responseType);
                 data.append('extension', 'jpeg');
+                if (survey) {
+                    data.append('survey', survey);
+                }
                 data.append('hash', cookies.get('hash'));
                 if (this.state.placementData) { // If user has placement data, do validation on front end before publish
                     if (this.state.placementData.length > 0) {
@@ -930,7 +931,6 @@ export default class Upload extends Component { // ulc upload component
                 try {
                     axios.post(currentrooturl + 'm/publishvideo', data, options)
                         .then((data) => {
-                            console.log(data);
                             let authenticated = this.props.checkAndConfirmAuthentication(data);
                             if (authenticated) {
                                 this.setState({ publishing: false });
@@ -962,38 +962,6 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    deleteProcessingVideo = async() => {
-        let username = cookies.get('loggedIn');
-        let hash = cookies.get('hash');
-        let self = true;
-        if (username && hash) {
-            let data = await fetch(currentrooturl + 'm/deleteprocessingvideo', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: corsdefault,
-                body: JSON.stringify({
-                    username, hash, self
-                })
-            })
-            .then((response) => {
-                return response.json(response);
-            })
-            .then((result) => {
-                return result;
-            })
-            .catch((err) => {
-                return err;
-            });
-            if (data) {
-                if (data.querystatus) {
-                    window.location.reload(); // Will send user back to upload page after video deletion
-                }
-            }
-        }
-    }
     loadPlayer = async (data) => {
         this.setState({ videoPreview: data.name }); // Set video preview
     }
@@ -1178,8 +1146,6 @@ export default class Upload extends Component { // ulc upload component
             console.log(startHr, startMin);
             let startString = startMin && startSec ? startHr && startMin && startSec? `${startHr}:${startMin}:${startSec}` : `${startMin}:${startSec}` : `${startSec}`;
             let endString = endMin && endSec ? endHr && endMin && endSec ? `${endHr}:${endMin}:${endSec}` : `${endMin}:${endSec}` : `${endSec}`;
-            console.log(start, end);
-            console.log(startString, endString);
             // In order to evaluate times, allow user to implement both start and end before updating max or valid intervals (not overlapping with other products)
             function resetStart() {
                 document.getElementsByClassName('placement-hr-start')[dataIndex].value = null;
@@ -1280,21 +1246,93 @@ export default class Upload extends Component { // ulc upload component
         }
     }
 
-    calcTime(id, time) {
-        try {
-            let val = new Date(time * 1000).toISOString().substr(11, 8);
-            let hr = val.substring(0, 2);
-            let min = val.substring(3, 5);
-            let sec = val.substring(6, 8);
-            return [hr, min, sec];
-        } catch (err) {
-            return [0, 0, 0];
-        }
-    }
-
     clearAllPlacement(e) {
         try {
             this.setState({ placementData: [] });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    buildSurvey = (e) => {
+        try {
+            if (!Array.isArray(this.state.survey)) {
+                this.setState({ survey: [] });
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    addQuestion = (e) => {
+        try {
+            if (Array.isArray(this.state.survey)) {
+                let t = this.state.survey;
+                t.push({type: "text", q: "" });
+                this.setState({ survey: t });
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    changeSurveyQ = (e, i) => {
+        try {
+            console.log(e.target.value, i);
+            if (e.target.value && typeof i == "number") {
+                let t = this.state.survey;
+                t[i].type = e.target.value;
+                if (e.target.value == "checkbox" || e.target.value == "radio") {
+                    if (e.target.value == "radio") {
+                        t[i].options = ["", ""];
+                    } else {
+                        t[i].options = [];
+                    }
+                } else {
+                    t[i].options = null;
+                }
+                this.setState({ survey: t });
+            }
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    addOp = (e, i) => {
+        try {
+            let t = this.state.survey;
+            t[i].options.push("");
+            this.setState({ survey: t });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    updateOption = (e, j, i) => {
+        try {
+            let t = this.state.survey;
+            t[i].options[j] = e.target.value;
+            this.setState({ survey: t });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    changeQ = (e, i) => {
+        try {
+            let t = this.state.survey;
+            t[i].q = e.target.value;
+            this.setState({ survey: t });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    deleteQ = (e, i) => {
+        try {
+            let t = this.state.survey;
+            t.splice(i, 1);
+            this.setState({ survey: t });
         } catch (err) {
             // Fail silently
         }
@@ -1310,7 +1348,6 @@ export default class Upload extends Component { // ulc upload component
                 { !cookies.get('loggedIn') ? <div className="not-logged-in prompt-basic grey-out">For you to upload a video you'll have to login first. Open the side panel to login or create a new account.</div> : null}
                 <div className={this.state.currentErr ? "upload-err-status" : "upload-info"}>{this.state.currentErr ? this.state.currentErr : this.state.uploadInfo}</div>
                 <div className={this.props.sidebarStatus ? this.props.sidebarStatus == 'open' ? "progress-bar-container-sidebaropen" : "progress-bar-container" : "progress-bar-container"}>
-                    <div className={this.state.progress >= 100.00 && !this.props.edit ? "delete-container" : "hidden"}><div className="delete-video-text">{this.props.uploadStatus != "video ready" ? "You can delete this video before it completes processing." : "Video bugged out? Delete it here"} Click</div><div className="material-icons arrow-back-login">arrow_forward</div><div className="social-portal-times" onClick={(e)=>{this.deleteProcessingVideo(e)}}>&times;</div></div>
                     <div className="flex progress-update">
                         <div className="progress-upload-status">{this.props.uploadStatus}{this.state.dots}</div>
                         <div className="progress-num">{this.state.progress == 0 ? "" : Math.round(this.state.progress) + "%"}</div>
@@ -1318,8 +1355,10 @@ export default class Upload extends Component { // ulc upload component
                     <div className="progress-bar" ref={this.progressBar} >&nbsp;</div>
                 </div>
                 <div className={ cookies.get('loggedIn') && !this.state.gettingUserVideos ? "upload-button-container" : "hidden"}>
-                    <input className={this.state.progress == 0 && this.state.videoId == "" ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
-                    <Button className={this.state.progress == 0 && this.state.videoId == "" ? "upload-button red-btn" : "upload-button-hidden"} onClick={(e) => {{this.uploadFileS3(true)}}}>Upload</Button>
+                    <input className={this.state.progress == 0 && this.state.videoId == "" && !this.state.rawEdit ? "choose-file" : "choose-file-hidden"} ref={this.upload} type="file" name="fileToUpload" id="fileToUpload" size="1" />
+                    <div className={this.state.progress == 0 ? "flex flex-start gap10" : "hidden"}>
+                        <Button className={this.state.progress == 0 ? "upload-button red-btn" : "red-btn upload-button-hidden"} onClick={(e) => {this.uploadFileS3(true)}}>Upload</Button>
+                    </div>
                     <div className={ this.state.advertiser && this.props.uploadStatus != "video ready" && !this.state.beginUpload ? "hidden hidden-visible custom-control custom-switch margin-bottom-5 custom-switch-spacing-upload" : "hidden" }>
                         <input type="checkbox" className="custom-control-input" id="customSwitch1" ref={this.advertisementSwitch}></input>
                         <label className="custom-control-label info-blurb switch-line-height-text" for="customSwitch1">Upload as an advertisement and fill in advertisement contract details</label>
@@ -1336,7 +1375,7 @@ export default class Upload extends Component { // ulc upload component
                     <div className="video-input-data">
                         <label className={this.state.placeholderTitle == "" ? "upl-vid-title-label" : "upl-vid-title-label upl-vid-title-label-fill"}>{this.state.placeholderTitle == "" ? "title" : this.state.placeholderTitle}</label>
                         <div className={this.state.placeholderTitle != "" || this.state.placeholderDesc != "" ? "video-detail-container" : "video-detail-container video-detail-container-hidden"}>
-                            <label className="upl-vid-date-label">{this.getDate()}</label>
+                            <label className="upl-vid-date-label">{getCurrDate()}</label>
                             <span className="video-separator">|</span>
                             <label className="upl-vid-author-label">{this.props.isLoggedIn ? this.props.isLoggedIn : ""}</label>
                         </div>
@@ -1388,6 +1427,92 @@ export default class Upload extends Component { // ulc upload component
                             <label className="medium-data-text margin-bottom-5" for="cost">Ad Url:&nbsp;</label>
                             <input className="border-radius-round-1 border-radius-round-1-long" type='text' id="upl-ad-input" name="upl-ad-url-input" ref={this.adUrl} placeholder=""></input>
                             <label className="medium-data-text margin-bottom-5" for="budgetTotal" ref={this.budgetTotal}>{this.state.budgetTotal}</label>
+                        </div>
+                        <div className="survey-placement-container">
+                            <h5 className="weight600 margin-bottom-10">Survey</h5>
+                            {
+                                this.state.survey ?
+                                    <div>
+                                        {
+                                            this.state.survey.length > 0 ?
+                                                this.state.survey.map((q, i) =>
+                                                    q.type ?
+                                                        q.type == "text" ? <div className="margin-bottom-10">
+                                                                    <div className="margin-bottom-5">
+                                                                        <p className="prompt-basic-s weight600 survey-h margin-bottom-5">Text</p>
+                                                                        <input type="text" placeholder="Enter Your Question" defaultValue={q.q} className="border-radius-10 border-width-1 margin-bottom-5 padding-basic weight600 q-sizing" onChange={(e) => {this.changeQ(e, i)}}></input>
+                                                                        <span class="social-portal-times" onClick={(e) => {this.deleteQ(e, i)}}>×</span>
+                                                                    </div>
+                                                                    <select name="change-survey-q" className="border-radius-10 margin-bottom-5" onChange={(e) => {this.changeSurveyQ(e, i)}}>
+                                                                        <option value="text">Text</option>
+                                                                        <option value="radio">Radio</option>
+                                                                        <option value="checkbox">Checkbox</option>
+                                                                    </select>
+                                                                </div> : q.type == "radio" ?
+                                                                <div className="margin-bottom-10">
+                                                                    <div className="margin-bottom-5">
+                                                                        <p className="prompt-basic-s weight600 survey-h margin-bottom-5">Radio</p>
+                                                                        <input type="text" placeholder="Enter Your Question" className="border-radius-10 border-width-1 margin-bottom-5 padding-basic weight600 q-sizing" defaultValue={q.q} onChange={(e) => {this.changeQ(e, i)}}></input>
+                                                                        <span class="social-portal-times" onClick={(e) => {this.deleteQ(e, i)}}>×</span>
+                                                                        {
+                                                                            q.options ?
+                                                                                q.options.length == 2 ?
+                                                                                    <div className="flex-column gap5">
+                                                                                        <input type="text" placeholder="Option 1" defaultValue={q.options[0]}className="border-radius-10 border-width-1 margin-bottom-2-5 padding-basic" onChange={(e) => {this.updateOption(e, 0, i)}}></input>
+                                                                                        <input type="text" placeholder="Option 2" defaultValue={q.options[1]} className="border-radius-10 border-width-1 padding-basic" onChange={(e) => {this.updateOption(e, 1, i)}}></input>
+                                                                                    </div>
+                                                                                    : null
+                                                                                :null
+                                                                        }   
+                                                                    </div>
+                                                                    <select name="change-survey-q" className="border-radius-10 margin-bottom-5" onChange={(e) => {this.changeSurveyQ(e, i)}}>
+                                                                        <option value="text">Text</option>
+                                                                        <option value="radio">Radio</option>
+                                                                        <option value="checkbox">Checkbox</option>
+                                                                    </select>
+                                                                </div>
+                                                                : <div className="margin-bottom-10">
+                                                                        <div className="margin-bottom-5">
+                                                                            <p className="prompt-basic-s weight600 survey-h margin-bottom-5">Checkbox</p>
+                                                                            <input type="text" placeholder="Enter Your Question" className="border-radius-10 border-width-1 margin-bottom-5 padding-basic weight600 q-sizing" defaultValue={q.q} onChange={(e) => {this.changeQ(e, i)}}></input>
+                                                                            <span class="social-portal-times" onClick={(e) => {this.deleteQ(e, i)}}>×</span>
+                                                                            <div className="flex-column gap5">
+                                                                                {
+                                                                                    q.options ?
+                                                                                        q.options.length > 0 ?
+                                                                                            q.options.map((op, j) =>
+                                                                                                <input type="text" defaultValue={op} className="border-radius-10 border-width-1 margin-bottom-5 padding-basic" placeholder="Option" onChange={(e) => {this.updateOption(e, j, i)}} />
+                                                                                            )
+                                                                                        : null
+                                                                                    : null
+                                                                                }
+                                                                            </div>
+                                                                            {
+                                                                                q.options ?
+                                                                                    q.options.length < 5 ?
+                                                                                    <Button className="set-survey-btn btn" onClick={(e) => {this.addOp(e, i)}}>Add Option</Button>
+                                                                                    : null
+                                                                                : null
+                                                                            }
+                                                                        </div>
+                                                                        <select name="change-survey-q" className="border-radius-10" onChange={(e) => {this.changeSurveyQ(e, i)}}>
+                                                                            <option value="text">Text</option>
+                                                                            <option value="radio">Radio</option>
+                                                                            <option value="checkbox">Checkbox</option>
+                                                                        </select>
+                                                                    </div>
+                                                        : null
+                                                )
+                                                : null
+                                        }
+                                        {
+                                            this.state.survey.length < 10 ?
+                                                <Button className="set-survey-btn btn" onClick={(e) => {this.addQuestion(e)}}>Add Question</Button>
+                                                : null
+                                        }
+                                    </div>
+                                    : <Button className="set-survey-btn btn margin-bottom-5" onClick={(e) => {this.buildSurvey(e)}}>Add Survey</Button>
+                            }
                         </div>
                         <form className="nudity-radio">
                             <div className="nudity-question">Is there any nudity in your video?</div>

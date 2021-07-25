@@ -3,7 +3,7 @@ import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import Helmet from 'react-helmet';
 import csshake from 'csshake'; // Keep this! Visual Studio Code doesn't know anything. Necessary for cssshake
-import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Upload from './components/upload.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import Options from './components/options.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js';
+import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js'; import Upload from './components/upload.js'; 
 import {
     Route
 } from 'react-router-dom';
@@ -42,6 +42,9 @@ const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 
 const Login = lazy(() => import('./components/login.js'));
 const Social = lazy(() => import('./components/social.js'));
+const Options = lazy(() => import('./components/options.js'));
+const NewsLetter = lazy(() => import('./components/mail/newsletter.js'));
+const Unsubscribe = lazy(() => import('./components/mail/unsubscribe.js'));
 
 // Main Application file
 
@@ -2097,7 +2100,9 @@ class App extends Component {
                             <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
                         )}/>
                         <Route path='/options' render={(props) => (
-                            <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} getfriends={this.getfriends} dragDisabled={this.state.dragDisabled} checkDragDisabled={this.checkDragDisabled} username={this.state.isLoggedIn} />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Options {...props} key={getPath()} cloud={this.state.cloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} getfriends={this.getfriends} dragDisabled={this.state.dragDisabled} checkDragDisabled={this.checkDragDisabled} username={this.state.isLoggedIn} />
+                            </Suspense>
                         )}/>
                         <Route path='/upload' render={(props) => (
                             <Upload {...props} sidebarStatus={this.state.sidebarStatus} isLoggedIn={this.state.isLoggedIn} socket={socket} uploadStatus={this.state.uploadStatus} updateUploadStatus={this.updateUploadStatus} getSocket={this.getSocket} updateErrStatus={this.updateErrStatus} errStatus={this.state.errStatus} uploading={this.state.uploading} mpd={this.state.uploadedMpd} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} cloud={this.state.cloud} />
@@ -2133,10 +2138,20 @@ class App extends Component {
                             <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
                         )}/>
                         <Route path='/about' render={(props) => (
-                          <InfoTemplate {...props} />
+                            <InfoTemplate {...props} />
                         )}/>
                         <Route path='/vendorapplication' render={(props) => (
-                          <InfoTemplate {...props} />
+                            <InfoTemplate {...props} />
+                        )}/>
+                        <Route path='/letter' render={(props) => (
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <NewsLetter {...props} />
+                            </Suspense>
+                        )}/>
+                        <Route path='/unsubscribe' render={(props) => (
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Unsubscribe {...props} />
+                            </Suspense>
                         )}/>
                         <Route path='/resetpass' render={(props) => (
                            <ResetPass {...props} />                             

@@ -473,3 +473,36 @@ export const getCurrDate = function() {
     }
     return month + " " + (today.getDate()) + ", " + today.getFullYear();
 }
+
+export const resolveSurvey = function(survey) {
+    try {
+        if (survey) {
+            if (JSON.parse(survey)) {
+                let s = JSON.parse(survey);
+                if (Array.isArray(s)) {
+                    return s;
+                }
+            }
+        }
+        return null;
+    } catch (err) {
+        return null;
+    }
+}
+
+export const stringifySurvey = function(survey) {
+    try {
+        if (survey) {
+            if (JSON.stringify(survey)) {
+                return JSON.stringify(survey);
+            }
+        }
+        return null;
+    } catch (err) {
+        return null;
+    }
+}
+
+export const resolveInputName = function(inp) {
+    return inp.split(" ").join("-");
+}

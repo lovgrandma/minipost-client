@@ -8,7 +8,7 @@ import {
 import Videos from './videos.js'; import ArticlePreview from './articlepreview.js'; import Shop from './shop.js';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
-import { get } from '../methods/utility.js';
+import { get, resolveSurvey } from '../methods/utility.js';
 import { isAd, canFollow, editable, getPathnameMatchProfile, interceptProfileMenuClick } from '../methods/context.js';
 import corsdefault from '../cors.js';
 
@@ -144,6 +144,7 @@ export default class Profile extends Component {
                                             edit={editable.call(this)}
                                             ad={isAd(record)}
                                             shopOwner={this.state.shopOwner}
+                                            survey={resolveSurvey(record.survey)}
                                             />
                                         : <ArticlePreview title={record.title}
                                             author={record.author}

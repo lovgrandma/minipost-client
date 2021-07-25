@@ -12,8 +12,8 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
 import minipostpreviewbanner from '../static/minipostbannerblacksmaller5.png'; import '../static/expand-video.png'; import '../static/minimize-video.png'; import sendarrow from '../static/sendarrow.svg';
 import encryptionSchemePolyfills from 'eme-encryption-scheme-polyfill';
-import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get } from '../methods/utility.js';
-import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions, resolveMeta } from '../methods/context.js';
+import { roundTime, setStateDynamic, roundNumber, shortenTitle, convertDate, opposite, get, resolveSurvey, resolveInputName } from '../methods/utility.js';
+import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions, resolveMeta, submitSurvey, updateA, checkCompletedSurvey } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
 import parseBody from '../methods/htmlparser.js';
 import dummythumbnail from '../static/greythumb.jpg';
@@ -40,8 +40,7 @@ export default class Video extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false, togglePlacementCheckout: false, completeOrderId: null,
-            freeze: false, freezeData: null, interactInterval: "", productPlacement: null, livePlacement: null, livePlacementDisplay: false, productsAdded: []
+            title: "", author: "", views: "", published: "", description: "", tags: "", mpd: "", mpdCloudAddress: "", viewCounted: false, clickCounted: false, viewInterval: "", descriptionOpen: false, articleResponses: [], videoResponses: [], relevant: [], responseTo: {}, liked: false, disliked: false, likes: 0, dislikes: 0, following: false, cloud: "", adStart: false, adEnd: false, adPlaying: false, adLink: "", skipTime: 5, impressionCounted: false, chatFriend: null, fullscreen: false, relevantTyping: '', chatlength: 0, scrollInterval: null, fetched: false, togglePlacementCheckout: false, completeOrderId: null, freeze: false, freezeData: null, interactInterval: "", productPlacement: null, livePlacement: null, livePlacementDisplay: false, productsAdded: [], surveyOn: false, survey: null, surveySubmitted: false, surveyErr: null
         }
         this.videoContainer = new React.createRef();
         this.videoComponent = new React.createRef();
@@ -402,7 +401,7 @@ export default class Video extends Component {
             .then((response) => {
                 return response.json();
             })
-            .then((result) => {
+            .then(async (result) => {
                 console.log(result);
                 let authenticated = this.props.checkAndConfirmAuthentication(result);
                 if (authenticated) {
@@ -448,6 +447,8 @@ export default class Video extends Component {
                                 } catch (err) {
                                     // Fail silently
                                 }
+                            } else if (key == "survey") {
+                                this.setState({ survey: resolveSurvey(result.video.survey) });
                             } else if (value) {
                                 this.setState(setStateDynamic(key, value));
                             } else if (!value && key == "views" || !value && key == "likes" || !value && key == "dislikes") {
@@ -465,6 +466,15 @@ export default class Video extends Component {
                         if (result.video.mpd) {
                             if (result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
                                 this.setState({ adUriRaw: result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2] });
+                            }
+                        }
+                    }
+                    if (this.state.mpd) {
+                        if (result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
+                            let surveyChecked = await checkCompletedSurvey(result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2]);
+                            console.log(surveyChecked);
+                            if (surveyChecked) {
+                                this.setState({ surveySubmitted: true });
                             }
                         }
                     }
@@ -1454,6 +1464,14 @@ export default class Video extends Component {
         }
     }
 
+    enableSurvey = (e) => {
+        try {
+            this.setState({ surveyOn: true });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
     render() {
         let styles = {
             height: { height: this.resolvePlaceholderHeight() + "px"},
@@ -1682,6 +1700,52 @@ export default class Video extends Component {
                                  </div>
                              </div>
                          </div>
+                         {
+                             this.state.survey ?
+                                !this.state.surveySubmitted ?
+                                    this.props.username ?
+                                        <div>
+                                            <div className={this.state.surveyOn ? "survey-res-container survey-on" : "survey-res-container" }>
+                                                {
+                                                    this.state.survey.length > 0 ?
+                                                        this.state.survey.map((q, i) => 
+                                                            <div>
+                                                                <p className="prompt-basic border-radius-10 border-width-1 margin-bottom-5 padding-basic weight600 q-sizing q-video-pg">{q.q}</p>
+                                                                {
+                                                                    q.type == "radio" ? 
+                                                                        q.options.map((op) => 
+                                                                            <div class="flex q-flex">
+                                                                                <input type="radio" name={resolveInputName(q.q)} value={op} className="border-radius-10 border-width-1 margin-bottom-2-5 padding-basic" onChange={(e) => {updateA.call(this, q, i, e)}} /><label for={op}>{op}</label>
+                                                                            </div>
+                                                                        ) 
+                                                                        : q.type == "checkbox" ?
+                                                                            q.options.map((op) => 
+                                                                                <div class="flex q-flex">
+                                                                                    <input type="checkbox" name={resolveInputName(q.q)} value={op} className="border-radius-10 border-width-1 margin-bottom-2-5 padding-basic" onChange={(e) => {updateA.call(this, q, i, e)}} /><label for={op}>{op}</label>
+                                                                                </div>
+                                                                            )
+                                                                        : <input type="text" placeholder="Answer" className="border-radius-10 border-width-1 margin-bottom-2-5 padding-basic" onChange={(e) => {updateA.call(this, q, i, e)}} />
+                                                                }
+                                                            </div>
+                                                        )
+                                                        : null
+                                                }
+                                            </div>
+                                            {
+                                                !this.state.surveyOn ?
+                                                    <Button className="btn grey-btn set-btn survey-btn" onClick={(e) => {this.enableSurvey(e)}}>Survey</Button>
+                                                    : <Button className="btn red-btn set-btn survey-btn" onClick={(e) => {submitSurvey.call(this, e)}}>Submit</Button>
+                                            }
+                                            {
+                                                this.state.surveyErr ?
+                                                    <div className="err-status err-status-active">{this.state.surveyErr}</div>
+                                                    : null
+                                            }
+                                        </div>
+                                        : <div className="prompt-basic-s weight600 simple-sign-in-prompt">This channel made a survey for this video. Sign in to complete it</div>
+                                    : <div className="prompt-basic-s weight600 simple-sign-in-prompt">You completed this survey</div>
+                                : null
+                         }
                          <div className='publisher-bar'>
                              <div className='publisher-info'>
                                  <div className="avatar-author-desc-videopage">

@@ -81,6 +81,10 @@ h5 {
     font-weight: 600;
 }
 
+.font-4em {
+    font-size: 4em;
+}
+
 .weight500,
 .weight600 {
     font-weight: 600;
@@ -175,6 +179,10 @@ h5 {
     transition: 200ms;
 }
 
+.margin-bottom-50 {
+    margin-bottom: 50px;
+}
+
 .margin-bottom-25 {
     margin-bottom: 25px;
 }
@@ -199,6 +207,10 @@ h5 {
     margin-top: 10px !important;
 }
 
+.margin-top-25 {
+    margin-top: 25px;
+}
+
 .margin-top-bottom-2-5 {
     margin: 2.5px 0;
 }
@@ -213,6 +225,10 @@ h5 {
 
 .margin0auto {
     margin: 0 auto;
+}
+
+.padding-basic {
+    padding: 2.5px 5px;
 }
 
 .margin-left-auto {
@@ -245,6 +261,10 @@ h5 {
 
 .border-radius-5 {
     border-radius: 5px;
+}
+
+.border-radius-10 {
+    border-radius: 10px;
 }
 
 .border-width-0 {
@@ -343,6 +363,7 @@ button {
   visibility: hidden;
   display: none;
   opacity: 0;
+  will-change: opacity;
   transition: visibility 0s 500ms, opacity 500ms linear;
 }
 
@@ -350,6 +371,7 @@ button {
     visibility: hidden;
     display: none;
     opacity: 0;
+    will-change: opacity;
     transition: visibility 0s 250ms, opacity 250ms linear;
 }
 
@@ -920,6 +942,12 @@ ul li {
     max-width: 200px;
 }
 /* nav hover text boxes */
+
+.set-thumbnail-btn:focus,
+.set-btn:focus,
+.set-survey-btn:focus {
+    background-color:rgb(138, 138, 138);
+}
 
 .btn-desc {
     font-size: 12px;
@@ -2126,6 +2154,7 @@ label {
     -moz-opacity: 0.2;
     -webkit-opacity: 0.2;
     z-index: 2;
+    will-change: opacity;
 }
 
 @media (max-width: 2068px) {
@@ -3579,6 +3608,7 @@ label {
 
 .invisible {
     opacity: 0;
+    will-change: opacity;
 }
 
 .circle-menu-icon:hover,
@@ -4038,7 +4068,9 @@ If user only has one friend, styling wont apply */
 
 /* upload page */
 
-.set-thumbnail-btn {
+.set-thumbnail-btn,
+.set-survey-btn,
+.set-btn {
     margin-bottom: 10px;
     font-size: 0.9em;
     display: block;
@@ -6156,4 +6188,51 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 .btn-primary {
     background-color: rgb(138, 138, 138);
     border-color: rgb(138, 138, 138);
+}
+
+.survey-h {
+    background-color: #ececec;
+    border-radius: 15px;
+    padding: 2.5px 7.5px;
+    margin-bottom: 5px;
+}
+
+.q-sizing {
+    max-width: 500px;
+    width: -webkit-fill-available;
+}
+
+.survey-btn {
+    width: 100%;
+    margin: 2.5px 0;
+}
+
+.q-video-pg {
+    background-color: #ececec;
+    margin: 5px 0;
+}
+
+.q-flex {
+    justify-content: flex-start;
+    gap: 5px;
+    align-items: center;
+}
+
+.survey-res-container {
+    transition: 200ms;
+    height: 0px;
+    max-height: 400px;
+    overflow: hidden;
+    padding-right: 5px;
+    will-change: contents;
+}
+
+.survey-on {
+    height: 300px;
+    overflow-y: auto;
+}
+
+.simple-sign-in-prompt {
+    text-align: center;
+    padding: 5px 5px;
 }
