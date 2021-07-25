@@ -29,19 +29,19 @@ export default class NewsLetter extends Component {
 
     render() {
         return (
-            <div className="max-width-800 page-basic-container">
+            <div className="page-basic-container-600">
                 <h5>Unsubscribe</h5>
                 {
                     this.state.error ?
-                        <div className="err-status">{this.state.error}</div>
+                        <div className="err-status margin-bottom-25">{this.state.error}</div>
                         : null
                 }
                 {
                     this.state.unsubscribed ?
-                        <div>We've unsubscribed you. Sorry to see you go. Be well.</div>
+                        <div className="margin-bottom-25">We've unsubscribed you from our mailing list. Sorry to see you go. Be well.</div>
                         : null
                 }
-                <p>If you have any issues just email us at admin@minipost.app and we will deal your query promptly.</p>
+                <p className="prompt-basic-s2 max-width-800 prompt-highlight">If you have any issues just email us at admin@minipost.app and we will deal with your query promptly.</p>
             </div>
         )
     }

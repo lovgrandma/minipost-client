@@ -15,7 +15,7 @@ export default class NewsLetter extends Component {
 
     render() {
         return (
-            <div className="max-width-800 page-basic-container">
+            <div className="page-basic-container-600">
                 <h3 class="branded margin-bottom-25 margin-top-25">minipost llc ©</h3>
                 <h5 className="margin-bottom-50 weight600 prompt-basic">At Minipost we publish case studies that inform you of new business trends and ways to ultimately improve your business. Subscribe below and get our most recent publication:</h5>
                 <h1 className="millerbolditalic margin-bottom-50 font-4em">"Why It May Not Be Cost Effective To Use Your Grandpa’s Advice To Sell Internet Products"</h1>
