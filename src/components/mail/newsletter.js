@@ -8,7 +8,7 @@ export default class NewsLetter extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            subscribed: false
+            subscribed: false, error: null
         }
         this.email = React.createRef();
     }
@@ -25,6 +25,11 @@ export default class NewsLetter extends Component {
                         !this.state.subscribed ?
                             <Button className="red-btn max-width-350 margin-bottom-50" onClick={(e) => {subscribeMinipost.call(this, e)}}>Subscribe To the Minipost Newsletter</Button>
                             : <div className="weight600 margin-bottom-50">You subscribed. Check your email</div>
+                    }
+                    {
+                        this.state.error ?
+                            <div className="err-status margin-bottom-25">{this.state.error}</div>
+                            : null
                     }
                 </div>
             </div>

@@ -555,7 +555,6 @@ export default class Upload extends Component { // ulc upload component
                 return response.json();
             })
             .then((result) => {
-                console.log(result);
                 if (result.data) {
                     if (result.data.productData) {
                         this.setState({ productData: result.data.productData });
@@ -943,7 +942,6 @@ export default class Upload extends Component { // ulc upload component
                                     }
                                 }
                             }
-                            console.log(data);
                         });
                 } catch (err) { // axios request failed to publish video
                     try {
@@ -1039,7 +1037,7 @@ export default class Upload extends Component { // ulc upload component
                 }
             }
         } catch (err) {
-            console.log(err);
+            return false; // Failure to set thumbnail
         }
     }
 

@@ -500,6 +500,7 @@ export const updateA = async function(q, i, e) {
 
 export const subscribeMinipost = async function(e) {
     try {
+        this.setState({ error: null });
         let email = this.email.current.value;
         return await fetch(currentrooturl + 'm/subscribeminipost', {
                 method: "POST",
@@ -518,6 +519,8 @@ export const subscribeMinipost = async function(e) {
             .then((result) => {
                 if (result) {
                     this.setState({ subscribed: true });
+                } else {
+                    this.setState({ error: "We had an issue subscribing you please try again. "});
                 }
             })
             .catch((err) => {
@@ -530,6 +533,7 @@ export const subscribeMinipost = async function(e) {
 
 export const unsubscribeMinipost = async function(email) {
     try {
+        this.setState({ error: null });
         if (email) {
             return await fetch(currentrooturl + 'm/unsubscribeminipost', {
                     method: "POST",
