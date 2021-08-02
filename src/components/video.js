@@ -1579,7 +1579,7 @@ export default class Video extends Component {
                                             <div className={this.state.livePlacement ? this.state.livePlacement.position && this.state.livePlacementDisplay ? this.state.livePlacement.position == "right" && this.state.livePlacementDisplay ? "product-placement-in-video place-right placement-visible" : "product-placement-in-video place-left placement-visible" : "product-placement-in-video place-right placement-visible" : "product-placement-in-video placement-hide"} ref={this.placementRef}>
                                                 <div className="product-placement-margin-container">
                                                     <h5 className="product-placement-product-title">{this.state.livePlacement ? this.state.livePlacement.name ? this.state.livePlacement.name : null : null}</h5>
-                                                    <div>
+                                                    <div class="product-placement-img-container">
                                                         <img src={this.state.livePlacement ? this.state.livePlacement.images ? this.state.livePlacement.images[0] ? this.state.livePlacement.images[0].url ? this.state.cloud + "/" + this.state.livePlacement.images[0].url : dummyproduct : dummyproduct : dummyproduct : dummyproduct} className="product-placement-main-img"></img>
                                                     </div>
                                                     <div className={livePlacementPrice ? "price-add-to-cart-container margin-top-bottom-2-5 flex" : ""}>

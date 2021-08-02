@@ -1602,6 +1602,10 @@ label {
     color: black;
 }
 
+.videodash .videogrid .col .videocontainer {
+    min-width: max-content;
+}
+
 .maindash {
     margin: 40px auto;
     padding-left: 50px;
@@ -5822,6 +5826,7 @@ a code:hover {
 }
 
 .social-portal-login-prompt {
+    width: fit-content;
     margin-bottom: 10px;
     vertical-align: middle;
     line-height: normal;
