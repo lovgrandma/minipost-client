@@ -1603,7 +1603,7 @@ label {
 }
 
 .videodash .videogrid .col .videocontainer {
-    min-width: max-content;
+    /* min-width: max-content; */
 }
 
 .maindash {
