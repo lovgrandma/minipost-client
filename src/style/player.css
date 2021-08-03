@@ -51,7 +51,7 @@
 }
 
 .chat-btn {
-    display: none;
+    display: none !important;
 }
 
 @media all and (display-mode: fullscreen) {
@@ -61,7 +61,7 @@
     }
     
     .chat-btn {
-        display: inline-block;
+        display: inline-block !important;
     }
 }
 

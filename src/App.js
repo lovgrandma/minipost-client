@@ -3,7 +3,7 @@ import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
 import Helmet from 'react-helmet';
 import csshake from 'csshake'; // Keep this! Visual Studio Code doesn't know anything. Necessary for cssshake
-import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import History from './components/history.js'; import Notifications from './components/notifications.js'; import Results from './components/results.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js'; import Upload from './components/upload.js'; 
+import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import Results from './components/results.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js'; import Upload from './components/upload.js'; 
 import {
     Route
 } from 'react-router-dom';
@@ -45,6 +45,8 @@ const Social = lazy(() => import('./components/social.js'));
 const Options = lazy(() => import('./components/options.js'));
 const NewsLetter = lazy(() => import('./components/mail/newsletter.js'));
 const Unsubscribe = lazy(() => import('./components/mail/unsubscribe.js'));
+const History = lazy(() => import('./components/history.js'));
+const Notifications = lazy(() => import('./components/notifications.js'));
 
 // Main Application file
 
@@ -2132,10 +2134,14 @@ class App extends Component {
                             <WriteArticle {...props} key={getPath()} edit={true} isLoggedIn={this.state.isLoggedIn} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/history' render={(props) => (
-                            <History {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <History {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                            </Suspense>
                         )}/>
                         <Route path='/notifications' render={(props) => (
-                            <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Notifications {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} />
+                            </Suspense>
                         )}/>
                         <Route path='/about' render={(props) => (
                             <InfoTemplate {...props} />
