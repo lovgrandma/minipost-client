@@ -446,11 +446,11 @@ button {
 }
 
 .flex-profile-data div div {
-    padding-right: 10px;
+    padding-right: 5px;
 }
 
 .flex-profile-data div div:last-child {
-    padding-right: 0px;
+    padding-right: 5px;
 }
 
 .profile-user-container-meta {
@@ -1004,6 +1004,10 @@ ul li {
 
 .videodash, .upload-video-text, .flex-profile { 
     padding-top: 2.5px;
+}
+
+.flex-profile {
+    padding-bottom: 2.5px;
 }
 
 /* footer */
@@ -6240,4 +6244,12 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 .simple-sign-in-prompt {
     text-align: center;
     padding: 5px 5px;
+}
+
+.about-profile {
+    text-overflow: ellipsis;
+    -webkit-line-clamp: 2;
+    overflow: hidden;
+    -webkit-box-orient: vertical;
+    display: -webkit-box;
 }

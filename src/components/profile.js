@@ -184,22 +184,22 @@ export default class Profile extends Component {
                         <div className="flex-profile-data off-black align-center">
                             <div className="profile-user-container-meta">
                                 <div className="prompt-basic off-black weight500">{this.state.username}</div>
+                                <div className="profile-following-container-meta">
+                                    <div className="prompt-basic flex italicized"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
+                                    <div className="prompt-basic flex italicized"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
+                                </div>
                                 <Button className={!canFollow.call(this) ? "prompt-basic hidden" : "prompt-basic red-btn weight600"}>{!canFollow.call(this) ? "" : "follow"}</Button>
                             </div>
-                            <div className="profile-following-container-meta">
-                                <div className="prompt-basic flex italicized"><div className="off-black">following</div>&nbsp;{this.state.following}</div>
-                                <div className="prompt-basic flex italicized"><div className="off-black">followers</div>&nbsp;{this.state.followers}</div>
+                            <div className="flex-profile profile-stats-container">
+                                <div className="prompt-basic-s grey-out">total reads {this.state.totalReads}</div>
+                                <div className="prompt-basic-s grey-out">total video views {this.state.totalVideoViews}</div>
+                                <div className="prompt-basic-s grey-out">videos uploaded {this.state.videosUploaded}</div>
                             </div>
                         </div>
-                        <div className="prompt-basic off-black">{this.state.about}</div>
+                        <div className="prompt-basic off-black about-profile">{this.state.about}</div>
                     </div>
                 </div>
                 <div className="profile-stats">
-                    <div className="flex-profile profile-stats-container">
-                        <div className="prompt-basic-s grey-out">total reads {this.state.totalReads}</div>
-                        <div className="prompt-basic-s grey-out">total video views {this.state.totalVideoViews}</div>
-                        <div className="prompt-basic-s grey-out">videos uploaded {this.state.videosUploaded}</div>
-                    </div>
                     {
                         this.state.shop && this.state.username ? 
                             <div className="profile-menu">
