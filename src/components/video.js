@@ -6,7 +6,6 @@ import {
 import {
     Button
 } from 'react-bootstrap';
-import { Helmet } from 'react-helmet';
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faHeart, faShare, faBookOpen, faEye } from '@fortawesome/free-solid-svg-icons';
@@ -35,6 +34,7 @@ const bumpRegex = /([^]*);([^]*);([^]*);(.*)/; // regex for reading 'bump' emits
 const RelatedPanel = lazy(() => import('./relatedpanel.js'));
 const SocialVideoMeta = lazy(() => import('./socialvideometa.js'));
 const Checkout = lazy(() => import('./checkout.js'));
+const Comment = lazy(() => import('./comment/comment.js'));
 
 export default class Video extends Component {
     constructor(props) {
@@ -472,7 +472,6 @@ export default class Video extends Component {
                     if (this.state.mpd) {
                         if (result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)) {
                             let surveyChecked = await checkCompletedSurvey(result.video.mpd.match(/([a-zA-Z0-9].*)\/([a-zA-Z0-9].*)/)[2]);
-                            console.log(surveyChecked);
                             if (surveyChecked) {
                                 this.setState({ surveySubmitted: true });
                             }
@@ -1033,7 +1032,6 @@ export default class Video extends Component {
     setupSendWatch = (uri, time, playad = false, ad) => {
         console.log(uri, cookies.get('loggedIn'), playad, ad, JSON.parse(window.localStorage.getItem('togetherdata')));
         if (uri && this.props.togetherToken && cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata'))) {
-            console.log(JSON.parse(window.localStorage.getItem('togetherdata')).ads);
             if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/) && this.props.togetherToken.host == cookies.get('loggedIn') && JSON.parse(window.localStorage.getItem('togetherdata')).ads) { // You're only able to send a video to be watched if you are the host of the session
                 if (uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2] && JSON.parse(window.localStorage.getItem('togetherdata')).ads[0]) {
                     this.props.sendWatch(uri.match(/([0-9a-zA-Z].*)\/([0-9a-zA-Z].*)-/)[2], ad, time, playad);
@@ -1483,19 +1481,6 @@ export default class Video extends Component {
         let buyChoice = this.resolveSingleProductBuyChoice();
         return (
             <div className="video-page-flex">
-                <Helmet>
-                    <title>{resolveMeta.call(this, "title")}</title>
-                    <meta name="description" content={resolveMeta.call(this, "description")} />
-                    <meta name="robots" content="index, follow" />
-                    <meta property="og:type" content="video" />
-                    <meta property="og:title" content={resolveMeta.call(this, "title")} />
-                    <meta property="og:description" content={resolveMeta.call(this, "description")} />
-                    <meta property="og:image" content={resolveMeta.call(this, "vThumbnail")} />
-                    <meta property="og:url" content={resolveMeta.call(this, "url")} />
-                    <meta name="twitter:title" content={resolveMeta.call(this, "title")} />
-                    <meta name="twitter:description" content={resolveMeta.call(this, "description")} />
-                    <meta name="twitter:image" content={resolveMeta.call(this, "vThumbnail")} />
-                </Helmet>
                 <div id='videocontainer' className='main-video-container'>
                     <div className={this.state.adPlaying ? "video-container shaka-video-container ad-playing" : "video-container shaka-video-container"} ref={this.videoContainer}>
                         {
@@ -1838,47 +1823,52 @@ export default class Video extends Component {
                         <div className={this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos-bar" : "videos-bar hidden no-margin-no-padding" : "videos-bar hidden no-margin-no-padding"}>
                             <div className='video-container-header'>{this.state.videoResponses ? this.state.videoResponses.length > 0 ? "videos" : null : null}</div>
                             <div className='video-responses-container flex-grid videogrid'>
-                                {this.state.videoResponses ?
-                                    this.state.videoResponses.length > 0 ?
-                                        this.state.videoResponses.map((video, i) => {
-                                            return (
-                                                video.mpd && video ?
-                                                    <div className="video-container-videopage videocontainer" key={i}>
-                                                        <Link to={{
-                                                            pathname:`/watch?v=${video.mpd}`,
-                                                            props:{
-                                                                author: `${video.author}`,
-                                                                body: `${video.body}`,
-                                                                title: `${video.title}`,
-                                                                id: `${video.id}`,
-                                                                published: `${video.publishDate}`,
-                                                                likes: `${video.likes}`,
-                                                                dislikes: `${video.dislikes}`,
-                                                                views: `${video.views}`,
-                                                                responseToMpd: `${this.state.mpd}`,
-                                                                responseToTitle: `${this.state.title}`,
-                                                                responseToType: "video"
-                                                            }
-                                                        }}>
-                                                            <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={video.thumbnailUrl ? this.state.cloud + "/" + video.thumbnailUrl + ".jpeg" : dummythumbnail}></img>
-                                                            <div className="video-title-videopage mainvideotitle">{shortenTitle(video.title)}</div>
-                                                            <div className="dash-video-bar-stats dash-video-bar-stats-videopage">
-                                                                <div className='video-author-videopage'>{video.author}</div>&nbsp;•&nbsp;<div className="video-publish-date-videopage">{convertDate(video.publishDate)}</div>
-                                                            </div>
-                                                            <div className="video-stats-videopage">
-                                                                <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faEye} color={ 'grey' } alt="views"/>{video.views}</span><span>&nbsp;•&nbsp;</span>
-                                                                <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{video.likes}</span><span>&nbsp;•&nbsp;</span>
-                                                                <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{video.dislikes}</span>
-                                                            </div>
-                                                        </Link>
-                                                    </div>
-                                                    : null
-                                                )
-                                            })
-                                        : null : null
-                                    }
+                                {
+                                    this.state.videoResponses ?
+                                        this.state.videoResponses.length > 0 ?
+                                            this.state.videoResponses.map((video, i) => {
+                                                return (
+                                                    video.mpd && video ?
+                                                        <div className="video-container-videopage videocontainer" key={i}>
+                                                            <Link to={{
+                                                                pathname:`/watch?v=${video.mpd}`,
+                                                                props:{
+                                                                    author: `${video.author}`,
+                                                                    body: `${video.body}`,
+                                                                    title: `${video.title}`,
+                                                                    id: `${video.id}`,
+                                                                    published: `${video.publishDate}`,
+                                                                    likes: `${video.likes}`,
+                                                                    dislikes: `${video.dislikes}`,
+                                                                    views: `${video.views}`,
+                                                                    responseToMpd: `${this.state.mpd}`,
+                                                                    responseToTitle: `${this.state.title}`,
+                                                                    responseToType: "video"
+                                                                }
+                                                            }}>
+                                                                <img className={video.mpd ? video.mpd.length > 0 ? 'videothumb videothumb-videopage' : 'videothumb videothumb-videopage videothumb-placeholder ' : 'videothumb videothumb-videopage videothumb-placeholder'} src={video.thumbnailUrl ? this.state.cloud + "/" + video.thumbnailUrl + ".jpeg" : dummythumbnail}></img>
+                                                                <div className="video-title-videopage mainvideotitle">{shortenTitle(video.title)}</div>
+                                                                <div className="dash-video-bar-stats dash-video-bar-stats-videopage">
+                                                                    <div className='video-author-videopage'>{video.author}</div>&nbsp;•&nbsp;<div className="video-publish-date-videopage">{convertDate(video.publishDate)}</div>
+                                                                </div>
+                                                                <div className="video-stats-videopage">
+                                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="read-interact-s" icon={faEye} color={ 'grey' } alt="views"/>{video.views}</span><span>&nbsp;•&nbsp;</span>
+                                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsup-interact-s" icon={faThumbsUp} color={ 'grey' } alt="read"/>{video.likes}</span><span>&nbsp;•&nbsp;</span>
+                                                                    <span className="prompt-basic stats-container-s"><FontAwesomeIcon className="thumbsdown-interact-s" icon={faThumbsDown} color={ 'grey' } alt="read"/>{video.dislikes}</span>
+                                                                </div>
+                                                            </Link>
+                                                        </div>
+                                                        : null
+                                                    )
+                                                })
+                                            : null 
+                                        : null
+                                }
                                 </div>
                             </div>
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Comment cloud={this.state.cloud} media={this.state.mpd} mediaType="video" username={this.props.username} />
+                            </Suspense>
                         </div>
                         <Suspense fallback={<div className="fallback-loading"></div>}>
                             <RelatedPanel content={this.state.mpd}

@@ -1,7 +1,6 @@
 /* global google */
 import React, { Component, useState, useEffect, lazy, Suspense } from 'react';
 import ReactDOM from 'react-dom';
-import Helmet from 'react-helmet';
 import csshake from 'csshake'; // Keep this! Visual Studio Code doesn't know anything. Necessary for cssshake
 import Video from './components/video.js'; import Navbar from './components/navbar.js'; import Dash from './components/dash.js'; import WriteArticle from './components/writearticle.js'; import Article from './components/article.js'; import Profile from './components/profile.js'; import Results from './components/results.js'; import InfoTemplate from './components/info-template.js'; import ResetPass from './components/resetpass.js'; import ProductSinglePage from './components/product-single-page.js'; import Checkout from './components/checkout.js'; import Orders from './components/ecommerce/orders.js'; import Order from './components/ecommerce/order.js'; import ShopOrders from './components/ecommerce/shoporders.js'; import AdminOptions from './components/admin/adminOptions.js'; import Upload from './components/upload.js'; 
 import {
@@ -2059,12 +2058,6 @@ class App extends Component {
         let isCheckoutPage = this.resolveIsCheckoutPage();
         return (
             <div className={isCheckoutPage ? "App checkout-page" : "App"} onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Helmet>
-                    <meta charSet="utf-8" />
-                    <title>Minipost</title>
-                    <meta name="description" content="Minipost llc © is an information &amp; entertainment media indexing environment for shared experiences." />
-                    <meta name="robots" content="index, follow" />
-                </Helmet>
                 <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} updateFriendsWatching={this.updateFriendsWatching} />
                 <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>

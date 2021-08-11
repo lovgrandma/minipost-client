@@ -6253,3 +6253,69 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     -webkit-box-orient: vertical;
     display: -webkit-box;
 }
+
+.new-comment-main-container {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 10px;
+}
+
+.textarea-new-comment-autosize {
+    width: 100%;
+    border-radius: 7.5px;
+    padding: 5px;
+    margin-bottom: 7.5px;
+}
+
+.comment-stream {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.new-comment-submit {
+    max-width: 150px;
+    border-radius: 7.5px;
+}
+
+.new-comment-commented {
+    margin-bottom: 0px;
+}
+
+.single-comment-container {
+    padding: 7.5px 10px;
+    border-radius: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.single-comment-content {
+    display: flex;
+    flex-direction: row;
+    gap: 7.5px;
+}
+
+.comment-auth-meta-container {
+    flex-direction: column;
+    gap: 5px;
+}
+
+.commentavatar {
+    width: 40px;
+    height: 40px;
+    object-fit: cover;
+    border-radius: 7px;
+    transition: 100ms;
+    will-change: auto;
+}
+
+.commentavatar:hover {
+    width: 60px;
+    height: 60px;
+}
+
+.reply-to {
+    transition: 200ms;
+    cursor: pointer;
+}

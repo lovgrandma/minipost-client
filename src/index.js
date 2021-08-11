@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { Router, BrowserRouter } from 'react-router-dom';
-import pagehistory from './pagehistory.js';
+import history from './pagehistory.js';
 // import './style/bootstrap.css';
 import 'bootstrap/dist/css/bootstrap.css';
 import './index.css';
@@ -13,7 +13,6 @@ import './style/page.css';
 import './style/shop.css';
 import App from './App';
 import registerServiceWorker from './registerServiceWorker';
-import history from './methods/history.js';
 
 // If we make a call to server here for some data we can speed up rendering and skip some later calls to server
 

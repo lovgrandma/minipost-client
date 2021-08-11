@@ -6,7 +6,6 @@ import {
 import currentrooturl from '../url';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faThumbsUp, faThumbsDown, faBookOpen, faReply, faEye } from '@fortawesome/free-solid-svg-icons';
-import { Helmet } from 'react-helmet';
 import { roundTime, setStateDynamic, shortenTitle, convertDate, opposite } from '../methods/utility.js';
 import { setResponseToParentPath, incrementLike, incrementDislike, showMoreOptions, resolveMeta } from '../methods/context.js';
 import { updateHistory } from '../methods/history.js';
@@ -285,14 +284,6 @@ export default class Article extends Component {
     render() {
         return (
             <div className="article-container-articlepage">
-                <Helmet>
-                    <title>{resolveMeta.call(this, "title")}</title>
-                    <meta name="robots" content="index, follow" />
-                    <meta property="og:type" content="article" />
-                    <meta property="og:title" content={resolveMeta.call(this, "title")} />
-                    <meta property="og:url" content={resolveMeta.call(this, "url")} />
-                    <meta name="twitter:title" content={resolveMeta.call(this, "title")} />
-                </Helmet>
                 <div className="article-title-articlepage">{this.state.title}</div>
                 <div className="article-author-articlepage prompt-basic-s grey-out">published by <NavLink exact to={"/profile?p=" + this.state.author} className="to-profile-link-btn">{this.state.author}</NavLink> at {this.state.published}</div>
                 <div className="article-body-articlepage article-font-body">{parseBody(this.state.body)}</div>

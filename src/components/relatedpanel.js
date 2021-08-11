@@ -49,7 +49,8 @@ export default class RelatedPanel extends Component {
                             if (this.state.relatedContent && !this.state.fetching) {
                                 if (window.location.href.includes("watch")) {
                                     if (this.props.secondary && $('.relatedpanel-secondary').is(':visible')) {
-                                        this.fetchRelated(); 
+                                        // Dont auto fetch for secondary panel. Screws with comment section. Manual button fetch more
+                                        // this.fetchRelated(); 
                                     } else if (!this.props.secondary && $('.relatedpanel-main').is(':visible')) {
                                         this.fetchRelated(); 
                                     }
