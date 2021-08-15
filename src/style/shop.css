@@ -190,7 +190,6 @@
 }
 
 .product-list-img-container img {
-    width: -webkit-fill-available;
     padding: 2.5px;
     min-height: 100%;
     position: absolute;

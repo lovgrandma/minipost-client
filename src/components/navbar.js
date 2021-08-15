@@ -136,9 +136,11 @@ export default class Navbar extends Component {
             <nav className="navbar navbar-default border-navigation">
                 <row className="nowrap">
                 <ul className={this.props.sidebarStatus == "open" ? "nav flex-grow2-5 nowrapbuttons navbtnsleft navbtnsleft-opened" : "nav flex-grow2-5 nowrapbuttons navbtnsleft"} ref={tag => (this.navBtnsLeft = tag)}>
-                    <div className="nav-icon favorites material-icons" onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}}>favorite</div>
+                    <a><div className="nav-icon favorites material-icons" onMouseOver={(e) => {this.hoverShow(e, "saved", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "saved", "exit")}}>favorite</div></a>
                     <div className="btn-desc btn-desc-saved">view videos you've saved</div>
-                    <NavLink exact to="/history" className="hyperlink"><div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div></NavLink>
+                    <NavLink exact to="/history" className="hyperlink">
+                        <div className="nav-icon history material-icons" onMouseOver={(e) => {this.hoverShow(e, "history", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "history", "exit")}}>history</div>
+                    </NavLink>
                     <div className="btn-desc btn-desc-hist">view your content history</div>
                 </ul>
                 <div className="brand main-brand-logo-navbar flex-grow1">
@@ -148,15 +150,17 @@ export default class Navbar extends Component {
                 </div>
                 {this.props.username ?
                     <ul className="nav flex-grow2 flex-end navbtnsright nowrapbuttons">
-                        <div className="nav-icon cart material-icons" onMouseOver={(e) => {this.hoverShow(e, "cart", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "cart", "exit")}}>
-                            <NavLink exact to="/checkout" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>shopping_cart</NavLink>
-                        </div>
+                        <NavLink exact to="/checkout" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>
+                            <div className="nav-icon cart material-icons" onMouseOver={(e) => {this.hoverShow(e, "cart", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "cart", "exit")}}>shopping_cart</div>
+                        </NavLink>
                         <div className="btn-desc btn-desc-cart">view your cart</div>
-                        <div className="nav-icon notifications material-icons" onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}}>
-                            <NavLink exact to="/notifications" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>notifications</NavLink>
-                        </div>
+                        <NavLink exact to="/notifications" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>
+                            <div className="nav-icon notifications material-icons" onMouseOver={(e) => {this.hoverShow(e, "notifications", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "notifications", "exit")}}>notifications</div>
+                        </NavLink>
                         <div className="btn-desc btn-desc-notif">check your notifications</div>
-                        <div className="nav-icon upload material-icons publish-button-open-menu" onClick={(e)=>{showMoreOptions.call(this, e, "upload")}} onMouseOver={(e) => {this.hoverShow(e, "upload-prompt", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload-prompt", "exit")}}>publish</div>
+                        <div>
+                            <div className="nav-icon upload material-icons publish-button-open-menu" onClick={(e)=>{showMoreOptions.call(this, e, "upload")}} onMouseOver={(e) => {this.hoverShow(e, "upload-prompt", "enter")}} onMouseOut={(e) => {this.hoverShow(e, "upload-prompt", "exit")}}>publish</div>
+                        </div>
                         <div className="btn-desc btn-desc-upload">upload content to minipost</div>
                         <div className="btn-desc btn-desc-upl" ref={tag => (this.uploadOptions = tag)}>
                             <NavLink exact to="/upload" className="hyperlink" onClick={(e)=> {resetOpenMenus.call(this)}}>upload videos</NavLink>

@@ -815,6 +815,7 @@ input[type="search"] {
 
 .nowrapbuttons {
     flex-wrap: nowrap;
+    align-items: center;
 }
 
 .nowrapbuttons > a {
@@ -950,23 +951,15 @@ ul li {
 }
 
 .btn-desc {
+    top: 40px;
     font-size: 12px;
     font-weight: 500;
     display: none;
     visibility: hidden;
     position: fixed;
     background-color: white;
-    padding: 20px 8px 6px 8px;
+    padding: 6px 8px 6px 8px;
     z-index: 1;
-    margin-top: 15px;
-}
-
-.btn-desc-search {
-    margin-top: -7px;
-}
-
-.btn-desc-home {
-    margin-top: 20px;
 }
 
 .btn-desc-conf-menu {
@@ -6305,14 +6298,15 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
     width: 40px;
     height: 40px;
     object-fit: cover;
-    border-radius: 7px;
+    border-radius: 10px;
     transition: 100ms;
     will-change: auto;
 }
 
 .commentavatar:hover {
-    width: 60px;
-    height: 60px;
+    width: 50px;
+    height: 50px;
+    border-radius: 12.5px;
 }
 
 .reply-to {

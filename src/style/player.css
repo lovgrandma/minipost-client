@@ -550,7 +550,7 @@
 }
 
 .product-placement-main-img {
-    width: 25px;
+    width: 100px;
     max-height: 35px;
     object-fit: contain;
     overflow: hidden;
@@ -560,11 +560,14 @@
 
 .product-placement-img-container {
     text-align: center;
+    width: fit-content;
+    margin: 0 auto;
+    max-width: -webkit-fill-available;
 }
 
 .maindashcontainer .product-placement-main-img,
 .maindashcontainer .placement-display-checkout-container-visible .placement-display-checkout {
-    max-height: 50px;
+    max-height: 300px;
 }
 
 .sidebar-isopen ~ .maindashcontainer .product-placement-in-video,

@@ -27,7 +27,15 @@ export const publishNewComment = async function(e, location = "main", media, med
                     })
                     .then((result) => {
                         if (result) {
-                            this.setState({ comments: result.comments });
+                            this.mainNewComment.current._ref.value = "";
+                            this.setState({ comments: result.comments, commented: true });
+                            setTimeout(() => {
+                                try {
+                                    this.setState({ commented: false });
+                                } catch (err) {
+                                    // Fail silently
+                                }
+                            }, 15000);
                         }
                         console.log(result);
                     })

@@ -36,14 +36,12 @@ export default class Comment extends Component { // friend component fc1
             <div className="comments-component-container">
                 {
                     this.props.username ?
-                        <div className="new-comment-main-container">
-                            <TextareaAutosize className={ this.state.commented ? "textarea-new-comment-autosize new-comment-commented fixfocuscolor prompt-basic-s" : "textarea-new-comment-autosize fixfocuscolor prompt-basic-s" } ref={this.mainNewComment} placeholder="Compose Comment" />
-                            {
-                                !this.state.commented ?
+                        !this.state.commented ?
+                            <div className="new-comment-main-container">
+                                    <TextareaAutosize className={ this.state.commented ? "textarea-new-comment-autosize new-comment-commented fixfocuscolor prompt-basic-s" : "textarea-new-comment-autosize fixfocuscolor prompt-basic-s" } ref={this.mainNewComment} placeholder="Compose Comment" />
                                     <button className="new-comment-submit red-btn" onClick={(e) => {publishNewComment.call(this, e, "main", this.props.media, this.props.mediaType)}} type='submit' value='submit'>Comment</button>
-                                    : <div className="new-comment-submit weight600 prompt-basic-s grey">Comment Sent</div>
-                            }
-                        </div>
+                            </div>
+                            : <div className="new-comment-submit weight600 prompt-basic-s grey">Comment Published</div>
                         : null
                 }
                 <div className="comment-stream">

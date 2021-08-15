@@ -19,7 +19,7 @@ const DashHello = lazy(() => import('./dynamic/dash-hello.js'));
 export default class Dash extends Component {
     constructor(props) {
         super(props);
-        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, fetchingTimeout: "", loaded: false, closeSocialPrompt: false };
+        this.state = { dashVideos: this.tempData(), bottom: false, fetching: false, fetchingTimeout: "", loaded: false, closeSocialPrompt: false, error: null };
         this.handleMouseDown = this.handleMouseDown.bind(this);
     }
 
@@ -29,6 +29,9 @@ export default class Dash extends Component {
             window.addEventListener('scroll', this.handleMouseDown, true);
         } catch (err) {
             // Component may have unmounted
+            if (!this.state.error) {
+                this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+            }
         }
     }
 
@@ -41,11 +44,16 @@ export default class Dash extends Component {
             }
         } catch (err) {
             // Component may have unmounted
+            if (!this.state.error) {
+                this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+            }
         }
     }
 
     componentDidCatchError(error, errorInfo) {
-        console.log(error);
+        if (!this.state.error) {
+            this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+        }
     }
 
     componentWillUnmount() {
@@ -56,6 +64,9 @@ export default class Dash extends Component {
             window.removeEventListener('scroll', this.handleMouseDown, true);
         } catch (err) {
             // Component may have unmounted
+            if (!this.state.error) {
+                this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+            }
         }
     }
 
@@ -142,12 +153,20 @@ export default class Dash extends Component {
             })
             .catch((err) => {
                 // Error occured while making fetch request
+                if (!this.state.error) {
+                    this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+                }
             });
         } catch (err) {
             try {
                 this.setState({ fetching: false });
+                if (!this.state.error) {
+                    this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+                }
             } catch (err) {
-                // Fail silently
+                if (!this.state.error) {
+                    this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+                }
             }
         }
     }
@@ -183,6 +202,17 @@ export default class Dash extends Component {
             localEvents.emit("openSideBar");
         } catch (err) {
             // Fail silently
+            if (!this.state.error) {
+                this.setState({ error: err + " Kindly please advise admin@minipost.app with error screenshot. Thankyou." }); // Fail silently
+            }
+        }
+    }
+
+    muteError() {
+        try {
+            this.setState({ error: null });
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -197,6 +227,9 @@ export default class Dash extends Component {
                     <DashHello {...this.props} cloud={this.props.cloud} />
                 </Suspense>
                 <h5 className="videodash-recommended-header">Recommended</h5>
+                {
+                    this.state.error ? <div className="prompt-basic-s weight600 grey-out margin-bottom-10" onClick={(e) => {this.muteError(e)} }>{this.state.error}</div> : null
+                }
                 <div className='flex-grid videogrid'>
                     {
                         this.state.dashVideos ?

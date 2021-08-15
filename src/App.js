@@ -74,230 +74,242 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     componentDidMount(e) {
-        if (this.props.sidebarStatus === 'open') {
-            document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
-            this.openSideBar();
-        } else {
-            document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
-            this.closeSideBar();
-        }
+        try {
+            if (this.props.sidebarStatus === 'open') {
+                document.getElementsByClassName('maindash')[0].classList.add('maindashwide');
+                this.openSideBar();
+            } else {
+                document.getElementsByClassName('maindash')[0].classList.remove('maindashwide');
+                this.closeSideBar();
+            }
 
-        if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
-            this.getfriends();
+            if (this.state.isLoggedIn) { // check for user logged in cookie, if true fetch users.
+                this.getfriends();
+            }
+            if (this.props.cloud) {
+                //this.props.setCloud();
+            }
+            this.setupGoogleSignIn();
+            localEvents.on("openSideBar", () => { this.openSideBar() });
+            this.checkAdmin();
+        } catch (err) {
+            // Fail silently
         }
-        if (this.props.cloud) {
-            //this.props.setCloud();
-        }
-        this.setupGoogleSignIn();
-        localEvents.on("openSideBar", () => { this.openSideBar() });
-        this.checkAdmin();
     };
         
     componentDidUpdate(e, prevState, prevProps) {
-        if (cookies.get('loggedIn')) {
-            if (this.state.isloggedIn != cookies.get('loggedIn')) {
-                this.setState({ isloggedIn: cookies.get('loggedIn')});
-            }
-        }
-        if (prevState) {
-            if (prevState.isloggedIn != cookies.get('loggedIn')) {
+        try {
+            if (cookies.get('loggedIn')) {
                 if (this.state.isloggedIn != cookies.get('loggedIn')) {
                     this.setState({ isloggedIn: cookies.get('loggedIn')});
                 }
             }
-        }
-        if (this.props.togetherToken && this.state.conversations) {
-            for (let i = 0; i < this.state.conversations.length; i++) {
-                if (this.state.conversations[i]) {
-                    if (this.state.conversations[i]._id == this.props.togetherToken.room) {
-                        if (!this.props.friendConvoMirror) {
-                            this.props.updateFriendConvoMirror(this.state.conversations[i]);
-                        } else {
-                            if (this.props.friendConvoMirror._id && this.props.friendConvoMirror.log && this.state.conversations[i].log) {
-                                if (this.props.friendConvoMirror.log.length != this.state.conversations[i].log.length) {
-                                    this.props.updateFriendConvoMirror(this.state.conversations[i]);
+            if (prevState) {
+                if (prevState.isloggedIn != cookies.get('loggedIn')) {
+                    if (this.state.isloggedIn != cookies.get('loggedIn')) {
+                        this.setState({ isloggedIn: cookies.get('loggedIn')});
+                    }
+                }
+            }
+            if (this.props.togetherToken && this.state.conversations) {
+                for (let i = 0; i < this.state.conversations.length; i++) {
+                    if (this.state.conversations[i]) {
+                        if (this.state.conversations[i]._id == this.props.togetherToken.room) {
+                            if (!this.props.friendConvoMirror) {
+                                this.props.updateFriendConvoMirror(this.state.conversations[i]);
+                            } else {
+                                if (this.props.friendConvoMirror._id && this.props.friendConvoMirror.log && this.state.conversations[i].log) {
+                                    if (this.props.friendConvoMirror.log.length != this.state.conversations[i].log.length) {
+                                        this.props.updateFriendConvoMirror(this.state.conversations[i]);
+                                    }
                                 }
                             }
                         }
                     }
                 }
             }
+        } catch (err) {
+            // Fail silently
         }
     }
 
     openSocket = async () => {
-        // Socket entry point. Creates connection with server in order to respond to connections.
-        // Creates event listeners and updates to initial current data
-        if (this.state.isLoggedIn && !socket) { // If logged in and socket null
-            let opensocket = new Promise((resolve, reject) => {
-                socket = io(this.state.endpoint);
+        try {
+            // Socket entry point. Creates connection with server in order to respond to connections.
+            // Creates event listeners and updates to initial current data
+            if (this.state.isLoggedIn && !socket) { // If logged in and socket null
+                let opensocket = new Promise((resolve, reject) => {
+                    socket = io(this.state.endpoint);
 
-                // Event listeners
-                socket.on('connect', () => {
-                    console.log("Connected to socket ∞¦∞");
-                    setTimeout(() => {
-                        this.initializeLiveChat(500, false); // Handles disconnects
-                    }, 300);
-                });
-                socket.on("disconnect", () => {
-                    console.log("Disconnected from socket");
-                });
-                socket.on("returnConvos", data => { // Gets conversations from either redis or mongo
-                    console.log("Socket conversations: vvv");
-                    console.log(data);
-                    this.setState({ conversations : data });
-                    if (data.length != this.state.convoIds.length) { // re-initialize chat until length of chat is the same
-                        if (this.state.conversations.length > 0 && data.length == 0) {
-                            setTimeout(() => {
-                                this.initializeLiveChat();
-                            }, 300);
-                        }
-                    }
-                });
-
-                socket.on('typing', data => {
-                    data = lzw.decompress(data); // decompress data before processing
-                    this.setTyping(data);
-                })
-
-                socket.on('chat', data => {  // on new chat, match id and append
-                    this.appendChat(data);
-                });
-
-                socket.on('bump', data => {
-                    bumpEvent.emit('bump', (data));
-                });
-
-                socket.on('uploadUpdate', data => {
-                    this.props.updateUploadStatus(data);
-                });
-
-                socket.on('returnNotif', data => {
-                    this.setState({ following: updateNotif(data.subscribed) });
-                })
-                
-                socket.on('promptTogether', data => { // received prompt to watch together, append prompt on respective friends chat bubble. 
-                    // The data received here will look like { room: room, friend: this is yourself the new host, user: your friend who asked to watch together }
-                    // User can recieve several prompts so its important to keep track of all
-                    if (cookies.get('loggedIn')) {
-                        this.props.appendWaitingSession(data.user);
-                        console.log('prompTogether', data);
-                    }
-                })
-                
-                socket.on('confirmTogether', data => { // The friend has agreed to host a together session. props.BeginTogetherSession(room, friend, host(boolean))
-                    if (cookies.get('loggedIn')) {
-                        if (data.host != cookies.get('loggedIn')) { // Only run confirmTogether if you are not the host, but a participant
-                            console.log('confirmTogether', data);
-                            this.props.beginTogetherSession(data);
-                        }
-                    }
-                })
-                
-                socket.on('marco', data => { // Send a response 'polo' if there is a valid togetherToken in props
-                    if (data.from != cookies.get('loggedIn') && this.props.togetherToken) {
-                        if (data.from == this.props.togetherToken.host || this.props.togetherToken.participants.indexOf(data.from) >= 0) {
-                            socket.emit('poloCheck', data);
-                        }
-                    }
-                });
-                
-                socket.on('polo', data => {
-                    if (cookies.get('loggedIn')) {
-                        if (data.from == cookies.get('loggedIn')) { // from should be yourself since this client originally sent the request to check live status
-                            this.props.updateLastPing(data);
-                        }
-                    }
-                })
-                
-                socket.on('receiveCloseTogetherSession', data => {
-                    console.log(data);
-                    if (cookies.get('loggedIn')) {
-                        if (data.from != cookies.get('loggedIn') && this.props.togetherToken) {
-                            this.props.sendCloseTogetherSession(true);
-                        }
-                    }
-                })
-                
-                socket.on('receiveWatch', data => {
-                    if (cookies.get('loggedIn')) {
-                        if (data.host != cookies.get('loggedIn')) {
-                            this.props.doWatch(data);
-                        }
-                    }
-                });
-
-                // For passive ask watching to append who is watching what on dash page
-                socket.on('askWatching', data => {
-                    try {
-                        if (data.match(/(.*);(.*)/)[1] !== this.state.isLoggedIn) { // Not self
-                            if (window.location.href.match(/watch\?v=([0-9a-zA-Z]*)/)[1] && document.getElementsByClassName("watchpage-title")[0]) { // On watch page
-                                socket.emit('respondWatching', {
-                                    "for": data.match(/(.*);(.*)/)[1],
-                                    "who": this.state.isLoggedIn,
-                                    "title": document.getElementsByClassName("watchpage-title")[0].innerHTML,
-                                    "id": window.location.href.match(/watch\?v=([0-9a-zA-Z]*)/)[1],
-                                    "room": data.match(/(.*);(.*)/)[2]
-                                });
+                    // Event listeners
+                    socket.on('connect', () => {
+                        console.log("Connected to socket ∞¦∞");
+                        setTimeout(() => {
+                            this.initializeLiveChat(500, false); // Handles disconnects
+                        }, 300);
+                    });
+                    socket.on("disconnect", () => {
+                        console.log("Disconnected from socket");
+                    });
+                    socket.on("returnConvos", data => { // Gets conversations from either redis or mongo
+                        console.log("Socket conversations: vvv");
+                        console.log(data);
+                        this.setState({ conversations : data });
+                        if (data.length != this.state.convoIds.length) { // re-initialize chat until length of chat is the same
+                            if (this.state.conversations.length > 0 && data.length == 0) {
+                                setTimeout(() => {
+                                    this.initializeLiveChat();
+                                }, 300);
                             }
                         }
-                    } catch (err) {
-                        // Fail silently
-                    }
-                });
+                    });
 
-                socket.on('getWatching', data => {
-                    try {
-                        if (data.for == this.state.isLoggedIn) {
-                            let f = this.state.friends.find(f => f.username == data.who);
-                            let av = f.avatarurl ? f.avatarurl : null;
-                            let match = false;
-                            for (let i = 0; i < this.state.friendsWatching.length; i++) {
-                                if (this.state.friendsWatching[i].f == data.who) {
-                                    match = i;
-                                    break;
+                    socket.on('typing', data => {
+                        data = lzw.decompress(data); // decompress data before processing
+                        this.setTyping(data);
+                    })
+
+                    socket.on('chat', data => {  // on new chat, match id and append
+                        this.appendChat(data);
+                    });
+
+                    socket.on('bump', data => {
+                        bumpEvent.emit('bump', (data));
+                    });
+
+                    socket.on('uploadUpdate', data => {
+                        this.props.updateUploadStatus(data);
+                    });
+
+                    socket.on('returnNotif', data => {
+                        this.setState({ following: updateNotif(data.subscribed) });
+                    })
+                    
+                    socket.on('promptTogether', data => { // received prompt to watch together, append prompt on respective friends chat bubble. 
+                        // The data received here will look like { room: room, friend: this is yourself the new host, user: your friend who asked to watch together }
+                        // User can recieve several prompts so its important to keep track of all
+                        if (cookies.get('loggedIn')) {
+                            this.props.appendWaitingSession(data.user);
+                            console.log('prompTogether', data);
+                        }
+                    })
+                    
+                    socket.on('confirmTogether', data => { // The friend has agreed to host a together session. props.BeginTogetherSession(room, friend, host(boolean))
+                        if (cookies.get('loggedIn')) {
+                            if (data.host != cookies.get('loggedIn')) { // Only run confirmTogether if you are not the host, but a participant
+                                console.log('confirmTogether', data);
+                                this.props.beginTogetherSession(data);
+                            }
+                        }
+                    })
+                    
+                    socket.on('marco', data => { // Send a response 'polo' if there is a valid togetherToken in props
+                        if (data.from != cookies.get('loggedIn') && this.props.togetherToken) {
+                            if (data.from == this.props.togetherToken.host || this.props.togetherToken.participants.indexOf(data.from) >= 0) {
+                                socket.emit('poloCheck', data);
+                            }
+                        }
+                    });
+                    
+                    socket.on('polo', data => {
+                        if (cookies.get('loggedIn')) {
+                            if (data.from == cookies.get('loggedIn')) { // from should be yourself since this client originally sent the request to check live status
+                                this.props.updateLastPing(data);
+                            }
+                        }
+                    })
+                    
+                    socket.on('receiveCloseTogetherSession', data => {
+                        console.log(data);
+                        if (cookies.get('loggedIn')) {
+                            if (data.from != cookies.get('loggedIn') && this.props.togetherToken) {
+                                this.props.sendCloseTogetherSession(true);
+                            }
+                        }
+                    })
+                    
+                    socket.on('receiveWatch', data => {
+                        if (cookies.get('loggedIn')) {
+                            if (data.host != cookies.get('loggedIn')) {
+                                this.props.doWatch(data);
+                            }
+                        }
+                    });
+
+                    // For passive ask watching to append who is watching what on dash page
+                    socket.on('askWatching', data => {
+                        try {
+                            if (data.match(/(.*);(.*)/)[1] !== this.state.isLoggedIn) { // Not self
+                                if (window.location.href.match(/watch\?v=([0-9a-zA-Z]*)/)[1] && document.getElementsByClassName("watchpage-title")[0]) { // On watch page
+                                    socket.emit('respondWatching', {
+                                        "for": data.match(/(.*);(.*)/)[1],
+                                        "who": this.state.isLoggedIn,
+                                        "title": document.getElementsByClassName("watchpage-title")[0].innerHTML,
+                                        "id": window.location.href.match(/watch\?v=([0-9a-zA-Z]*)/)[1],
+                                        "room": data.match(/(.*);(.*)/)[2]
+                                    });
                                 }
                             }
-                            if (!match) {
-                                this.setState(prevState => ({
-                                    friendsWatching: [...prevState.friendsWatching, {
+                        } catch (err) {
+                            // Fail silently
+                        }
+                    });
+
+                    socket.on('getWatching', data => {
+                        try {
+                            if (data.for == this.state.isLoggedIn) {
+                                let f = this.state.friends.find(f => f.username == data.who);
+                                let av = f.avatarurl ? f.avatarurl : null;
+                                let match = false;
+                                for (let i = 0; i < this.state.friendsWatching.length; i++) {
+                                    if (this.state.friendsWatching[i].f == data.who) {
+                                        match = i;
+                                        break;
+                                    }
+                                }
+                                if (!match) {
+                                    this.setState(prevState => ({
+                                        friendsWatching: [...prevState.friendsWatching, {
+                                            f: data.who,
+                                            title: data.title,
+                                            id: data.id,
+                                            av: av
+                                        }]
+                                    }));
+                                } else {
+                                    let t = this.state.friendsWatching;
+                                    t[match] = {
                                         f: data.who,
                                         title: data.title,
                                         id: data.id,
                                         av: av
-                                    }]
-                                }));
-                            } else {
-                                let t = this.state.friendsWatching;
-                                t[match] = {
-                                    f: data.who,
-                                    title: data.title,
-                                    id: data.id,
-                                    av: av
-                                };
-                                this.setState({ friendsWatching: t });
+                                    };
+                                    this.setState({ friendsWatching: t });
+                                }
+                                this.props.updateFriendsWatching(this.state.friendsWatching);
                             }
-                            this.props.updateFriendsWatching(this.state.friendsWatching);
+                        } catch (err) {
+                            console.log(err);
+                            // Fail silently
                         }
-                    } catch (err) {
-                        console.log(err);
-                        // Fail silently
-                    }
+                    });
+
+                    socket.on('uploadErr', data => {
+                        console.log("upload err:" + data);
+                        this.props.updateErrStatus(data);
+                        cookies.remove('uplsession'); // Upload complete, delete session cookie
+                    });
+
+                    resolve();
                 });
 
-                socket.on('uploadErr', data => {
-                    console.log("upload err:" + data);
-                    this.props.updateErrStatus(data);
-                    cookies.remove('uplsession'); // Upload complete, delete session cookie
+                opensocket.then(() => {
+
                 });
-
-                resolve();
-            });
-
-            opensocket.then(() => {
-
-            });
-        }
+            }
+        } catch (err) {
+            // Fail silently
+        }  
     }
 
     checkAdmin() {
@@ -311,56 +323,64 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     setTyping = (data) => {
-        // let typeData = data.match(typingRegex);
-        let user = data.match(typingRegex)[1]; // user
-        let content = data.match(typingRegex)[2]; // content
-        let room = data.match(typingRegex)[3]; // room
-        if (this.state.typing.length > 0) { // if typing state array has more than 1 room in it
-            if (user != this.state.isLoggedIn) {
-                let temp = this.state.typing;
-                let inArr = false;
-                for (let i = 0; i < this.state.typing.length; i++) { // iterate through typing state array. Includes typing data of all conversations
-                    if (room == this.state.typing[i].match(typingRegex)[3]) {
-                        inArr = true;
-                        if (this.state.typing[i].match(typingRegex)[2] != content) {
-                            temp.splice(i, 1, data); // replace typing data with new one
-                            this.setState({ typing: temp });
-                            this.props.updateTypingMirror(temp); // Updates typing mirror for full screen video chat
+        try {
+            // let typeData = data.match(typingRegex);
+            let user = data.match(typingRegex)[1]; // user
+            let content = data.match(typingRegex)[2]; // content
+            let room = data.match(typingRegex)[3]; // room
+            if (this.state.typing.length > 0) { // if typing state array has more than 1 room in it
+                if (user != this.state.isLoggedIn) {
+                    let temp = this.state.typing;
+                    let inArr = false;
+                    for (let i = 0; i < this.state.typing.length; i++) { // iterate through typing state array. Includes typing data of all conversations
+                        if (room == this.state.typing[i].match(typingRegex)[3]) {
+                            inArr = true;
+                            if (this.state.typing[i].match(typingRegex)[2] != content) {
+                                temp.splice(i, 1, data); // replace typing data with new one
+                                this.setState({ typing: temp });
+                                this.props.updateTypingMirror(temp); // Updates typing mirror for full screen video chat
+                            }
                         }
                     }
+                    if (!inArr) { // if this chat is not present in typing state array, simply just add it.
+                        temp.push(data);
+                        this.setState({ typing: temp });
+                        this.props.updateTypingMirror(temp);
+                    }
                 }
-                if (!inArr) { // if this chat is not present in typing state array, simply just add it.
+            } else {
+                if (user != this.state.isLoggedIn) { // if the typing data being added != user signed in, it is from someone else. Show the user what they are typing
+                    let temp = this.state.typing;
                     temp.push(data);
                     this.setState({ typing: temp });
                     this.props.updateTypingMirror(temp);
                 }
             }
-        } else {
-            if (user != this.state.isLoggedIn) { // if the typing data being added != user signed in, it is from someone else. Show the user what they are typing
-                let temp = this.state.typing;
-                temp.push(data);
-                this.setState({ typing: temp });
-                this.props.updateTypingMirror(temp);
-            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
     appendChat = (data) => {
-        if (this.state.conversations) {
-            for (let i = 0; i < this.state.conversations.length; i++) {
-                if (this.state.conversations[i]) {
-                    if (data.id == this.state.conversations[i]._id) {
-                        delete data.id;
-                        let temp = this.state.conversations;
-                        temp[i].log.push(data);
-                        if (data.author != this.state.isLoggedIn) {
-                            let leanString = data.author + ";" + "" + ";" + this.state.conversations[i]._id; // reset typing data
-                            this.setTyping(leanString);
+        try {
+            if (this.state.conversations) {
+                for (let i = 0; i < this.state.conversations.length; i++) {
+                    if (this.state.conversations[i]) {
+                        if (data.id == this.state.conversations[i]._id) {
+                            delete data.id;
+                            let temp = this.state.conversations;
+                            temp[i].log.push(data);
+                            if (data.author != this.state.isLoggedIn) {
+                                let leanString = data.author + ";" + "" + ";" + this.state.conversations[i]._id; // reset typing data
+                                this.setTyping(leanString);
+                            }
+                            this.setState({ conversations: temp });
                         }
-                        this.setState({ conversations: temp });
                     }
                 }
             }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -587,7 +607,6 @@ class Socialbar extends Component { // Main social entry point sb1
             this.setGoogleSignInErrorState();
             let username = document.getElementById("username").value;
             let regemail = document.getElementById("regemail").value;
-            let self = true;
             let regpassword = document.getElementById("regpw").value;
             let confirmPassword = document.getElementById("regpw2").value;
             fetch(currentrooturl + 'm/register', {
@@ -899,7 +918,7 @@ class Socialbar extends Component { // Main social entry point sb1
                     this.limitedsearch(this.state.isLoggedIn, this.state.searchusers[0].length, true); // re update list
                 }
             }
-        })
+        });
 
         e.preventDefault();
     }
@@ -1030,38 +1049,42 @@ class Socialbar extends Component { // Main social entry point sb1
     }
     
     acceptfriendrequest = (e, friend, requests) => {
-        let username = this.state.isLoggedIn;
-        let newfriend = friend;
-        let hash = cookies.get('hash');
-        let self = true;
-        fetch(currentrooturl + 'm/acceptfriendrequest', {
-            method: "POST",
-            headers: {
-                'Accept': 'application/json',
-                'Content-Type': 'application/json'
-            },
-            credentials: corsdefault,
-            body: JSON.stringify({
-                newfriend, username, hash, self
+        try {
+            let username = this.state.isLoggedIn;
+            let newfriend = friend;
+            let hash = cookies.get('hash');
+            let self = true;
+            fetch(currentrooturl + 'm/acceptfriendrequest', {
+                method: "POST",
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                },
+                credentials: corsdefault,
+                body: JSON.stringify({
+                    newfriend, username, hash, self
+                })
             })
-        })
-        .then(function(response) {
-            return response.json();
-        })
-        .then((data) => {
-            let authorized = this.props.checkAndConfirmAuthentication(data);
-            if (authorized) {
-                this.setState({ friends: data });
-                setTimeout(this.getpendingrequests(null, requests, username), 1500); // Reset user search after friend accepted.
-            }
-            return data;
-        })
-        .then((data) => {
-            this.debouncefetchusers();
-        })
-        .catch(error => { 
-            console.log(error);
-        })
+            .then(function(response) {
+                return response.json();
+            })
+            .then((data) => {
+                let authorized = this.props.checkAndConfirmAuthentication(data);
+                if (authorized) {
+                    this.setState({ friends: data });
+                    setTimeout(this.getpendingrequests(null, requests, username), 1500); // Reset user search after friend accepted.
+                }
+                return data;
+            })
+            .then((data) => {
+                this.debouncefetchusers();
+            })
+            .catch(error => { 
+                console.log(error);
+            });
+        } catch (err) {
+            // Fail silently
+        }
     }
     
     /**
@@ -1073,72 +1096,76 @@ class Socialbar extends Component { // Main social entry point sb1
     * @return {none}
     */
     getfriends = () => {
-        if (!this.state.isLoggedIn) {
-            this.setState({ isLoggedIn: cookies.get('loggedIn')});
-        }
-        if (this.state.isLoggedIn || cookies.get('loggedIn')) {
-            let username = this.state.isLoggedIn || cookies.get('loggedIn');
-            let hash = cookies.get('hash');
-            let self = true;
-            fetch(currentrooturl + 'm/getfriends', {
-                method: "POST",
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                credentials: corsdefault,
-                body: JSON.stringify({
-                    username, hash, self
+        try {
+            if (!this.state.isLoggedIn) {
+                this.setState({ isLoggedIn: cookies.get('loggedIn')});
+            }
+            if (this.state.isLoggedIn || cookies.get('loggedIn')) {
+                let username = this.state.isLoggedIn || cookies.get('loggedIn');
+                let hash = cookies.get('hash');
+                let self = true;
+                fetch(currentrooturl + 'm/getfriends', {
+                    method: "POST",
+                    headers: {
+                        'Accept': 'application/json',
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: corsdefault,
+                    body: JSON.stringify({
+                        username, hash, self
+                    })
                 })
-            })
-            .then(function(response) {
-                return response.json();
-            })
-            .then((data) => {
-                let authorized = this.props.checkAndConfirmAuthentication(data);
-                if (authorized) {
-                    console.log("Friends of", username, ":", data);
-                    if (data.hasOwnProperty("shipping")) {
-                        this.props.setUserShippingData(data.shipping);
-                    }
-                    if (data.hasOwnProperty("cart")) {
-                        updateCachedCart(data.cart);
-                    }
-                    if (data.subscribed) {
-                        if (Array.isArray(data.subscribed)) {
-                            this.setState({ following: updateNotif(data.subscribed) });
+                .then(function(response) {
+                    return response.json();
+                })
+                .then((data) => {
+                    let authorized = this.props.checkAndConfirmAuthentication(data);
+                    if (authorized) {
+                        console.log("Friends of", username, ":", data);
+                        if (data.hasOwnProperty("shipping")) {
+                            this.props.setUserShippingData(data.shipping);
+                        }
+                        if (data.hasOwnProperty("cart")) {
+                            updateCachedCart(data.cart);
+                        }
+                        if (data.subscribed) {
+                            if (Array.isArray(data.subscribed)) {
+                                this.setState({ following: updateNotif(data.subscribed) });
+                            }
+                        }
+                        if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
+                            this.setState({ friends: data.userfriendslist });
+                        }
+                        let convoIds = [];
+                        if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
+                            this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
+                        }
+                        if (!socket) { // Only append conversations from mongodb if socket is not valid. Otherwise application is getting conversations from redis live db
+                            this.setState({ conversations: data.conversations }); // set state for conversations
+                        }
+                        for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
+                            convoIds.push(data.conversations[i]._id);
+                        }
+                        this.setState({ convoIds: convoIds }); // CRUCIAL TO SET THIS BEFORE BUILDING SOCKET
+                        // If this is not created before building socket then user will get no live chat. We Build Live chat WITH convoIds after this call. See next then block
+                        // If this is done properly then we will only call build socket connection once. Which is good, because emitting to sockets is expensive since were asking every other user what theyre watching for the "joinConvos" route
+
+                        if (data.hasOwnProperty("useravatar")) {
+                            this.setState({ useravatar: data.useravatar });
                         }
                     }
-                    if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
-                        this.setState({ friends: data.userfriendslist });
-                    }
-                    let convoIds = [];
-                    if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
-                        this.getpendingrequests("hidden", null, username); // Updates pending list everytime getFriendConversations runs if socket is null
-                    }
-                    if (!socket) { // Only append conversations from mongodb if socket is not valid. Otherwise application is getting conversations from redis live db
-                        this.setState({ conversations: data.conversations }); // set state for conversations
-                    }
-                    for (let i = 0; i < data.conversations.length; i++) { // Sets convo ids from conversations object
-                        convoIds.push(data.conversations[i]._id);
-                    }
-                    this.setState({ convoIds: convoIds }); // CRUCIAL TO SET THIS BEFORE BUILDING SOCKET
-                    // If this is not created before building socket then user will get no live chat. We Build Live chat WITH convoIds after this call. See next then block
-                    // If this is done properly then we will only call build socket connection once. Which is good, because emitting to sockets is expensive since were asking every other user what theyre watching for the "joinConvos" route
-
-                    if (data.hasOwnProperty("useravatar")) {
-                        this.setState({ useravatar: data.useravatar });
-                    }
-                }
-                return data;
-            })
-            .then((data) => {
-                this.rebuildSocketConnection(); // Called AFTER building convoIds state
-            })
-            .catch(error => {
-                this.rebuildSocketConnection();
-                console.log(error);
-            })
+                    return data;
+                })
+                .then((data) => {
+                    this.rebuildSocketConnection(); // Called AFTER building convoIds state
+                })
+                .catch(error => {
+                    this.rebuildSocketConnection();
+                    console.log(error);
+                });
+            }
+        } catch (err) {
+            // Fail silently;
         }
     }
 
@@ -1151,20 +1178,22 @@ class Socialbar extends Component { // Main social entry point sb1
     * @return {none}
     */
     beginchat = (e, chatwith, message, convoId, fromSearch ) => {
-        let username = this.state.isLoggedIn;
-        // All beginchat methods ran from searchbar will run as a fetch request.
-        // Others will update via socket
-        console.log("Socket" + socket, "from search " + fromSearch, "ConvoId " + convoId);
-        if (!convoId) { // Determine if chat sent via user search UI exists in current chats
-            if (this.state.conversations) {
-                for (let i = 0; i < this.state.conversations.length; i++) {
-                    if (this.state.conversations[i]) {
-                        if (this.state.conversations[i].users) {
-                            if (this.state.conversations[i].users.length == 2) {
-                                for (let j = 0; j < this.state.conversations[i].users.length; j++) {
-                                    if (this.state.conversations[i].users[j] == chatwith) {
-                                        convoId = this.state.conversations[i]._id;
-                                        break;
+        try {
+            let username = this.state.isLoggedIn;
+            // All beginchat methods ran from searchbar will run as a fetch request.
+            // Others will update via socket
+            console.log("Socket" + socket, "from search " + fromSearch, "ConvoId " + convoId);
+            if (!convoId) { // Determine if chat sent via user search UI exists in current chats
+                if (this.state.conversations) {
+                    for (let i = 0; i < this.state.conversations.length; i++) {
+                        if (this.state.conversations[i]) {
+                            if (this.state.conversations[i].users) {
+                                if (this.state.conversations[i].users.length == 2) {
+                                    for (let j = 0; j < this.state.conversations[i].users.length; j++) {
+                                        if (this.state.conversations[i].users[j] == chatwith) {
+                                            convoId = this.state.conversations[i]._id;
+                                            break;
+                                        }
                                     }
                                 }
                             }
@@ -1172,87 +1201,101 @@ class Socialbar extends Component { // Main social entry point sb1
                     }
                 }
             }
-        }
-        if (socket) {
-            if (convoId) { // if there is a convo id found for a conversation between these two users, append via socket
-                if (message.length > 0) { // Message must be valid
-                    let chatObj = {
-                        "user": username,
-                        "id": convoId,
-                        "message": message,
-                        "chatwith": chatwith
-                    }
-                    socket.emit('sendChat', chatObj);
-                }
-            } else { // If fromSearch true or no conversation between both users, will use fetch request defaults to fetch request. This will not create a mongo log convo, just a record that the chat exists. Will still force conversation to occur via socket after call
-                let hash = cookies.get('hash');
-                let self = true;
-                if (message.length > 0) { // Message must be valid
-                    fetch(currentrooturl + 'm/beginchat', {
-                        method: "POST",
-                        headers: {
-                            'Accept': 'application/json',
-                            'Content-Type': 'application/json'
-                        },
-                        credentials: corsdefault,
-                        body: JSON.stringify({
-                            username, chatwith, message, hash, self
-                        })
-                    })
-                    .then(function(response) {
-                        return response.json();
-                    })
-                    .then((data) => {
-                        let authorized = this.props.checkAndConfirmAuthentication(data);
-                        if (authorized) {
-                            console.log(data);
-                            this.getFriendConversations();
+            if (socket) {
+                if (convoId) { // if there is a convo id found for a conversation between these two users, append via socket
+                    if (message.length > 0) { // Message must be valid
+                        let chatObj = {
+                            "user": username,
+                            "id": convoId,
+                            "message": message,
+                            "chatwith": chatwith
                         }
-                        return data;
-                    })
-                    .then((data) => {
-                        setTimeout(() => {
-                            this.initializeLiveChat();
-                        }, 500);
-                    })
-                    .catch(error => { 
-                        console.log(error);
-                    })
+                        socket.emit('sendChat', chatObj);
+                    }
+                } else { // If fromSearch true or no conversation between both users, will use fetch request defaults to fetch request. This will not create a mongo log convo, just a record that the chat exists. Will still force conversation to occur via socket after call
+                    let hash = cookies.get('hash');
+                    let self = true;
+                    if (message.length > 0) { // Message must be valid
+                        fetch(currentrooturl + 'm/beginchat', {
+                            method: "POST",
+                            headers: {
+                                'Accept': 'application/json',
+                                'Content-Type': 'application/json'
+                            },
+                            credentials: corsdefault,
+                            body: JSON.stringify({
+                                username, chatwith, message, hash, self
+                            })
+                        })
+                        .then(function(response) {
+                            return response.json();
+                        })
+                        .then((data) => {
+                            let authorized = this.props.checkAndConfirmAuthentication(data);
+                            if (authorized) {
+                                console.log(data);
+                                this.getFriendConversations();
+                            }
+                            return data;
+                        })
+                        .then((data) => {
+                            setTimeout(() => {
+                                this.initializeLiveChat();
+                            }, 500);
+                        })
+                        .catch(error => { 
+                            console.log(error);
+                        })
+                    }
                 }
             }
+            e.preventDefault();
+        } catch (err) {
+            // Fail silently
         }
-        e.preventDefault();
     }
     
     toggleSideBar = () => {
-        if (this.sidebar.current.classList.contains('sidebar-open')) {
-            this.closeSideBar();
-            // this.searchformclear();
-        } else {
-            this.openSideBar();
+        try {
+            if (this.sidebar.current.classList.contains('sidebar-open')) {
+                this.closeSideBar();
+                // this.searchformclear();
+            } else {
+                this.openSideBar();
+            }
+        } catch (err) {
+            // Fail silently
         }
     }
     
     searchforminput = () => {
-        if (document.getElementsByClassName("user-search")[0].value.length > 0) {
-            document.getElementsByClassName('clear')[0].classList.add('clear-visible');
-        } else {
-            document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
-            this.setState({ searchusers: [] });
-            document.getElementsByClassName('search-users-results-container')[0].classList.remove('search-users-results-container-opened');
+        try {
+            if (document.getElementsByClassName("user-search")[0].value.length > 0) {
+                document.getElementsByClassName('clear')[0].classList.add('clear-visible');
+            } else {
+                document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
+                this.setState({ searchusers: [] });
+                document.getElementsByClassName('search-users-results-container')[0].classList.remove('search-users-results-container-opened');
+            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
     searchformclear = () => {
-        if (document.getElementsByClassName("user-search")[0]) {
-            document.getElementsByClassName("user-search")[0].value = "";
-        }
-        this.setState({ searchusers: [] });
-        if (document.getElementsByClassName('search-users-results-container')[0]) {
-            document.getElementsByClassName('search-users-results-container')[0].classList.remove('search-users-results-container-opened');
-        }
-        if (document.getElementsByClassName('clear')[0]) {
-            document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
+        try {
+            if (document.getElementsByClassName("user-search")[0]) {
+                document.getElementsByClassName("user-search")[0].value = "";
+            }
+            this.setState({ searchusers: [] });
+            if (document.getElementsByClassName('search-users-results-container')[0]) {
+                document.getElementsByClassName('search-users-results-container')[0].classList.remove('search-users-results-container-opened');
+            }
+            if (document.getElementsByClassName('clear')[0]) {
+                document.getElementsByClassName('clear')[0].classList.remove('clear-visible');
+            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -1350,7 +1393,11 @@ class Socialbar extends Component { // Main social entry point sb1
     }
 
     setGoogleSignInErrorState(data = null) {
-        this.setState({ googleSignInError: data });
+        try {
+            this.setState({ googleSignInError: data });
+        } catch (err) {
+            // Fail silently
+        }
     }
 
     onOneTapSignedInGoogle = async (googleResponse, proposedUsername = null) => {
@@ -1449,9 +1496,13 @@ class Socialbar extends Component { // Main social entry point sb1
         this.setGoogleSignInErrorState();
         // Do not make google load script async. It will fail
         function tryLoadGoogle() {
-            const script = document.createElement('script');
-            script.src = 'https://accounts.google.com/gsi/client';
-            document.querySelector('body').appendChild(script);
+            try {
+                const script = document.createElement('script');
+                script.src = 'https://accounts.google.com/gsi/client';
+                document.querySelector('body').appendChild(script);
+            } catch (err) {
+                // Fail silently
+            }
         }
 
         let buildGoogleSignOn = () => {
@@ -1719,12 +1770,16 @@ class App extends Component {
     }
 
     updateLogin = (username) => {
-        if (username) {
-            if (this.state.isLoggedIn != username) {
-                this.setState({ isLoggedIn: username });
+        try {
+            if (username) {
+                if (this.state.isLoggedIn != username) {
+                    this.setState({ isLoggedIn: username });
+                }
+            } else if (this.state.isLoggedIn != cookies.get('loggedIn')) {
+                this.setState({ isLoggedIn: cookies.get('loggedIn')});
             }
-        } else if (this.state.isLoggedIn != cookies.get('loggedIn')) {
-            this.setState({ isLoggedIn: cookies.get('loggedIn')});
+        } catch (err) {
+            // Fail silently
         }
     };
 
@@ -1734,26 +1789,30 @@ class App extends Component {
 
     // Updates upload status for video upload process. Access update parameter for update information
     updateUploadStatus = (update) => {
-        if (update.match(/processing;([a-z0-9].*)/)) { // If update matches background video upload update, change uploading state, else just change upload status
-            this.setState({ uploading: update.match(/processing;([a-z0-9].*)/)[1] });
-        } else {
-            if (update.match(/video ready;([a-z0-9].*)/)) {
-                this.setState({ uploading: null, uploadedMpd: update.match(/video ready;([a-z0-9].*)/)[1] });
-                if (this.state.uploadStatus !== "video ready") {
-                    this.setState({ uploadStatus: "video ready" });
-                }
-                cookies.remove('uplsession'); // Upload complete, delete session cookie
-            } else if (update == "video ready") {
-                this.setState({ uploading: null });
-                this.setState({ uploadStatus: update });
-            } else if (update == "remove mpd") {
-                this.setState({ uploadedMpd: '' });
+        try {
+            if (update.match(/processing;([a-z0-9].*)/)) { // If update matches background video upload update, change uploading state, else just change upload status
+                this.setState({ uploading: update.match(/processing;([a-z0-9].*)/)[1] });
             } else {
-                this.setState({ uploadStatus: update });
+                if (update.match(/video ready;([a-z0-9].*)/)) {
+                    this.setState({ uploading: null, uploadedMpd: update.match(/video ready;([a-z0-9].*)/)[1] });
+                    if (this.state.uploadStatus !== "video ready") {
+                        this.setState({ uploadStatus: "video ready" });
+                    }
+                    cookies.remove('uplsession'); // Upload complete, delete session cookie
+                } else if (update == "video ready") {
+                    this.setState({ uploading: null });
+                    this.setState({ uploadStatus: update });
+                } else if (update == "remove mpd") {
+                    this.setState({ uploadedMpd: '' });
+                } else {
+                    this.setState({ uploadStatus: update });
+                }
+                if (this.state.errStatus != '') {
+                    this.setState({ errStatus: '' });
+                }
             }
-            if (this.state.errStatus != '') {
-                this.setState({ errStatus: '' });
-            }
+        } catch (err) {
+            // Fail silently
         }
     }
 
@@ -1845,8 +1904,7 @@ class App extends Component {
     
     acceptTogetherSession = (room, friend) => { // Accept means to accept request as host and start an exclusive together session
         if (cookies.get('loggedIn') && !this.togetherToken) {
-            console.log("Accept together session", room, friend);
-            let togetherData = {
+             let togetherData = {
                 host: cookies.get('loggedIn'),
                 participants: [ friend ],
                 room: room,
@@ -2001,7 +2059,6 @@ class App extends Component {
                 }
             }
         }
-        console.log(data);
     }
 
     /* Send request to socket to subscribe to channel. Format of data is: user;channel;subscribe? */

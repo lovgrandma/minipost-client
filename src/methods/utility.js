@@ -245,7 +245,6 @@ export const roundHour = function (hour) {
     } else {
         return Math.round(hour/3600) + " hours ago";
     }
-    return Math.round(hour/3600) + "hours ago";
 }
 
 /* Dynamically sets state when given the key/value location and the name of the key name to be used */
@@ -283,6 +282,7 @@ export const getPath = () => {
         if (window.location) {
             if (window.location.search) {
                 if (window.location.search.length > 0) {
+                    console.log(window.location.pathname + window.location.search);
                     return window.location.pathname + window.location.search; // This will return majority of the time
                 }
             }
