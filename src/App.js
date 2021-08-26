@@ -1135,6 +1135,7 @@ class Socialbar extends Component { // Main social entry point sb1
                         }
                         if (!deepEquals(this.state.friends, data.userfriendslist)) { // Check if friends list retrieved from db is the same, if so do nothing, else update.
                             this.setState({ friends: data.userfriendslist });
+                            this.props.setCopyFriends(data.userfriendslist);
                         }
                         let convoIds = [];
                         if (!this.state.pendingfriendrequests) { // Only reload if pendingfriendrequests not true, prevents reload on every chat sent
@@ -2110,12 +2111,21 @@ class App extends Component {
         this.setState({ friendsWatchingCopy: data });
     }
 
+    setCopyFriends = (data) => {
+        if (data) {
+            if (Array.isArray(data)) {
+                let a = data.map((d) => d.username);
+                this.setState({ copyFriends: a });
+            }
+        }
+    }
+
     render() {     
         let isShopPage = this.resolveIsShopPage();
         let isCheckoutPage = this.resolveIsCheckoutPage();
         return (
             <div className={isCheckoutPage ? "App checkout-page" : "App"} onClick={(e)=>{hideOptions.call(this, e)}}>
-                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} updateFriendsWatching={this.updateFriendsWatching} />
+                <Socialbar watching={this.state.watching} sidebarStatus={this.state.sidebarStatus} updateSidebarStatus={this.updateSidebarStatus} updateUploadStatus={this.updateUploadStatus} updateErrStatus={this.updateErrStatus} updateLogin={this.updateLogin} setCloud={this.setCloud} cloud={this.state.cloud} follow={this.follow} playlist={this.playlist} requestTogetherSession={this.requestTogetherSession} beginTogetherSession={this.beginTogetherSession} waitingTogetherConfirm={this.state.waitingTogetherConfirm} appendWaitingSession={this.appendWaitingSession} waitingSessions={this.state.waitingSessions} acceptTogetherSession={this.acceptTogetherSession} beginTogetherSession={this.beginTogetherSession} togetherToken={this.state.togetherToken} togetherInterval={this.state.togetherInterval} updateLastPing={this.updateLastPing} sendCloseTogetherSession={this.sendCloseTogetherSession} doWatch={this.doWatch} friendConvoMirror={this.state.friendConvoMirror} updateFriendConvoMirror={this.updateFriendConvoMirror} typingMirror={this.state.typingMirror} updateTypingMirror={this.updateTypingMirror} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} doLogout={this.doLogout} setUserShippingData={this.setUserShippingData} dragDisabled={this.state.dragDisabled} updateFriendsWatching={this.updateFriendsWatching} setCopyFriends={this.setCopyFriends} />
                 <div className={isShopPage ? 'maindashcontainer white-page' : 'maindashcontainer'}>
                     <div className='main maindash'>
                         <Route exact path='/' render={(props) => (
@@ -2125,16 +2135,16 @@ class App extends Component {
                             <Results {...props} key={getPath()} username={this.state.isLoggedIn} cloud={this.state.cloud} setCloud={this.setCloud} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} />
                         )}/>
                         <Route path='/watch?v=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} friendConvoMirror={this.state.friendConvoMirror} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} copyFriends={this.state.copyFriends} />
                         )}/>
                         <Route path='/watch?va=:videoId' render={(props) => (
-                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                            <Video {...props} key={getPath()} ad={true} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} copyFriends={this.state.copyFriends} />
                         )}/>
                         <Route path='/read?a=:articleId' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />
                         )}/>
                         <Route path='/watch' render={(props) => (
-                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                            <Video {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} follow={this.follow} playlist={this.playlist} togetherToken={this.state.togetherToken} sendWatch={this.sendWatch} sendImpression={this.sendImpression} typingMirror={this.state.typingMirror} friendConvoMirror={this.state.friendConvoMirror} username={this.state.isLoggedIn} beginChat={Socialbar.beginChat} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} copyFriends={this.state.copyFriends} />
                         )}/>
                         <Route path='/read' render={(props) => (
                             <Article {...props} key={getPath()} moreOptionsVisible={this.state.moreOptionsVisible} setMoreOptionsVisible={this.setMoreOptionsVisible} togetherToken={this.state.togetherToken} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} />

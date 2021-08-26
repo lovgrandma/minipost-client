@@ -1867,7 +1867,7 @@ export default class Video extends Component {
                                 </div>
                             </div>
                             <Suspense fallback={<div className="fallback-loading"></div>}>
-                                <Comment cloud={this.state.cloud} media={this.state.mpd} mediaType="video" username={this.props.username} />
+                                <Comment cloud={this.state.cloud} media={this.state.mpd} mediaType="video" username={this.props.username} copyFriends={this.props.copyFriends} />
                             </Suspense>
                         </div>
                         <Suspense fallback={<div className="fallback-loading"></div>}>
