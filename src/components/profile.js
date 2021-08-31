@@ -5,7 +5,7 @@ import {
 import {
     Button
 } from 'react-bootstrap';
-import Videos from './videos.js'; import ArticlePreview from './articlepreview.js'; import Shop from './shop.js';
+import Videos from './videos.js'; import ArticlePreview from './articlepreview.js'; import Shop from './shop.js'; import Bucket from './virtual/bucket.js';
 import currentrooturl from '../url';
 import { cookies } from '../App.js';
 import { get, resolveSurvey } from '../methods/utility.js';
@@ -173,6 +173,13 @@ export default class Profile extends Component {
                             cloud={this.state.cloud}
                             userShippingData={this.props.userShippingData}
                         />
+        } else if (this.state.page == "bucket") {
+            pageData = <Bucket {...this.props} owner={this.state.username}
+                            shop={this.state.shop}
+                            shippingClasses={this.state.shippingClasses}
+                            edit={editable.call(this)}
+                            cloud={this.state.cloud}
+                        />
         } else {
             pageData = profileData;
         }
@@ -209,6 +216,13 @@ export default class Profile extends Component {
                                 <NavLink exact to={"/shop?s=" + this.state.username}>
                                     <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "shop")}}>Shop</Button>
                                 </NavLink>
+                                {
+                                    editable.call(this) ? 
+                                        <NavLink exact to={"/bucket?p=" + this.state.username}>
+                                            <Button className="profile-menu-link grey-btn" onClick={(e)=> {interceptProfileMenuClick.call(this, "bucket")}}>Bucket</Button>
+                                        </NavLink>
+                                        : null
+                                }
                             </div> 
                             : 
                             null

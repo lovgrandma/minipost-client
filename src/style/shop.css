@@ -1959,3 +1959,15 @@ Button.transaction-button-checkout:hover {
 .mv-prd-image-right {
     right: 10px;
 }
+
+.bucket-files-array {
+    flex-flow: wrap;
+    gap: 5px;
+}
+
+.bucket-file-img {
+    height: 125px;
+    object-fit: cover;
+    width: 125px;
+    border-radius: 5px;
+}

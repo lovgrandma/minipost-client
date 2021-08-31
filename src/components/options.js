@@ -196,7 +196,7 @@ export default class Options extends Component {
                 this.setState({ uploadavatarbusy: true });
                 if (this.upload.current.files[0]) {
                     let file = this.upload.current.files[0];
-                    if ((file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg") && cookies.get('loggedIn')) {
+                    if ((file.type == "image/png" || file.type == "image/jpeg" || file.type == "image/jpg")) {
                         if (file.name.match(/\.([a-zA-Z0-9]*)$/)) {
                             let formData = new FormData();
                             let extension = file.name.match(/\.([a-zA-Z0-9]*)$/)[1];

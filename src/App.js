@@ -1631,7 +1631,7 @@ class App extends Component {
                         watching: "", sidebarStatus: cookies.get('sidebarStatus'),
                         isLoggedIn: cookies.get('loggedIn'), uploadStatus: '', errStatus: '', uploading: null, uploadedMpd: '', cloud: "",
                         moreOptionsVisible: false, waitingTogetherConfirm: '', waitingSessions: [], togetherToken: null, friendConvoMirror: null, typingMirror: [],
-                        shipping: {}, dragDisabled: false, friendsWatchingCopy: []
+                        dragDisabled: false, friendsWatchingCopy: [], userShippingData: null
                      };
         this.playlist = null;
         this.together = null;
@@ -2154,6 +2154,16 @@ class App extends Component {
                         )}/>
                         <Route path='/shop' render={(props) => (
                             <Profile {...props} key={getPath()} page="shop" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                        )}/>
+                        <Route path ='/bucket?p=:username' render={(props) => (
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Profile {...props} key={getPath()} page="bucket" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                            </Suspense>
+                        )}/>
+                        <Route path ='/bucket' render={(props) => (
+                            <Suspense fallback={<div className="fallback-loading"></div>}>
+                                <Profile {...props} key={getPath()} page="bucket" cloud={this.state.cloud} setCloud={this.setCloud} checkAndConfirmAuthentication={this.checkAndConfirmAuthentication} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
+                            </Suspense>
                         )}/>
                         <Route path='/product' render={(props) => (
                             <ProductSinglePage {...props} key={getPath()} cloud={this.state.cloud} setCloud={this.setCloud} fetchCloudUrl={this.fetchCloudUrl} userShippingData={this.state.userShippingData} />
