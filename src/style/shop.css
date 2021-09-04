@@ -48,7 +48,8 @@
 .edit-interact-product,
 .shipping-classes-container-holder button,
 .shipping-class-interact-button-container button,
-.image-upload-interact-button-container button {
+.image-upload-interact-button-container button,
+.content-edit-container button {
     transition: 200ms;
     background: transparent;
     border-radius: 25px;
@@ -72,7 +73,8 @@
     font-size: 0.7em;
 }
 
-.edit-interact-product span {
+.edit-interact-product span,
+.content-edit-container button {
     color: grey;
     padding-right: 2.5px;
     font-size: 0.8em;
@@ -90,8 +92,14 @@
 }
 
 .shipping-class-interact-button-container button:hover,
-.image-upload-interact-button-container button:hover {
+.image-upload-interact-button-container button:hover,
+.content-edit-container button:hover {
     background: #e2e2e2;
+}
+
+.content-edit-container button {
+    padding-left: 5px;
+    padding-right: 5px;
 }
 
 .edit-interact-product:hover,
@@ -233,13 +241,20 @@
     width: 100%;
 }
 
-.quantity-container-input span {
+.quantity-container-input span,
+.product-type-container-input span,
+.product-type-container-input label {
     align-self: center;
     font-size: 0.85em;
     font-weight: 600;
     padding-right: 2.5px;
     color: #6d6d6d;
     user-select: none;
+}
+
+.product-type-container-input label {
+    margin-bottom: 0;
+    font-size: 0.8em;
 }
 
 .shop-col {
@@ -322,7 +337,8 @@
 }
 
 .shipping-portal,
-.image-portal {
+.image-portal,
+.bucket-portal {
     transition: 200ms;
     position: fixed;
     top: -150%;
@@ -344,7 +360,8 @@
 }
 
 .shipping-portal-visible,
-.image-portal-visible {
+.image-portal-visible,
+.bucket-portal-visible {
     top: 17.5%;
     opacity: 1;
 }
@@ -1970,4 +1987,24 @@ Button.transaction-button-checkout:hover {
     object-fit: cover;
     width: 125px;
     border-radius: 5px;
+}
+
+#product-infinite {
+    width: 20px;
+}
+
+.bucket-files-imgs-container {
+    position: relative;
+}
+
+.bucket-files-imgs-container .edit-interact-product {
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    background-color: white;
+}
+
+.selected-product-file-sm img {
+    width: 85px;
+    height: 85px;
 }

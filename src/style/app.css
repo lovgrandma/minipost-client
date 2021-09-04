@@ -565,7 +565,8 @@ button {
     margin-bottom: 5px;
 }
 
-.profile-stats-container > div {
+.profile-stats-container > div,
+.simple-grey-bubble {
     background-color: #bbbbbb;
     padding: 2.5px 5px;
     border-radius: 7.5px;

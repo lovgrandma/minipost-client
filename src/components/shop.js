@@ -1,9 +1,13 @@
-import React, { Component } from 'react';
+import React, { Component, lazy, Suspense } from 'react';
 import currentshopurl from '../shopurl.js';
-import Product from './product.js'; import ShippingClassSetup from './shippingclasssetup.js'; import ImageUploadSelection from './partial/image-upload-selection.js';
+import Product from './product.js';
 import corsdefault from '../cors.js';
 
 import { cookies } from '../App.js';
+
+const ImageUploadSelection = lazy(() => import('./partial/image-upload-selection.js'));
+const BucketFileSelection = lazy(() => import('./partial/bucket-file-selection.js'));
+const ShippingClassSetup = lazy(() => import('./shippingclasssetup.js'));
 
 export default class Shop extends Component {
     constructor(props) {
@@ -303,6 +307,77 @@ export default class Shop extends Component {
         }
     }
 
+    updateProType = (index, t) => {
+        try {
+            let a = this.state.products;
+            for (let i = 0; i < a.length; i++) {
+                if (i == index) {
+                    a[i].type = t;
+                }
+            }
+            this.setState({ products: a });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    updateInfinite = (index, t) => {
+        try {
+            let a = this.state.products;
+            for (let i = 0; i < a.length; i++) {
+                if (i == index) {
+                    a[i].infinite = t;
+                }
+            }
+            this.setState({ products: a });
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    showBucketPortal = (e, o) => {
+        try {
+            if (o) {
+                this.setState({ showBucketPortal: true });
+                return true;
+            }
+            this.setState({ showBucketPortal: false });
+            return false;
+        } catch (err) {
+            // Fail silently
+        }
+    }
+
+    // Appends/removes file to/from product content
+    appendFile = (index, fi, add = true) => {
+        try {
+            let a = this.state.products;
+            for (let i = 0; i < a.length; i++) {
+                if (i == index) {
+                    let files = a[i].files ? a[i].files : [];
+                    if (add) {
+                        let t = "image";
+                        if (fi.type) {
+                            if (fi.type == "video") {
+                                t = "video";
+                            }
+                        }
+                        if (files.map(f => f.url ).indexOf(fi.url) < 0) {
+                            files.push({ url: fi.url, type: t });
+                        }
+                    } else {
+                        files.splice(files.map(f => f.url ).indexOf(fi.url), 1);
+                    }
+                    a[i].files = files;
+                }
+            }
+            this.setState({ products: a });
+        } catch (err) {
+            console.log(err);
+            // Fail silently
+        }
+    }
+
     render() {
         let currImages = this.resolveCurrentImages();
         return (
@@ -313,23 +388,38 @@ export default class Shop extends Component {
                         this.state.self ?
                             <div>
                                 <div className={this.state.showShippingPortal ? "shipping-portal shipping-portal-visible" : "shipping-portal"}>
-                                    <ShippingClassSetup owner={this.props.owner}
-                                    self={this.state.self}
-                                    shippingClasses={this.props.shippingClasses}
-                                    toggleShippingPortal={this.toggleShippingPortal}
-                                    updateShippingClasses={this.props.updateShippingClasses}
-                                    />
+                                    <Suspense fallback={<div className="fallback-loading"></div>}>
+                                        <ShippingClassSetup owner={this.props.owner}
+                                        self={this.state.self}
+                                        shippingClasses={this.props.shippingClasses}
+                                        toggleShippingPortal={this.toggleShippingPortal}
+                                        updateShippingClasses={this.props.updateShippingClasses}
+                                        />
+                                    </Suspense>
                                 </div>
                                 <div className={this.state.showImagePortal ? "image-portal image-portal-visible" : "image-portal"}>
-                                    <ImageUploadSelection images={currImages}
-                                    editing={this.state.editIndex}
-                                    toggleImagePortal={this.toggleImagePortal} 
-                                    sendTempImgData={this.sendTempImgData}
-                                    searchAndUpdateImgName={this.searchAndUpdateImgName}
-                                    tempImgData={this.state.tempImgData}
-                                    deletions={this.state.deletions}
-                                    moveImg={this.moveImg}
-                                    />
+                                    <Suspense fallback={<div className="fallback-loading"></div>}>
+                                        <ImageUploadSelection images={currImages}
+                                        editing={this.state.editIndex}
+                                        toggleImagePortal={this.toggleImagePortal} 
+                                        sendTempImgData={this.sendTempImgData}
+                                        searchAndUpdateImgName={this.searchAndUpdateImgName}
+                                        tempImgData={this.state.tempImgData}
+                                        deletions={this.state.deletions}
+                                        moveImg={this.moveImg}
+                                        />
+                                    </Suspense>
+                                </div>
+                                <div className={this.state.showBucketPortal ? "bucket-portal bucket-portal-visible max-width-600" : "bucket-portal max-width-600" }>
+                                    <Suspense fallback={<div className="fallback-loading"></div>}>
+                                        <BucketFileSelection owner={this.props.owner}
+                                        editing={this.state.editIndex}
+                                        cloud={this.state.cloud}
+                                        showBucketPortal={this.showBucketPortal}
+                                        appendFile={this.appendFile}
+                                        products={this.state.products}
+                                        />
+                                    </Suspense>
                                 </div>
                             </div>
                             : null
@@ -344,6 +434,10 @@ export default class Shop extends Component {
                                 styles={product.styles}
                                 id={product.id}
                                 shipping={product.shipping}
+                                protype={product.type}
+                                infinite={product.infinite}
+                                updateInfinite={this.updateInfinite}
+                                updateProType={this.updateProType}
                                 self={this.state.self}
                                 enableEditMode={this.enableEditMode}
                                 toggleShippingPortal={this.toggleShippingPortal}
@@ -360,6 +454,7 @@ export default class Shop extends Component {
                                 cloud={this.state.cloud}
                                 userShippingData={this.props.userShippingData}
                                 deletions={this.state.deletions}
+                                showBucketPortal={this.showBucketPortal}
                                 />
                             )
                             : null
@@ -373,6 +468,10 @@ export default class Shop extends Component {
                             styles={this.state.dummystyles}
                             id={this.state.dummyid}
                             shipping={this.state.dummyshipping}
+                            protype="physical"
+                            infinite={false}
+                            updateInfinite={this.updateInfinite}
+                            updateProType={this.updateProType}
                             self={true}
                             enableEditMode={this.enableEditMode}
                             toggleShippingPortal={this.toggleShippingPortal}
@@ -386,6 +485,7 @@ export default class Shop extends Component {
                             owner={this.props.owner}
                             tempImgData={this.state.tempImgData}
                             userShippingData={this.props.userShippingData}
+                            showBucketPortal={this.showBucketPortal}
                             />
                             : null
                     }

@@ -131,11 +131,14 @@ export default class Bucket extends Component {
                 for (let i = 0; i < this.state.files.length; i++) {
                     if (this.state.files[i]) {
                         if (this.state.files[i].size) {
-                            t += this.state.files[i].size;
+                            if (parseFloat(this.state.files[i].size)) {
+                                t += parseFloat(this.state.files[i].size);
+                            }
                         }
                     }
                 }
             }
+            t = t.toFixed(2);
             this.setState({ size: t });
         } catch (err) {
             return false;
@@ -149,11 +152,11 @@ export default class Bucket extends Component {
                     this.props.edit ?
                         <div className="profile-bucket-container">
                             <div className="off-black weight600 prompt-basic">Store your files for usage in products here</div>
-                            <div className="flex flex-start margin-top-5 gap5">
+                            <div className="flex flex-start margin-top-5 gap5 align-center">
                                 <div className="off-black prompt-basic-s2 grey-out">The default size for your vendor bucket is 200 mbs</div>
                                 {
                                     this.state.size ?
-                                        <div className="prompt-basic-s2">{this.state.size} mbs used</div>
+                                        <div className="prompt-basic-s2 simple-grey-bubble grey-out">{this.state.size} mbs used</div>
                                         : null
                                 }
                             </div>

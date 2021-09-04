@@ -30,6 +30,9 @@ export default class Product extends Component {
         this.prodOptionDescIn = new React.createRef();
         this.prodStyleDescIn = new React.createRef();
         this.publishedRef = new React.createRef();
+        this.choicePhysical = new React.createRef();
+        this.choiceVirtual = new React.createRef();
+        this.prodInfinite = new React.createRef();
     }
 
     componentDidMount() {
@@ -629,6 +632,7 @@ export default class Product extends Component {
                         if (this.props.styles[this.state.currentStyle].options[this.state.currentOption]) {
                             if (this.props.styles[this.state.currentStyle].options[this.state.currentOption].hasOwnProperty("price")) {
                                 if (typeof this.props.styles[this.state.currentStyle].options[this.state.currentOption].price === "number") {
+                                    console.log(parseFloat(this.props.styles[this.state.currentStyle].options[this.state.currentOption].price).toFixed(2))
                                     return parseFloat(this.props.styles[this.state.currentStyle].options[this.state.currentOption].price).toFixed(2);
                                 }
                             }
@@ -852,6 +856,41 @@ export default class Product extends Component {
         // if product valid, go checkout, else go product page
     }
 
+    updateProductType(e) {
+        try {
+            this.choicePhysical.current.checked ? 
+                this.props.updateProType(this.props.index, "physical")
+                :
+                this.props.updateProType(this.props.index, "virtual")
+        } catch (err) {
+            return false; 
+        }
+    }
+
+    resolveDefaultChecked(t) {
+        try {
+            if (this.props.protype == "physical" && t == "physical" || !this.props.protype && t == "physical")  {
+                return true;
+            } else if (this.props.protype == "virtual" && t == "virtual") {
+                return true;
+            }
+            return false;
+        } catch (err) {
+            return false;
+        }
+    }
+
+    updateInfinite(e) {
+        try {
+            if (this.prodInfinite.current.checked) {
+                this.props.updateInfinite(this.props.index, true);
+            } else {
+                this.props.updateInfinite(this.props.index, false);
+            }
+        } catch (err) {
+            return false;
+        }
+    }
 
     render() {
         let appliedShippingClassesData = this.resolveAppliedShippingNames(this.props.shipping);
@@ -956,8 +995,24 @@ export default class Product extends Component {
                                         <span>$</span>
                                         <input type='text' id="product-price" className="product-price-input" ref={this.prodPriceIn} name="product-price" placeholder="Price" autoComplete="off" onBlur={(e) => {this.updatePrice(e)}} defaultValue={currPrice}></input>
                                     </div>
-                                    <div className="quantity-container-input">
-                                        <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue={currQuantity} onChange={(e) =>{this.updateQuantity(e)}}></input>
+                                    <div className="quantity-container-input flex flex-start align-center gap5">
+                                        <div className="flex align-center">
+                                            <span>Quantity:</span><input type='number' id="product-quantity" className="product-quantity-input" ref={this.prodQuantityIn} name="product-quantity" placeholder="Quantity" autoComplete="off" min="0" defaultValue={currQuantity} onChange={(e) =>{this.updateQuantity(e)}} disabled={this.props.infinite}></input>
+                                        </div>
+                                        <div className="flex align-center">
+                                            <span>Inifinite</span><input type="checkbox" id="product-infinite" className="product-quantity-input" ref={this.prodInfinite} name="product-infinite" onChange={(e) =>{this.updateInfinite(e)}} defaultChecked={this.props.infinite}></input>
+                                        </div>
+                                    </div>
+                                    <div className="flex flex-start align-center product-type-container-input margin-top-5 gap5">
+                                        <span>Product Type:</span>
+                                        <div className="flex gap5 align-center">
+                                            <input type="radio" id="physical" name="pr-type" value="physical" onChange={(e)=> {this.updateProductType(e)}} ref={this.choicePhysical} defaultChecked={this.resolveDefaultChecked("physical")}></input>
+                                            <label for="physical">Physical</label>
+                                        </div>
+                                        <div className="flex gap5 align-center">
+                                            <input type="radio" id="virtual" name="pr-type" value="virtual" onChange={(e)=> {this.updateProductType(e)}} ref={this.choiceVirtual} defaultChecked={this.resolveDefaultChecked("virtual")}></input>
+                                            <label for="virtual">Virtual</label>
+                                        </div>
                                     </div>
                                     <div className="options-add-container">
                                         <Button onClick={(e) => {this.newOption(e)}} className="edit-interact-product">
@@ -1003,6 +1058,13 @@ export default class Product extends Component {
                                         </select>
                                         <Button onClick={(e) => {this.determineShippingClassAction(e)}}>{this.state.shippingClassButton}</Button>
                                     </div>
+                                    {
+                                        this.props.protype == "virtual" ?
+                                            <div className="content-edit-container">
+                                                <Button onClick={(e) => {this.props.showBucketPortal(e, true)}} className="weight600">Add Content To Product</Button>
+                                            </div>
+                                            : null
+                                    }
                                 </div>
                                 <div className={this.state.error ? this.state.error.length > 0 ? "err-status err-status-product-active err-status-active" : "err-status err-status-product err-status-hidden" : "err-status err-status-product err-status-hidden"}>{this.state.error}</div>
                                 <span className="flex publish-selection">
@@ -1010,12 +1072,12 @@ export default class Product extends Component {
                                     <input type="checkbox" id="published" name="published" value="published" ref={this.publishedRef}></input>
                                 </span>
                                 <div className="products-buttons-container">
-                                    <Button onClick={(e) => {this.saveProduct(e)}} className="edit-interact-product">
-                                        <span>Save All Changes</span>
+                                    <Button onClick={(e) => {this.saveProduct(e)}} className="edit-interact-product flex align-center">
+                                        <span className="weight600">Save All Changes</span>
                                         <FontAwesomeIcon className="edit-interact" icon={faSave} color={ '#919191' } alt="edit" />
                                     </Button>
-                                    <Button onClick={(e) => {this.delProduct(e)}} className="edit-interact-product">
-                                        <span>Delete Product</span>
+                                    <Button onClick={(e) => {this.delProduct(e)}} className="edit-interact-product flex align-center">
+                                        <span className="weight600">Delete Product</span>
                                         <FontAwesomeIcon className="edit-interact" icon={faTrashAlt} color={ '#919191' } alt="edit" />
                                     </Button>
                                 </div>
