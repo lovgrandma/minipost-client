@@ -96,20 +96,31 @@ export default class Bucket extends Component {
                 <h5 className="weight600 off-black margin-top-10">Selected Product Files</h5>
                 <div className="flex flex-start gap5 margin-top-10">
                     {
-                        this.props.products ?
-                            this.props.products[this.props.editing] ?
-                                this.props.products[this.props.editing].files ?
-                                    this.props.products[this.props.editing].files.map((fi) => 
-                                        <div className="bucket-files-imgs-container selected-product-file-sm">
-                                            <img className="bucket-file-img" src={this.props.cloud + "/" + fi.url} />
-                                            <Button onClick={(e) => {this.props.appendFile(this.props.editing, fi, false)}} className="edit-interact-product">
-                                                <FontAwesomeIcon className="edit-interact" icon={faMinus} color={ '#919191' } alt="remove content" />
-                                            </Button>
-                                        </div>
-                                    )
+                        this.props.editing != "dummy" ?
+                            this.props.products ?
+                                this.props.products[this.props.editing] ?
+                                    this.props.products[this.props.editing].files ?
+                                        this.props.products[this.props.editing].files.map((fi) => 
+                                            <div className="bucket-files-imgs-container selected-product-file-sm">
+                                                <img className="bucket-file-img" src={this.props.cloud + "/" + fi.url} />
+                                                <Button onClick={(e) => {this.props.appendFile(this.props.editing, fi, false)}} className="edit-interact-product">
+                                                    <FontAwesomeIcon className="edit-interact" icon={faMinus} color={ '#919191' } alt="remove content" />
+                                                </Button>
+                                            </div>
+                                        )
+                                        : null
                                     : null
                                 : null
-                            : null
+                            : this.props.dummyfiles ?
+                                this.props.dummyfiles.map((fi) => 
+                                    <div className="bucket-files-imgs-container selected-product-file-sm">
+                                        <img className="bucket-file-img" src={this.props.cloud + "/" + fi.url} />
+                                        <Button onClick={(e) => {this.props.appendFile(this.props.editing, fi, false)}} className="edit-interact-product">
+                                            <FontAwesomeIcon className="edit-interact" icon={faMinus} color={ '#919191' } alt="remove content" />
+                                        </Button>
+                                    </div>
+                                )
+                                : null
                     }
                 </div>
                 <div className="margin-top-10 content-edit-container weight600">

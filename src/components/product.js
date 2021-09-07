@@ -436,6 +436,20 @@ export default class Product extends Component {
             if (this.props.images) {
                 images = this.props.images;
             }
+            let protype = "physical";
+            if (this.props.protype) {
+                if (this.props.protype == "virtual") {
+                    protype = "virtual";
+                }
+            }
+            let infinite = false;
+            if (this.props.infinite) {
+                infinite = true;
+            }
+            let files = [];
+            if (this.props.files) {
+                files = this.props.files;
+            }
             if (goodName && goodStyles && goodShipping) {
                 let product = {
                     id: id,
@@ -444,7 +458,10 @@ export default class Product extends Component {
                     styles: this.props.styles,
                     shipping: this.props.shipping,
                     published: published,
-                    images: images
+                    images: images,
+                    protype: protype,
+                    infinite: infinite,
+                    files: files
                 }
                 this.sendProductToServerAndSave(product); // Send product data to db to save
             } else {

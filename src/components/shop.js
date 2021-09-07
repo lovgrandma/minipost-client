@@ -13,7 +13,7 @@ export default class Shop extends Component {
     constructor(props) {
         super(props);
         this.state = {
-            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: "", error: "", deletions: new Map()
+            products: [], self: false, editIndex: -1, showShippingPortal: false, showImagePortal: false, dummystyles: [{ descriptor: "", options: [{descriptor: "", price: null, quantity: 0}] }], dummyname: "", dummydesc: "", dummyshipping: [], dummyid: "dummyid", dummyimages: [], tempImgData: [], cloud: "", error: "", deletions: new Map(), dummytype: "physical", dummyinfinite: false, dummyfiles: []
         }
     }
 
@@ -309,13 +309,17 @@ export default class Shop extends Component {
 
     updateProType = (index, t) => {
         try {
-            let a = this.state.products;
-            for (let i = 0; i < a.length; i++) {
-                if (i == index) {
-                    a[i].type = t;
+            if (index != "dummy") {
+                let a = this.state.products;
+                for (let i = 0; i < a.length; i++) {
+                    if (i == index) {
+                        a[i].type = t;
+                    }
                 }
+                this.setState({ products: a });
+            } else {
+                this.setState({ dummytype: t });
             }
-            this.setState({ products: a });
         } catch (err) {
             // Fail silently
         }
@@ -323,13 +327,17 @@ export default class Shop extends Component {
 
     updateInfinite = (index, t) => {
         try {
-            let a = this.state.products;
-            for (let i = 0; i < a.length; i++) {
-                if (i == index) {
-                    a[i].infinite = t;
+            if ( index != "dummy") {
+                let a = this.state.products;
+                for (let i = 0; i < a.length; i++) {
+                    if (i == index) {
+                        a[i].infinite = t;
+                    }
                 }
+                this.setState({ products: a });
+            } else {
+                this.setState({ dummyinfinite: t });
             }
-            this.setState({ products: a });
         } catch (err) {
             // Fail silently
         }
@@ -351,27 +359,45 @@ export default class Shop extends Component {
     // Appends/removes file to/from product content
     appendFile = (index, fi, add = true) => {
         try {
-            let a = this.state.products;
-            for (let i = 0; i < a.length; i++) {
-                if (i == index) {
-                    let files = a[i].files ? a[i].files : [];
-                    if (add) {
-                        let t = "image";
-                        if (fi.type) {
-                            if (fi.type == "video") {
-                                t = "video";
+            if (index != "dummy") {
+                let a = this.state.products;
+                for (let i = 0; i < a.length; i++) {
+                    if (i == index) {
+                        let files = a[i].files ? a[i].files : [];
+                        if (add) {
+                            let t = "image";
+                            if (fi.type) {
+                                if (fi.type == "video") {
+                                    t = "video";
+                                }
                             }
+                            if (files.map(f => f.url ).indexOf(fi.url) < 0) {
+                                files.push({ url: fi.url, type: t });
+                            }
+                        } else {
+                            files.splice(files.map(f => f.url ).indexOf(fi.url), 1);
                         }
-                        if (files.map(f => f.url ).indexOf(fi.url) < 0) {
-                            files.push({ url: fi.url, type: t });
-                        }
-                    } else {
-                        files.splice(files.map(f => f.url ).indexOf(fi.url), 1);
+                        a[i].files = files;
                     }
-                    a[i].files = files;
                 }
+                this.setState({ products: a });
+            } else {
+                let files = this.state.dummyfiles;
+                if (add) {
+                    let t = "image";
+                    if (fi.type) {
+                        if (fi.type == "video") {
+                            t = "video";
+                        }
+                    }
+                    if (files.map(f => f.url ).indexOf(fi.url) < 0) {
+                        files.push({ url: fi.url, type: t });
+                    }
+                } else {
+                    files.splice(files.map(f => f.url ).indexOf(fi.url), 1);
+                }
+                this.setState({ dummyfiles: files });
             }
-            this.setState({ products: a });
         } catch (err) {
             console.log(err);
             // Fail silently
@@ -414,6 +440,7 @@ export default class Shop extends Component {
                                     <Suspense fallback={<div className="fallback-loading"></div>}>
                                         <BucketFileSelection owner={this.props.owner}
                                         editing={this.state.editIndex}
+                                        dummyfiles={this.state.dummyfiles}
                                         cloud={this.state.cloud}
                                         showBucketPortal={this.showBucketPortal}
                                         appendFile={this.appendFile}
@@ -436,6 +463,7 @@ export default class Shop extends Component {
                                 shipping={product.shipping}
                                 protype={product.type}
                                 infinite={product.infinite}
+                                files={product.files}
                                 updateInfinite={this.updateInfinite}
                                 updateProType={this.updateProType}
                                 self={this.state.self}
@@ -468,8 +496,9 @@ export default class Shop extends Component {
                             styles={this.state.dummystyles}
                             id={this.state.dummyid}
                             shipping={this.state.dummyshipping}
-                            protype="physical"
-                            infinite={false}
+                            protype={this.state.dummytype}
+                            infinite={this.state.dummyfinite}
+                            files={this.state.dummyfiles}
                             updateInfinite={this.updateInfinite}
                             updateProType={this.updateProType}
                             self={true}
