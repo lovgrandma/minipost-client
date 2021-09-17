@@ -5840,7 +5840,8 @@ a code:hover {
     padding-right: 10px;
 }
 
-.social-portal-login-prompt {
+.social-portal-login-prompt,
+.blue-prompt {
     width: fit-content;
     margin-bottom: 10px;
     vertical-align: middle;
@@ -5856,7 +5857,16 @@ a code:hover {
     transition: 200ms;
 }
 
-.social-portal-login-prompt:hover {
+.blue-prompt {
+    padding: 2.5px 10px;
+    font-size: 0.8em;
+    font-weight: 600;
+    cursor: default;
+    border-radius: 2.5px;
+}
+
+.social-portal-login-prompt:hover,
+.blue-prompt:hover {
     background-color: #82bdeb;
     box-shadow: 0 0 0 1px #45b3ff inset, 0 0 0 1px rgba(58, 134, 232, 0.15) inset, 1px 2px 0px 0px rgba(78, 167, 210, 0.7), 2px 3px 0px 0px rgba(105, 194, 238, 0.4), 1px 1px 0px 0px rgba(105, 194, 238, 0.5);;
 }
@@ -6211,7 +6221,7 @@ input[type="search"]::-webkit-search-results-decoration { display: none; }
 }
 
 .btn-primary:focus {
-    background-color: rgb(138, 138, 138);
+    background-color: rgb(214, 214, 214);
 }
 
 .survey-h {

@@ -497,7 +497,7 @@ export default class Shop extends Component {
                             id={this.state.dummyid}
                             shipping={this.state.dummyshipping}
                             protype={this.state.dummytype}
-                            infinite={this.state.dummyfinite}
+                            infinite={this.state.dummyinfinite}
                             files={this.state.dummyfiles}
                             updateInfinite={this.updateInfinite}
                             updateProType={this.updateProType}

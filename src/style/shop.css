@@ -752,6 +752,7 @@ button.profile-menu-link:hover {
     flex: 2;
     max-height: 400px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 #imgurl-product-img {
@@ -2007,4 +2008,8 @@ Button.transaction-button-checkout:hover {
 .selected-product-file-sm img {
     width: 85px;
     height: 85px;
+}
+
+.del-mark {
+    border: 2px solid red;
 }

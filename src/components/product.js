@@ -417,7 +417,13 @@ export default class Product extends Component {
                 }
             }
             if (this.props.shipping) {
-                if (this.props.shipping.length > 0) {
+                let ty = "physical";
+                if (this.props.protype) {
+                    if (this.props.protype == "virtual") {
+                        ty = "virtual";
+                    }
+                }
+                if (this.props.shipping.length > 0 || ty == "virtual") {
                     goodShipping = true;
                 } else {
                     this.setState({ error: "You need atleast one shipping class applied to save this product"});

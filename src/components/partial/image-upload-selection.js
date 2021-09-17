@@ -204,6 +204,19 @@ export default class ImageUploadSelection extends Component {
         }
     }
 
+    checkDelMark = (image) => {
+        try {
+            if (this.props.deletions.has(this.props.editing)) {
+                if (this.props.deletions.get(this.props.editing).indexOf(image.url) > -1) {
+                    return true;
+                }
+            }
+            return false;
+        } catch (err) {
+            return false;
+        }
+    }
+
     render() {
         return (
             <div>
@@ -212,13 +225,22 @@ export default class ImageUploadSelection extends Component {
                         <h5>Upload Product Images</h5>
                         <input type="file" id="file-upload-shop-img" name="file-upload-shop-img" className="margin-bottom-5" accept="image/png, image/jpeg, image/jpg" onChange={this.handleImgUpload} ref={this.uploadFiles} multiple></input>
                         <div className="info-blurb margin-bottom-5">Max 10 images per product</div>
+                        {
+                            this.props.editing && this.state.waitingFiles.length > 0 ?
+                                <div className="blue-prompt">Your images are saved. We will upload them as soon as you publish your product</div>
+                                : null
+                        }
                         <div>
                             <input type="text" ref={this.imgname} name="imgname" id="imgname" className="margin-bottom-5 img-product-name" placeholder="Name" onInput={(e) => {this.searchAndUpdateImgNamePrepare()}}></input>
                         </div>
-                        <div className="info-blurb-2 margin-bottom-10 weight600">Click on an image to choose a name for it. Name your images after the style most appropriate for the selected image. If you have only have one style don't worry about naming</div>
+                        {
+                            this.props.editing != "dummy" ?
+                                <div className="info-blurb-2 margin-bottom-10 weight600">Click on an image to choose a name for it. Name your images after the style most appropriate for the selected image. If you have only have one style don't worry about naming</div>
+                                : null
+                        }   
                         {
                             this.props.editing == "dummy" ?
-                                <div className="info-blurb">These images are for a new product so when you close this page remember to save this new product in order to upload the images to Minishops. Right now these images are only cached locally until the product is officially created. This only applies to images for products that don't already exist in the database</div>
+                                <div className="info-blurb">These images are for a new product so when you close this page remember to save this new product in order to upload the images to Minishops. Right now these images are only cached locally until the product is officially created. This only applies to new products. Products you've already created will show their product images</div>
                                 : null
                         }
                         {
@@ -236,7 +258,7 @@ export default class ImageUploadSelection extends Component {
                                 this.props.images.map((image, index) => 
                                     <span className="cached-img-container">
                                         <div className="mv-prd-image mv-prd-image-left" onClick={(e) => {this.resolveMoveImg(e, index, "left")}}>👈</div>
-                                        <img className={this.state.currSelectedImg == index ? "cached-img cached-img-selected cached-img" + index : "cached-img cached-img" + index} src={this.state.cloud + "/" + image.url} onClick={(e) => {this.setCurrSelectedImg(index)}} index={index} key={index} imgdata={image.url}></img>
+                                        <img className={this.checkDelMark(image) ? "cached-img del-mark" : this.state.currSelectedImg == index ? "cached-img cached-img-selected cached-img" + index : "cached-img cached-img" + index} src={this.state.cloud + "/" + image.url} onClick={(e) => {this.setCurrSelectedImg(index)}} index={index} key={index} imgdata={image.url}></img>
                                         <div className="mv-prd-image mv-prd-image-right" onClick={(e) => {this.resolveMoveImg(e, index, "right")}}>👉</div>
                                     </span>
                                 )
