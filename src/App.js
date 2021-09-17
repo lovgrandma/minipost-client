@@ -2219,6 +2219,9 @@ class App extends Component {
                         <Route path='/vendorapplication' render={(props) => (
                             <InfoTemplate {...props} />
                         )}/>
+                        <Route path='/privacy' render={(props) => (
+                            <InfoTemplate {...props} />
+                        )}/>
                         <Route path='/letter' render={(props) => (
                             <Suspense fallback={<div className="fallback-loading"></div>}>
                                 <NewsLetter {...props} />
